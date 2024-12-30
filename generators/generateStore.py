@@ -1,6 +1,6 @@
 #generate Store
 import sys
-print(sys.path)
+
 
 try:
     from distributions import generate_black_swan, generate_normal

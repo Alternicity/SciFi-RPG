@@ -1,5 +1,6 @@
 import random
 import string
+from abc import ABC, abstractmethod
 
 # Decorator definition (must be placed before the class definition)
 def check_entrance_state(func):
@@ -42,7 +43,7 @@ def check_entrance_state(func):
     return wrapper
 
 class HQ(Location):
-    def __init__(self, name, side, security_level, condition, defense_rating, resource_storage=None, special_features=None, fun=0):
+    def __init__(self, name, side, security_level, condition, resource_storage=None, special_features=None, fun=0):
         super().__init__(name, "HQ", side, security_level, condition, fun)
         self.security_level = security_level
         self.resource_storage = resource_storage or {}
@@ -93,7 +94,7 @@ class CorporateStore(Vendor):
         else:
             print(f"{character.name} does not have sufficient status to buy {item}")
 
-class RepairWorkshop(Location):
+class RepairWorkshop(Location, ABC):  # Inherit from ABC
     def __init__(self, name, location, security_level, upkeep, materials_required):
         super().__init__(name, location, security_level, upkeep)
         self.materials_required = materials_required  # Materials required for repairs
@@ -309,18 +310,3 @@ class Park(Location):
         self.secret_entrance = False
 
 
-# Example use case
-hq = HQ(
-    name="Alpha HQ",
-    side="East Side",
-    security_level="High",
-    condition="Well Maintained",
-    fun = 1,
-)
-hq.add_entrances("Main Entrance", "Side Door")
-hq.set_secret_entrance("Underground Tunnel")
-
-# Accessing the secret entrance via decorator
-hq.secret_entrance_decorator(lambda: print("Entered secret section!"))()
-
-print(hq)

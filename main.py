@@ -9,7 +9,6 @@ from generators.generateStore import generate_stores
 from store import Store, Vendor, CorporateDepot, Stash, Dealer
 from morale import adjust_morale
 import sys
-print(sys.path)
 
 # Load the city data
 city_data = {}

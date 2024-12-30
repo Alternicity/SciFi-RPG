@@ -1,0 +1,8 @@
+
+
+I have test_city.json and a characters.py, and a tiny civilians.yaml
+From this could you generate a test_population.yaml scaled to test_city.json?
+
+Leviathan function or attribute
+
+civiian becomes subordinate?

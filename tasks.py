@@ -38,3 +38,8 @@ class Task:
         """Mark the task as completed."""
         self.status = "completed"
         logging.info(f"Task '{self.name}' is completed.")
+
+    #from class subordinate 
+    def receive_task(self, task):
+        self.tasks.append(task)
+        print(f"{self.name} is now handling task: '{task}'.")

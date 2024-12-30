@@ -72,3 +72,14 @@ def create_object(data):
         return create_item(data)
     else:
         raise ValueError(f"Unsupported type: {obj_type}")
+
+    def list_existing_characters(character_registry):
+    """Display a list of existing characters and their entity IDs."""
+    if not character_registry:
+        print("No existing characters.")
+        return None
+    
+    for character in character_registry:
+        print(f"Character ID: {character.entity_id}, Name: {character.name}")
+    
+    return character_registry
