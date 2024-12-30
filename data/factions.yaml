@@ -1,0 +1,136 @@
+factions:
+  - name: Red Gang
+    type: gang
+    affiliation: red
+    goals:
+      - goal: control territory
+        priority: high
+        reward: 500
+      - goal: steal resources
+        priority: medium
+        reward: 300
+      - goal: extract protection monies
+        priority: high
+        reward: 200
+      - goal: throw parties
+        priority: low
+        reward: 100
+        
+  - name: Hannival Corporation
+    type: corporation
+    affiliation: red
+    goals:
+      - goal: expand market share
+        priority: high
+        reward: 1000
+      - goal: eliminate rivals
+        priority: high
+        reward: 800
+      - goal: research
+        priority: medium
+        reward: 500
+      - goal: host events
+        priority: low
+        reward: 200
+
+  - name: Blue Gang
+    type: gang
+    affiliation: blue
+    goals:
+      - goal: control territory
+        priority: high
+        reward: 500
+      - goal: steal resources
+        priority: medium
+        reward: 300
+      - goal: extract protection monies
+        priority: high
+        reward: 200
+      - goal: throw parties
+        priority: low
+        reward: 100
+
+  - name: Globetek Corporation
+    type: corporation
+    affiliation: blue
+    goals:
+      - goal: expand market share
+        priority: high
+        reward: 1000
+      - goal: eliminate rivals
+        priority: high
+        reward: 800
+      - goal: research
+        priority: medium
+        reward: 500
+      - goal: host events
+        priority: low
+        reward: 200
+
+  - name: Black Gang
+    type: gang
+    affiliation: black
+    goals:
+      - goal: control territory
+        priority: high
+        reward: 500
+      - goal: steal resources
+        priority: medium
+        reward: 300
+      - goal: extract protection monies
+        priority: high
+        reward: 200
+      - goal: throw parties
+        priority: low
+        reward: 100
+
+  - name: UltraEngine Corporation
+    type: corporation
+    affiliation: black
+    goals:
+      - goal: expand market share
+        priority: high
+        reward: 1000
+      - goal: eliminate rivals
+        priority: high
+        reward: 800
+      - goal: research
+        priority: medium
+        reward: 500
+      - goal: host events
+        priority: low
+        reward: 200
+
+  - name: White Gang
+    type: gang
+    affiliation: white
+    goals:
+      - goal: control territory
+        priority: high
+        reward: 500
+      - goal: steal resources
+        priority: medium
+        reward: 300
+      - goal: extract protection monies
+        priority: high
+        reward: 200
+      - goal: throw parties
+        priority: low
+        reward: 100
+
+  - name: Saquia Corporation
+    type: corporation
+    affiliation: white
+    goals:
+      - goal: expand market share
+        priority: high
+        reward: 1000
+      - goal: eliminate rivals
+        priority: high
+        reward: 800
+      - goal: research
+        priority: medium
+        reward: 500
+      - goal: host events
+        priority: low
+        reward: 200

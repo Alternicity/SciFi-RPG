@@ -1,0 +1,12 @@
+name: "The State"
+type: "corporation"
+affiliation: "none"
+resources: 10000
+laws: ["Law 1", "Law 2", "Law 3"]
+goals:
+  - goal: "retain dominance"
+    priority: "high"
+    reward: 2000
+  - goal: "eliminate rivals"
+    priority: "high"
+    reward: 1500

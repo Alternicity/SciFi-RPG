@@ -1,0 +1,249 @@
+{
+    "city": {
+        "East Side": {
+            "locations": [
+                {
+                    "name": "Park",
+                    "security_level": "Low",
+                    "condition": "Well Maintained",
+                    "fun": 5,
+                    "required_workers": 0,
+                    "primary_entrance": "Main Gate",
+                    "secondary_entrance": "Side Path",
+                    "secret_entrance": "Underground Tunnel"
+                },
+                {
+                    "name": "Warehouse",
+                    "security_level": "Medium",
+                    "condition": "Operational",
+                    "required_workers": 10,
+                    "primary_entrance": "Loading Bay",
+                    "secondary_entrance": "Service Door",
+                    "secret_entrance": null
+                }
+            ],
+            "factions": [
+                "Gang Alpha"
+            ],
+            "characters": [
+                {
+                    "name": "Boss Miguel",
+                    "role": "Gang Leader",
+                    "assigned_location": "Warehouse",
+                    "loyalties": {
+                        "Gang Alpha": 100,
+                        "State": 10,
+                        "Law": 5,
+                        "Free Market": 20
+                    }
+                },
+                {
+                    "name": "Thief Ana",
+                    "role": "Gang Member",
+                    "assigned_location": "Park",
+                    "loyalties": {
+                        "Gang Alpha": 80,
+                        "State": 15,
+                        "Law": 5,
+                        "Free Market": 30
+                    }
+                }
+            ]
+        },
+        "West Side": {
+            "locations": [
+                {
+                    "name": "Nightclub",
+                    "security_level": "Medium",
+                    "condition": "Well Maintained",
+                    "fun": 7,
+                    "required_workers": 5,
+                    "primary_entrance": "Main Door",
+                    "secondary_entrance": "VIP Entrance",
+                    "secret_entrance": "Rooftop Ladder"
+                },
+                {
+                    "name": "Shop",
+                    "security_level": "Low",
+                    "condition": "Operational",
+                    "fun": 2,
+                    "required_workers": 3,
+                    "profit_margin": 15
+                }
+            ],
+            "factions": [
+                "Corporation X"
+            ],
+            "characters": [
+                {
+                    "name": "CEO Emma",
+                    "role": "Corporate Leader",
+                    "assigned_location": "Shop",
+                    "loyalties": {
+                        "Corporation X": 95,
+                        "State": 85,
+                        "Law": 75,
+                        "Free Market": 60
+                    }
+                },
+                {
+                    "name": "Worker Paul",
+                    "role": "Shop Assistant",
+                    "assigned_location": "Shop",
+                    "loyalties": {
+                        "Corporation X": 70,
+                        "State": 50,
+                        "Law": 60,
+                        "Free Market": 40
+                    }
+                }
+            ]
+        },
+        "City Centre": {
+            "locations": [
+                {
+                    "name": "Holotheatre",
+                    "security_level": "Medium",
+                    "condition": "High-Tech",
+                    "fun": 10,
+                    "required_workers": 8,
+                    "primary_entrance": "Main Entrance",
+                    "secondary_entrance": null,
+                    "secret_entrance": "Service Elevator"
+                },
+                {
+                    "name": "Museum",
+                    "security_level": "High",
+                    "condition": "Excellent",
+                    "fun": 9,
+                    "required_workers": 12,
+                    "primary_entrance": "Front Door",
+                    "secondary_entrance": "Staff Entrance",
+                    "secret_entrance": null
+                }
+            ],
+            "factions": [
+                "State"
+            ],
+            "characters": [
+                {
+                    "name": "Director Alice",
+                    "role": "Museum Director",
+                    "assigned_location": "Museum",
+                    "loyalties": {
+                        "State": 90,
+                        "Law": 85,
+                        "Free Market": 50
+                    }
+                },
+                {
+                    "name": "Security Officer John",
+                    "role": "Museum Security",
+                    "assigned_location": "Museum",
+                    "loyalties": {
+                        "State": 75,
+                        "Law": 80,
+                        "Free Market": 30
+                    }
+                }
+            ]
+        },
+        "NorthVille": {
+            "locations": [
+                {
+                    "name": "Power Plant",
+                    "security_level": "High",
+                    "condition": "Operational",
+                    "required_workers": 15,
+                    "energy_output": 200,
+                    "connected_locations": [
+                        "Factory",
+                        "Nightclub",
+                        "Holotheatre"
+                    ]
+                },
+                {
+                    "name": "Factory",
+                    "security_level": "Medium",
+                    "condition": "Operational",
+                    "required_workers": 5,
+                    "raw_materials_needed": 10,
+                    "output_rate": 3,
+                    "energy_needed": 5
+                }
+            ],
+            "factions": [
+                "Corporation Y"
+            ],
+            "characters": [
+                {
+                    "name": "Engineer Rob",
+                    "role": "Power Plant Engineer",
+                    "assigned_location": "Power Plant",
+                    "loyalties": {
+                        "Corporation Y": 85,
+                        "State": 70,
+                        "Law": 65,
+                        "Free Market": 50
+                    }
+                },
+                {
+                    "name": "Manager Laura",
+                    "role": "Factory Manager",
+                    "assigned_location": "Factory",
+                    "loyalties": {
+                        "Corporation Y": 90,
+                        "State": 60,
+                        "Law": 75,
+                        "Free Market": 70
+                    }
+                }
+            ]
+        },
+        "SouthVille": {
+            "locations": [
+                {
+                    "name": "Sports Centre",
+                    "security_level": "Low",
+                    "condition": "Well Maintained",
+                    "fun": 4,
+                    "required_workers": 2
+                },
+                {
+                    "name": "Brothel",
+                    "security_level": "Low",
+                    "condition": "Poor",
+                    "fun": 3,
+                    "required_workers": 5
+                }
+            ],
+            "factions": [
+                "Corporation Y"
+            ],
+            "characters": [
+                {
+                    "name": "Manager Sarah",
+                    "role": "Manager",
+                    "assigned_location": "Sports Centre",
+                    "loyalties": {
+                        "Corporation Y": 95,
+                        "State": 60,
+                        "Law": 90,
+                        "Free Market": 80
+                    }
+                },
+                {
+                    "name": "Worker Lucas",
+                    "role": "Sports Centre Worker",
+                    "assigned_location": "Sports Centre",
+                    "loyalties": {
+                        "Corporation Y": 70,
+                        "State": 50,
+                        "Law": 60,
+                        "Free Market": 40
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,107 @@
+Check If simulate_turn() is Blocking
+
+Incorporate comprehensions.
+
+Faction AI and Behavior Systems (Recommended):
+
+Implement logic for faction goals, relationships, and behavior.
+Example:
+Rival factions may compete for resources.
+
+Gangs may attack corporations or police factions based on circumstances.
+Tie faction behavior to item/territory control or NPC actions.
+
+Modular Combat System:
+
+Develop a combat system for characters, allowing attacks, damage calculation, and equipment usage.
+Integrate with items.json (weapons and tools).
+This lays the groundwork for player-NPC interactions and story events.
+Player and NPC Interactions:
+
+Expand on your Character class to allow for player-driven decisions, like buying from vendors, joining factions, or attacking enemies.
+Implement motivation-based AI for NPCs using existing classes.
+Economy and Inventory Expansion:
+
+Flesh out how vendors, dealers, and corporate depots work.
+Integrate dynamic pricing and faction-controlled trade routes.
+Dynamic World Map:
+
+Develop the game world structure, with locations like cities, faction HQs, and resource sites.
+Tie world locations to faction control and resource competition.
+Suggested Immediate Next Step: Faction AI
+Faction AI adds depth to the world and ties directly to your existing systems (factions, items, economy). Here's a plan:
+
+Add attributes like territory, resources, and alliances to factions.
+Write basic goals and actions, e.g., expand territory, defend from attacks, or steal resources.
+Simulate faction interactions in the world loop and log/debug the results.
+
+Expand the Character Hierarchy:
+
+Introduce new roles (Boss, Captain, Manager) extending from your existing character classes.
+Use the status attribute to differentiate tiers (e.g., Boss = elite, Captain/Manager = high).
+Faction Directives:
+
+Boss-level characters generate high-level goals (e.g., "Expand territory" or "Acquire weapons").
+Captains/Managers break these down into actionable objectives for lower-tier members.
+Motivations and Loyalty:
+
+Incorporate motivations (e.g., greed, ambition) and loyalty scores to influence how well orders are followed.
+Use loyalty to simulate power struggles or defections within factions.
+Behavior Trees or FSMs:
+
+Use Behavior Trees (BT) for flexible decision-making, especially for Boss and mid-tier characters.
+Combine FSMs for simple state-based behaviors for low-tier characters.
+Communication System:
+
+Design a message-passing system for directives (e.g., Boss -> Captain -> Grunt).
+Implement delays or failures to simulate communication challenges.
+Faction AI Goals:
+
+Define a set of overarching faction goals (e.g., wealth, power, survival) and have Bosses prioritize them dynamically.
+Track faction resources (money, manpower) to adjust priorities.
+Conflict and Rivalries:
+
+Simulate conflicts between factions, including targeted actions (e.g., assassinating a Boss, stealing resources).
+Allow factions to react to each other's moves.
+Would you like to begin with expanding the character hierarchy or setting up the behavior system for Boss-level directives?
+
+Complicity:
+
+Complicity could be based on how closely a character aligns with the goals or actions of another entity. A character's loyalty
+ might change depending on whether their actions align or conflict with a faction's goals or the state’s laws.
+You can define complicity as a factor that influences loyalty. For example, if a character commits a crime that benefits another
+ faction, it could increase loyalty to that faction, but decrease loyalty to the law or state.
+
+Let's create a generic Location class, with subclasses like HQ, Shop(Vendor), Nightclub, cafe, research lab, warehouse, 
+apartment block, house, sports centre, factory, holotheatre and electronic and mechanical repair workshops. Also a park, 
+an abandoned area, a police station, tax office, fire station, brothel, museum and power plant.
+These location objects should each have a primary entrance/exit and some of them should have a secondary entrance/exit. 
+They should have a variable noting their type and power of security, and another variable noting how well kept vs run down they appear.
+Another type of location objects can be primary resource spawning locations: a mine, a port, and an airport.
+
+Locations might have a secret entrance or section as well, possibly implemented by python's decorators, which I need to learn.
+
+For now lets keep distances simple.
+Our city will be divided into: East Side, West Side, NorthVille, SouthVille plus City Centre.
+Locations will be 'located' for now in on of these. but distance will no be measured, except when a character or mobile
+ entity has to pass through City Centre ie travelling from NorthVille to Southville or East Side to West Side.
+
+bell curve
+
+Adding Police Complaints System: As you mentioned, later you will incorporate policing and complaints based on citizen and VIP contacts. This can be handled by creating a function that tracks complaints from citizens and VIPs, weighted by their influence.
+
+You could modularize the functions like display_factions_data() and display_state_data() into their own files if these become complex in the future, similar to how you’ve split your code so far.
+As your project grows, consider breaking the test-related functions like test_loyalty_system() or display_factions_data() into separate files.
+
+If the display_factions_data() or display_state_data() functions grow too large, move them into separate modules (e.g., factions.py or state.py) and import them when necessary.
+
+You could abstract some of the repeated logic for printing faction details into a separate function. This would make it easier to handle different faction types and print their details in a consistent manner
+
+Consider Additional Options for Region Customization:
+Depending on your project, you may want to add more parameters for customizing the generated region, such as:
+
+Region Type: Urban, rural, industrial, etc.
+Climate: Affects the types of locations or factions.
+Historical Events: Could influence faction behavior or the economy.
+
+Utilize Status more consistently for attributes like self.status

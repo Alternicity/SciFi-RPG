@@ -1,0 +1,146 @@
+[
+    {
+        "name": "Pistol",
+        "obj_type": "weapon",
+        "damage": 10,
+        "ammo": 12,
+        "value": 100,
+        "blackmarket_value": 50,
+        "range_limit": 50,
+        "damage_points": 10,
+        "toughness": "durable",
+        "size": "pocket_sized",
+        "legality": "True"
+    },
+    {
+        "name": "SMG",
+        "obj_type": "weapon",
+        "damage": 15,
+        "legality": "False",
+        "ammo": 30,
+        "value": 250,
+        "blackmarket_value": 500,
+        "range_limit": 50,
+        "damage_points": 15,
+        "toughness": "durable",
+        "size": "two_handed"
+    },
+    {
+       "name": "Cash Wad",
+       "obj_type": "item",
+       "category": "currency",
+       "damage_points": 3,
+       "value": "50",
+       "toughness": "fragile",
+       "size": "pocket_sized",
+       "legality": "True"
+    },
+    {
+        "name": "Hard Drive",
+        "obj_type": "item",
+        "category": "gadget",
+        "damage_points": 5,
+        "value": 50,
+        "blackmarket_value": 50,
+        "toughness": "fragile",
+        "size": "pocket_sized",
+        "legality": "True"
+    },
+    {
+       "name": "Medkit",
+       "obj_type": "item",
+       "category": "equipment",
+       "legality": "True",
+       "damage_points": 2,
+       "value": "50",
+       "toughness": "fragile",
+       "size": "pocket_sized"
+    },
+    {
+      "name": "Food Crate",
+      "obj_type": "container",
+      "category": "consumer_goods",
+      "legality": "True",
+      "damage_points": 3,
+      "value": 10,
+      "toughness": "normal",
+      "size": "two_handed"
+    },
+    {
+      "name": "Laptop",
+      "obj_type": "item",
+      "category": "gadget",
+      "legality": "True",
+      "value": 500,
+      "blackmarket_value": 500,
+      "toughness": "fragile",
+      "damage_points": 10,
+      "size": "two_handed"
+    },
+    {
+       "name": "Mechanical Toolkit",
+       "obj_type": "item",
+       "category": "tools",
+       "legality": "True",
+       "value": 100,
+       "blackmarket_value": 100,
+       "toughness": "durable",
+       "damage_points": 25,
+       "size": "two_handed"
+    },
+    {
+      "name": "Electrical Toolkit",
+      "obj_type": "item",
+      "category": "tools",
+      "legality": "True",
+      "value": 100,
+      "blackmarket_value": 100,
+      "toughness": "normal",
+      "damage_points": 5,
+      "size": "pocket_sized" 
+    },
+    {
+       "name": "Power Generator",
+       "obj_type": "item",
+       "category": "machine",
+       "legality": "True",
+       "value": 500,
+       "blackmarket_value": 500,
+       "toughness": "durable",
+       "damage_points": 45,
+       "size": "two_handed" 
+    },
+    {
+       "name": "Water Purifier",
+       "obj_type": "item",
+       "category": "machine",
+       "legality": "True",
+       "value": 150,
+       "blackmarket_value": 150,
+       "toughness": "durable",
+       "damage_points": 35,
+       "size": "two_handed" 
+    },
+    {
+       "name": "Smart Phone",
+       "obj_type": "item",
+       "category": "gadget",
+       "legality": "True",
+       "value": 200,
+       "blackmarket_value": 200,
+       "toughness": "durable",
+       "damage_points": 15,
+       "size": "pocket_sized" 
+    },
+    {
+      "name": "Commodities Box",
+      "obj_type": "container",
+      "category": "consumer_goods",
+      "legality": "True",
+      "damage_points": 25,
+      "value": 200,
+      "toughness": "normal",
+      "blackmarket_value": 200,
+      "size": "two_handed"
+    }
+]

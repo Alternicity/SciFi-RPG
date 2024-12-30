@@ -1,0 +1,47 @@
+[
+    {
+        "name": "control_territory",
+        "type": "gang",
+        "description": "Expand gang influence over areas of the city."
+    },
+    {
+        "name": "steal_resources",
+        "type": "gang",
+        "description": "Acquire materials, money, or goods from other factions or civilians."
+    },
+    {
+        "name": "expand_market_share",
+        "type": "corporation",
+        "description": "Increase corporate control over industries and profits."
+    },
+    {
+        "name": "eliminate_rivals",
+        "type": "all",
+        "description": "Reduce the power or influence of competing factions."
+    },
+    {
+        "name": "host_events",
+        "type": "corporation",
+        "description": "Organize gatherings to enhance public image or recruit talent."
+    },
+    {
+        "name": "throw_parties",
+        "type": "gang",
+        "description": "Hold events to increase morale or recruit new members."
+    },
+    {
+        "name": "extract_protection_monies",
+        "type": "gang",
+        "description": "Demand payments from civilians or businesses in exchange for 'protection.'"
+    },
+    {
+        "name": "protect_VIPs",
+        "type": "state",
+        "description": "Ensure the safety of key individuals within the faction."
+    },
+    {
+        "name": "publish_propaganda",
+        "type": "state",
+        "description": "Spread information to influence public opinion or undermine rivals."
+    }
+]

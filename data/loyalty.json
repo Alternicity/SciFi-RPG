@@ -1,0 +1,29 @@
+[
+  {
+    "entity": "John Doe",
+    "loyalties": {
+      "state": 50,
+      "faction": 80,
+      "law": 40,
+      "free_market": 70
+    }
+  },
+  {
+    "entity": "Alice Smith",
+    "loyalties": {
+      "state": 30,
+      "faction": 60,
+      "law": 90,
+      "free_market": 20
+    }
+  },
+  {
+    "entity": "Corporation XYZ",
+    "loyalties": {
+      "state": 100,
+      "faction": 90,
+      "law": 80,
+      "free_market": 95
+    }
+  }
+]

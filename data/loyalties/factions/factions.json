@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Red Gang",
+    "type": "gang",
+    "members": ["Big Red", "Red Captain 1", "Red Grunt 1", "Red Grunt 2"]
+  },
+  {
+    "name": "Hannival Corporation",
+    "type": "corporation",
+    "members": ["Mr. Hannival", "Manager Alice", "Employee Bob", "Employee Eve"]
+  }
+]

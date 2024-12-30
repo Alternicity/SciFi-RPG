@@ -1,0 +1,9 @@
+civilians:
+  - name: "John Doe"
+    role: "worker"
+    faction: "Red Gang"
+    loyalty: 80
+  - name: "Jane Doe"
+    role: "merchant"
+    faction: "Hannival Corporation"
+    loyalty: 50

@@ -1,0 +1,27 @@
+{
+  "state_name": "New Earth",
+  "capital": "Neo City",
+  "population": 1500000,
+  "economy": {
+    "industries": [
+      "Mining",
+      "Technology",
+      "Agriculture"
+    ],
+    "gdp": 5000000000
+  },
+  "factions": [
+    {
+      "name": "Red Gang",
+      "type": "gang",
+      "leader": "Big Red",
+      "territory": "Sector A"
+    },
+    {
+      "name": "Hannival Corporation",
+      "type": "corporation",
+      "leader": "Mr. Hannival",
+      "main_product": "HannivalTech"
+    }
+  ]
+}

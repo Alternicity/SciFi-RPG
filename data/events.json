@@ -1,0 +1,35 @@
+{
+    "EconomicEvent": {
+        "type": "normal",
+        "mean": 0,
+        "std_dev": 100,
+        "effect": {
+            "resource": "money",
+            "impact": "add"
+        }
+    },
+    "FactionConflict": {
+        "type": "black_swan",
+        "threshold": 0.01,
+        "impact_range": [
+            10,
+            50
+        ],
+        "effect": {
+            "attribute": "morale",
+            "impact": "subtract"
+        }
+    },
+    "NaturalDisaster": {
+        "type": "black_swan",
+        "threshold": 0.005,
+        "impact_range": [
+            50,
+            100
+        ],
+        "effect": {
+            "resource": "energy",
+            "impact": "subtract"
+        }
+    }
+}
