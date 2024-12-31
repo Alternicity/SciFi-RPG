@@ -1,0 +1,85 @@
+Directory: .
+  - behaviours.py
+  - character starting weapons.py
+  - CharacterRegistryPersistence.py
+  - characters.py
+  - combat.py
+  - common.py
+  - display.py
+  - distributions.py
+  - economy.py
+  - events.py
+  - faction.py
+  - goals.py
+  - inventory.py
+  - InWorldObjects.py
+  - list files.py
+  - loader.py
+  - location.py
+  - loyalty.py
+  - main.py
+  - morale.py
+  - motivation.py
+  - object_factory.py
+  - player.py
+  - process city data.py
+  - region_menu.py
+  - simulate_day.py
+  - store.py
+  - tasks.py
+  - test json.py
+  - testDEL.py
+  - utils.py
+  - verify city data.py
+Directory: ./data
+  - civilians.yaml
+  - events.json
+  - factions.yaml
+  - goals.json
+  - items.json
+  - loyalty.json
+  - state.yaml
+Directory: ./data\Test City
+Directory: ./data\Test City\Characters
+  - characters.json
+Directory: ./data\Test City\Factions
+Directory: ./data\Test City\Factions\Civilians
+Directory: ./data\Test City\Factions\Corps
+Directory: ./data\Test City\Factions\Gangs
+Directory: ./data\Test City\Factions\The State
+Directory: ./data\Test City\Locations
+  - locations.json
+  - Southville.json
+  - test_city.json
+Directory: ./data\Test City\Loyalties
+Directory: ./data\Test City\Regions
+Directory: ./data\Test City\Stores
+Directory: ./deprecated
+  - deprecated main.py
+  - FIX THE STATE.py
+  - Grunt.py
+  - legacy main menu.py
+  - legacy main mid dec 24.py
+  - legacy main.py
+  - old ganag spawn test code.py
+  - runTheCity.py
+  - simulate_turn.py
+  - state cruft.py
+  - static old test main.py
+  - task delegation placeholder.py
+  - update loyalties.py
+Directory: ./generators
+  - generate.py
+  - generateCorp.py
+  - generateEnrichment.py
+  - generateGang.py
+  - generateLocation.py
+  - generateRegion.py
+  - generateStore.py
+  - __init__.py
+Directory: ./generators\__pycache__
+Directory: ./Notes
+  - civilian goals.py
+  - CorporateGoals.py
+  - GangGoals.py
+Directory: ./__pycache__

@@ -1,0 +1,120 @@
+[
+    {
+        "name": "Boss Miguel",
+        "role": "Gang Leader",
+        "assigned_location": "Warehouse",
+        "loyalties": {
+            "Gang Alpha": 100,
+            "State": 10,
+            "Law": 5,
+            "Free Market": 20
+        },
+        "district": "East Side"
+    },
+    {
+        "name": "Thief Ana",
+        "role": "Gang Member",
+        "assigned_location": "Park",
+        "loyalties": {
+            "Gang Alpha": 80,
+            "State": 15,
+            "Law": 5,
+            "Free Market": 30
+        },
+        "district": "East Side"
+    },
+    {
+        "name": "CEO Emma",
+        "role": "Corporate Leader",
+        "assigned_location": "Shop",
+        "loyalties": {
+            "Corporation X": 95,
+            "State": 85,
+            "Law": 75,
+            "Free Market": 60
+        },
+        "district": "West Side"
+    },
+    {
+        "name": "Worker Paul",
+        "role": "Shop Assistant",
+        "assigned_location": "Shop",
+        "loyalties": {
+            "Corporation X": 70,
+            "State": 50,
+            "Law": 60,
+            "Free Market": 40
+        },
+        "district": "West Side"
+    },
+    {
+        "name": "Director Alice",
+        "role": "Museum Director",
+        "assigned_location": "Museum",
+        "loyalties": {
+            "State": 90,
+            "Law": 85,
+            "Free Market": 50
+        },
+        "district": "City Centre"
+    },
+    {
+        "name": "Security Officer John",
+        "role": "Museum Security",
+        "assigned_location": "Museum",
+        "loyalties": {
+            "State": 75,
+            "Law": 80,
+            "Free Market": 30
+        },
+        "district": "City Centre"
+    },
+    {
+        "name": "Engineer Rob",
+        "role": "Power Plant Engineer",
+        "assigned_location": "Power Plant",
+        "loyalties": {
+            "Corporation Y": 85,
+            "State": 70,
+            "Law": 65,
+            "Free Market": 50
+        },
+        "district": "NorthVille"
+    },
+    {
+        "name": "Manager Laura",
+        "role": "Factory Manager",
+        "assigned_location": "Factory",
+        "loyalties": {
+            "Corporation Y": 90,
+            "State": 60,
+            "Law": 75,
+            "Free Market": 70
+        },
+        "district": "NorthVille"
+    },
+    {
+        "name": "Manager Sarah",
+        "role": "Manager",
+        "assigned_location": "Sports Centre",
+        "loyalties": {
+            "Corporation Y": 95,
+            "State": 60,
+            "Law": 90,
+            "Free Market": 80
+        },
+        "district": "SouthVille"
+    },
+    {
+        "name": "Worker Lucas",
+        "role": "Sports Centre Worker",
+        "assigned_location": "Sports Centre",
+        "loyalties": {
+            "Corporation Y": 70,
+            "State": 50,
+            "Law": 60,
+            "Free Market": 40
+        },
+        "district": "SouthVille"
+    }
+]

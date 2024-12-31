@@ -1,0 +1,30 @@
+Creating Test City
+
+refactor  
+generateFaction, 
+Factions.py, goals.py
+Gang, Corps 
+
+For each generator first post the appropriate .py file to be first refactored as a @dataclass file.
+then refactor the generator.
+
+
+I am thinking of a hierarchy/sequence of these  generators:
+
+generateFactions Should generate sufficient factions and the state to populate the city, and call:
+
+generateCorps and generateGangs to populate and those factions, adding uniqueness, detail and enmities. 
+
+then:
+generateEnrichment (newly added placeholder file)
+Will modify existing datafiles.
+This stage makes more colorful the CEOs, VIPs, and Bosses from another file, adding characteistics and buffs to the ones that already exist. 
+Eventually it might also add colour to locations etc PAUSED FOR 4o
+
+
+note: there is also a character starting weapons.py that just contains some data.
+I'm not sure what to do with it.
+
+Does item.yaml need to be update in light of the updated InWorldObjects.py?
+
+
