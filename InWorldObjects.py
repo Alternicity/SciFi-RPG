@@ -10,6 +10,7 @@ class Toughness(Enum):
 
 class Size(Enum):
     POCKET_SIZED = "pocket_sized"
+    ONE_HANDED = "one-handed"
     TWO_HANDED = "two_handed"
     HEAVY = "heavy"
 
@@ -37,33 +38,6 @@ class ObjectInWorld:
         self.toughness = toughness
         self.value = value
         self.item_type = item_type  # 'weapon', 'armor', etc.
-
-
-
-#Weapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
-#at the level of the most specific concrete classes that directly need them
-class Weapon(ObjectInWorld):
-    is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, size, damage,):
-        super().__init__(name, toughness, value, item_type="weapon")
-        self.size = size
-
-#RangedWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
-#at the level of the most specific concrete classes that directly need them
-class RangedWeapon(Weapon):
-    is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, size, damage, ammo, range):
-        super().__init__(name, toughness, value, size, damage)
-        self.range = range # Common attribute for all ranged weapons
-
-
-
-#MeleeWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
-#at the level of the most specific concrete classes that directly need them
-class MeleeWeapon(Weapon):
-    is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, size, damage):
-        super().__init__(name, toughness, value, size, damage)
 
 
 #only concrete, fully implementable classes have the damage_points
@@ -173,7 +147,6 @@ class FoodCrate(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
-
 class Laptop(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self, sensitivity):
@@ -188,7 +161,6 @@ class Laptop(ObjectInWorld):
         )
         self.sensitivity = sensitivity
 
-
 class MechanicalToolkit(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -201,7 +173,6 @@ class MechanicalToolkit(ObjectInWorld):
             blackmarket_value=100,
             size=Size.TWO_HANDED,
         )
-
 
 class ElectricalToolkit(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -216,7 +187,6 @@ class ElectricalToolkit(ObjectInWorld):
             size=Size.POCKET_SIZED,
         )
 
-
 class PowerGenerator(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -229,7 +199,6 @@ class PowerGenerator(ObjectInWorld):
             blackmarket_value=300,
             size=Size.TWO_HANDED,
         )
-
 
 class WaterPurifier(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -244,7 +213,6 @@ class WaterPurifier(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
-
 class SmartPhone(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -257,7 +225,6 @@ class SmartPhone(ObjectInWorld):
             blackmarket_value=200,
             size=Size.POCKET_SIZED,
         )
-
 
 class CommoditiesBox(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -272,128 +239,3 @@ class CommoditiesBox(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
-#Weapons will need both damage (the amount of 
-#damage they deal in combat) and damage_points
-#I am considering in the future, separating the weapons into their own file,
-#and/or separating the concrete InWorldObject classes into their own file,
-#for clarity and to shorten the files.
-
-class Pistol(RangedWeapon):
-    is_concrete = True  # A concrete class will create objects and have more attributes
-    def __init__(self, value=100, ammo=12, legality=True): 
-        super().__init__(
-            name="Pistol",
-            toughness=Toughness.DURABLE,
-            value=value,
-            damage=10,  # Damage for the Pistol
-            size=Size.POCKET_SIZED,  # size is now passed here
-            ammo=12,
-            range=50
-        )
-        self.value = value
-        self.legality = legality
-        self.item_type = "weapon"
-        range=50,
-
-
-
-class SMG(RangedWeapon):
-    is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self):
-        # Pass the right parameters to the parent constructor
-        super().__init__(
-            name="SMG",
-            toughness=Toughness.DURABLE,
-            damage_points=15,
-            legality=False,
-            value=250,
-            size=Size.TWO_HANDED,
-            damage=25,
-            ammo=30,
-            range=50,
-        )
-        self.blackmarket_value = 500  # Set blackmarket_value directly in SMG
-        self.item_type = "weapon"
-
-class Rifle(RangedWeapon):
-    is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, value=200, legality=True):
-        super().__init__(
-            name="Rifle",
-            toughness=Toughness.STRONG,
-            legality=legality,
-            value=value,
-            size=Size.LARGE,  # size is now passed here
-            damage=25,  # Damage for the Rifle
-            ammo=30,
-            charge=0,
-            range=200,
-        )
-        self.value = value
-        self.legality = legality
-        self.item_type = "weapon"
-
-class Shotgun(RangedWeapon):
-    is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, value=250, legality=True):
-        super().__init__(
-            name="Shotgun",
-            toughness=Toughness.HEAVY,
-            legality=legality,
-            value=value,
-            size=Size.LARGE,  # size is now passed here
-            damage=30,  # Damage for the Shotgun
-            ammo=8,
-            charge=0,
-            range=40,
-        )
-        self.value = value
-        self.legality = legality
-        self.item_type = "weapon"
-
-class Sword(MeleeWeapon):
-    is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, value=150, legality=True):
-        super().__init__(
-            name="Sword",
-            toughness=Toughness.MEDIUM,
-            legality=legality,
-            value=value,
-            size=Size.MEDIUM,  # size is now passed here
-            damage=15,  # Damage for the Sword
-            charge=0,
-        )
-        self.value = value
-        self.legality = legality
-        self.item_type = "weapon"
-
-class Knife(MeleeWeapon):
-    is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, value=50, legality=True):
-        super().__init__(
-            name="Knife",
-            toughness=Toughness.LIGHT,
-            legality=legality,
-            value=value,
-            size=Size.SMALL,  # size is now passed here
-            damage=8,  # Damage for the Knife
-        )
-        self.value = value
-        self.legality = legality
-        self.item_type = "weapon"
-
-class Club(MeleeWeapon):
-    is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, value=70, legality=True):
-        super().__init__(
-            name="Club",
-            toughness=Toughness.HEAVY,
-            legality=legality,
-            value=value,
-            size=Size.LARGE,  # size is now passed here
-            damage=12,  # Damage for the Club
-            charge=0,
-        )
-        self.value = value
-        self.legality = legality
-        self.item_type = "weapon"

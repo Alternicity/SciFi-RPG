@@ -15,15 +15,13 @@ def check_entrance_state(func):
             return None  # or handle denied access differently
     return wrapper
 
-
-
 @dataclass
 class Location:
     name: str
-    location_type: str
     side: str
     security_level: int
     condition: str
+
     fun: int = 0
     is_concrete: bool = False
     secret_entrance: bool = False
@@ -37,8 +35,6 @@ class Location:
         self.entrances.extend(entrances)
         print(f"Entrances added to {self.name}: {', '.join(entrances)}")
 
-
-
 # Decorator to check entrance state
 def check_entrance_state(func):
     def wrapper(self, *args, **kwargs):
@@ -50,34 +46,24 @@ def check_entrance_state(func):
             return None
     return wrapper
 
-from dataclasses import dataclass, field
-from typing import Optional, List, Dict
-
 @dataclass
 class HQ(Location):
-    resource_storage: Dict = field(default_factory=dict)
+    name: str = "Base"
+    items_available: list = field(default_factory=list) 
+    resource_storage: dict = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
     entrances: List[str] = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
     
-    # No need to define __init__; @dataclass does it for us
     def __post_init__(self):
-        super().__post_init__()
-        # Any additional initialization logic if necessary, such as custom feature setup
+        # Any additional initialization logic
         print(f"Initialized HQ: {self.name}, Entrances: {', '.join(self.entrances)}")
 
-    def add_entrances(self, *entrances):
-        self.entrances.extend(entrances)
-        print(f"Entrances added to HQ {self.name}: {', '.join(entrances)}")
-
-
-    
-from dataclasses import dataclass, field
-from typing import List
 
 @dataclass
 class Vendor(Location):
+    items_available: list = field(default_factory=list)
     items_available: List[str] = field(default_factory=list)
     is_concrete: bool = False
     secret_entrance: bool = True
@@ -87,13 +73,11 @@ class Vendor(Location):
         super().__post_init__()
         print(f"Initialized Vendor: {self.name}, Items Available: {', '.join(self.items_available)}")
 
-
-from dataclasses import dataclass, field
-from typing import List
-
 @dataclass
 class Shop(Vendor):
-    fun: int
+    name: str = "QQ Store"
+    fun: int = 0
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
 
@@ -105,17 +89,12 @@ class Shop(Vendor):
         else:
             print(f"Item {item} not available")
 
-        
-from dataclasses import dataclass
-from typing import List
-
 @dataclass
 class CorporateStore(Vendor):
-    required_status: int
+    name: str = "Stores"
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
-
-    # No need to define __init__; @dataclass handles it
 
     def sell_item(self, character, item):
         if character.status >= self.required_status:
@@ -127,14 +106,12 @@ class CorporateStore(Vendor):
         else:
             print(f"{character.name} does not have sufficient status to buy {item}")
 
-
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
 from typing import List
 
 @dataclass
 class RepairWorkshop(Location, ABC):
-    materials_required: List[str]
+    materials_required: List[str] = field(default_factory=list)
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
 
@@ -143,14 +120,12 @@ class RepairWorkshop(Location, ABC):
         """Repair the given item (to be implemented in subclasses)."""
         pass
 
-
-
-from typing import List
-
 @dataclass
 class MechanicalRepairWorkshop(RepairWorkshop):
+    name: str = "Greasehands"
+    items_available: list = field(default_factory=list)
     # Inherit materials_required from the parent class (RepairWorkshop)
-    materials_required: List[str]
+    materials_required: List[str] = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
 
@@ -159,13 +134,12 @@ class MechanicalRepairWorkshop(RepairWorkshop):
         # Repair logic for mechanical items
         # Add the repair logic here, such as reducing item damage or restoring health
 
-
-from typing import List
-
 @dataclass
 class ElectricalRepairWorkshop(RepairWorkshop):
+    name: str = "Sparks"
+    materials_required: List[str] = field(default_factory=list)  # An empty list
+    items_available: list = field(default_factory=list)
     # Inherit materials_required from the parent class (RepairWorkshop)
-    materials_required: List[str]
     is_concrete: bool = True
     secret_entrance: bool = False
 
@@ -174,12 +148,10 @@ class ElectricalRepairWorkshop(RepairWorkshop):
         # Repair logic for electrical items
         # Add the repair logic here, such as restoring item durability or functionality
 
-
-
-from typing import List
-
 @dataclass
 class Stash(Location):
+    name: str = "Secret Stash 1"
+    items_available: list = field(default_factory=list)
     stored_items: List[str] = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
@@ -188,6 +160,7 @@ class Stash(Location):
         self.stored_items.append(item)
         print(f"Item {item} stored in stash")
 
+    #Any gang memebr who knows about it can retrieve items
     def retrieve_item(self, item: str):
         if item in self.stored_items:
             self.stored_items.remove(item)
@@ -195,13 +168,12 @@ class Stash(Location):
         else:
             print(f"Item {item} not found in stash")
 
-
-from typing import List
-
 @dataclass
 class Factory(Location):
-    materials_available: List[str]
-    goods_produced: List[str]
+    name: str = "The Old Factory"
+    goods_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
+    materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
 
@@ -214,14 +186,11 @@ class Factory(Location):
             self.goods_produced.append(produced_good)
             print(produced_good)
 
-
-
-
-from dataclasses import dataclass
-
 @dataclass
 class Nightclub(Location):
-    fun: int
+    name: str = "Music and Slappers"
+    fun: int = 1
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
 
@@ -240,13 +209,14 @@ class Nightclub(Location):
     def access_secret_entrance(self):
         print(f"{self.name} secret entrance accessed.")
 
-
-
-from dataclasses import dataclass
 
 @dataclass
 class Mine(Location):
-    fun: int
+    name: str = "Typical Mine"
+    
+    fun: int = 1
+
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
 
@@ -265,13 +235,13 @@ class Mine(Location):
     def access_secret_entrance(self):
         print(f"{self.name} secret entrance accessed.")
 
-
-
-from dataclasses import dataclass, field
-
 @dataclass
 class Powerplant(Location):
-    energy_output: int
+    name: str = "Le PowerPlant 1"
+    
+    energy_output: int = 1000
+
+    items_available: list = field(default_factory=list)
     connected_locations: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
@@ -311,15 +281,15 @@ class Powerplant(Location):
             if location.side == self.side and location != self:
                 self.connected_locations.append(location)
 
-
-
-from dataclasses import dataclass, field
-
 @dataclass
 class Airport(Location):
-    connected_locations: list
-    import_capacity: int
-    materials_inventory: dict
+    name: str = "Air Port 1"
+    
+    connected_locations: list = field(default_factory=list)  # An empty list, no connected locations
+    import_capacity: int = 0  # Zero capacity as a meaningless default
+    materials_inventory: dict = field(default_factory=dict)  # An empty dictionary, no materials
+
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = 0
@@ -347,16 +317,16 @@ class Airport(Location):
                 print(f"Imported {qty} of {material}.")
         else:
             print("Error: 'amount' should be a dictionary of materials.")
-
-
-
-from dataclasses import dataclass, field
 
 @dataclass
 class Port(Location):
-    connected_locations: list
-    import_capacity: int
-    materials_inventory: dict
+    name: str = "Edge Port"
+    
+    connected_locations: list = field(default_factory=list)  # An empty list, no connected locations
+    import_capacity: int = 0  # Zero capacity as a meaningless default
+    materials_inventory: dict = field(default_factory=dict)  # An empty dictionary, no materials
+
+    items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = 0
@@ -385,19 +355,20 @@ class Port(Location):
         else:
             print("Error: 'amount' should be a dictionary of materials.")
 
-
-
 import logging
-from dataclasses import dataclass, field
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 
 @dataclass
 class Factory(Location):
-    raw_materials_needed: int
-    output_rate: int
-    energy_needed: int
+    name: str = "Default Factory Name"
+    # (what is this?)
+    raw_materials_needed: int = 100
+    output_rate: int = 100
+    energy_needed: int = 100
+
+    items_available: list = field(default_factory=list)
     workers_needed: int = 5
     workers_present: int = 0  # Updated dynamically
     products: int = 0  # Tracks produced goods
@@ -418,13 +389,18 @@ class Factory(Location):
         else:
             logging.warning(f"{self.name} cannot produce goods. Not enough workers, power, or raw materials.")
 
+from dataclasses import dataclass, field
+
+@dataclass
 class Cafe(Location):
-    def __init__(self, name, location, security_level, upkeep, ambiance_level, fun):
-        super().__init__(name, location, security_level, upkeep)
-        self.ambiance_level = ambiance_level  # Level of ambiance or mood of the cafe
-        self.fun = fun  # Fun level for customer satisfaction (e.g., ratings or enjoyment)
-        self.is_concrete = True
-        self.secret_entrance = False
+    name: str
+    location: str
+    security_level: int
+    upkeep: int
+    ambiance_level: int
+    fun: int
+    is_concrete: bool = True
+    secret_entrance: bool = False
 
     def serve_customer(self, character):
         """Serve a customer and increase their satisfaction based on ambiance and fun."""
@@ -435,7 +411,7 @@ class Cafe(Location):
         else:
             character.satisfaction += 5  # Smaller satisfaction increase for lower ambiance
             print(f"{character.name} enjoys their time at {self.name}, but the ambiance could be better.")
-        
+
         # Add more logic if you want to further interact with the customer based on the cafe's attributes.
 
 

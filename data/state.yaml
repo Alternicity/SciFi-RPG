@@ -7,6 +7,6 @@ goals:
   - goal: "retain dominance"
     priority: "high"
     reward: 2000
-  - goal: "eliminate rivals"
+  - goal: "extract value"
     priority: "high"
     reward: 1500

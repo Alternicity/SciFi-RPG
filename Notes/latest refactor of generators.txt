@@ -1,0 +1,141 @@
+
+
+
+We were refactoring/creating generator classes, several remain.
+GenerateFactions.py needs to be created. It will create: The State, then call generateCorps.py, and generateGangs.py
+
+generateCorps will generate sufficient corporations to populate test_city.json
+and will draw on the relevant .py files I will post you.
+
+generateGangs will draw on the relevant .py files I post you and create gangs to populate the test_city.yaml
+
+generateCivilians.py will create a civilian population.
+generateFactions will need to import and draw from generateRegion to know the scale and territory factors, and maybe gangs and corps will each need to be associated with an HQ(Location), defined in location.py and locations.json
+Let's work systematically, one generator at a time, starting with GenerateFactions.py
+
+generateRegion.py
+generateCorps.py
+generateGangs.py
+location.py 
+locations.json
+test_city.json
+State.py
+
+
+
+Classes in location.py
+Location Base class, abstract
+HQ(Location) each gang or corp needs one
+Vendor(Location) Abstract
+Shop(Vendor) concrete, common
+CorporateStore(Vendor) concrete, 1-2 per corp
+RepairWorkshop(Location) concrete
+MechanicalRepairWorkshop(RepairWorkshop) concrete
+ElectricalRepairWorkshop(RepairWorkshop) concrete
+Stash(Location) hidden, associated with a gang, concrete
+Factory(Location) concrete
+Nightclub(Location) concrete
+Mine(Location) concrete
+Powerplant(Location) concrete
+Airport(Location) concrete, rare
+Port(Location) concrete, cannot be in central region
+Factory(Location) concete
+Cafe(Location) concrete
+Park(Location) concrete
+
+generateFactions should decide the number of gangs and corps based on the region. 2-3 gangs and 42-5 corps. It must associate a gang/corp with an HQ, and call generateGangs and generateCorps, all of which update test_city.json
+
+state.py does not yet exist, state.yaml is small:
+name: "The State"
+type: "corporation"
+affiliation: "none"
+resources: 10000
+laws: ["Law 1", "Law 2", "Law 3"]
+goals:
+  - goal: "retain dominance"
+    priority: "high"
+    reward: 2000
+  - goal: "extract value"
+    priority: "high"
+    reward: 1500
+
+An incomplete snippet of locations.jsonÖ
+[
+    {
+        "name": "Park",
+        "security_level": "Low",
+        "condition": "Well Maintained",
+        "fun": 5,
+        "required_workers": 0,
+        "primary_entrance": "Main Gate",
+        "secondary_entrance": "Side Path",
+        "secret_entrance": "Underground Tunnel",
+        "district": "East Side"
+    },
+    {
+        "name": "Warehouse",
+        "security_level": "Medium",
+        "condition": "Operational",
+        "required_workers": 10,
+        "primary_entrance": "Loading Bay",
+        "secondary_entrance": "Service Door",
+        "secret_entrance": null,
+        "district": "East Side"
+    },
+    {
+        "name": "Nightclub",
+        "security_level": "Medium",
+        "condition": "Well Maintained",
+        "fun": 7,
+        "required_workers": 5,
+        "primary_entrance": "Main Door",
+        "secondary_entrance": "VIP Entrance",
+        "secret_entrance": "Rooftop Ladder",
+        "district": "West Side"
+    },
+]
+
+snippet of the curretn test_city.json:
+{
+    "city": {
+        "East Side": {
+            "locations": [
+                {
+                    "name": "Park",
+                    "security_level": "Low",
+                    "condition": "Well Maintained",
+                    "fun": 5,
+                    "required_workers": 0,
+                    "primary_entrance": "Main Gate",
+                    "secondary_entrance": "Side Path",
+                    "secret_entrance": "Underground Tunnel"
+                },
+                {
+                    "name": "Warehouse",
+                    "security_level": "Medium",
+                    "condition": "Operational",
+                    "required_workers": 10,
+                    "primary_entrance": "Loading Bay",
+                    "secondary_entrance": "Service Door",
+                    "secret_entrance": null
+                }
+            ],
+            "factions": [
+                "Gang Alpha"
+            ],
+            "characters": [
+                {
+                    "name": "Boss Miguel",
+                    "role": "Gang Leader",
+                    "assigned_location": "Warehouse",
+                    "loyalties": {
+                        "Gang Alpha": 100,
+                        "State": 10,
+                        "Law": 5,
+                        "Free Market": 20
+                    }
+                },
+
+
+
+

@@ -1,7 +1,11 @@
+import sys
 import os
 import json
 import random
-from store import Store, Stash, Vendor, CorporateDepot, Dealer
+from dataclasses import dataclass
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from location import Store, Stash, Vendor, CorporateDepot, Dealer
 from generateRegion import get_regions_with_wealth
 
 # Path for saving generated store data
@@ -13,7 +17,7 @@ ITEM_POOLS = {
     "medium": ["Standard Food", "Stylish Clothing", "Electronics"],
     "high": ["Gourmet Food", "Designer Clothing", "Advanced Electronics"],
     "luxury": ["Exotic Food", "Luxury Clothing", "Cutting-Edge Gadgets"],
-}
+} #does not correlate with InWorldObjects,these objects have no data yet
 
 # Helper function to generate inventory based on wealth level
 def generate_inventory(wealth_level):

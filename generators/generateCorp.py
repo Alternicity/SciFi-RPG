@@ -1,34 +1,52 @@
 from distributions import generate_normal
 
-def generate_corporations(economic_level):
+def generate_corporations(economic_level, num_corporations=None):
     """
     Generate corporations based on the destination region's economic level, with variability in size and wealth.
-    
+
     Args:
         economic_level (int): The economic strength of the region.
+        num_corporations (int, optional): Specify the number of corporations to generate. 
+            If not provided, it is calculated based on the economic level.
 
     Returns:
         list: A list of dictionaries containing corporation information.
     """
+    if economic_level <= 0:
+        raise ValueError("Economic level must be a positive integer.")
+
+    # Determine the number of corporations if not explicitly provided
+    num_corporations = num_corporations or max(1, int(generate_normal(mean=economic_level, std_dev=1.5)))
+
     corporations = []
-    num_corporations = max(1, int(generate_normal(mean=economic_level, std_dev=1.5)))  # More corps for higher levels
 
     for i in range(num_corporations):
-        # Size variability: Larger regions can host larger corporations
+        # Calculate employees based on economic level with some variability
         employees = max(
-            20, 
+            20,  # Minimum number of employees
             int(generate_normal(mean=50 * economic_level, std_dev=10))
         )
-        # Wealth variability: Higher economic levels attract wealthier corporations
+
+        # Calculate wealth based on economic level with some variability
         wealth = max(
-            1000, 
+            1000,  # Minimum wealth
             int(generate_normal(mean=10000 * economic_level, std_dev=2000))
         )
+
+        # Append corporation details
         corporations.append({
-            "name": f"Corporation {i+1}",
+            "name": f"Corporation {i + 1}",
             "economic_level": economic_level,
             "employees": employees,
-            "wealth": wealth,  # Add wealth attribute
+            "wealth": wealth,
         })
-    
+
     return corporations
+
+# Example usage
+if __name__ == "__main__":
+    # Replace with the appropriate economic level for testing
+    test_economic_level = 3
+    generated_corporations = generate_corporations(economic_level=test_economic_level)
+    for corp in generated_corporations:
+        print(corp)

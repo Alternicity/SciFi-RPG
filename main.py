@@ -1,61 +1,61 @@
-import json
-import yaml
-import random
-from InWorldObjects import Pistol, Weapon, RangedWeapon, Medkit
-from characters import Character
-from inventory import Inventory
-from loader import load_data
-from generators.generateStore import generate_stores
-from store import Store, Vendor, CorporateDepot, Stash, Dealer
-from morale import adjust_morale
+import time
 import sys
+import os
+import logging
+# Add the project root to the system path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from generators.generate import generate_city_data  #Import the city generation function
+import curses
 
-# Load the city data
-city_data = {}
+print("Current Working Directory:", os.getcwd())
+# Setup logging for debugging and tracking progress
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-try:
-    with open('data/Locations/test_city.json', 'r') as f:
-        test_city_data = json.load(f)  # Should this utilize load_data?
-        city_data.update(test_city_data)
+def display_menu(stdscr):
+    stdscr.clear()  # Clear the screen
+    stdscr.addstr("Welcome to the RPG Generator!\n")
+    stdscr.addstr("1: Generate City\n")
+    stdscr.addstr("2: Placeholder\n")
+    stdscr.addstr("3: Exit\n")
+    stdscr.refresh()
 
-    with open('data/Locations/Southville.json', 'r') as f:
-        southville_data = json.load(f)
-        city_data.update(southville_data)
-except FileNotFoundError as e:
-    print(f"Error loading city data: {e}")
+def main(stdscr):
+    while True:
+        display_menu(stdscr)  # Display the menu in curses window
+        key = stdscr.getch()  # Get user input (single key press)
 
-
-def display_status():
-    print("City Status:")
-    for region, data in city_data.get("regions", {}).items():
-        print(f"\nRegion: {region}")
-        for faction in data.get("factions", []):
-            print(f"  Faction: {faction}")
-        for character in data.get("characters", []):
-            print(f"    {character['name']} - Loyalty: {character['loyalties'].get(faction, 0)}")
-
-
-def main():
-    # Placeholder for loading or generating characters
-    # This will be implemented in generateCharacters.py
-    # For now, we use manual test cases for characters
-
-    # Test character setup (to be replaced later)
-    john = Character(name="John", char_role="Employee", entity_id=1, wallet=500)
-    jane = Character(name="Jane", char_role="Employee", entity_id=2, wallet=10)
-
-    # Placeholder for store generation (to be replaced by generate_stores)
-    pistol = Pistol()
-    medkit = Medkit()
-
-    # Test buying items
-    john.buy(pistol)  # Should work, as the wallet is sufficient
-    john.buy(medkit)  # Should work, as the wallet still has money
-
-    jane.buy(pistol)  # Should fail, not enough money
-
-    # Display city status for debugging
-    display_status()
+        # Handle user input using ord() to detect keys
+        if key == ord('1'):
+            stdscr.clear()
+            stdscr.addstr("Starting city generation...\n")
+            stdscr.refresh()
+            try:
+                # Call the city generator function
+                generate_city_data()
+                stdscr.addstr("City generation complete.\n")
+            except Exception as e:
+                stdscr.addstr(f"Error generating city: {e}\n")
+            stdscr.refresh()
+            time.sleep(1)  # Adding a short delay to simulate processing
+        elif key == ord('2'):
+            stdscr.clear()
+            stdscr.addstr("Placeholder option selected.\n")
+            stdscr.refresh()
+            time.sleep(1)
+        elif key == ord('3'):
+            stdscr.clear()
+            stdscr.addstr("Exiting...\n")
+            stdscr.refresh()
+            break
+        else:
+            stdscr.clear()
+            stdscr.addstr("Invalid option. Please press 1, 2, or 3.\n")
+            stdscr.refresh()
+            time.sleep(1)
 
 if __name__ == "__main__":
-    main()
+    try:
+        curses.wrapper(main)
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        sys.exit(1)

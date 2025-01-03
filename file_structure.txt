@@ -27,10 +27,9 @@ Directory: .
   - simulate_day.py
   - store.py
   - tasks.py
-  - test json.py
-  - testDEL.py
   - utils.py
   - verify city data.py
+  - weapons.py
 Directory: ./data
   - civilians.yaml
   - events.json
@@ -70,8 +69,10 @@ Directory: ./deprecated
   - update loyalties.py
 Directory: ./generators
   - generate.py
+  - generateCharacters.py
   - generateCorp.py
   - generateEnrichment.py
+  - generateFactions.py
   - generateGang.py
   - generateLocation.py
   - generateRegion.py
