@@ -3,9 +3,13 @@ import string
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import List, Optional
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
 
 # Decorator definition (must be placed before the class definition)
-def check_entrance_state(func):
+""" def check_entrance_state(func):
     def wrapper(self, *args, **kwargs):
         if self.primary_entrance.state == "Open":  # Ensure entrance is open before calling function
             print(f"Access granted to {self.name}.")
@@ -13,14 +17,14 @@ def check_entrance_state(func):
         else:
             print(f"Access denied to {self.name}, entrance is closed.")
             return None  # or handle denied access differently
-    return wrapper
+    return wrapper """
 
 @dataclass
 class Location:
-    name: str
-    side: str
-    security_level: int
-    condition: str
+    name: str = "Unnamed Location"
+    side: str = "Unknown Side"
+    security_level: int = 0
+    condition: str = "Unknown Condition"
 
     fun: int = 0
     is_concrete: bool = False
@@ -36,7 +40,7 @@ class Location:
         print(f"Entrances added to {self.name}: {', '.join(entrances)}")
 
 # Decorator to check entrance state
-def check_entrance_state(func):
+""" def check_entrance_state(func):
     def wrapper(self, *args, **kwargs):
         if self.secret_entrance:
             print(f"Accessing secret entrance to {self.name}.")
@@ -44,7 +48,7 @@ def check_entrance_state(func):
         else:
             print(f"Secret entrance not available at {self.name}.")
             return None
-    return wrapper
+    return wrapper """
 
 @dataclass
 class HQ(Location):
@@ -55,11 +59,13 @@ class HQ(Location):
     entrances: List[str] = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
-    
-    def __post_init__(self):
+    is_powered: bool = False
+    energy_cost: int = 0
+
+    """ def __post_init__(self):
         # Any additional initialization logic
         print(f"Initialized HQ: {self.name}, Entrances: {', '.join(self.entrances)}")
-
+ """
 
 @dataclass
 class Vendor(Location):
@@ -80,6 +86,8 @@ class Shop(Vendor):
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
     # No need to define __init__; @dataclass handles it
     def sell_item(self, character, item):
@@ -95,6 +103,8 @@ class CorporateStore(Vendor):
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
     def sell_item(self, character, item):
         if character.status >= self.required_status:
@@ -106,14 +116,14 @@ class CorporateStore(Vendor):
         else:
             print(f"{character.name} does not have sufficient status to buy {item}")
 
-from typing import List
-
 @dataclass
 class RepairWorkshop(Location, ABC):
     materials_required: List[str] = field(default_factory=list)
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
     @abstractmethod
     def repair_item(self, item):
@@ -128,6 +138,8 @@ class MechanicalRepairWorkshop(RepairWorkshop):
     materials_required: List[str] = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
     def repair_item(self, item):
         print(f"Repairing mechanical item {item} at {self.name}.")
@@ -142,6 +154,8 @@ class ElectricalRepairWorkshop(RepairWorkshop):
     # Inherit materials_required from the parent class (RepairWorkshop)
     is_concrete: bool = True
     secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
     def repair_item(self, item):
         print(f"Repairing electrical item {item} at {self.name}.")
@@ -155,6 +169,8 @@ class Stash(Location):
     stored_items: List[str] = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
+    is_powered: bool = False
+    energy_cost: int = 0
 
     def store_item(self, item: str):
         self.stored_items.append(item)
@@ -176,6 +192,8 @@ class Factory(Location):
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
     def produce_goods(self):
         print(f"Factory at {self.name} is producing goods.")
@@ -193,35 +211,37 @@ class Nightclub(Location):
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
+    is_powered: bool = False
+    energy_cost: int = 0
 
-    def secret_entrance_decorator(self, func):
-        """Decorator method to allow access based on entrance state."""
-        def wrapper(*args, **kwargs):
-            if self.secret_entrance:
-                print("Access granted through the secret entrance.")
-                return func(*args, **kwargs)
-            else:
-                print("Secret entrance is not available.")
-                return None
-        return wrapper
+    """def secret_entrance_decorator(self, func):
+        Decorator method to allow access based on entrance state."""
+    """ def wrapper(*args, **kwargs):
+        if self.secret_entrance:
+            print("Access granted through the secret entrance.")
+            return func(*args, **kwargs)
+        else:
+            print("Secret entrance is not available.")
+            return None
+    return wrapper 
 
     @secret_entrance_decorator
     def access_secret_entrance(self):
-        print(f"{self.name} secret entrance accessed.")
+        print(f"{self.name} secret entrance accessed.")"""
 
 
 @dataclass
 class Mine(Location):
     name: str = "Typical Mine"
-    
-    fun: int = 1
-
+    fun: int = 0
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
+    is_powered: bool = False
+    energy_cost: int = 0
 
-    def secret_entrance_decorator(self, func):
-        """Decorator method to allow access based on entrance state."""
+    """ def secret_entrance_decorator(self, func):
+        Decorator method to allow access based on entrance state.
         def wrapper(*args, **kwargs):
             if self.secret_entrance:
                 print("Access granted through the secret entrance.")
@@ -229,26 +249,26 @@ class Mine(Location):
             else:
                 print("Secret entrance is not available.")
                 return None
-        return wrapper
+        return wrapper 
 
     @secret_entrance_decorator
     def access_secret_entrance(self):
-        print(f"{self.name} secret entrance accessed.")
+        print(f"{self.name} secret entrance accessed.")"""
 
 @dataclass
 class Powerplant(Location):
     name: str = "Le PowerPlant 1"
-    
     energy_output: int = 1000
-
     items_available: list = field(default_factory=list)
     connected_locations: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = -1
+    is_powered: bool = False
+    energy_cost: int = 0
 
-    def secret_entrance_decorator(self, func):
-        """Decorator method to allow access based on entrance state."""
+    """ def secret_entrance_decorator(self, func):
+        Decorator method to allow access based on entrance state.
         def wrapper(*args, **kwargs):
             if self.secret_entrance:
                 print("Access granted through the secret entrance.")
@@ -260,7 +280,7 @@ class Powerplant(Location):
 
     @secret_entrance_decorator
     def access_secret_entrance(self):
-        print(f"{self.name} secret entrance accessed.")
+        print(f"{self.name} secret entrance accessed.")"""
 
     def distribute_energy(self):
         energy_per_location = self.energy_output // len(self.connected_locations) if self.connected_locations else 0
@@ -284,18 +304,18 @@ class Powerplant(Location):
 @dataclass
 class Airport(Location):
     name: str = "Air Port 1"
-    
     connected_locations: list = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: dict = field(default_factory=dict)  # An empty dictionary, no materials
-
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = 0
+    is_powered: bool = False
+    energy_cost: int = 0
 
-    def secret_entrance_decorator(self, func):
-        """Decorator method to allow access based on entrance state."""
+    """ def secret_entrance_decorator(self, func):
+        Decorator method to allow access based on entrance state.
         def wrapper(*args, **kwargs):
             if self.secret_entrance:
                 print("Access granted through the secret entrance.")
@@ -303,11 +323,11 @@ class Airport(Location):
             else:
                 print("Secret entrance is not available.")
                 return None
-        return wrapper
+        return wrapper 
 
     @secret_entrance_decorator
     def access_secret_entrance(self):
-        print(f"{self.name} secret entrance accessed.")
+        print(f"{self.name} secret entrance accessed.")"""
 
     def import_materials(self, amount):
         if isinstance(amount, dict):  # Ensure amount is a dictionary
@@ -321,18 +341,18 @@ class Airport(Location):
 @dataclass
 class Port(Location):
     name: str = "Edge Port"
-    
     connected_locations: list = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: dict = field(default_factory=dict)  # An empty dictionary, no materials
-
     items_available: list = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = 0
+    is_powered: bool = False
+    energy_cost: int = 0
 
-    def secret_entrance_decorator(self, func):
-        """Decorator method to allow access based on entrance state."""
+    """ def secret_entrance_decorator(self, func):
+        Decorator method to allow access based on entrance state.
         def wrapper(*args, **kwargs):
             if self.secret_entrance:
                 print("Access granted through the secret entrance.")
@@ -340,11 +360,11 @@ class Port(Location):
             else:
                 print("Secret entrance is not available.")
                 return None
-        return wrapper
+        return wrapper 
 
     @secret_entrance_decorator
     def access_secret_entrance(self):
-        print(f"{self.name} secret entrance accessed.")
+        print(f"{self.name} secret entrance accessed.")"""
 
     def import_materials(self, amount):
         if isinstance(amount, dict):  # Ensure amount is a dictionary
@@ -355,19 +375,11 @@ class Port(Location):
         else:
             print("Error: 'amount' should be a dictionary of materials.")
 
-import logging
-
-# Setup logging
-logging.basicConfig(level=logging.INFO)
-
 @dataclass
 class Factory(Location):
     name: str = "Default Factory Name"
-    # (what is this?)
     raw_materials_needed: int = 100
     output_rate: int = 100
-    energy_needed: int = 100
-
     items_available: list = field(default_factory=list)
     workers_needed: int = 5
     workers_present: int = 0  # Updated dynamically
@@ -375,6 +387,8 @@ class Factory(Location):
     is_concrete: bool = True
     secret_entrance: bool = False
     fun: int = -1
+    is_powered: bool = False
+    energy_cost: int = 0
 
     def can_produce(self):
         """Check if the factory can produce goods."""
@@ -389,18 +403,18 @@ class Factory(Location):
         else:
             logging.warning(f"{self.name} cannot produce goods. Not enough workers, power, or raw materials.")
 
-from dataclasses import dataclass, field
-
 @dataclass
 class Cafe(Location):
-    name: str
-    location: str
-    security_level: int
-    upkeep: int
-    ambiance_level: int
-    fun: int
+    name: str = "Metro Cafe"
+    location: str = "North"
+    security_level: int = 1
+    upkeep: int = 50
+    ambiance_level: int = 1
+    fun: int = 1
     is_concrete: bool = True
     secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
     def serve_customer(self, character):
         """Serve a customer and increase their satisfaction based on ambiance and fun."""
@@ -415,36 +429,16 @@ class Cafe(Location):
         # Add more logic if you want to further interact with the customer based on the cafe's attributes.
 
 
-
+@dataclass
 class Park(Location):
-    def __init__(self, name, side, security_level, condition, fun, has_events=False, benches=0):
-        super().__init__(name, "Park", side, security_level, condition, fun)
-        self.has_events = has_events  # Whether there are events happening in the park
-        self.benches = benches  # Number of benches in the park
-        self.is_concrete = True
-        self.secret_entrance = False
-
-    def host_event(self):
-        """Host an event in the park, increasing the fun level."""
-        if self.has_events:
-            print(f"{self.name} is hosting an event! It increases fun for everyone.")
-            self.fun += 5  # Example: Increase fun for everyone at the park
-        else:
-            print(f"{self.name} is quiet today with no events.")
-    
-    def add_benches(self, num_benches):
-        """Add benches to the park to enhance the atmosphere."""
-        self.benches += num_benches
-        print(f"{num_benches} new benches have been added to {self.name}.")
-    
-    def park_condition(self):
-        """Display the condition of the park."""
-        if self.condition > 7:
-            print(f"{self.name} is in great condition!")
-        elif self.condition > 4:
-            print(f"{self.name} is in decent condition.")
-        else:
-            print(f"{self.name} is in poor condition and needs some maintenance.")
-
-
+    name: str = "Green Park"
+    location: str = "Central"
+    security_level: int = 0
+    upkeep: int = 50
+    ambiance_level: int = 1
+    fun: int = 1
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 

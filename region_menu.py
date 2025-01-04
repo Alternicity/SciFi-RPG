@@ -1,5 +1,5 @@
 from display import print_region_data  # Import from display.py
-from generators.generateRegion import generate_region  # Correct import statement
+from generators.generateRegions import generate_region  # Correct import statement
 
 
 def get_valid_input(prompt, min_value, max_value):

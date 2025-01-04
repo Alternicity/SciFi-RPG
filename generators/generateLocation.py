@@ -1,10 +1,8 @@
 def generate_locations(region_size: str):
     """
     Generate location data with variability in security levels and capacities.
-    
     Args:
-        region_size (str): The size of the region ('small', 'medium', 'large').
-
+        region_size (str): The size of the region ('small', 'medium', 'large')
     Returns:
         list: A list of dictionaries containing location information.
     """

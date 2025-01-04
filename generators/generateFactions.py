@@ -1,8 +1,7 @@
 import json
 import random
-from generateRegion import generate_region
-from generateCorps import generate_corps
-from generateGangs import generate_gangs
+from .generateCorps import generate_corporations
+from .generateGangs import generate_gangs
 
 def generate_factions():
     """

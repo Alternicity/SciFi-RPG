@@ -4,15 +4,13 @@
 There are now folders called Characters, Factions, Locations, Loyalties, Regions and Stores.
 Inside Factions are folders called Civilians, Corps, Gangs and The State.
 """
-
-# Import necessary generators
-from generators.generateLocation import generate_locations
-from generators.generateRegion import generate_region
-from generators.generateStore import generate_stores
-from generators.generateCharacters import generate_characters
+from .generateLocation import generate_locations
+from generators.generateRegions import generate_region
+from generators.generateShops import generate_shop
+from generators.generateCharacters import generate_character_data
 from generators.generateFactions import generate_factions
-from generators.generateGang import generate_gangs
-from generators.generateCorp import generate_corporations
+from generators.generateGangs import generate_gangs
+from generators.generateCorps import generate_corporations
 from generators.generateEnrichment import generate_enrichment
 import logging
 

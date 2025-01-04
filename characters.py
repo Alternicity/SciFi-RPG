@@ -117,14 +117,14 @@ class CEO(Character):
         print(f"{self.name} (CEO) issues directive: {directive}")
         self.directives.append(directive)
 
-class Captain(SubLeader):
+class Captain(Character):
     is_concrete = True
     def __init__(self, name, faction, **kwargs):
         super().__init__(
             name, faction=faction, char_role="Captain", status=Status.HIGH, **kwargs
         )
 
-class Manager(SubLeader):
+class Manager(Character):
     is_concrete = True
     def __init__(self, name, faction, **kwargs):
         super().__init__(

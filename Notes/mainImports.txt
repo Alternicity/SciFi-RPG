@@ -1,8 +1,20 @@
 mainImports
 
+pip install pyyaml
+pip install windows-curses
+
+
+
+
+
+
+
+
 import json
 import yaml
 import random
+windows-curses
+
 from InWorldObjects import Pistol, Weapon, RangedWeapon, Medkit
 from characters import Character
 from inventory import Inventory

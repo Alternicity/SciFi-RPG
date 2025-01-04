@@ -1,12 +1,10 @@
 from distributions import generate_normal
 
-def generateGang(danger_level: int):
+def generate_gangs(danger_level: int):
     """
     Generate gang data with variability in the number of gangs and their members.
-    
     Args:
-        danger_level (int): The overall danger level of the region.
-
+        danger_level (int): The overall danger level of the region
     Returns:
         list: A list of dictionaries containing gang information.
     """
