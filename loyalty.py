@@ -31,10 +31,12 @@ class Loyalty:
 
     def load_loyalty(self):
         # Specify the directory where loyalty data is saved
-        base_path = f"data/loyalties/{self.entity_id}"
+        base_path = f"data/loyalty/{self.entity_id}"
+
 
         # Define the file path for loading the loyalty data
-        file_path = os.path.join(base_path, "loyalty_data.json")
+        file_path = os.path.join(base_path, "loyalty.json")
+
 
         # Load the loyalty data if the file exists
         if os.path.exists(file_path):
@@ -70,45 +72,48 @@ def test_loyalty_system(character_registry):
     """Test the loyalty system with entity ID creation and loyalty manipulation."""
     loyalty_system = LoyaltySystem("Sample Region")
 
-    # Create or fetch character
-    character_registry = list_existing_characters(character_registry) or {}
+    # Fetch or create a character
+character_registry = list_existing_characters(character_registry) or {}
 
-    if not character_registry:
-        print("\nNo existing characters found. You will need to create a new one.")
-        entity_id = input(
-            "Enter a new entity ID (or press Enter to generate a random one): "
-        )
-        if not entity_id:
-            entity_id = generate_entity_id()
+# Check if the registry is empty and handle character creation
+if not character_registry:
+    print("\nNo existing characters found. You will need to create a new one.")
+    entity_id = input(
+        "Enter a new entity ID (or press Enter to generate a random one): "
+    )
+    if not entity_id:
+        entity_id = generate_entity_id()
+    character = create_character_if_needed(entity_id, character_registry)
+    loyalty_system.add_character(character)
+else:
+    # Fetch or create an existing character
+    entity_id = input(
+        "\nEnter the entity ID you want to interact with, or press Enter to create a new one: "
+    )
+
+    if not entity_id:
+        entity_id = generate_entity_id()
+        print(f"Generated entity ID: {entity_id}")
         character = create_character_if_needed(entity_id, character_registry)
         loyalty_system.add_character(character)
+    elif entity_id in character_registry:
+        character = character_registry[entity_id]
+        loyalty_system.add_character(character)
     else:
-        entity_id = input(
-            "\nEnter the entity ID you want to interact with, or press Enter to create a new one: "
-        )
+        print(f"Entity ID {entity_id} not found. Creating a new character...")
+        character = create_character_if_needed(entity_id, character_registry)
+        loyalty_system.add_character(character)
 
-        if not entity_id:
-            entity_id = generate_entity_id()
-            print(f"Generated entity ID: {entity_id}")
-            character = create_character_if_needed(entity_id, character_registry)
-            loyalty_system.add_character(character)
-        else:
-            if entity_id in character_registry:
-                character = character_registry[entity_id]
-                loyalty_system.add_character(character)
-            else:
-                print(f"Entity ID {entity_id} not found. Creating a new character...")
-                character = create_character_if_needed(entity_id, character_registry)
-                loyalty_system.add_character(character)
+# Now that the character is added, create and manage loyalty data
+loyalty = Loyalty(entity_id)
+loyalty.add_loyalty("FactionA", 80)
+loyalty.add_loyalty("FactionB", 60)
+print(f"Current loyalties for {entity_id}: {loyalty.display_loyalties()}")
 
-    loyalty = Loyalty(entity_id)
+# Save and load the loyalty data
+loyalty.save_loyalty()
+print(f"Loyalty data for {entity_id} saved.")
 
-    loyalty.add_loyalty("FactionA", 80)
-    loyalty.add_loyalty("FactionB", 60)
-    print(f"Current loyalties for {entity_id}: {loyalty.display_loyalties()}")
+loyalty.load_loyalty()
+print(f"Loyalty data for {entity_id} loaded: {loyalty.display_loyalties()}")
 
-    loyalty.save_loyalty()
-    print(f"Loyalty data for {entity_id} saved.")
-
-    loyalty.load_loyalty()
-    print(f"Loyalty data for {entity_id} loaded: {loyalty.display_loyalties()}")

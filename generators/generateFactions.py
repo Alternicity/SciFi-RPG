@@ -67,8 +67,11 @@ def generate_state(file_path="data/state.yaml", tax_rate=0.15, num_riot_cops=10)
         tax_rate (float): The tax rate applied by the State.
         num_riot_cops (int): The number of RiotCops to assign to the State.
     """
+
+    state_name = "The State"
+
     # Create a VIP character for the State
-    vip = VIP(name="State Leader", position="Governor", influence=90)
+    vip = VIP(name="State Leader", position="Governor", influence=90, faction=state_name)
 
     # Generate RiotCops
     riot_cops = [
@@ -78,7 +81,7 @@ def generate_state(file_path="data/state.yaml", tax_rate=0.15, num_riot_cops=10)
 
     # Define the State's details
     state_data = {
-        "name": "The State",
+        "name": state_name,
         "type": "corporation",
         "affiliation": "none",
         "resources": 10000,
@@ -92,6 +95,7 @@ def generate_state(file_path="data/state.yaml", tax_rate=0.15, num_riot_cops=10)
             "VIP": {
                 "name": vip.name,
                 "influence": vip.influence,
+                "faction": vip.faction,
             },
             "RiotCops": [
                 {"name": cop.name}
@@ -105,9 +109,3 @@ def generate_state(file_path="data/state.yaml", tax_rate=0.15, num_riot_cops=10)
         yaml.dump(state_data, file, default_flow_style=False)
     
     print(f"State data saved to {file_path}")
-
-# Example call
-generate_state()
-
-if __name__ == "__main__":
-    generate_factions()

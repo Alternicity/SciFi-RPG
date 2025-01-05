@@ -1,0 +1,4 @@
+I think display.py needs updating as the game has changed.
+The idea is that main valls display to output data to the user in tabular format, and will expan to include GUI code, or be the hub for GUI calls.
+
+Can we modify main and display to renew this functionality?
