@@ -1,12 +1,31 @@
-name: "The State"
-type: "corporation"
-affiliation: "none"
-resources: 10000
-laws: ["Law 1", "Law 2", "Law 3"]
+affiliation: none
 goals:
-  - goal: "retain dominance"
-    priority: "high"
-    reward: 2000
-  - goal: "extract value"
-    priority: "high"
-    reward: 1500
+- goal: retain dominance
+  priority: high
+  reward: 2000
+- goal: extract value
+  priority: high
+  reward: 1500
+laws:
+- Law 1
+- Law 2
+- Law 3
+name: The State
+personnel:
+  RiotCops:
+  - name: RiotCop_1
+  - name: RiotCop_2
+  - name: RiotCop_3
+  - name: RiotCop_4
+  - name: RiotCop_5
+  - name: RiotCop_6
+  - name: RiotCop_7
+  - name: RiotCop_8
+  - name: RiotCop_9
+  - name: RiotCop_10
+  VIP:
+    influence: 90
+    name: State Leader
+resources: 10000
+tax_rate: 0.15
+type: corporation

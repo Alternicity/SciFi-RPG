@@ -19,8 +19,8 @@ class Character:
     def __init__(
         self,
         name,
-        char_role,
-        entity_id,
+        entity_id=None,
+        char_role="Civilian",
         faction=None,
         strength=10,
         agility=10,
@@ -39,7 +39,11 @@ class Character:
         hunger=0,
         **kwargs,
     ):
-        # Your initialization code
+        
+        # Generate entity_id if not provided
+        entity_id = entity_id or f"{char_role.upper()}-{hash(name)}"
+
+        #initialization code
         self.current_location = None  # Tracks the character's location
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
@@ -96,7 +100,9 @@ class Character:
 # role-specific conditionals.
 class Boss(Character):
     is_concrete = True
-    def __init__(self, name, faction, **kwargs):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Crime Boss",):
+        
+        
         super().__init__(
             name, char_role="Boss", faction=faction, status=Status.ELITE, **kwargs
         )
@@ -107,7 +113,9 @@ class Boss(Character):
         self.directives = []  # List of high-level directives
 
 class CEO(Character):
-    def __init__(self, name, faction, **kwargs):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="CEO"):
+        
+        
         super().__init__(
             name, char_role="CEO", faction=faction, status=Status.ELITE, **kwargs
         )
@@ -119,27 +127,35 @@ class CEO(Character):
 
 class Captain(Character):
     is_concrete = True
-    def __init__(self, name, faction, **kwargs):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Ganger"):
+        
+        
         super().__init__(
             name, faction=faction, char_role="Captain", status=Status.HIGH, **kwargs
         )
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, faction, **kwargs):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Manager"):
+        
+        
         super().__init__(
             name, faction=faction, char_role="Manager", status=Status.HIGH, **kwargs
         )
 
 class Subordinate(Character):
     is_concrete = False
-    def __init__(self, name, faction, **kwargs):
-        super().__init__(name, faction=faction, **kwargs)
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Varies"):
+        
+        
+        super().__init__(name, char_role=char_role, faction=faction, **kwargs)
         self.tasks = []
 
 class Employee(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, **kwargs):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Employee"):
+        
+        
         super().__init__(
             name, char_role="Employee", faction=faction, status=Status.LOW, **kwargs
         )
@@ -154,10 +170,12 @@ class Employee(Subordinate):
 
 class CorporateSecurity(Subordinate):
     is_concrete = True
-    def __init__(self, name):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Security"):
+        
+        
         super().__init__(
             name,
-            "CorporateSecurity",
+            char_role=char_role,
             strength=15,
             agility=10,
             intelligence=5,
@@ -165,7 +183,7 @@ class CorporateSecurity(Subordinate):
             psy=0,
             toughness=5,
             morale=5,
-            race="human",
+            race="Terran",
         )
 
         self.pistolIsLoaded = True
@@ -178,10 +196,12 @@ class CorporateSecurity(Subordinate):
 
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
-    def __init__(self, name):
+    def __init__(self, name, entity_id=None, position="Unknown", char_role="Assassin"):
+        
+        
         super().__init__(
             name,
-            "CorporateAssasin",
+            char_role=char_role,
             strength=12,
             agility=13,
             intelligence=10,
@@ -189,7 +209,7 @@ class CorporateAssasin(CorporateSecurity):
             psy=0,
             toughness=5,
             morale=5,
-            race="human",
+            race="Terran",
         )
 
         self.rifleIsLoaded = True
@@ -204,10 +224,12 @@ class CorporateAssasin(CorporateSecurity):
 
 class GangMember(Subordinate):
     is_concrete = True
-    def __init__(self, name):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Ganger"):
+        
+        
         super().__init__(
             name,
-            "GangMember",
+            char_role=char_role,
             strength=12,
             agility=13,
             intelligence=5,
@@ -215,7 +237,7 @@ class GangMember(Subordinate):
             psy=0,
             toughness=8,
             morale=3,
-            race="human",
+            race="Terran",
         )
 
         self.pistolIsLoaded = False
@@ -227,13 +249,14 @@ class GangMember(Subordinate):
         self.cash = 50
         self.bankCardCash = 20
 
-
 class RiotCop(Character): #Subordintate? Of the state?
     is_concrete = True
-    def __init__(self, name):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Cop"):
+        
+        
         super().__init__(
             name,
-            "RiotCop",
+            char_role=char_role,
             strength=15,
             agility=4,
             intelligence=5,
@@ -241,7 +264,7 @@ class RiotCop(Character): #Subordintate? Of the state?
             psy=0,
             toughness=8,
             morale=8,
-            race="human",
+            race="Terran",
         )
 
         self.pistolIsLoaded = False
@@ -259,18 +282,22 @@ class RiotCop(Character): #Subordintate? Of the state?
 
 class Civilian(Character):
     is_concrete = True
-    def __init__(self, name):
+    def __init__(self, name, entity_id=None, position="Civilian", char_role="Civilian", strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, race="Terran"):
+        
+        
+        
         super().__init__(
             name,
-            "Civilian",
-            strength=12,
-            agility=10,
-            intelligence=10,
-            luck=0,
-            psy=0,
-            toughness=3,
-            morale=2,
-            race="human",
+            char_role=char_role,
+            position=position,  # Ensure position is passed to the Character constructor
+            strength=strength,
+            agility=agility,
+            intelligence=intelligence,
+            luck=luck,
+            psy=psy,
+            toughness=toughness,
+            morale=morale,
+            race=race,
         )
 
         self.pistolIsLoaded = False
@@ -282,25 +309,30 @@ class Civilian(Character):
 
 class VIP(Civilian):
     is_concrete = True
-    def __init__(self, name):
+    def __init__(self, name, entity_id=None, position="Mayor", char_role="Civilian", 
+        influence=0, strength=18, agility=10, intelligence=15, 
+        luck=0, psy=0, toughness=5, morale=7, race="Terran"):
+        
+        
         super().__init__(
             name,
-            "VIP",
-            strength=18,
-            agility=10,
-            intelligence=15,
-            luck=0,
-            psy=0,
-            toughness=5,
-            morale=7,
-            race="human",
+            char_role=char_role,
+            position=position,  # Ensure position is passed correctly
+            strength=strength,
+            agility=agility,
+            intelligence=intelligence,
+            luck=luck,
+            psy=psy,
+            toughness=toughness,
+            morale=morale,
+            race=race,
         )
-
+        self.influence = influence
         self.pistolIsLoaded = False
         self.pistolCurrentAmmo = 0
         self.targetIsInMelee = False
         self.tazerCharge = 0
-        self.cash = 50
+        self.cash = 500
         self.bankCardCash = 10000
         self.health = 120 + toughness
 

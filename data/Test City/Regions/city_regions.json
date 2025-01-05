@@ -1,0 +1,371 @@
+{
+    "North": {
+        "wealth": "Rich",
+        "locations": [
+            {
+                "name": "Shop_2335",
+                "type": "Shop",
+                "security": "Medium",
+                "upkeep": "High",
+                "entrances": 3,
+                "secret_entrances": false
+            },
+            {
+                "name": "Shop_5067",
+                "type": "Shop",
+                "security": "High",
+                "upkeep": "Medium",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Shop_1919",
+                "type": "Shop",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 3,
+                "secret_entrances": false
+            },
+            {
+                "name": "Cafe_7475",
+                "type": "Cafe",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Cafe_3584",
+                "type": "Cafe",
+                "security": "Medium",
+                "upkeep": "Medium",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Nightclub_8403",
+                "type": "Nightclub",
+                "security": "Medium",
+                "upkeep": "Medium",
+                "entrances": 1,
+                "secret_entrances": false
+            },
+            {
+                "name": "Nightclub_8818",
+                "type": "Nightclub",
+                "security": "Low",
+                "upkeep": "Medium",
+                "entrances": 3,
+                "secret_entrances": false
+            },
+            {
+                "name": "Warehouse_3726",
+                "type": "Warehouse",
+                "security": "High",
+                "upkeep": "Low",
+                "entrances": 2,
+                "secret_entrances": false
+            },
+            {
+                "name": "Warehouse_8948",
+                "type": "Warehouse",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 3,
+                "secret_entrances": false
+            }
+        ]
+    },
+    "South": {
+        "wealth": "Poor",
+        "locations": [
+            {
+                "name": "Shop_7637",
+                "type": "Shop",
+                "security": "Medium",
+                "upkeep": "High",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Shop_8353",
+                "type": "Shop",
+                "security": "Low",
+                "upkeep": "High",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "HQ_3921",
+                "type": "HQ",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 3,
+                "secret_entrances": true
+            },
+            {
+                "name": "HQ_5264",
+                "type": "HQ",
+                "security": "High",
+                "upkeep": "High",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "HQ_3595",
+                "type": "HQ",
+                "security": "Low",
+                "upkeep": "Medium",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "Factory_1079",
+                "type": "Factory",
+                "security": "High",
+                "upkeep": "Low",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Nightclub_4319",
+                "type": "Nightclub",
+                "security": "Medium",
+                "upkeep": "High",
+                "entrances": 3,
+                "secret_entrances": true
+            },
+            {
+                "name": "Nightclub_5054",
+                "type": "Nightclub",
+                "security": "High",
+                "upkeep": "High",
+                "entrances": 2,
+                "secret_entrances": false
+            },
+            {
+                "name": "Nightclub_4233",
+                "type": "Nightclub",
+                "security": "Low",
+                "upkeep": "Medium",
+                "entrances": 1,
+                "secret_entrances": false
+            }
+        ]
+    },
+    "East": {
+        "wealth": "Poor",
+        "locations": [
+            {
+                "name": "Cafe_2343",
+                "type": "Cafe",
+                "security": "High",
+                "upkeep": "Low",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "Cafe_5939",
+                "type": "Cafe",
+                "security": "Medium",
+                "upkeep": "Medium",
+                "entrances": 3,
+                "secret_entrances": true
+            },
+            {
+                "name": "Cafe_9173",
+                "type": "Cafe",
+                "security": "High",
+                "upkeep": "Low",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Sports Centre_4854",
+                "type": "Sports Centre",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Sports Centre_9619",
+                "type": "Sports Centre",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "Sports Centre_9127",
+                "type": "Sports Centre",
+                "security": "High",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "Warehouse_9387",
+                "type": "Warehouse",
+                "security": "Low",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": false
+            },
+            {
+                "name": "Research Lab_4302",
+                "type": "Research Lab",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 2,
+                "secret_entrances": true
+            }
+        ]
+    },
+    "West": {
+        "wealth": "Poor",
+        "locations": [
+            {
+                "name": "HQ_8453",
+                "type": "HQ",
+                "security": "Medium",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "HQ_3689",
+                "type": "HQ",
+                "security": "Medium",
+                "upkeep": "Medium",
+                "entrances": 2,
+                "secret_entrances": false
+            },
+            {
+                "name": "Cafe_3020",
+                "type": "Cafe",
+                "security": "Low",
+                "upkeep": "Low",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "Cafe_6614",
+                "type": "Cafe",
+                "security": "Low",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": false
+            },
+            {
+                "name": "Shop_3109",
+                "type": "Shop",
+                "security": "High",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "Shop_4914",
+                "type": "Shop",
+                "security": "High",
+                "upkeep": "Low",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Shop_8899",
+                "type": "Shop",
+                "security": "Low",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": true
+            },
+            {
+                "name": "Nightclub_1172",
+                "type": "Nightclub",
+                "security": "Low",
+                "upkeep": "High",
+                "entrances": 3,
+                "secret_entrances": false
+            },
+            {
+                "name": "Nightclub_7477",
+                "type": "Nightclub",
+                "security": "Medium",
+                "upkeep": "Medium",
+                "entrances": 3,
+                "secret_entrances": true
+            }
+        ]
+    },
+    "Central": {
+        "wealth": "Normal",
+        "locations": [
+            {
+                "name": "HQ_5745",
+                "type": "HQ",
+                "security": "Low",
+                "upkeep": "Medium",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "HQ_8689",
+                "type": "HQ",
+                "security": "Low",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": false
+            },
+            {
+                "name": "Museum_3794",
+                "type": "Museum",
+                "security": "High",
+                "upkeep": "High",
+                "entrances": 1,
+                "secret_entrances": false
+            },
+            {
+                "name": "Museum_7000",
+                "type": "Museum",
+                "security": "Low",
+                "upkeep": "Medium",
+                "entrances": 1,
+                "secret_entrances": false
+            },
+            {
+                "name": "Museum_9419",
+                "type": "Museum",
+                "security": "Medium",
+                "upkeep": "Medium",
+                "entrances": 2,
+                "secret_entrances": true
+            },
+            {
+                "name": "Power Plant_2574",
+                "type": "Power Plant",
+                "security": "High",
+                "upkeep": "High",
+                "entrances": 2,
+                "secret_entrances": false
+            },
+            {
+                "name": "Repair Workshops_8360",
+                "type": "Repair Workshops",
+                "security": "Medium",
+                "upkeep": "High",
+                "entrances": 2,
+                "secret_entrances": false
+            },
+            {
+                "name": "Repair Workshops_1420",
+                "type": "Repair Workshops",
+                "security": "Medium",
+                "upkeep": "Low",
+                "entrances": 1,
+                "secret_entrances": true
+            }
+        ]
+    }
+}

@@ -1,0 +1,8 @@
+git status
+git add .
+git commit -m "Comment"
+
+
+git push -u origin main
+OR
+git push
