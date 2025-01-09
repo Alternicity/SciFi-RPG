@@ -1,6 +1,6 @@
 #deprecated code from charaters.py
 
-Corporate Assassin basic weapons
+Corporate Assasin basic weapons
         self.weapons = {
             "rifle": {"isArmed": True, "ammo": 30},
             "pistol": {"isArmed": True, "ammo": 30},

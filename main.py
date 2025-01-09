@@ -9,7 +9,7 @@ from generators.generateCharacters import generate_character_data
 import curses
 from characters import Character
 import json
-from characters import Boss, Captain, Employee, VIP, RiotCop
+from characters import Boss, Captain, Employee, VIP, RiotCop, CorporateAssasin, Employee, GangMember, CEO, Manager, CorporateSecurity, Civilian
 
 
 print("Current Working Directory:", os.getcwd())
@@ -90,12 +90,38 @@ def load_characters_and_generate_if_empty(file_path):
     return characters
 
 def display_menu(stdscr):
+    """
+    Main menu to manage game functionality.
+    """
     stdscr.clear()
-    stdscr.addstr("Welcome to the RPG Generator!\n")
-    stdscr.addstr("1: Generate City\n")
-    stdscr.addstr("2: Choose Character\n")
-    stdscr.addstr("3: Exit\n")
+    stdscr.addstr("=== Main Menu ===\n")
+    stdscr.addstr("1: Create Characters (Game Objects)\n")
+    stdscr.addstr("2: Create Characters (Serialized Data)\n")
+    stdscr.addstr("3: Load Serialized Characters\n")
+    stdscr.addstr("4: Play/Test Game\n")
+    stdscr.addstr("5: Exit\n")
     stdscr.refresh()
+
+    while True:
+        key = stdscr.getch()
+        try:
+            choice = int(chr(key))
+            if choice == 1:
+                create_characters_as_objects()
+            elif choice == 2:
+                create_and_serialize_characters()
+            elif choice == 3:
+                characters = load_serialized_characters()
+                play_game_with_characters(characters)
+            elif choice == 4:
+                play_game_with_characters(None)  # Use in-memory characters
+            elif choice == 5:
+                break
+            else:
+                stdscr.addstr("Invalid choice. Please select a valid option.\n")
+        except ValueError:
+            stdscr.addstr("Invalid input. Please press a valid number.\n")
+        stdscr.refresh()
 
 def choose_character_menu(stdscr, characters):
     """
@@ -137,6 +163,46 @@ def choose_character_menu(stdscr, characters):
         except (ValueError, IndexError):
             stdscr.addstr("Invalid input. Please press a valid number.\n")
         stdscr.refresh()
+
+def create_characters_as_objects():
+    characters = [
+        RiotCop(name="John", faction="The State"),
+        CorporateAssasin(name="Jane", faction="BlueCorp"),
+    ]
+    logging.info(f"Created characters: {characters}")
+    return characters
+
+def create_and_serialize_characters():
+    characters = [
+        RiotCop(name="John", faction="The State"),
+        CorporateAssasin(name="Jane", faction="BlueCorp"),
+    ]
+    with open("characters.json", "w") as f:
+        json.dump([char.__dict__ for char in characters], f, indent=4)
+    logging.info("Characters serialized to characters.json")
+
+def load_serialized_characters():
+    try:
+        with open("characters.json", "r") as f:
+            data = json.load(f)
+        characters = [Character(**char_data) for char_data in data]
+        logging.info(f"Loaded characters: {characters}")
+        return characters
+    except FileNotFoundError:
+        logging.error("No serialized character data found.")
+        return []
+    except Exception as e:
+        logging.error(f"Error loading serialized characters: {e}")
+        return []
+
+def play_game_with_characters(characters):
+    if characters is None:
+        logging.info("Playing game with in-memory characters...")
+    else:
+        logging.info("Playing game with loaded characters...")
+    # Placeholder for actual game logic
+    pass
+
 
 def main(stdscr):
     
