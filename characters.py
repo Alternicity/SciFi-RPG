@@ -201,9 +201,7 @@ class Manager(Character):
 
 class Subordinate(Character):
     is_concrete = False
-    def __init__(self, name, faction, strength, agility, intelligence, luck, psy, entity_id=None, position="Civilian", char_role="Varies", loyalties=None, **kwargs):
-        
-        # Default loyalty setup for Subordinate
+    def __init__(self, name, faction, strength, agility, intelligence, luck, psy, toughness, morale, race, entity_id=None, position="Civilian", char_role="Varies", loyalties=None, **kwargs):
         default_loyalties = {
             faction: 20,
             "Law": 20,  # Meh, whatever
@@ -211,16 +209,14 @@ class Subordinate(Character):
         # Merge defaults with provided loyalties
         if loyalties:
             default_loyalties.update(loyalties)
-        
-        super().__init__(name, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, entity_id=entity_id, char_role=char_role, loyalties=default_loyalties, **kwargs)
+        super().__init__(name, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race="Terran", entity_id=entity_id, char_role=char_role, loyalties=default_loyalties, **kwargs)
         self.tasks = []
-        
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
 
 class Employee(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, entity_id=None, position="Civilian", char_role="Employee", loyalties=None, **kwargs):
+    def __init__(self, name, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, race="Terran", entity_id=None, position="Civilian", char_role="Employee", loyalties=None, **kwargs):
         
         # Default loyalty setup for Employee
         default_loyalties = {
@@ -232,7 +228,7 @@ class Employee(Subordinate):
             default_loyalties.update(loyalties)
         
         super().__init__(
-            name, faction=faction, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, entity_id=entity_id, char_role="Employee", status=Status.LOW, loyalties=default_loyalties, **kwargs
+            name, faction=faction, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, entity_id=entity_id, char_role="Employee", status=Status.LOW, loyalties=default_loyalties, **kwargs
         )
         
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
@@ -240,7 +236,7 @@ class Employee(Subordinate):
 
 class CorporateSecurity(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, entity_id=None, position="Civilian", char_role="Security", loyalties=None, **kwargs):
+    def __init__(self, name, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, toughness=13, morale=11, race="Terran", entity_id=None, position="Civilian", char_role="Security", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateSecurity
         default_loyalties = {
@@ -261,9 +257,9 @@ class CorporateSecurity(Subordinate):
             intelligence=intelligence,
             luck=luck,
             psy=psy,
-            toughness=5,
-            morale=5,
-            race="Terran",
+            toughness=toughness,
+            morale=morale,
+            race=race,
             loyalties=default_loyalties,
             **kwargs
         )
@@ -279,7 +275,7 @@ class CorporateSecurity(Subordinate):
 
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
-    def __init__(self, name, faction,  strength=12, agility=15, intelligence=15, entity_id=None, position="Unknown", char_role="Assasin", loyalties=None, **kwargs):
+    def __init__(self, name, faction,  strength=12, agility=15, intelligence=15, toughness=13, morale=13, race="Terran", entity_id=None, position="Unknown", char_role="Assasin", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateAssasin
         default_loyalties = {
@@ -300,9 +296,9 @@ class CorporateAssasin(CorporateSecurity):
             intelligence=intelligence,
             luck=0,
             psy=0,
-            toughness=5,
-            morale=5,
-            race="Terran",
+            toughness=toughness,
+            morale=morale,
+            race=race,
             loyalties=default_loyalties,
             **kwargs
         )
@@ -320,7 +316,7 @@ class CorporateAssasin(CorporateSecurity):
 
 class GangMember(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, strength=12, agility=11, intelligence=7, luck=9, psy=2, entity_id=None, position="Civilian", char_role="Ganger", loyalties=None, **kwargs):
+    def __init__(self, name, faction, strength=12, agility=11, intelligence=7, luck=9, psy=2, toughness=14, morale=12, race="Terran", entity_id=None, position="Civilian", char_role="Ganger", loyalties=None, **kwargs):
 
     # Default loyalty setup for GangMember
         default_loyalties = {
@@ -341,9 +337,9 @@ class GangMember(Subordinate):
             intelligence=intelligence,
             luck=luck,
             psy=psy,
-            toughness=8,
-            morale=3,
-            race="Terran",
+            toughness=toughness,
+            morale=morale,
+            race=race,
             loyalties=default_loyalties,
             **kwargs
         )
@@ -361,7 +357,7 @@ class GangMember(Subordinate):
 
 class RiotCop(Character): #Subordinate? Of the state?
     is_concrete = True
-    def __init__(self, name, faction="The State", entity_id=None, position="Civilian", char_role="Cop", loyalties=None, **kwargs):
+    def __init__(self, name, faction="The State", toughness=14, entity_id=None, position="Civilian", char_role="Cop", loyalties=None, **kwargs):
 
     # Default loyalty setup for RiotCop
         default_loyalties = {
@@ -382,7 +378,7 @@ class RiotCop(Character): #Subordinate? Of the state?
             intelligence=5,
             luck=0,
             psy=0,
-            toughness=8,
+            toughness=toughness,
             morale=8,
             race="Terran",
             loyalties=default_loyalties,

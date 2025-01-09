@@ -1,11 +1,12 @@
+#Temp paste of old display.py
+
 import curses
 from tabulate import tabulate
 from characters import Character
 import logging
 import time
-from create import create_characters_as_objects
 
-def display_menu(stdscr, characters):
+def display_menu(stdscr):
     """
     Main menu to manage game functionality.
     """
