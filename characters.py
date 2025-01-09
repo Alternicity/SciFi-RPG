@@ -111,7 +111,7 @@ class Character:
 # role-specific conditionals.
 class Boss(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Crime Boss", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Crime Boss", loyalties=None, **kwargs):
         
         # Default loyalty setup for Boss
         default_loyalties = {
@@ -136,7 +136,7 @@ class Boss(Character):
         self.directives = []  # List of high-level directives
 
 class CEO(Character):
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="CEO", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="CEO", loyalties=None, **kwargs):
         
         # Default loyalty setup for CEO
         default_loyalties = {
@@ -161,7 +161,7 @@ class CEO(Character):
 
 class Captain(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Ganger", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Ganger", loyalties=None, **kwargs):
         
         # Default loyalty setup for Captain
         default_loyalties = {
@@ -181,7 +181,7 @@ class Captain(Character):
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Manager", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Manager", loyalties=None, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -201,7 +201,7 @@ class Manager(Character):
 
 class Subordinate(Character):
     is_concrete = False
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Varies", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Varies", loyalties=None, **kwargs):
         
         # Default loyalty setup for Subordinate
         default_loyalties = {
@@ -220,7 +220,7 @@ class Subordinate(Character):
 
 class Employee(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Employee", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Employee", loyalties=None, **kwargs):
         
         # Default loyalty setup for Employee
         default_loyalties = {
@@ -240,7 +240,7 @@ class Employee(Subordinate):
 
 class CorporateSecurity(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Security", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Security", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateSecurity
         default_loyalties = {
@@ -279,7 +279,7 @@ class CorporateSecurity(Subordinate):
 
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Unknown", char_role="Assassin", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Unknown", char_role="Assassin", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateAssasin
         default_loyalties = {
@@ -320,7 +320,7 @@ class CorporateAssasin(CorporateSecurity):
 
 class GangMember(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Ganger", loyalties=None):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Ganger", loyalties=None, **kwargs):
 
     # Default loyalty setup for GangMember
         default_loyalties = {
@@ -359,9 +359,9 @@ class GangMember(Subordinate):
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
 
-class RiotCop(Character): #Subordintate? Of the state?
+class RiotCop(Character): #Subordinate? Of the state?
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Cop", loyalties=None):
+    def __init__(self, name, faction="The State", entity_id=None, position="Civilian", char_role="Cop", loyalties=None, **kwargs):
 
     # Default loyalty setup for RiotCop
         default_loyalties = {
@@ -406,7 +406,7 @@ class RiotCop(Character): #Subordintate? Of the state?
 
 class Civilian(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Civilian", loyalties=None, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, race="Terran"):
+    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Civilian", loyalties=None, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, race="Terran", **kwargs):
 
     # Default loyalty setup for Civilian
         default_loyalties = {
@@ -447,7 +447,7 @@ class VIP(Civilian):
     is_concrete = True
     def __init__(self, name, faction, entity_id=None, position="Mayor", char_role="Civilian", loyalties=None,
         influence=0, strength=18, agility=10, intelligence=15, 
-        luck=0, psy=0, toughness=5, morale=7, race="Terran"):
+        luck=0, psy=0, toughness=5, morale=7, race="Terran", **kwargs):
         
         # Default loyalty setup for VIP
         default_loyalties = {

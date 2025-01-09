@@ -1,0 +1,104 @@
+[
+    {
+        "name": "Park",
+        "security_level": "Low",
+        "condition": "Well Maintained",
+        "fun": 5,
+        "required_workers": 0,
+        "primary_entrance": "Main Gate",
+        "secondary_entrance": "Side Path",
+        "secret_entrance": "Underground Tunnel",
+        "district": "East Side"
+    },
+    {
+        "name": "Warehouse",
+        "security_level": "Medium",
+        "condition": "Operational",
+        "required_workers": 10,
+        "primary_entrance": "Loading Bay",
+        "secondary_entrance": "Service Door",
+        "secret_entrance": null,
+        "district": "East Side"
+    },
+    {
+        "name": "Nightclub",
+        "security_level": "Medium",
+        "condition": "Well Maintained",
+        "fun": 7,
+        "required_workers": 5,
+        "primary_entrance": "Main Door",
+        "secondary_entrance": "VIP Entrance",
+        "secret_entrance": "Rooftop Ladder",
+        "district": "West Side"
+    },
+    {
+        "name": "Shop",
+        "security_level": "Low",
+        "condition": "Operational",
+        "fun": 2,
+        "required_workers": 3,
+        "profit_margin": 15,
+        "district": "West Side"
+    },
+    {
+        "name": "Holotheatre",
+        "security_level": "Medium",
+        "condition": "High-Tech",
+        "fun": 10,
+        "required_workers": 8,
+        "primary_entrance": "Main Entrance",
+        "secondary_entrance": null,
+        "secret_entrance": "Service Elevator",
+        "district": "City Centre"
+    },
+    {
+        "name": "Museum",
+        "security_level": "High",
+        "condition": "Excellent",
+        "fun": 9,
+        "required_workers": 12,
+        "primary_entrance": "Front Door",
+        "secondary_entrance": "Staff Entrance",
+        "secret_entrance": null,
+        "district": "City Centre"
+    },
+    {
+        "name": "Power Plant",
+        "security_level": "High",
+        "condition": "Operational",
+        "required_workers": 15,
+        "energy_output": 200,
+        "connected_locations": [
+            "Factory",
+            "Nightclub",
+            "Holotheatre"
+        ],
+        "district": "NorthVille"
+    },
+    {
+        "name": "Factory",
+        "security_level": "Medium",
+        "condition": "Operational",
+        "required_workers": 5,
+        "raw_materials_needed": 10,
+        "output_rate": 3,
+        "energy_needed": 5,
+        "district": "NorthVille"
+    },
+    {
+        "name": "Sports Centre",
+        "security_level": "Low",
+        "condition": "Well Maintained",
+        "fun": 4,
+        "required_workers": 2,
+        "district": "SouthVille"
+    },
+    {
+        "name": "Brothel",
+        "security_level": "Low",
+        "condition": "Poor",
+        "fun": 3,
+        "required_workers": 5,
+        "district": "SouthVille"
+    }
+]

@@ -9,6 +9,8 @@ from generators.generateCharacters import generate_character_data
 import curses
 from characters import Character
 import json
+from characters import Boss, Captain, Employee, VIP, RiotCop
+
 
 print("Current Working Directory:", os.getcwd())
 # Setup logging for debugging and tracking progress
@@ -58,10 +60,19 @@ def generate_and_save_characters(file_path, num_characters=5):
         file_path (str): The path to the character JSON file.
         num_characters (int): Number of characters to generate.
     """
-    characters = generate_character_data(num_characters)  # Generate characters (adjust function as needed)
-    with open(file_path, 'w') as f:
-        json.dump(characters, f, indent=4)
-    logging.info(f"Generated and saved {num_characters} characters to {file_path}.")
+    # Generate a list of Character objects
+    try:
+        characters = [
+            Boss(name="Big Boss", faction="Blue Gang"),
+            Captain(name="Blue Captain", faction="Blue Gang"),
+            Employee(name="Corporate Employee", faction="Blue Corporation"),
+            VIP(name="VIP", faction="Elite Corporation"),
+            RiotCop(name="Cop One"),
+        ]
+    except Exception as e:
+        logging.error(f"Error while generating characters: {e}")
+    #logging.debug(f"Serializing character: {character.name}, {type(character).__name__}")
+    
 
 def load_characters_and_generate_if_empty(file_path):
     """
@@ -97,7 +108,7 @@ def choose_character_menu(stdscr, characters):
     """
     stdscr.clear()
     if not characters:
-        stdscr.addstr("No characters available. Generating new characters...\n")
+        stdscr.addstr("No characters available. Generating new characters... (chooseCharacter menu)\n")
         stdscr.refresh()
         time.sleep(2)  # Simulate loading delay
         return None
@@ -118,6 +129,7 @@ def choose_character_menu(stdscr, characters):
                 logging.debug(f"Selected character data: {selected_character_data}")
                 
                 selected_character = Character(**selected_character_data)
+                logging.debug(f"Selected character data: {selected_character_data}")
                 print(f"Character object created: {selected_character.name} (Role: {selected_character.char_role})")
                 return selected_character
             else:
@@ -127,6 +139,8 @@ def choose_character_menu(stdscr, characters):
         stdscr.refresh()
 
 def main(stdscr):
+    
+
     characters_file_path = r"data\Test City\Characters\characters.json"
     
     # Ensure the file exists before attempting to load it

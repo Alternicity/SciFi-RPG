@@ -27,6 +27,9 @@ def generate_character_data(character):
     if not character.entity_id:
         character.entity_id = generate_entity_id()
 
+    logging.debug(f"Serializing character: {character.name}, {type(character).__name__}")
+    # Ensure all attributes are serialized properly
+
     """Convert character object to a dictionary for JSON serialization."""
     return {
         "name": character.name,

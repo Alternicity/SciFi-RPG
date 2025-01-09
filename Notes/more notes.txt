@@ -1,0 +1,13 @@
+
+
+The Class create_character_if_needed contains this line:
+character_registry[entity_id] = character
+
+Could this be the the cause of the problem?
+
+My understanding of this line is that it is looking at the entry in the list character_registry for the entity_id and assigning character to it?
+
+Doesn't the character_registry need to be a dictionary of key value pairs?
+Each entry being a entity_id paired with a character name?
+
+
