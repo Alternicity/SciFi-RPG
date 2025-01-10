@@ -6,3 +6,10 @@ git commit -m "Comment"
 git push -u origin main
 OR
 git push
+
+
+https://raw.githubusercontent.com/Alternicity/SciFi-RPG/refs/heads/main/main.py
+
+create_characters_as_objects
+create_and_serialize_characters
+create_object

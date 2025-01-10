@@ -1,5 +1,6 @@
 import logging
 import json
+#from display import list_characters
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
@@ -7,15 +8,6 @@ logging.basicConfig(
     level=logging.INFO,  # Or DEBUG, WARNING, ERROR as needed
     format="%(levelname)s:%(message)s"
 )
-
-def create_characters_as_objects():
-    logging.info("About to create characters, create_characters_as_objects, create.py")
-    characters = [
-        RiotCop(name="John", faction="The State"),
-        CorporateAssasin(name="Jane", faction="BlueCorp"),
-    ]
-    logging.info(f"Created characters: {characters}")
-    return characters
 
 def create_and_serialize_characters():
     characters = [

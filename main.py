@@ -13,9 +13,8 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                            CEO, Manager, CorporateSecurity, Civilian)
 from utils import (ensure_file_exists, load_characters_and_generate_if_empty,
                     load_characters_and_generate_if_empty, generate_and_save_characters)
-import curses
-from create import create_characters_as_objects, create_and_serialize_characters
-
+#from create import create_characters_as_objects, create_and_serialize_characters
+import display
 print("Current Working Directory:", os.getcwd())
 # Setup logging for debugging and tracking progress
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -44,7 +43,7 @@ def play_game_with_characters(characters):
     # Placeholder for actual game logic
     pass
 
-def main(stdscr):
+def main():
     
     characters_file_path = r"data\Test City\Characters\characters.json"
     
@@ -59,11 +58,7 @@ def main(stdscr):
     logging.debug(f"Loaded characters: {characters}")
     #current_character = None
 
-    display_menu(stdscr, characters)
+    display_menu(characters)
 
 if __name__ == "__main__":
-    try:
-        curses.wrapper(main)
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-        sys.exit(1)
+    main()  # Call the main function to start the program

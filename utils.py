@@ -7,6 +7,26 @@ logger = logging.getLogger(__name__)
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
+
+def create_characters_as_objects():
+    logging.info("Creating characters as objects..")
+    characters = [
+        #CorporateAssasin(name="Jane", faction="BlueCorp"),
+        Civilian(name="Vihaan", faction="None"),
+        VIP(name="Bashar", faction="The State"),
+        #CorporateSecurity(name="John", faction="BlueCorp"),
+        #RiotCop(name="Cletus", faction="The State"),
+        #CEO(name="Terrence", faction="BlueCorp"),
+        #Boss(name="Soren", faction="White Gang"),
+        #Captain(name="Sven", faction="White Gang"),
+        #GangMember(name="Swiz", faction="White Gang"),
+        #Employee(name="Susana", faction="BlueCorp"),
+        Manager(name="Carolina", faction="BlueCorp"),
+    ]
+    logging.info(f"Created characters: {characters}")
+    return characters
+
+
 #from main.py
 def ensure_file_exists(file_path, default_data=None):
     """
@@ -75,7 +95,7 @@ def load_characters_and_generate_if_empty(file_path):
     """
     characters = load_characters_from_file(file_path)
     if not characters:
-        logging.info("No characters found. Generating new characters...")
+        logging.info("No characters found. Generating new characters, from util.py")
         generate_and_save_characters(file_path)
         characters = load_characters_from_file(file_path)  # Reload after generation
     return characters
@@ -121,13 +141,4 @@ def create_item(data): #Might still be useful, but need updating
 
 
 
-    def list_existing_characters(character_registry):
-        """Display a list of existing characters and their entity IDs."""
-        if not character_registry:
-            print("No existing characters.")
-            return None
     
-    for character in character_registry:
-        print(f"Character ID: {character.entity_id}, Name: {character.name}")
-    
-    return character_registry

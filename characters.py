@@ -348,7 +348,7 @@ class GangMember(Subordinate):
         self.pistolCurrentAmmo = 0
         self.tazerCharge = 0
         self.targetIsInMelee = False
-        self.gangMembership = Blue
+        self.gangMembership = "Blue"
         self.isAggressive = False
         self.cash = 50
         self.bankCardCash = 20
