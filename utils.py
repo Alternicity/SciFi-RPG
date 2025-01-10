@@ -11,9 +11,10 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
 def create_characters_as_objects():
     logging.info("Creating characters as objects..")
     characters = [
+        VIP(name="Jurgen", bankCardCash=10000, faction="The State"),  # Custom bankCardCash
+        Manager(name="Carolina", faction="BlueCorp"),
         #CorporateAssasin(name="Jane", faction="BlueCorp"),
-        Civilian(name="Vihaan", faction="None"),
-        VIP(name="Bashar", faction="The State"),
+        #Civilian(name="Vihaan", bankCardCash), # ATTN!
         #CorporateSecurity(name="John", faction="BlueCorp"),
         #RiotCop(name="Cletus", faction="The State"),
         #CEO(name="Terrence", faction="BlueCorp"),
@@ -21,7 +22,7 @@ def create_characters_as_objects():
         #Captain(name="Sven", faction="White Gang"),
         #GangMember(name="Swiz", faction="White Gang"),
         #Employee(name="Susana", faction="BlueCorp"),
-        Manager(name="Carolina", faction="BlueCorp"),
+        
     ]
     logging.info(f"Created characters: {characters}")
     return characters

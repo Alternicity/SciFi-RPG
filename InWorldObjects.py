@@ -73,21 +73,21 @@ class CashWad(ObjectInWorld):
 
 class Wallet:
     is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, cash=0, bank_card_cash=0):
+    def __init__(self, cash=0, bankCardCash=0):
         self.cash = cash  # Cash for normal purchases (or black market)
-        self.bank_card_cash = bank_card_cash  # Cash available via bank card
+        self.bankCardCash = bankCardCash  # Cash available via bank card
 
     def total_balance(self):
         """Return the total money in the wallet (cash + bank card balance)."""
-        return self.cash + self.bank_card_cash
+        return self.cash + self.bankCardCash
 
     def add_cash(self, amount):
         """Add cash to the wallet."""
         self.cash += amount
 
-    def add_bank_card_cash(self, amount):
+    def add_bankCardCash(self, amount):
         """Add money to the bank card balance."""
-        self.bank_card_cash += amount
+        self.bankCardCash += amount
 
     def spend_cash(self, amount):
         """Spend cash, return True if successful, False if not enough."""
@@ -96,10 +96,10 @@ class Wallet:
             return True
         return False
 
-    def spend_bank_card_cash(self, amount):
+    def spend_bankCardCash(self, amount):
         """Spend bank card cash, return True if successful, False if not enough."""
-        if self.bank_card_cash >= amount:
-            self.bank_card_cash -= amount
+        if self.bankCardCash >= amount:
+            self.bankCardCash -= amount
             return True
         return False
 

@@ -55,7 +55,7 @@ def generate_shop():
             elif shope_type == "CorporateDepot":
                 sshop = CorporateDepot(name=f"Corp Depot {i+1}", corporation=f"Corp_{region}")
             elif shop_type == "Dealer":
-                shop = Dealer(name=f"Dealer {i+1}", gang_affiliation=f"Gang_{region}", cash=500, bank_card_cash=1000)
+                shop = Dealer(name=f"Dealer {i+1}", gang_affiliation=f"Gang_{region}", cash=500, bankCardCash=1000)
             else:
                 shop = Shop(name=f"Generic Shop {i+1}")
 
@@ -69,7 +69,7 @@ def generate_shop():
                 "region": region,
                 "inventory": Shop.inventory.items,
                 "cash": shop.cash,
-                "bank_card_cash": Shop.bank_card_cash,
+                "bankCardCash": Shop.bankCardCash,
                 "legality": Shop.legality,
                 "security": Shop.security,
             }

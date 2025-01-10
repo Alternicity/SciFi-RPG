@@ -102,7 +102,6 @@ def main():
 
         if choice == "1":
             display_factions_data()  # Call the function to display factions data
-
         elif choice == "2":
             display_state_data()  # Call the function to display state data
         elif choice == "3":

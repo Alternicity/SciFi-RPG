@@ -13,13 +13,17 @@ class Character:
 
     VALID_SEXES = ("male", "female")  # Class-level constant
     VALID_RACES = ("Terran", "Martian")  # Class-level constant
-    
+    bank_card_cash: int = 0
+    fun: int = 0
+    hunger: int = 0
+
     #common attributes (e.g., name, age, health) remain in the base class
     is_concrete = False
     def __init__(
         self,
         name,
         entity_id,
+        bankCardCash=0,
         char_role="Civilian",
         faction=None,
         strength=10,
@@ -32,10 +36,7 @@ class Character:
         race="Terran",
         sex="male",
         status=None,
-        loyalties=None,  # Default is None; initializes as a dictionary later        cash=0,
-        bank_card_cash=0,
-        fun=0,
-        hunger=0,
+        loyalties=None,  # Default is None; initializes as a dictionary later
         **kwargs,
     ):
         
@@ -43,11 +44,11 @@ class Character:
         entity_id = entity_id or f"{char_role.upper()}-{hash(name)}"
 
         #initialization code
+        self.name = name
         self.current_location = None  # Tracks the character's location
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
         self.name = name
-        self.char_role = "default_role"
         self.faction = faction
         self.strength = strength
         self.agility = agility
@@ -85,14 +86,21 @@ class Character:
         self.toughness = toughness
         self.morale = morale
         self.health = 100 + toughness
-        self.wallet = Wallet(cash=50, bank_card_cash=100)  # Initialize with some default values
+        self.bankCardCash = bankCardCash
+        #self.wallet = Wallet(cash=50, bankCardCash=100)  # Initialize with some default values
+        self.fun = kwargs.get("fun", self.fun)
+        self.hunger = kwargs.get("hunger", self.hunger)
+        self.char_role = char_role
+        
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory        self.char_role = char_role
         self.status = status  # LOW, MID, HIGH, ELITE
-        self.inventory = kwargs.get("inventory", [])
+        self.inventory = kwargs.get("inventory", []) #!!!!
         # Initialize loyalties as a dictionary
         self.loyalties = loyalties or {}
+
     def __repr__(self):
-        return f"{self.name} ({self.char_role}, {self.faction})"
+        return f"{self.name} (Faction: {self.faction}, Cash: {self.bankCardCash}, fun: {self.fun}, Hunger: {self.hunger})"
+    
     def get_loyalty(self, group):
         """
         Get the loyalty level to a specific group. Returns 0 if the group is not in the dictionary.
@@ -181,7 +189,7 @@ class Captain(Character):
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Manager", loyalties=None, **kwargs):
+    def __init__(self, name, faction="None", entity_id=None, bankCardCash=500, position="Manager", char_role="Manager", loyalties=None, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -193,11 +201,14 @@ class Manager(Character):
             default_loyalties.update(loyalties)
         
         super().__init__(
-            name, faction=faction, entity_id=entity_id, char_role="Manager", status=Status.HIGH, loyalties=default_loyalties, **kwargs
+            name, faction=faction, entity_id=entity_id, char_role="Manager", bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, **kwargs
         )
-        
+        self.position = position
+
+        self.bankCardCash = bankCardCash
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        
+    def __repr__(self):
+        return f"{self.name} (Manager, {self.faction}, bankCardCash={self.bankCardCash}, fun: {self.fun}, Hunger: {self.hunger})"
 
 class Subordinate(Character):
     is_concrete = False
@@ -402,7 +413,7 @@ class RiotCop(Character): #Subordinate? Of the state?
 
 class Civilian(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Civilian", loyalties=None, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, race="Terran", **kwargs):
+    def __init__(self, name, faction="None", entity_id=None, position="Civilian", char_role="Civilian", loyalties=None, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, race="Terran", **kwargs):
 
     # Default loyalty setup for Civilian
         default_loyalties = {
@@ -430,7 +441,8 @@ class Civilian(Character):
             loyalties=default_loyalties,
             **kwargs
         )
-        
+        self.position = position
+
         self.pistolIsLoaded = False
         self.pistolCurrentAmmo = 0
         self.targetIsInMelee = False
@@ -441,7 +453,7 @@ class Civilian(Character):
 
 class VIP(Civilian):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Mayor", char_role="Civilian", loyalties=None,
+    def __init__(self, name, faction="None", bankCardCash=10000, entity_id=None, position="Mayor", char_role="Civilian", loyalties=None,
         influence=0, strength=18, agility=10, intelligence=15, 
         luck=0, psy=0, toughness=5, morale=7, race="Terran", **kwargs):
         
@@ -469,6 +481,7 @@ class VIP(Civilian):
             morale=morale,
             race=race,
             loyalties=default_loyalties,
+            bankCardCash=bankCardCash,
             **kwargs
         )
         
@@ -478,10 +491,13 @@ class VIP(Civilian):
         self.targetIsInMelee = False
         self.tazerCharge = 0
         self.cash = 500
-        self.bankCardCash = 10000
+        self.bankCardCash = bankCardCash  # Redundant but ensures it's explicitly set for VIP
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        
+        self.position = position
+
+        def __repr__(self):
+            return f"{self.name} (VIP, {self.faction}, bankCardCash={self.bankCardCash}, fun: {self.fun}, Hunger: {self.hunger})"
 
 def create_character_if_needed(entity_id, character_registry):
     """Create or fetch a character based on entity ID."""
@@ -505,7 +521,7 @@ def create_character_if_needed(entity_id, character_registry):
     # Debugging the registry update
 
     def debug_character(char):
-        print(f"DEBUG: {char.name} - Money: {char.wallet}, Fun: {char.fun}, Hunger: {char.hunger}")
+        print(f"DEBUG: {char.name} - Money: {char.wallet}, fun: {char.fun}, Hunger: {char.hunger}")
 
         print(f"Updated Character Registry: {character_registry}")  # <-- Add this
     return character

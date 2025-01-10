@@ -5,7 +5,7 @@ import random
 
 class Store:
     def __init__(
-        self, name, legality=True, cash=100, bank_card_cash=1000, security=None
+        self, name, legality=True, cash=100, bankCardCash=1000, security=None
     ):
 
         self.name = name
@@ -13,7 +13,7 @@ class Store:
         self.cash = cash
         self.legality = legality
         self.cash = cash
-        self.bank_card_cash = bank_card_cash
+        self.bankCardCash = bankCardCash
         self.security = security if security else []
 
     def sell_item(self, buyer, item, price):
@@ -66,8 +66,8 @@ class Vendor(Store):
 
 
 class CorporateDepot(Store):
-    def __init__(self, name, corporation, cash=5000, bank_card_cash=1000):
-        super().__init__(name, legality=True, cash=cash, bank_card_cash=bank_card_cash)
+    def __init__(self, name, corporation, cash=5000, bankCardCash=1000):
+        super().__init__(name, legality=True, cash=cash, bankCardCash=bankCardCash)
         self.corporation = corporation
 
     def issue_item(
@@ -89,8 +89,8 @@ class CorporateDepot(Store):
 
 
 class Dealer(Store):
-    def __init__(self, name, gang_affiliation, cash, bank_card_cash):
-        super().__init__(name, legality=False, cash=cash, bank_card_cash=bank_card_cash)
+    def __init__(self, name, gang_affiliation, cash, bankCardCash):
+        super().__init__(name, legality=False, cash=cash, bankCardCash=bankCardCash)
         self.gang_affiliation = gang_affiliation
 
     def issue_item(self, receiver, item, price=None):

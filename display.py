@@ -52,12 +52,17 @@ def list_characters(characters):
 
     # Prepare the character data for tabulation
     character_data = [
-        [character.name, character.faction]
+        [
+            character.name,
+            getattr(character, "faction", "N/A"),  # Use "N/A" if faction is missing
+            getattr(character, "bankCardCash", "N/A"),  # Use "N/A" if bankCardCash is missing
+        ]
         for character in characters
     ]
 
+
     # Create a table with headers
-    headers = ["Name", "Faction"]
+    headers = ["Name", "Faction", "bankCardCash"]
     table = tabulate(character_data, headers, tablefmt="grid")
 
     # Print the table

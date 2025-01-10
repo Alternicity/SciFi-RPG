@@ -50,7 +50,7 @@ def generate_character_data(character):
         "inventory": [str(item) for item in character.inventory],  # Convert inventory items to strings
         "wallet": {
             "cash": character.wallet.cash,
-            "bank_card_cash": character.wallet.bank_card_cash,
+            "bankCardCash": character.wallet.bankCardCash,
         },
     }
 

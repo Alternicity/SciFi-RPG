@@ -64,12 +64,12 @@ lucy.status = "high"
 
 # Stores
 dealer_store = Dealer(
-    name="Red Dealer", gang_affiliation="Red", cash=500, bank_card_cash=1000
+    name="Red Dealer", gang_affiliation="Red", cash=500, bankCardCash=1000
 )
 corporate_depot = CorporateDepot(
-    name="Hannival Depot", corporation="Hannival", cash=1000, bank_card_cash=5000
+    name="Hannival Depot", corporation="Hannival", cash=1000, bankCardCash=5000
 )
-vendor_store = Vendor(name="City Vendor", cash=200, bank_card_cash=300)
+vendor_store = Vendor(name="City Vendor", cash=200, bankCardCash=300)
 
 print(f"\nStores created:")
 print(f"- {dealer_store.name}, gang affiliation: {dealer_store.gang_affiliation}")

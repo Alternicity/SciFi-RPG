@@ -88,7 +88,7 @@ def calculate_item_cost(self, item):
     def make_normal_purchase(self, amount, use_bank_card=False):
         """Make a normal purchase, either using cash or bank card."""
         if use_bank_card:
-            if self.wallet.spend_bank_card_cash(amount):
+            if self.wallet.spend_bankCardCash(amount):
                 print(f"Purchase of {amount} using bank card successful.")
             else:
                 print(f"Not enough bank card balance for purchase.")
@@ -106,7 +106,7 @@ def calculate_item_cost(self, item):
     def print_wallet(self):
         """Print the wallet's current balance (for debugging purposes)."""
         print(f"Cash in wallet: {self.wallet.cash}")
-        print(f"Bank card balance: {self.wallet.bank_card_cash}")
+        print(f"Bank card balance: {self.wallet.bankCardCash}")
 
         #possibly deprecated function, pasted here
     def get_total_money(self):
