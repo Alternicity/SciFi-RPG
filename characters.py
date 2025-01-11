@@ -13,9 +13,6 @@ class Character:
 
     VALID_SEXES = ("male", "female")  # Class-level constant
     VALID_RACES = ("Terran", "Martian")  # Class-level constant
-    bank_card_cash: int = 0
-    fun: int = 0
-    hunger: int = 0
 
     #common attributes (e.g., name, age, health) remain in the base class
     is_concrete = False
@@ -24,6 +21,8 @@ class Character:
         name,
         entity_id,
         bankCardCash=0,
+        fun=0,
+        hunger=0,
         char_role="Civilian",
         faction=None,
         strength=10,
@@ -49,6 +48,8 @@ class Character:
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
         self.name = name
+        self.fun = fun  # Default value of 0
+        self.hunger = hunger
         self.faction = faction
         self.strength = strength
         self.agility = agility
@@ -88,18 +89,19 @@ class Character:
         self.health = 100 + toughness
         self.bankCardCash = bankCardCash
         #self.wallet = Wallet(cash=50, bankCardCash=100)  # Initialize with some default values
-        self.fun = kwargs.get("fun", self.fun)
-        self.hunger = kwargs.get("hunger", self.hunger)
         self.char_role = char_role
-        
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory        self.char_role = char_role
         self.status = status  # LOW, MID, HIGH, ELITE
         self.inventory = kwargs.get("inventory", []) #!!!!
         # Initialize loyalties as a dictionary
         self.loyalties = loyalties or {}
 
+        # Handle other attributes from kwargs
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
     def __repr__(self):
-        return f"{self.name} (Faction: {self.faction}, Cash: {self.bankCardCash}, fun: {self.fun}, Hunger: {self.hunger})"
+        return f"{self.name} (Faction: {self.faction}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
     
     def get_loyalty(self, group):
         """
@@ -137,6 +139,9 @@ class Boss(Character):
         
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
+        def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
 
 
     def issue_directive(self, directive):
@@ -162,6 +167,9 @@ class CEO(Character):
         
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
+        def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
 
     def issue_directive(self, directive):
         print(f"{self.name} (CEO) issues directive: {directive}")
@@ -185,11 +193,14 @@ class Captain(Character):
         )
         
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        
+
+        def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, faction="None", entity_id=None, bankCardCash=500, position="Manager", char_role="Manager", loyalties=None, **kwargs):
+    def __init__(self, name, faction="None", entity_id=None, bankCardCash=500, position="Manager", char_role="Manager", loyalties=None, fun=0, hunger=0, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -201,15 +212,17 @@ class Manager(Character):
             default_loyalties.update(loyalties)
         
         super().__init__(
-            name, faction=faction, entity_id=entity_id, char_role="Manager", bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, **kwargs
+            name, faction=faction, entity_id=entity_id, char_role="Manager", bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            hunger=hunger, **kwargs
         )
         self.position = position
-
         self.bankCardCash = bankCardCash
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+    
     def __repr__(self):
-        return f"{self.name} (Manager, {self.faction}, bankCardCash={self.bankCardCash}, fun: {self.fun}, Hunger: {self.hunger})"
-
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
+    
 class Subordinate(Character):
     is_concrete = False
     def __init__(self, name, faction, strength, agility, intelligence, luck, psy, toughness, morale, race, entity_id=None, position="Civilian", char_role="Varies", loyalties=None, **kwargs):
@@ -244,6 +257,9 @@ class Employee(Subordinate):
         
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
+        def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
 
 class CorporateSecurity(Subordinate):
     is_concrete = True
@@ -283,6 +299,9 @@ class CorporateSecurity(Subordinate):
         self.bankCardCash = 100
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
+        def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
 
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
@@ -365,10 +384,13 @@ class GangMember(Subordinate):
         self.bankCardCash = 20
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
+        def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
 
 class RiotCop(Character): #Subordinate? Of the state?
     is_concrete = True
-    def __init__(self, name, faction="The State", toughness=14, entity_id=None, position="Civilian", char_role="Cop", loyalties=None, **kwargs):
+    def __init__(self, name, faction="The State", bankCardCash=300, entity_id=None, position="Pig", char_role="Civilian", toughness=14, loyalties=None, fun=0, hunger=0, **kwargs):
 
     # Default loyalty setup for RiotCop
         default_loyalties = {
@@ -382,6 +404,8 @@ class RiotCop(Character): #Subordinate? Of the state?
         super().__init__(
             name,
             faction=faction,
+            fun=0,
+            hunger=0,
             entity_id=entity_id, 
             char_role=char_role,
             strength=15,
@@ -409,7 +433,10 @@ class RiotCop(Character): #Subordinate? Of the state?
         self.cash = 50
         self.bankCardCash = 300
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        
+
+        def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
 
 class Civilian(Character):
     is_concrete = True
@@ -455,7 +482,7 @@ class VIP(Civilian):
     is_concrete = True
     def __init__(self, name, faction="None", bankCardCash=10000, entity_id=None, position="Mayor", char_role="Civilian", loyalties=None,
         influence=0, strength=18, agility=10, intelligence=15, 
-        luck=0, psy=0, toughness=5, morale=7, race="Terran", **kwargs):
+        luck=0, psy=0, toughness=5, morale=7, race="Terran", fun=0, hunger=0, **kwargs):
         
         # Default loyalty setup for VIP
         default_loyalties = {
@@ -469,6 +496,8 @@ class VIP(Civilian):
         super().__init__(
             name,
             faction=faction,
+            fun=fun,
+            hunger=hunger,
             entity_id=entity_id, 
             char_role=char_role,
             position=position,  # Ensure position is passed correctly
@@ -497,8 +526,9 @@ class VIP(Civilian):
         self.position = position
 
         def __repr__(self):
-            return f"{self.name} (VIP, {self.faction}, bankCardCash={self.bankCardCash}, fun: {self.fun}, Hunger: {self.hunger})"
-
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"
+    
 def create_character_if_needed(entity_id, character_registry):
     """Create or fetch a character based on entity ID."""
     if entity_id is None:

@@ -7,26 +7,31 @@ logger = logging.getLogger(__name__)
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
+import tabulate
+def list_characters(characters):
+    """
+    Display a list of existing characters in a table format.
+    """
+    print("Listing Characters, list_characters().")
 
-def create_characters_as_objects():
-    logging.info("Creating characters as objects..")
-    characters = [
-        VIP(name="Jurgen", bankCardCash=10000, faction="The State"),  # Custom bankCardCash
-        Manager(name="Carolina", faction="BlueCorp"),
-        #CorporateAssasin(name="Jane", faction="BlueCorp"),
-        #Civilian(name="Vihaan", bankCardCash), # ATTN!
-        #CorporateSecurity(name="John", faction="BlueCorp"),
-        #RiotCop(name="Cletus", faction="The State"),
-        #CEO(name="Terrence", faction="BlueCorp"),
-        #Boss(name="Soren", faction="White Gang"),
-        #Captain(name="Sven", faction="White Gang"),
-        #GangMember(name="Swiz", faction="White Gang"),
-        #Employee(name="Susana", faction="BlueCorp"),
-        
+    if not characters:
+        print("No existing characters.")
+        return
+
+    # Extract data from object instances
+    table_data = [
+        [
+            char.name,
+            char.char_role,
+            char.faction,
+            char.bankCardCash,
+            char.fun,
+            char.hunger,
+        ]
+        for char in characters
     ]
-    logging.info(f"Created characters: {characters}")
-    return characters
-
+    headers = ["Name", "Role", "Faction", "Bank Card Cash", "Fun", "Hunger"]
+    return tabulate.tabulate(table_data, headers=headers, tablefmt="fancy_grid")
 
 #from main.py
 def ensure_file_exists(file_path, default_data=None):

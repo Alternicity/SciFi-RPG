@@ -45,20 +45,18 @@ def play_game_with_characters(characters):
 
 def main():
     
-    characters_file_path = r"data\Test City\Characters\characters.json"
-    
+    #characters_file_path = r"data\Test City\Characters\characters.json"
     # Ensure the file exists before attempting to load it
-    ensure_file_exists(characters_file_path, default_data=[])  # Default to an empty list for characters
-
+    #ensure_file_exists(characters_file_path, default_data=[])  # Default to an empty list for characters
     # Load characters from the file
     #characters = load_characters_from_file(characters_file_path)
-
     # Load characters, generating them if the file is empty
-    characters = load_characters_and_generate_if_empty(characters_file_path)
-    logging.debug(f"Loaded characters: {characters}")
+    #characters = load_characters_and_generate_if_empty(characters_file_path)
+    #logging.debug(f"Loaded characters: {characters}")
     #current_character = None
 
-    display_menu(characters)
+    
+    display_menu()
 
 if __name__ == "__main__":
     main()  # Call the main function to start the program
