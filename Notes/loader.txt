@@ -7,7 +7,7 @@ from loader import load_data
 At some point yourecomended that loading serializewd data should be handled by a function init's own file. I'd like to update main to use that and now seems good.
 
 I'd also like to remove character data from test_city and store it in a file called 
-scifi RPG\data\Test City\Characters\charactes.json
+scifiRPG\data\Test City\Characters\charactes.json
 test_city.json should really point to the folder Test City which contains folders:
 
 

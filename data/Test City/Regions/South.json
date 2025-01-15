@@ -1,0 +1,182 @@
+{
+    "wealth": "Poor",
+    "locations": [
+        {
+            "name": "Shop_3652",
+            "side": "Unknown Side",
+            "security": {
+                "level": 2,
+                "guards": [
+                    "Basic Guard",
+                    "Basic Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 10,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 98,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "HQ_3526",
+            "side": "Unknown Side",
+            "security": {
+                "level": 5,
+                "guards": [
+                    "Basic Guard",
+                    "Basic Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 8,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 1,
+            "upkeep": 51,
+            "items_available": [],
+            "resource_storage": {},
+            "special_features": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Factory_2404",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 5,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": -1,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 28,
+            "raw_materials_needed": 100,
+            "output_rate": 100,
+            "items_available": [],
+            "workers_needed": 5,
+            "workers_present": 0,
+            "products": 0,
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Factory_1661",
+            "side": "Unknown Side",
+            "security": {
+                "level": 5,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 10,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": -1,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 3,
+            "upkeep": 100,
+            "raw_materials_needed": 100,
+            "output_rate": 100,
+            "items_available": [],
+            "workers_needed": 5,
+            "workers_present": 0,
+            "products": 0,
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Nightclub_8248",
+            "side": "Unknown Side",
+            "security": {
+                "level": 2,
+                "guards": [
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 10,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 3,
+            "upkeep": 88,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Nightclub_4574",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Basic Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 9,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 3,
+            "upkeep": 73,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Powerplant_2039",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 6,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": -1,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 3,
+            "upkeep": 92,
+            "energy_output": 1000,
+            "items_available": [],
+            "connected_locations": [],
+            "is_powered": false,
+            "energy_cost": 0
+        }
+    ]
+}

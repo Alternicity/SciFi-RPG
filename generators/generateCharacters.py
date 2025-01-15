@@ -12,7 +12,7 @@ from characters import Character, Boss, Captain, Manager, Employee, Civilian, VI
 #Python knows to look in the root directory for the common.py and characters.py files.
 
 # Directory to save character data
-OUTPUT_DIR = r"C:\Users\Stuart\Python Scripts\scifi RPG\data\Test City\Characters"
+OUTPUT_DIR = r"C:\Users\Stuart\Python Scripts\scifiRPG\data\Test City\Characters"
 DEFAULT_OUTPUT_FILE = os.path.join(OUTPUT_DIR, "characters.json")
 
 # Ensure the output directory exists

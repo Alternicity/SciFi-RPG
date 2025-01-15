@@ -1,0 +1,92 @@
+[
+    {
+        "type": "Shop",
+        "fun": 2,
+        "name": "Shop_East_1",
+        "items_available": [
+            {
+                "item": "Used Electronics",
+                "price": 81
+            },
+            {
+                "item": "Basic Food",
+                "price": 37
+            },
+            {
+                "item": "Basic Food",
+                "price": 12
+            },
+            {
+                "item": "Basic Food",
+                "price": 15
+            },
+            {
+                "item": "Basic Food",
+                "price": 63
+            },
+            {
+                "item": "Basic Food",
+                "price": 19
+            },
+            {
+                "item": "Cheap Clothing",
+                "price": 91
+            }
+        ],
+        "upkeep": 23,
+        "is_concrete": true,
+        "secret_entrance": false,
+        "is_powered": true,
+        "energy_cost": 3,
+        "security": {
+            "level": 5,
+            "guards": [
+                "Elite Guard",
+                "Elite Guard",
+                "Elite Guard"
+            ],
+            "difficulty_to_break_in": 7,
+            "surveillance": false,
+            "alarm_system": true
+        }
+    },
+    {
+        "type": "Shop",
+        "fun": 2,
+        "name": "Shop_East_2",
+        "items_available": [
+            {
+                "item": "Used Electronics",
+                "price": 80
+            },
+            {
+                "item": "Cheap Clothing",
+                "price": 82
+            },
+            {
+                "item": "Used Electronics",
+                "price": 40
+            },
+            {
+                "item": "Used Electronics",
+                "price": 69
+            }
+        ],
+        "upkeep": 40,
+        "is_concrete": true,
+        "secret_entrance": true,
+        "is_powered": false,
+        "energy_cost": 4,
+        "security": {
+            "level": 4,
+            "guards": [
+                "Elite Guard",
+                "Elite Guard",
+                "Basic Guard"
+            ],
+            "difficulty_to_break_in": 8,
+            "surveillance": true,
+            "alarm_system": false
+        }
+    }
+]

@@ -1,9 +1,18 @@
-# generateRegion.py
-# Generates city regions and assigns locations within them.
-
 import random
 import json
+import os
 
+import sys
+import os
+
+# Add the project root directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from location import (
+    HQ, Shop, CorporateStore, MechanicalRepairWorkshop, ElectricalRepairWorkshop, Stash,
+    Factory, Nightclub, Mine, Powerplant, Airport, Port, Cafe, Park, Museum, Library
+)
+from location_security import Security
 def generate_region():
     """
     Generate city regions, assign them specific locations, 
@@ -17,53 +26,61 @@ def generate_region():
 
     # Define types of locations that may be generated within each region
     region_types = {
-        'North': ['Shop', 'Cafe', 'Nightclub', 'Warehouse'],
-        'South': ['Shop', 'HQ', 'Factory', 'Nightclub'],
-        'East': ['Cafe', 'Sports Centre', 'Warehouse', 'Research Lab'],
-        'West': ['HQ', 'Cafe', 'Shop', 'Nightclub'],
-        'Central': ['HQ', 'Museum', 'Power Plant', 'Repair Workshops']
+        'North': [Shop, Cafe, Nightclub, Stash, Park],
+        'South': [Shop, HQ, Factory, Nightclub, Powerplant],
+        'East': [Cafe, MechanicalRepairWorkshop, ElectricalRepairWorkshop, Mine, Airport],
+        'West': [HQ, Cafe, CorporateStore, Stash, Nightclub],
+        'Central': [HQ, CorporateStore, Museum, ElectricalRepairWorkshop, Shop, Library],
     }
 
     # Define possible wealth levels for regions
     wealth_levels = ['Rich', 'Normal', 'Poor']
 
-    # Locations data structure for storing regions and their locations
-    city_regions = {}
+    # Ensure no ports are in the Central region
+    region_types['Central'] = [loc for loc in region_types['Central'] if loc != Port]
 
-    # Assign locations and wealth levels to each region
+    # Directory for output files
+    output_dir = r'C:\Users\Stuart\Python Scripts\scifiRPG\data\Test City\Regions'
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Generate and serialize data for each region
     for region in regions:
-        city_regions[region] = {
+        region_data = {
             'wealth': random.choice(wealth_levels),
             'locations': []
         }
 
-        # Ensure no ports are in the Central region
-        if region == 'Central':
-            location_types = [location for location in region_types[region] if location != 'Port']
-        else:
-            location_types = region_types[region]
-
-        # Randomly assign locations to each region
-        for location_type in location_types:
-            num_locations = random.randint(1, 3)  # Number of locations to generate per region
+        # Instantiate location objects
+        for loc_class in region_types[region]:
+            num_locations = random.randint(1, 3)  # Number of locations per type
             for _ in range(num_locations):
-                location_name = f"{location_type}_{random.randint(1000, 9999)}"
-                city_regions[region]['locations'].append({
-                    'name': location_name,
-                    'type': location_type,
-                    'security': random.choice(['Low', 'Medium', 'High']),
-                    'upkeep': random.choice(['Low', 'Medium', 'High']),
-                    'entrances': random.randint(1, 3),
-                    'secret_entrances': random.choice([True, False]),
-                })
+                location = loc_class(
+                    name=f"{loc_class.__name__}_{random.randint(1000, 9999)}",
+                    security=Security(
+                        level=random.randint(1, 5),
+                        guards=random.choices(["Basic Guard", "Elite Guard"], k=random.randint(1, 3)),
+                        difficulty_to_break_in=random.randint(1, 10),
+                        surveillance=random.choice([True, False]),
+                        alarm_system=random.choice([True, False])
+    ),
+                    
+                    entrance=random.randint(1, 3),
+                    secret_entrance=random.choice([True, False]),
+                    upkeep=random.randint(10, 100)  # This is fine because upkeep is defined in the base class
+                )
+                # Serialize location attributes
+                region_data['locations'].append(location.to_dict())
 
-    # Serialize the city regions data to a JSON file
-    output_file = r'C:\Users\Stuart\Python Scripts\scifi RPG\data\Test City\Regions\city_regions.json'
-    with open(output_file, 'w') as file:
-        json.dump(city_regions, file, indent=4)
+        # Serialize the region data to a JSON file
+        region_file_path = os.path.join(output_dir, f"{region}.json")
+        with open(region_file_path, 'w') as file:
+            json.dump(region_data, file, indent=4)
+
+        print(f"Data for {region} region written to {region_file_path}")
 
     print("City regions generation complete.")
-    print(f"Data written to {output_file}")
 
 # Example usage
 if __name__ == "__main__":

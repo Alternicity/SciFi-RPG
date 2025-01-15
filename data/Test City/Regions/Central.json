@@ -1,0 +1,298 @@
+{
+    "wealth": "Rich",
+    "locations": [
+        {
+            "name": "HQ_7846",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Basic Guard",
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 6,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 29,
+            "items_available": [],
+            "resource_storage": {},
+            "special_features": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "CorporateStore_1862",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 5,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 3,
+            "upkeep": 85,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "CorporateStore_5552",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 4,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 89,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Museum_7337",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Basic Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 5,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 3,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 65,
+            "location": "Central",
+            "artifact_count": 50,
+            "exhibits": [],
+            "is_powered": true,
+            "energy_cost": 100
+        },
+        {
+            "name": "Museum_1863",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 2,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 3,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 2,
+            "upkeep": 31,
+            "location": "Central",
+            "artifact_count": 50,
+            "exhibits": [],
+            "is_powered": true,
+            "energy_cost": 100
+        },
+        {
+            "name": "ElectricalRepairWorkshop_1805",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 2,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 3,
+            "upkeep": 53,
+            "materials_required": [],
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "ElectricalRepairWorkshop_3430",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 2,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 1,
+            "upkeep": 94,
+            "materials_required": [],
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Shop_7437",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Basic Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 2,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 22,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Shop_5467",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 10,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 2,
+            "upkeep": 67,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Library_4417",
+            "side": "Unknown Side",
+            "security": {
+                "level": 2,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 2,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 2,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 1,
+            "upkeep": 94,
+            "location": "West",
+            "book_count": 10000,
+            "genres_available": [],
+            "is_powered": true,
+            "energy_cost": 50
+        },
+        {
+            "name": "Library_7776",
+            "side": "Unknown Side",
+            "security": {
+                "level": 2,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 4,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 2,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 2,
+            "upkeep": 17,
+            "location": "West",
+            "book_count": 10000,
+            "genres_available": [],
+            "is_powered": true,
+            "energy_cost": 50
+        },
+        {
+            "name": "Library_3598",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 3,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 2,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 2,
+            "upkeep": 64,
+            "location": "West",
+            "book_count": 10000,
+            "genres_available": [],
+            "is_powered": true,
+            "energy_cost": 50
+        }
+    ]
+}

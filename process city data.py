@@ -34,7 +34,7 @@ def save_data(data, folder_name, file_name):
     print(f"Saved: {output_path}")
 
 # Main logic
-file_path = "C:/Users/Stuart/Python Scripts/scifi RPG/data/Locations/test_city.json"
+file_path = "C:/Users/Stuart/Python Scripts/scifiRPG/data/Locations/test_city.json"
 
 try:
     characters, locations = parse_city_data(file_path)
@@ -44,8 +44,8 @@ try:
     print("Locations:", locations)
     
     # Save outputs to the respective folders
-    save_data(characters, "C:/Users/Stuart/Python Scripts/scifi RPG/data/Characters", "characters.json")
-    save_data(locations, "C:/Users/Stuart/Python Scripts/scifi RPG/data/Locations", "locations.json")
+    save_data(characters, "C:/Users/Stuart/Python Scripts/scifiRPG/data/Characters", "characters.json")
+    save_data(locations, "C:/Users/Stuart/Python Scripts/scifiRPG/data/Locations", "locations.json")
 except FileNotFoundError as e:
     print(e)
 except RecursionError as e:

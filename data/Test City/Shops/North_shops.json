@@ -1,0 +1,78 @@
+[
+    {
+        "type": "CorporateStore",
+        "corporation": "Corp_North",
+        "name": "CorporateStore_North_1",
+        "items_available": [
+            {
+                "item": "Advanced Electronics",
+                "price": 61
+            },
+            {
+                "item": "Designer Clothing",
+                "price": 47
+            },
+            {
+                "item": "Advanced Electronics",
+                "price": 96
+            },
+            {
+                "item": "Designer Clothing",
+                "price": 92
+            },
+            {
+                "item": "Advanced Electronics",
+                "price": 80
+            }
+        ],
+        "upkeep": 20,
+        "is_concrete": true,
+        "secret_entrance": true,
+        "is_powered": false,
+        "energy_cost": 3,
+        "security": {
+            "level": 1,
+            "guards": [
+                "Elite Guard",
+                "Elite Guard"
+            ],
+            "difficulty_to_break_in": 6,
+            "surveillance": true,
+            "alarm_system": true
+        }
+    },
+    {
+        "type": "Shop",
+        "fun": 0,
+        "name": "Shop_North_2",
+        "items_available": [
+            {
+                "item": "Designer Clothing",
+                "price": 79
+            },
+            {
+                "item": "Designer Clothing",
+                "price": 31
+            },
+            {
+                "item": "Designer Clothing",
+                "price": 95
+            }
+        ],
+        "upkeep": 32,
+        "is_concrete": true,
+        "secret_entrance": false,
+        "is_powered": false,
+        "energy_cost": 6,
+        "security": {
+            "level": 2,
+            "guards": [
+                "Elite Guard",
+                "Basic Guard"
+            ],
+            "difficulty_to_break_in": 1,
+            "surveillance": false,
+            "alarm_system": true
+        }
+    }
+]

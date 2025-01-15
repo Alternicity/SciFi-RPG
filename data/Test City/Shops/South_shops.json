@@ -1,0 +1,175 @@
+[
+    {
+        "type": "CorporateStore",
+        "corporation": "Corp_South",
+        "name": "CorporateStore_South_1",
+        "items_available": [
+            {
+                "item": "Electronics",
+                "price": 52
+            },
+            {
+                "item": "Standard Food",
+                "price": 63
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 17
+            },
+            {
+                "item": "Standard Food",
+                "price": 71
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 31
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 29
+            }
+        ],
+        "upkeep": 30,
+        "is_concrete": true,
+        "secret_entrance": true,
+        "is_powered": false,
+        "energy_cost": 1,
+        "security": {
+            "level": 5,
+            "guards": [
+                "Basic Guard",
+                "Elite Guard",
+                "Basic Guard"
+            ],
+            "difficulty_to_break_in": 3,
+            "surveillance": false,
+            "alarm_system": false
+        }
+    },
+    {
+        "type": "Shop",
+        "fun": 0,
+        "name": "Shop_South_2",
+        "items_available": [
+            {
+                "item": "Electronics",
+                "price": 18
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 91
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 34
+            }
+        ],
+        "upkeep": 50,
+        "is_concrete": true,
+        "secret_entrance": true,
+        "is_powered": false,
+        "energy_cost": 2,
+        "security": {
+            "level": 2,
+            "guards": [
+                "Elite Guard",
+                "Basic Guard"
+            ],
+            "difficulty_to_break_in": 4,
+            "surveillance": true,
+            "alarm_system": false
+        }
+    },
+    {
+        "type": "Shop",
+        "fun": 5,
+        "name": "Shop_South_3",
+        "items_available": [
+            {
+                "item": "Standard Food",
+                "price": 97
+            },
+            {
+                "item": "Standard Food",
+                "price": 99
+            },
+            {
+                "item": "Standard Food",
+                "price": 36
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 79
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 96
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 89
+            },
+            {
+                "item": "Standard Food",
+                "price": 51
+            }
+        ],
+        "upkeep": 29,
+        "is_concrete": true,
+        "secret_entrance": true,
+        "is_powered": false,
+        "energy_cost": 8,
+        "security": {
+            "level": 3,
+            "guards": [
+                "Elite Guard",
+                "Elite Guard",
+                "Basic Guard"
+            ],
+            "difficulty_to_break_in": 9,
+            "surveillance": false,
+            "alarm_system": false
+        }
+    },
+    {
+        "type": "Shop",
+        "fun": 0,
+        "name": "Shop_South_4",
+        "items_available": [
+            {
+                "item": "Standard Food",
+                "price": 23
+            },
+            {
+                "item": "Electronics",
+                "price": 95
+            },
+            {
+                "item": "Electronics",
+                "price": 74
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 79
+            },
+            {
+                "item": "Stylish Clothing",
+                "price": 29
+            }
+        ],
+        "upkeep": 13,
+        "is_concrete": true,
+        "secret_entrance": false,
+        "is_powered": false,
+        "energy_cost": 3,
+        "security": {
+            "level": 3,
+            "guards": [
+                "Elite Guard"
+            ],
+            "difficulty_to_break_in": 8,
+            "surveillance": false,
+            "alarm_system": true
+        }
+    }
+]

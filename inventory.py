@@ -24,26 +24,73 @@ class Inventory:
         if not hasattr(item, "name"):
             raise ValueError("Item must have a 'name' attribute.")
 
-    def add_item(self, item):
-        """Add an item to the inventory."""
+    def find_item(self, item_name):
+        """Find an item in the inventory by name."""
+        for item in self.items:
+            if item.name == item_name:
+                return item
+        return None
+
+    def add_item(self, item, quantity=1):
+        """Add an item to the inventory or update quantity if stackable.."""
         self._validate_item(item)
+
         if self.max_capacity and len(self.items) >= self.max_capacity:
             logging.warning(f"Inventory is full. Cannot add {item.name}.")
-            return
+            return False
+        # Check if item already exists (stackable)
+        existing_item = self.find_item(item.name)
+        if existing_item:
+            if hasattr(existing_item, "quantity"):
+                existing_item.quantity += quantity
+                logging.info(f"{item.name} quantity updated to {existing_item.quantity}.")
+            else:
+                logging.warning(f"{item.name} does not support quantities.")
+            return True
+        
+        # Add new item
+        if hasattr(item, "quantity"):
+            item.quantity = quantity
         self.items.append(item)
         logging.info(f"{item.name} added to the inventory.")
+        return True
 
-    def update_quantity(self, item, quantity):
-        """Update the quantity of a stackable item."""
-        if quantity < 0:
-            raise ValueError("Quantity cannot be negative.")
-        self._validate_item(item)
-        for inv_item in self.items:
-            if inv_item.name == item.name:
-                if hasattr(inv_item, "quantity"):
-                    inv_item.quantity += quantity
-                    logging.info(f"{item.name} quantity updated to {inv_item.quantity}.")
-                else:
-                    logging.warning(f"{item.name} does not support quantities.")
-                return
-        logging.warning(f"{item.name} not found in inventory.")
+    def remove_item(self, item_name, quantity=1):
+        """Remove an item or decrease its quantity if stackable."""
+        item = self.find_item(item_name)
+        if not item:
+            logging.warning(f"{item_name} not found in inventory.")
+            return False
+
+        if hasattr(item, "quantity"):
+            if item.quantity > quantity:
+                item.quantity -= quantity
+                logging.info(f"{quantity} of {item_name} removed. Remaining: {item.quantity}.")
+                return True
+            elif item.quantity == quantity:
+                self.items.remove(item)
+                logging.info(f"{item_name} completely removed from inventory.")
+                return True
+            else:
+                logging.warning(f"Not enough {item_name} to remove. Current quantity: {item.quantity}.")
+                return False
+        else:
+            self.items.remove(item)
+            logging.info(f"{item_name} removed from inventory.")
+            return True
+        
+    def display_inventory(self):
+        """Display the inventory contents."""
+        if not self.items:
+            logging.info("Inventory is empty.")
+            return
+        logging.info("Inventory contents:")
+        for item in self.items:
+            if hasattr(item, "quantity"):
+                print(f"- {item.name} (x{item.quantity})")
+            else:
+                print(f"- {item.name}")
+
+# Example Usage
+if __name__ == "__main__":
+    inventory = Inventory(max_capacity=10)

@@ -48,7 +48,110 @@ def display_menu():
             print("Invalid input. Please enter a number.")
             time.sleep(1)
 
+def select_character_menu(characters):
+    """
+    Displays a list of characters for the user to select.
+    """
+    print("\nCharacter Selection Menu:")
+    print("Available Characters:")
+    for index, character in enumerate(characters, 1):
+        print(f"{index}. {character.name}")  # Assuming 'name' is an attribute of the character object
 
+    try:
+        choice = int(input("Select a character by number: "))
+        selected_character = characters[choice - 1]  # Adjust for 0-based indexing
+        return selected_character
+    except (ValueError, IndexError):
+        print("Invalid selection.")
+        return None
+       
+def select_region_menu():
+    """
+    Displays a menu for selecting a region.
+
+    Returns:
+        str: Name of the selected region, or None if no region is selected.
+    """
+    regions = ["NorthVille", "SouthVille", "City Centre", "East Side", "West Side"]
+    print("Select your region:")
+    for idx, region in enumerate(regions, start=1):
+        print(f"{idx}. {region}")
+
+    try:
+        choice = int(input("Enter the number of your choice: ")) - 1
+        if 0 <= choice < len(regions):
+            return regions[choice]
+    except ValueError:
+        pass
+
+    print("Invalid selection.")
+    return None
+
+def show_character_details(character):
+    """
+    Display details of the selected character.
+    
+    Args:
+        character (Character): An instance of the Character class or its subclasses.
+    """
+    print("\nCharacter Details:")
+    character_table = [
+        ["Name", character.name],
+        ["Role", getattr(character, "char_role", "N/A")],  # Use getattr to handle missing attributes
+        ["Faction", character.faction],
+        ["Money", f"${getattr(character, 'bankCardCash', 0):.2f}"],
+        ["Hunger", getattr(character, "hunger", "N/A")],
+        ["Inventory", ", ".join(getattr(character, "inventory", []))]
+    ]
+
+    print(tabulate(character_table, headers=["Attribute", "Value"], tablefmt="grid"))
+    print()
+
+def show_shops_in_region(shops):
+    """
+    Display the number of shops and their details in the region.
+    
+    Args:
+        shops (list): List of shop objects.
+    """
+    print(f"\nNumber of shops in the region: {len(shops)}")
+    for shop in shops:
+        print(f"\nShop: {shop.name}")
+        print(f"Type: {shop.__class__.__name__}")
+        print(f"Security Level: {shop.security['level']}")
+        show_shop_inventory(shop)
+
+def show_shop_inventory(shop):
+    """
+    Display the inventory of a shop.
+    
+    Args:
+        shop (Shop): Shop object.
+    """
+    if shop.inventory:
+        print("\nShop Inventory:")
+        for item in shop.inventory:
+            print(f"- {item['item']}: ${item['price']:.2f}")
+    else:
+        print("\nThis shop has no inventory.")
+
+def show_shop_inventory(shop):
+    """
+    Display the inventory of a specific shop.
+    
+    Args:
+        shop (dict): Data for the shop.
+    """
+    print(f"\nShop: {shop.get('name', 'Unknown Shop')}")
+    inventory = shop.get("inventory", {})
+    if inventory:
+        inventory_table = [
+            [item, details.get("price", "N/A"), details.get("quantity", 0)]
+            for item, details in inventory.items()
+        ]
+        print(tabulate(inventory_table, headers=["Item", "Price", "Quantity"], tablefmt="grid"))
+    else:
+        print("This shop has no items available.")
 
 if __name__ == "__main__":
     characters = []  # Initialize characters list

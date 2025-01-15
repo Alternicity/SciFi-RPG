@@ -7,64 +7,64 @@
                 "type": "Shop",
                 "security": "High",
                 "upkeep": "High",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "Cafe_3700",
                 "type": "Cafe",
                 "security": "Medium",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Cafe_8273",
                 "type": "Cafe",
                 "security": "High",
                 "upkeep": "Low",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "Cafe_1285",
                 "type": "Cafe",
                 "security": "Low",
                 "upkeep": "Medium",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "Nightclub_8078",
                 "type": "Nightclub",
                 "security": "Low",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Nightclub_7791",
                 "type": "Nightclub",
                 "security": "High",
                 "upkeep": "Medium",
-                "entrances": 3,
-                "secret_entrances": true
+                "entrance": 3,
+                "secret_entrance": true
             },
             {
                 "name": "Warehouse_9963",
                 "type": "Warehouse",
                 "security": "Low",
                 "upkeep": "High",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "Warehouse_2958",
                 "type": "Warehouse",
                 "security": "Medium",
                 "upkeep": "Medium",
-                "entrances": 3,
-                "secret_entrances": false
+                "entrance": 3,
+                "secret_entrance": false
             }
         ]
     },
@@ -76,72 +76,72 @@
                 "type": "Shop",
                 "security": "Low",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Shop_3376",
                 "type": "Shop",
                 "security": "High",
                 "upkeep": "Low",
-                "entrances": 3,
-                "secret_entrances": false
+                "entrance": 3,
+                "secret_entrance": false
             },
             {
                 "name": "Shop_9145",
                 "type": "Shop",
                 "security": "Low",
                 "upkeep": "Low",
-                "entrances": 1,
-                "secret_entrances": false
+                "entrance": 1,
+                "secret_entrance": false
             },
             {
                 "name": "HQ_8782",
                 "type": "HQ",
                 "security": "Low",
                 "upkeep": "Low",
-                "entrances": 1,
-                "secret_entrances": false
+                "entrance": 1,
+                "secret_entrance": false
             },
             {
                 "name": "HQ_5810",
                 "type": "HQ",
                 "security": "High",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Factory_5732",
                 "type": "Factory",
                 "security": "Medium",
                 "upkeep": "High",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Nightclub_8371",
                 "type": "Nightclub",
                 "security": "High",
                 "upkeep": "Low",
-                "entrances": 1,
-                "secret_entrances": false
+                "entrance": 1,
+                "secret_entrance": false
             },
             {
                 "name": "Nightclub_6249",
                 "type": "Nightclub",
                 "security": "Low",
                 "upkeep": "Low",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Nightclub_4567",
                 "type": "Nightclub",
                 "security": "High",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             }
         ]
     },
@@ -153,64 +153,64 @@
                 "type": "Cafe",
                 "security": "Low",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Cafe_2860",
                 "type": "Cafe",
                 "security": "High",
                 "upkeep": "High",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Sports Centre_9073",
                 "type": "Sports Centre",
                 "security": "High",
                 "upkeep": "Low",
-                "entrances": 3,
-                "secret_entrances": true
+                "entrance": 3,
+                "secret_entrance": true
             },
             {
                 "name": "Warehouse_8579",
                 "type": "Warehouse",
                 "security": "Low",
                 "upkeep": "High",
-                "entrances": 3,
-                "secret_entrances": true
+                "entrance": 3,
+                "secret_entrance": true
             },
             {
                 "name": "Warehouse_7063",
                 "type": "Warehouse",
                 "security": "Medium",
                 "upkeep": "High",
-                "entrances": 3,
-                "secret_entrances": false
+                "entrance": 3,
+                "secret_entrance": false
             },
             {
                 "name": "Research Lab_7226",
                 "type": "Research Lab",
                 "security": "Medium",
                 "upkeep": "Medium",
-                "entrances": 3,
-                "secret_entrances": true
+                "entrance": 3,
+                "secret_entrance": true
             },
             {
                 "name": "Research Lab_1614",
                 "type": "Research Lab",
                 "security": "Low",
                 "upkeep": "High",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Research Lab_2953",
                 "type": "Research Lab",
                 "security": "Low",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             }
         ]
     },
@@ -222,80 +222,80 @@
                 "type": "HQ",
                 "security": "High",
                 "upkeep": "High",
-                "entrances": 1,
-                "secret_entrances": false
+                "entrance": 1,
+                "secret_entrance": false
             },
             {
                 "name": "HQ_3364",
                 "type": "HQ",
                 "security": "Low",
                 "upkeep": "Low",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "HQ_1679",
                 "type": "HQ",
                 "security": "High",
                 "upkeep": "Medium",
-                "entrances": 1,
-                "secret_entrances": false
+                "entrance": 1,
+                "secret_entrance": false
             },
             {
                 "name": "Cafe_9582",
                 "type": "Cafe",
                 "security": "Medium",
                 "upkeep": "High",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Cafe_8396",
                 "type": "Cafe",
                 "security": "High",
                 "upkeep": "Medium",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "Cafe_9990",
                 "type": "Cafe",
                 "security": "High",
                 "upkeep": "Medium",
-                "entrances": 3,
-                "secret_entrances": false
+                "entrance": 3,
+                "secret_entrance": false
             },
             {
                 "name": "Shop_3202",
                 "type": "Shop",
                 "security": "Medium",
                 "upkeep": "Low",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Shop_1677",
                 "type": "Shop",
                 "security": "Low",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Nightclub_4313",
                 "type": "Nightclub",
                 "security": "Medium",
                 "upkeep": "High",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "Nightclub_3391",
                 "type": "Nightclub",
                 "security": "Low",
                 "upkeep": "High",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             }
         ]
     },
@@ -307,80 +307,80 @@
                 "type": "HQ",
                 "security": "High",
                 "upkeep": "Low",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "HQ_6326",
                 "type": "HQ",
                 "security": "Medium",
                 "upkeep": "High",
-                "entrances": 1,
-                "secret_entrances": false
+                "entrance": 1,
+                "secret_entrance": false
             },
             {
                 "name": "HQ_9316",
                 "type": "HQ",
                 "security": "Medium",
                 "upkeep": "Low",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Museum_5066",
                 "type": "Museum",
                 "security": "Low",
                 "upkeep": "High",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Museum_5269",
                 "type": "Museum",
                 "security": "Low",
                 "upkeep": "Low",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             },
             {
                 "name": "Power Plant_8319",
                 "type": "Power Plant",
                 "security": "Low",
                 "upkeep": "Low",
-                "entrances": 3,
-                "secret_entrances": true
+                "entrance": 3,
+                "secret_entrance": true
             },
             {
                 "name": "Power Plant_6027",
                 "type": "Power Plant",
                 "security": "High",
                 "upkeep": "Low",
-                "entrances": 3,
-                "secret_entrances": true
+                "entrance": 3,
+                "secret_entrance": true
             },
             {
                 "name": "Power Plant_5125",
                 "type": "Power Plant",
                 "security": "High",
                 "upkeep": "Low",
-                "entrances": 2,
-                "secret_entrances": true
+                "entrance": 2,
+                "secret_entrance": true
             },
             {
                 "name": "Repair Workshops_3755",
                 "type": "Repair Workshops",
                 "security": "Medium",
                 "upkeep": "Low",
-                "entrances": 1,
-                "secret_entrances": true
+                "entrance": 1,
+                "secret_entrance": true
             },
             {
                 "name": "Repair Workshops_6129",
                 "type": "Repair Workshops",
                 "security": "Low",
                 "upkeep": "Medium",
-                "entrances": 2,
-                "secret_entrances": false
+                "entrance": 2,
+                "secret_entrance": false
             }
         ]
     }

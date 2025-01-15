@@ -1,0 +1,268 @@
+{
+    "wealth": "Normal",
+    "locations": [
+        {
+            "name": "Cafe_7084",
+            "side": "Unknown Side",
+            "security": {
+                "level": 2,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 10,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 43,
+            "location": "North",
+            "ambiance_level": 1,
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Cafe_2390",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 5,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 62,
+            "location": "North",
+            "ambiance_level": 1,
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Cafe_5921",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 1,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 95,
+            "location": "North",
+            "ambiance_level": 1,
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "MechanicalRepairWorkshop_6422",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 2,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 60,
+            "materials_required": [],
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "ElectricalRepairWorkshop_6249",
+            "side": "Unknown Side",
+            "security": {
+                "level": 2,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 28,
+            "materials_required": [],
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "ElectricalRepairWorkshop_6301",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 8,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 50,
+            "materials_required": [],
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Mine_5631",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Elite Guard",
+                    "Basic Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 7,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 55,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Mine_4606",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 7,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 2,
+            "upkeep": 36,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Mine_3972",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Basic Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 9,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 1,
+            "upkeep": 65,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Airport_4246",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 5,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 21,
+            "connected_locations": [],
+            "import_capacity": 0,
+            "materials_inventory": {},
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Airport_6495",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 3,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 3,
+            "upkeep": 63,
+            "connected_locations": [],
+            "import_capacity": 0,
+            "materials_inventory": {},
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        }
+    ]
+}

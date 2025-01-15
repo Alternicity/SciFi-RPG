@@ -1,0 +1,8 @@
+Listing of files in 'Test City' directory:
+
+Characters\characters.json
+Factions\The State\the State.py
+Locations\locations.json
+Locations\Southville.json
+Locations\test_city.json
+Regions\city_regions.json

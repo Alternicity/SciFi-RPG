@@ -21,8 +21,8 @@ class Character:
         name,
         entity_id,
         bankCardCash=0,
-        fun=0,
-        hunger=0,
+        fun=1,
+        hunger=1,
         char_role="Civilian",
         faction=None,
         strength=10,
@@ -48,8 +48,8 @@ class Character:
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
         self.name = name
-        self.fun = fun  # Default value of 0
-        self.hunger = hunger
+        self.fun = kwargs.get("fun", fun)
+        self.hunger = kwargs.get("hunger", hunger)
         self.faction = faction
         self.strength = strength
         self.agility = agility
@@ -200,7 +200,7 @@ class Captain(Character):
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, faction="None", entity_id=None, bankCardCash=500, position="Manager", char_role="Manager", loyalties=None, fun=0, hunger=0, **kwargs):
+    def __init__(self, name, faction="None", entity_id=None, bankCardCash=500, position="Manager", char_role="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -390,7 +390,7 @@ class GangMember(Subordinate):
 
 class RiotCop(Character): #Subordinate? Of the state?
     is_concrete = True
-    def __init__(self, name, faction="The State", bankCardCash=300, entity_id=None, position="Pig", char_role="Civilian", toughness=14, loyalties=None, fun=0, hunger=0, **kwargs):
+    def __init__(self, name, faction="The State", bankCardCash=300, entity_id=None, position="Pig", char_role="RiotCop", toughness=14, loyalties=None, fun=0, hunger=0, **kwargs):
 
     # Default loyalty setup for RiotCop
         default_loyalties = {
@@ -404,8 +404,8 @@ class RiotCop(Character): #Subordinate? Of the state?
         super().__init__(
             name,
             faction=faction,
-            fun=0,
-            hunger=0,
+            fun=fun,
+            hunger=hunger,
             entity_id=entity_id, 
             char_role=char_role,
             strength=15,

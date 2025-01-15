@@ -1,0 +1,263 @@
+{
+    "wealth": "Poor",
+    "locations": [
+        {
+            "name": "HQ_6132",
+            "side": "Unknown Side",
+            "security": {
+                "level": 5,
+                "guards": [
+                    "Basic Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 10,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 32,
+            "items_available": [],
+            "resource_storage": {},
+            "special_features": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "HQ_9550",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 8,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 2,
+            "upkeep": 61,
+            "items_available": [],
+            "resource_storage": {},
+            "special_features": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Cafe_8189",
+            "side": "Unknown Side",
+            "security": {
+                "level": 3,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 8,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 1,
+            "upkeep": 84,
+            "location": "North",
+            "ambiance_level": 1,
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Cafe_8198",
+            "side": "Unknown Side",
+            "security": {
+                "level": 5,
+                "guards": [
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 6,
+                "surveillance": true,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 3,
+            "upkeep": 92,
+            "location": "North",
+            "ambiance_level": 1,
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "CorporateStore_3535",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Basic Guard",
+                    "Elite Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 4,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 3,
+            "upkeep": 34,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "CorporateStore_1341",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 4,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 92,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Stash_1648",
+            "side": "Unknown Side",
+            "security": {
+                "level": 2,
+                "guards": [
+                    "Elite Guard",
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 10,
+                "surveillance": true,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 1,
+            "upkeep": 59,
+            "items_available": [],
+            "stored_items": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Stash_5853",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 3,
+                "surveillance": false,
+                "alarm_system": true
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 3,
+            "upkeep": 74,
+            "items_available": [],
+            "stored_items": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Nightclub_3692",
+            "side": "Unknown Side",
+            "security": {
+                "level": 5,
+                "guards": [
+                    "Elite Guard",
+                    "Basic Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 3,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 3,
+            "upkeep": 97,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Nightclub_7384",
+            "side": "Unknown Side",
+            "security": {
+                "level": 4,
+                "guards": [
+                    "Basic Guard",
+                    "Basic Guard",
+                    "Elite Guard"
+                ],
+                "difficulty_to_break_in": 4,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": 2,
+            "upkeep": 54,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Nightclub_3465",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [
+                    "Basic Guard"
+                ],
+                "difficulty_to_break_in": 5,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 1,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": 3,
+            "upkeep": 22,
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        }
+    ]
+}
