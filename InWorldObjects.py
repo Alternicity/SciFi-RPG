@@ -45,6 +45,15 @@ class ObjectInWorld:
 #Any object that represents something that could potentially break or
 #degrade over time should have damage_points.
 
+class Item:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+    
+    def __repr__(self):
+        return f"{self.name} (${self.price})"
+
+
 class CashWad(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self, value):

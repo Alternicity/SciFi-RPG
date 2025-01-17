@@ -1,0 +1,6 @@
+ITEM_POOLS = {
+    "low": ["Basic Food", "Cheap Clothing", "Used Electronics"],
+    "medium": ["Standard Food", "Stylish Clothing", "Electronics"],
+    "high": ["Gourmet Food", "Designer Clothing", "Advanced Electronics"],
+    "luxury": ["Exotic Food", "Luxury Clothing", "Cutting-Edge Gadgets"],
+}

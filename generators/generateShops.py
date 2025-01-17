@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 # Sample item pools for inventory generation
 ITEM_POOLS = {
-    "low": ["Basic Food", "Cheap Clothing", "Used Electronics"],
-    "medium": ["Standard Food", "Stylish Clothing", "Electronics"],
-    "high": ["Gourmet Food", "Designer Clothing", "Advanced Electronics"],
-    "luxury": ["Exotic Food", "Luxury Clothing", "Cutting-Edge Gadgets"],
+    "low": ["Pistol", "SmartPhone", "Shotgun", "Knife", "Sword", "Club"],
+    "medium": ["Medkit", "FoodCrate", "MechanicalToolkit", "ElectricalToolkit", "PowerGenerator"],
+    "high": ["HardDrive", "Laptop", "WaterPurifier", "CommoditiesBox", "Electrobaton"],
+    "luxury": ["Exotic Food", "Rifle", "SMG"],
 }
 
 # Helper function to generate inventory based on wealth level

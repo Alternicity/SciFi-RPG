@@ -6,7 +6,7 @@ Inside Factions are folders called Civilians, Corps, Gangs and The State.
 """
 from .generateLocation import generate_locations
 from generators.generateRegions import generate_region
-from generators.generateShops import generate_shop
+from generators.generateShops import generate_shops
 from generators.generateCharacters import generate_character_data
 from generators.generateFactions import generate_factions
 from generators.generateGangs import generate_gangs

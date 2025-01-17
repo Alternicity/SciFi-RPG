@@ -4,6 +4,12 @@ import logging
 import time
 from utils import list_characters
 from character_creation import create_characters_as_objects
+from loader import load_shops
+#import loader
+import os
+# Setup logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 def display_menu():
     """
@@ -66,26 +72,25 @@ def select_character_menu(characters):
         return None
        
 def select_region_menu():
-    """
-    Displays a menu for selecting a region.
-
-    Returns:
-        str: Name of the selected region, or None if no region is selected.
-    """
-    regions = ["NorthVille", "SouthVille", "City Centre", "East Side", "West Side"]
-    print("Select your region:")
-    for idx, region in enumerate(regions, start=1):
+    region_list = ["North", "East", "West", "South", "Central"]
+    
+    # Display available regions with numbers
+    print("Available regions:")
+    for idx, region in enumerate(region_list, 1):
         print(f"{idx}. {region}")
-
+    
+    # Get user input as a number
     try:
-        choice = int(input("Enter the number of your choice: ")) - 1
-        if 0 <= choice < len(regions):
-            return regions[choice]
+        selected_index = int(input("Select a region by number: ")) - 1
+        if 0 <= selected_index < len(region_list):
+            selected_region = region_list[selected_index]
+            return selected_region
+        else:
+            print("Invalid region selected. Exiting.")
+            return ""
     except ValueError:
-        pass
-
-    print("Invalid selection.")
-    return None
+        print("Invalid input. Exiting.")
+        return ""
 
 def show_character_details(character):
     """
@@ -107,43 +112,35 @@ def show_character_details(character):
     print(tabulate(character_table, headers=["Attribute", "Value"], tablefmt="grid"))
     print()
 
-def show_shops_in_region(shops):
-    """
-    Display the number of shops and their details in the region.
+def show_shops_in_region(region):
+    """Display the list of shops for the given region."""
+    logger.debug("Entered function XYZ")
+    print(f"Region passed to show_shops_in_region: {region}")  # Debug print
+    logger.debug(f"Current working directory: {os.getcwd()}")
+    logger.debug("About to call load_shops from loader.py")
+    shops = load_shops(region) #like this because from "loader import load_shops"
     
-    Args:
-        shops (list): List of shop objects.
-    """
-    print(f"\nNumber of shops in the region: {len(shops)}")
+    if not shops:
+        print(f"No shops found in {region} region.")
+        return
+    
+    print(f"Shops in {region} region:")
     for shop in shops:
-        print(f"\nShop: {shop.name}")
+        print(f"- {shop.name}")
         print(f"Type: {shop.__class__.__name__}")
         print(f"Security Level: {shop.security['level']}")
         show_shop_inventory(shop)
 
-def show_shop_inventory(shop):
-    """
-    Display the inventory of a shop.
-    
-    Args:
-        shop (Shop): Shop object.
-    """
-    if shop.inventory:
-        print("\nShop Inventory:")
-        for item in shop.inventory:
-            print(f"- {item['item']}: ${item['price']:.2f}")
-    else:
-        print("\nThis shop has no inventory.")
 
 def show_shop_inventory(shop):
     """
     Display the inventory of a specific shop.
     
     Args:
-        shop (dict): Data for the shop.
+        shop (Shop): The shop object or dictionary.
     """
-    print(f"\nShop: {shop.get('name', 'Unknown Shop')}")
-    inventory = shop.get("inventory", {})
+    print(f"\nShop: {shop.name if hasattr(shop, 'name') else shop.get('name', 'Unknown Shop')}")
+    inventory = shop.inventory if hasattr(shop, 'inventory') else shop.get("inventory", {})
     if inventory:
         inventory_table = [
             [item, details.get("price", "N/A"), details.get("quantity", 0)]
@@ -152,6 +149,7 @@ def show_shop_inventory(shop):
         print(tabulate(inventory_table, headers=["Item", "Price", "Quantity"], tablefmt="grid"))
     else:
         print("This shop has no items available.")
+
 
 if __name__ == "__main__":
     characters = []  # Initialize characters list

@@ -8,7 +8,7 @@
         "primary_entrance": "Main Gate",
         "secondary_entrance": "Side Path",
         "secret_entrance": "Underground Tunnel",
-        "district": "East Side"
+        "district": "East"
     },
     {
         "name": "Warehouse",
@@ -18,7 +18,7 @@
         "primary_entrance": "Loading Bay",
         "secondary_entrance": "Service Door",
         "secret_entrance": null,
-        "district": "East Side"
+        "district": "East"
     },
     {
         "name": "Nightclub",
@@ -29,7 +29,7 @@
         "primary_entrance": "Main Door",
         "secondary_entrance": "VIP Entrance",
         "secret_entrance": "Rooftop Ladder",
-        "district": "West Side"
+        "district": "West"
     },
     {
         "name": "Shop",
@@ -38,7 +38,7 @@
         "fun": 2,
         "required_workers": 3,
         "profit_margin": 15,
-        "district": "West Side"
+        "district": "West"
     },
     {
         "name": "Holotheatre",
@@ -49,7 +49,7 @@
         "primary_entrance": "Main Entrance",
         "secondary_entrance": null,
         "secret_entrance": "Service Elevator",
-        "district": "City Centre"
+        "district": "Centre"
     },
     {
         "name": "Museum",
@@ -60,7 +60,7 @@
         "primary_entrance": "Front Door",
         "secondary_entrance": "Staff Entrance",
         "secret_entrance": null,
-        "district": "City Centre"
+        "district": "Centre"
     },
     {
         "name": "Power Plant",
@@ -73,7 +73,7 @@
             "Nightclub",
             "Holotheatre"
         ],
-        "district": "NorthVille"
+        "district": "North"
     },
     {
         "name": "Factory",
@@ -83,7 +83,7 @@
         "raw_materials_needed": 10,
         "output_rate": 3,
         "energy_needed": 5,
-        "district": "NorthVille"
+        "district": "North"
     },
     {
         "name": "Sports Centre",
@@ -91,7 +91,7 @@
         "condition": "Well Maintained",
         "fun": 4,
         "required_workers": 2,
-        "district": "SouthVille"
+        "district": "South"
     },
     {
         "name": "Brothel",
@@ -99,6 +99,6 @@
         "condition": "Poor",
         "fun": 3,
         "required_workers": 5,
-        "district": "SouthVille"
+        "district": "South"
     }
 ]

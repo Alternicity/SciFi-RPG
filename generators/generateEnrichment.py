@@ -6,6 +6,18 @@ and introducing unique traits to locations and factions.
 
 Placeholder implementation for future expansion.
 """
+from loader import initialize_shops
+from typing import List, Union
+from location import Shop, CorporateStore, Stash
+
+
+region = "North"
+try:
+    shops = initialize_shops(region)
+    for shop in shops:
+        print(type(shop), shop.name, getattr(shop, "corporation", "N/A"))
+except Exception as e:
+    print(f"Error during initialization: {e}")
 
 def enrich_characters(characters):
     """
@@ -76,6 +88,18 @@ def generate_enrichment(characters, locations, factions):
         "factions": enriched_factions
     }
 
+def enrich_shops_with_faction_data(shops: List[Union[Shop, CorporateStore, Stash]]) -> List[Union[Shop, CorporateStore, Stash]]:
+    """
+    Adds faction-related data or other enhancements to shop objects.
+    """
+    for shop in shops:
+        if isinstance(shop, CorporateStore):
+            # Example: Set up faction-specific inventory adjustments
+            shop.inventory.append("Exclusive Corporate Item")
+        elif isinstance(shop, Stash):
+            # Example: Modify stash security based on some logic
+            shop.security += 10
+    return shops
 
 # Example usage (placeholder)
 if __name__ == "__main__":
@@ -85,3 +109,5 @@ if __name__ == "__main__":
 
     enriched_data = generate_enrichment(dummy_characters, dummy_locations, dummy_factions)
     print("Enriched Data:", enriched_data)
+
+

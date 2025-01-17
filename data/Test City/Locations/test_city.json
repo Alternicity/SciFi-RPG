@@ -1,6 +1,6 @@
 {
     "city": {
-        "East Side": {
+        "East": {
             "locations": [
                 {
                     "name": "Park",
@@ -50,7 +50,7 @@
                 }
             ]
         },
-        "West Side": {
+        "West": {
             "locations": [
                 {
                     "name": "Nightclub",
@@ -99,7 +99,7 @@
                 }
             ]
         },
-        "City Centre": {
+        "Centre": {
             "locations": [
                 {
                     "name": "Holotheatre",
@@ -148,7 +148,7 @@
                 }
             ]
         },
-        "NorthVille": {
+        "North": {
             "locations": [
                 {
                     "name": "Power Plant",
@@ -200,7 +200,7 @@
                 }
             ]
         },
-        "SouthVille": {
+        "South": {
             "locations": [
                 {
                     "name": "Sports Centre",

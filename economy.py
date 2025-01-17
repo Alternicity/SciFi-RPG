@@ -1,7 +1,36 @@
+import json
+import os
 import logging
-logging.basicConfig(level=logging.INFO)
-logging.info(f"{char.name} earned money at {char.current_location.name}.")
+from location import Shop
 
+logging.basicConfig(level=logging.INFO)
+
+""" def load_shops(region):
+    """Load shops data from JSON files based on region."""
+    
+    print(f"Loading shops for region: {region}")
+    
+    # Construct the filename dynamically based on the region
+    region_file_name = f"{region.lower()}_shops.json"  # e.g., "north_shops.json"
+    
+    # Standardize the file path construction
+    shops_file_path = os.path.normpath(os.path.join("scifiRPG", "data", "Test City", "Shops", f"{region_file_name}_shops.json"))
+    
+    if not os.path.exists(shops_file_path):
+        print(f"Shops file {shops_file_path} does not exist.")
+        return []
+    
+    with open(shops_file_path, 'r') as f:
+        shops_data = json.load(f)
+
+    shops = []
+    for shop_info in shops_data:
+        shop_name = shop_info.get("name", "Unknown Shop")
+        items_available = shop_info.get("items_available", [])
+        shop = Shop(shop_name, items_available)  # Ensure Shop is properly imported
+        shops.append(shop)
+
+    return shops """
 
 class EconomyManager:
     def __init__(self):
@@ -31,38 +60,39 @@ class EconomyManager:
             print(f"Shop {shop.name} sold {quantity_sold} of {product} for revenue: {revenue}")
     
     def assign_workers_to_locations(characters, locations):
-    """
-    Assign workers to locations based on their workforce needs.
-    """
-    for location in locations:
-        required_workers = location.required_workers
-        assigned_workers = 0
+        """
+        Assign workers to locations based on their workforce needs.
+        """
+        for location in locations:
+            required_workers = location.required_workers
+            assigned_workers = 0
 
-        for char in characters:
-            if assigned_workers >= required_workers:
-                break
-            if char.role == 'Worker' and not char.is_working:
-                char.current_location = location
-                char.is_working = True
-                location.add_worker(char)  # A method to register workers in a location
-                assigned_workers += 1
+            for char in characters:
+                if assigned_workers >= required_workers:
+                    break
+                if char.role == 'Worker' and not char.is_working:
+                    char.current_location = location
+                    char.is_working = True
+                    location.add_worker(char)  # A method to register workers in a location
+                    assigned_workers += 1
 
-        if assigned_workers < required_workers:
-            print(f"Location {location.name} is understaffed. Needed: {required_workers}, Assigned: {assigned_workers}.")
+            if assigned_workers < required_workers:
+                print(f"Location {location.name} is understaffed. Needed: {required_workers}, Assigned: {assigned_workers}.")
 
-    
+
+
     #Generate and Distribute Energy:    
     #Import Raw Materials: Ports/Airports bring in resources to supply factories.
     #Factory Production: Factories use raw materials and energy to produce goods.
     #Shop Sales: Shops sell goods to characters or factions, generating money.
 
-def calculate_item_cost(self, item):
-        """
-        Determine the cost of an item based on its legality.
-        """
-        if not hasattr(item, "legality"):
-            raise ValueError("The item must have a 'legality' attribute.")
-        return item.value if item.legality == True else item.blackmarket_value
+    def calculate_item_cost(self, item):
+            """
+            Determine the cost of an item based on its legality.
+            """
+            if not hasattr(item, "legality"):
+                raise ValueError("The item must have a 'legality' attribute.")
+            return item.value if item.legality == True else item.blackmarket_value
 
 
     #possibly deprecated, legacy code
@@ -78,7 +108,7 @@ def calculate_item_cost(self, item):
             raise ValueError(f"Unknown legality type: {item.legality}")
         
 
-        def make_black_market_purchase(self, amount):
+    def make_black_market_purchase(self, amount):
         """Make a purchase on the black market (only cash can be used)."""
         if self.wallet.spend_cash(amount):
             print(f"Black market purchase of {amount} successful.")
@@ -110,5 +140,5 @@ def calculate_item_cost(self, item):
 
         #possibly deprecated function, pasted here
     def get_total_money(self):
-    """Return the total money available (cash + bank card)."""
-    return self.wallet.total_balance()
+        """Return the total money available (cash + bank card)."""
+        return self.wallet.total_balance()

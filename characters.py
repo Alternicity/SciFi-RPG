@@ -219,6 +219,11 @@ class Manager(Character):
         self.bankCardCash = bankCardCash
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
     
+    #this must be abstracted ffs
+    def buy_item(self, shop, item_name):
+        """Character buys an item from a shop."""
+        shop.sell_item(self, item_name)
+
     def __repr__(self):
             # Use Character's consistent representation and add faction info
             return super().__repr__() + f", Faction: {self.faction}"

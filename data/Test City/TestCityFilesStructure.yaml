@@ -1,0 +1,59 @@
+Test City:
+  folders:
+  - Characters
+  - Factions
+  - Locations
+  - Loyalties
+  - Regions
+  - Shops
+  files:
+  - TestCityFilesStructure.yaml
+Characters:
+  folders: []
+  files:
+  - characters.json
+Factions:
+  folders:
+  - Civilians
+  - Corps
+  - Gangs
+  - The State
+  files: []
+Factions\Civilians:
+  folders: []
+  files: []
+Factions\Corps:
+  folders: []
+  files: []
+Factions\Gangs:
+  folders: []
+  files: []
+Factions\The State:
+  folders: []
+  files:
+  - the State.py
+Locations:
+  folders: []
+  files:
+  - Southville.json
+  - locations.json
+  - test_city.json
+Loyalties:
+  folders: []
+  files: []
+Regions:
+  folders: []
+  files:
+  - Central.json
+  - East.json
+  - North.json
+  - South.json
+  - West.json
+Shops:
+  folders: []
+  files:
+  - Central_shops.json
+  - East_shops.json
+  - North_shops.json
+  - South_shops.json
+  - West_shops.json

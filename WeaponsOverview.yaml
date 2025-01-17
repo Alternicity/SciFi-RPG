@@ -1,0 +1,33 @@
+- class_name: Weapon
+  inherits_from:
+  - ObjectInWorld
+- class_name: RangedWeapon
+  inherits_from:
+  - Weapon
+- class_name: MeleeWeapon
+  inherits_from:
+  - Weapon
+- class_name: Pistol
+  inherits_from:
+  - RangedWeapon
+- class_name: SMG
+  inherits_from:
+  - RangedWeapon
+- class_name: Rifle
+  inherits_from:
+  - RangedWeapon
+- class_name: Shotgun
+  inherits_from:
+  - RangedWeapon
+- class_name: Sword
+  inherits_from:
+  - MeleeWeapon
+- class_name: Knife
+  inherits_from:
+  - MeleeWeapon
+- class_name: Club
+  inherits_from:
+  - MeleeWeapon
+- class_name: Electrobaton
+  inherits_from:
+  - MeleeWeapon

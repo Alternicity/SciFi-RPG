@@ -110,6 +110,9 @@ class Vendor(Location):
 
 @dataclass
 class Shop(Vendor):
+    def __init__(self, name, items_available):
+        self.name = name
+        self.items_available = items_available
     name: str = "QQ Store"
     fun: int = 0
     items_available: List[str] = field(default_factory=list)
@@ -130,6 +133,28 @@ class Shop(Vendor):
     def to_dict(self):
         return asdict(self)
     
+    def display_inventory(self):
+        """Display items and their prices."""
+        print(f"{self.name}'s Shop Inventory:")
+        for item in self.items_available:
+            print(f"{item.name}: ${item.price}")
+
+    def sell_item(self, character, item_name):
+        # Find the item in the shop's inventory
+        item = next((item for item in self.items_available if item.name == item_name), None)
+        
+        if item:
+            if character.bankCardCash >= item.price:
+                # Deduct money from character
+                character.bankCardCash -= item.price
+                # Add item to character's inventory
+                character.inventory.append(item)
+                print(f"{item.name} sold to {character.name} for ${item.price}. Remaining balance: ${character.bankCardCash}")
+            else:
+                print(f"{character.name} doesn't have enough money to buy {item_name}.")
+        else:
+            print(f"{item_name} is not available in {self.name}'s inventory.")
+
     # No need to define __init__; @dataclass handles it
     def sell_item(self, character, item):
         if item in self.items_available:

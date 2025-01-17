@@ -3,8 +3,11 @@ Directory: .
   - character starting weapons.py
   - CharacterRegistryPersistence.py
   - characters.py
+  - character_creation.py
+  - check invalid path.py
   - combat.py
   - common.py
+  - create.py
   - display.py
   - distributions.py
   - economy.py
@@ -13,9 +16,13 @@ Directory: .
   - goals.py
   - inventory.py
   - InWorldObjects.py
+  - InWorldObjectsOverview.yaml
   - list files.py
+  - ListCityData.py
+  - ListClassesAndInheritance.py
   - loader.py
   - location.py
+  - location_security.py
   - loyalty.py
   - main.py
   - morale.py
@@ -27,9 +34,561 @@ Directory: .
   - simulate_day.py
   - store.py
   - tasks.py
+  - test.py
+  - test_file_opening.py
   - utils.py
   - verify city data.py
   - weapons.py
+  - WeaponsOverview.yaml
+  - __init__.py
+Directory: ./.venv
+Directory: ./.venv\Include
+Directory: ./.venv\Lib
+Directory: ./.venv\Lib\site-packages
+Directory: ./.venv\Lib\site-packages\pip
+  - __init__.py
+  - __main__.py
+  - __pip-runner__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal
+  - build_env.py
+  - cache.py
+  - configuration.py
+  - exceptions.py
+  - main.py
+  - pyproject.py
+  - self_outdated_check.py
+  - wheel_builder.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\cli
+  - autocompletion.py
+  - base_command.py
+  - cmdoptions.py
+  - command_context.py
+  - index_command.py
+  - main.py
+  - main_parser.py
+  - parser.py
+  - progress_bars.py
+  - req_command.py
+  - spinners.py
+  - status_codes.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\cli\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\commands
+  - cache.py
+  - check.py
+  - completion.py
+  - configuration.py
+  - debug.py
+  - download.py
+  - freeze.py
+  - hash.py
+  - help.py
+  - index.py
+  - inspect.py
+  - install.py
+  - list.py
+  - search.py
+  - show.py
+  - uninstall.py
+  - wheel.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\commands\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\distributions
+  - base.py
+  - installed.py
+  - sdist.py
+  - wheel.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\distributions\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\index
+  - collector.py
+  - package_finder.py
+  - sources.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\index\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\locations
+  - base.py
+  - _distutils.py
+  - _sysconfig.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\locations\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\metadata
+  - base.py
+  - pkg_resources.py
+  - _json.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\metadata\importlib
+  - _compat.py
+  - _dists.py
+  - _envs.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\metadata\importlib\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\metadata\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\models
+  - candidate.py
+  - direct_url.py
+  - format_control.py
+  - index.py
+  - installation_report.py
+  - link.py
+  - scheme.py
+  - search_scope.py
+  - selection_prefs.py
+  - target_python.py
+  - wheel.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\models\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\network
+  - auth.py
+  - cache.py
+  - download.py
+  - lazy_wheel.py
+  - session.py
+  - utils.py
+  - xmlrpc.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\network\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\operations
+  - check.py
+  - freeze.py
+  - prepare.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\operations\build
+  - build_tracker.py
+  - metadata.py
+  - metadata_editable.py
+  - metadata_legacy.py
+  - wheel.py
+  - wheel_editable.py
+  - wheel_legacy.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\operations\build\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\operations\install
+  - editable_legacy.py
+  - wheel.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\operations\install\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\operations\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\req
+  - constructors.py
+  - req_file.py
+  - req_install.py
+  - req_set.py
+  - req_uninstall.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\req\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\resolution
+  - base.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\resolution\legacy
+  - resolver.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\resolution\legacy\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\resolution\resolvelib
+  - base.py
+  - candidates.py
+  - factory.py
+  - found_candidates.py
+  - provider.py
+  - reporter.py
+  - requirements.py
+  - resolver.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\resolution\resolvelib\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\resolution\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\utils
+  - appdirs.py
+  - compat.py
+  - compatibility_tags.py
+  - datetime.py
+  - deprecation.py
+  - direct_url_helpers.py
+  - egg_link.py
+  - encoding.py
+  - entrypoints.py
+  - filesystem.py
+  - filetypes.py
+  - glibc.py
+  - hashes.py
+  - logging.py
+  - misc.py
+  - packaging.py
+  - retry.py
+  - setuptools_build.py
+  - subprocess.py
+  - temp_dir.py
+  - unpacking.py
+  - urls.py
+  - virtualenv.py
+  - wheel.py
+  - _jaraco_text.py
+  - _log.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\utils\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\vcs
+  - bazaar.py
+  - git.py
+  - mercurial.py
+  - subversion.py
+  - versioncontrol.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_internal\vcs\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_internal\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor
+  - typing_extensions.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\cachecontrol
+  - adapter.py
+  - cache.py
+  - controller.py
+  - filewrapper.py
+  - heuristics.py
+  - serialize.py
+  - wrapper.py
+  - _cmd.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\cachecontrol\caches
+  - file_cache.py
+  - redis_cache.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\cachecontrol\caches\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\cachecontrol\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\certifi
+  - core.py
+  - __init__.py
+  - __main__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\certifi\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\distlib
+  - compat.py
+  - database.py
+  - index.py
+  - locators.py
+  - manifest.py
+  - markers.py
+  - metadata.py
+  - resources.py
+  - scripts.py
+  - util.py
+  - version.py
+  - wheel.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\distlib\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\distro
+  - distro.py
+  - __init__.py
+  - __main__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\distro\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\idna
+  - codec.py
+  - compat.py
+  - core.py
+  - idnadata.py
+  - intranges.py
+  - package_data.py
+  - uts46data.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\idna\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\msgpack
+  - exceptions.py
+  - ext.py
+  - fallback.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\msgpack\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\packaging
+  - markers.py
+  - metadata.py
+  - requirements.py
+  - specifiers.py
+  - tags.py
+  - utils.py
+  - version.py
+  - _elffile.py
+  - _manylinux.py
+  - _musllinux.py
+  - _parser.py
+  - _structures.py
+  - _tokenizer.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\packaging\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pkg_resources
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pkg_resources\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\platformdirs
+  - android.py
+  - api.py
+  - macos.py
+  - unix.py
+  - version.py
+  - windows.py
+  - __init__.py
+  - __main__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\platformdirs\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments
+  - cmdline.py
+  - console.py
+  - filter.py
+  - formatter.py
+  - lexer.py
+  - modeline.py
+  - plugin.py
+  - regexopt.py
+  - scanner.py
+  - sphinxext.py
+  - style.py
+  - token.py
+  - unistring.py
+  - util.py
+  - __init__.py
+  - __main__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\filters
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\filters\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\formatters
+  - bbcode.py
+  - groff.py
+  - html.py
+  - img.py
+  - irc.py
+  - latex.py
+  - other.py
+  - pangomarkup.py
+  - rtf.py
+  - svg.py
+  - terminal.py
+  - terminal256.py
+  - _mapping.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\formatters\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\lexers
+  - python.py
+  - _mapping.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\lexers\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\styles
+  - _mapping.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\styles\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pygments\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pyproject_hooks
+  - _compat.py
+  - _impl.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process
+  - _in_process.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pyproject_hooks\_in_process\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\pyproject_hooks\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\requests
+  - adapters.py
+  - api.py
+  - auth.py
+  - certs.py
+  - compat.py
+  - cookies.py
+  - exceptions.py
+  - help.py
+  - hooks.py
+  - models.py
+  - packages.py
+  - sessions.py
+  - status_codes.py
+  - structures.py
+  - utils.py
+  - _internal_utils.py
+  - __init__.py
+  - __version__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\requests\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\resolvelib
+  - providers.py
+  - reporters.py
+  - resolvers.py
+  - structs.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\resolvelib\compat
+  - collections_abc.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\resolvelib\compat\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\resolvelib\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\rich
+  - abc.py
+  - align.py
+  - ansi.py
+  - bar.py
+  - box.py
+  - cells.py
+  - color.py
+  - color_triplet.py
+  - columns.py
+  - console.py
+  - constrain.py
+  - containers.py
+  - control.py
+  - default_styles.py
+  - diagnose.py
+  - emoji.py
+  - errors.py
+  - filesize.py
+  - file_proxy.py
+  - highlighter.py
+  - json.py
+  - jupyter.py
+  - layout.py
+  - live.py
+  - live_render.py
+  - logging.py
+  - markup.py
+  - measure.py
+  - padding.py
+  - pager.py
+  - palette.py
+  - panel.py
+  - pretty.py
+  - progress.py
+  - progress_bar.py
+  - prompt.py
+  - protocol.py
+  - region.py
+  - repr.py
+  - rule.py
+  - scope.py
+  - screen.py
+  - segment.py
+  - spinner.py
+  - status.py
+  - style.py
+  - styled.py
+  - syntax.py
+  - table.py
+  - terminal_theme.py
+  - text.py
+  - theme.py
+  - themes.py
+  - traceback.py
+  - tree.py
+  - _cell_widths.py
+  - _emoji_codes.py
+  - _emoji_replace.py
+  - _export_format.py
+  - _extension.py
+  - _fileno.py
+  - _inspect.py
+  - _log_render.py
+  - _loop.py
+  - _null_file.py
+  - _palettes.py
+  - _pick.py
+  - _ratio.py
+  - _spinners.py
+  - _stack.py
+  - _timer.py
+  - _win32_console.py
+  - _windows.py
+  - _windows_renderer.py
+  - _wrap.py
+  - __init__.py
+  - __main__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\rich\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\tomli
+  - _parser.py
+  - _re.py
+  - _types.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\tomli\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\truststore
+  - _api.py
+  - _macos.py
+  - _openssl.py
+  - _ssl_constants.py
+  - _windows.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\truststore\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3
+  - connection.py
+  - connectionpool.py
+  - exceptions.py
+  - fields.py
+  - filepost.py
+  - poolmanager.py
+  - request.py
+  - response.py
+  - _collections.py
+  - _version.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\contrib
+  - appengine.py
+  - ntlmpool.py
+  - pyopenssl.py
+  - securetransport.py
+  - socks.py
+  - _appengine_environ.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\contrib\_securetransport
+  - bindings.py
+  - low_level.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\contrib\_securetransport\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\contrib\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\packages
+  - six.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\packages\backports
+  - makefile.py
+  - weakref_finalize.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\packages\backports\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\packages\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\util
+  - connection.py
+  - proxy.py
+  - queue.py
+  - request.py
+  - response.py
+  - retry.py
+  - ssltransport.py
+  - ssl_.py
+  - ssl_match_hostname.py
+  - timeout.py
+  - url.py
+  - wait.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\util\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\urllib3\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\_vendor\__pycache__
+Directory: ./.venv\Lib\site-packages\pip\__pycache__
+Directory: ./.venv\Lib\site-packages\pip-24.3.1.dist-info
+Directory: ./.venv\Lib\site-packages\PyYAML-6.0.2.dist-info
+Directory: ./.venv\Lib\site-packages\tabulate
+  - version.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\tabulate\__pycache__
+Directory: ./.venv\Lib\site-packages\tabulate-0.9.0.dist-info
+Directory: ./.venv\Lib\site-packages\windows_curses-2.4.1a1.dist-info
+Directory: ./.venv\Lib\site-packages\yaml
+  - composer.py
+  - constructor.py
+  - cyaml.py
+  - dumper.py
+  - emitter.py
+  - error.py
+  - events.py
+  - loader.py
+  - nodes.py
+  - parser.py
+  - reader.py
+  - representer.py
+  - resolver.py
+  - scanner.py
+  - serializer.py
+  - tokens.py
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\yaml\__pycache__
+Directory: ./.venv\Lib\site-packages\_yaml
+  - __init__.py
+Directory: ./.venv\Lib\site-packages\_yaml\__pycache__
+Directory: ./.venv\Scripts
+Directory: ./.vscode
+  - launch.json
 Directory: ./data
   - civilians.yaml
   - events.json
@@ -38,7 +597,9 @@ Directory: ./data
   - items.json
   - loyalty.json
   - state.yaml
+Directory: ./data\loyalty
 Directory: ./data\Test City
+  - TestCityFilesStructure.yaml
 Directory: ./data\Test City\Characters
   - characters.json
 Directory: ./data\Test City\Factions
@@ -46,37 +607,49 @@ Directory: ./data\Test City\Factions\Civilians
 Directory: ./data\Test City\Factions\Corps
 Directory: ./data\Test City\Factions\Gangs
 Directory: ./data\Test City\Factions\The State
+  - the State.py
 Directory: ./data\Test City\Locations
   - locations.json
   - Southville.json
   - test_city.json
 Directory: ./data\Test City\Loyalties
 Directory: ./data\Test City\Regions
-Directory: ./data\Test City\Stores
+  - Central.json
+  - East.json
+  - North.json
+  - South.json
+  - West.json
+Directory: ./data\Test City\Shops
+  - Central_shops.json
+  - East_shops.json
+  - North_shops.json
+  - South_shops.json
+  - West_shops.json
 Directory: ./deprecated
+  - city_regions.json
   - deprecated main.py
   - FIX THE STATE.py
   - Grunt.py
   - legacy main menu.py
   - legacy main mid dec 24.py
   - legacy main.py
-  - old ganag spawn test code.py
+  - locations.json
+  - old gang spawn test code.py
   - runTheCity.py
   - simulate_turn.py
   - state cruft.py
-  - static old test main.py
   - task delegation placeholder.py
   - update loyalties.py
 Directory: ./generators
   - generate.py
   - generateCharacters.py
-  - generateCorp.py
+  - generateCorps.py
   - generateEnrichment.py
   - generateFactions.py
-  - generateGang.py
+  - generateGangs.py
   - generateLocation.py
-  - generateRegion.py
-  - generateStore.py
+  - generateRegions.py
+  - generateShops.py
   - __init__.py
 Directory: ./generators\__pycache__
 Directory: ./Notes

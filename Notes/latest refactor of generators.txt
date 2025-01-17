@@ -70,7 +70,7 @@ An incomplete snippet of locations.jsonÖ
         "primary_entrance": "Main Gate",
         "secondary_entrance": "Side Path",
         "secret_entrance": "Underground Tunnel",
-        "district": "East Side"
+        "district": "East"
     },
     {
         "name": "Warehouse",
@@ -80,7 +80,7 @@ An incomplete snippet of locations.jsonÖ
         "primary_entrance": "Loading Bay",
         "secondary_entrance": "Service Door",
         "secret_entrance": null,
-        "district": "East Side"
+        "district": "East"
     },
     {
         "name": "Nightclub",
@@ -91,7 +91,7 @@ An incomplete snippet of locations.jsonÖ
         "primary_entrance": "Main Door",
         "secondary_entrance": "VIP Entrance",
         "secret_entrance": "Rooftop Ladder",
-        "district": "West Side"
+        "district": "West"
     },
 ]
 
