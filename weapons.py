@@ -2,6 +2,12 @@
 
 from InWorldObjects import ObjectInWorld, Size, Toughness
 
+
+valid_items = [
+    "Pistol", "SMG", "Rifle", "Shotgun", 
+    "Sword", "Knife", "Club", "Electrobaton"
+]
+
 #Weapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them
 class Weapon(ObjectInWorld):

@@ -30,6 +30,12 @@ class ItemType(Enum):
 #specific attributes like damage or damage points. Instead, these attributes
 #  should be defined in the concrete classes, which will instantiate objects.
 
+valid_items = [
+    "CashWad", "Wallet", "HardDrive", "Medkit", 
+    "FoodCrate", "Laptop", "MechanicalToolkit", "ElectricalToolkit", 
+    "PowerGenerator", "WaterPurifier", "SmartPhone", "CommoditiesBox"
+]
+
 # Base class for all objects in the world
 class ObjectInWorld:
     is_concrete = False  # An abstract class

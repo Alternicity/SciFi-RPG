@@ -4,6 +4,8 @@ import json
 import random
 from dataclasses import asdict
 import logging
+import weapons
+import InWorldObjects
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from location import Shop, Stash, Vendor, CorporateStore, Security
@@ -25,104 +27,84 @@ def generate_inventory(wealth_level):
         Generate inventory for a shop based on the wealth level.
         
         Args:
-            wealth_level (str): Wealth level of the region.
-        
-        Returns:
-            list: List of items with their prices.
+        wealth_level (str): The wealth level of the shop (e.g., "low", "medium", "high").
+    
+    Returns:
+        dict: Inventory with item names as keys and attributes like price and quantity as values.
         """
 
-    # Ensure the wealth_level exists in ITEM_POOLS
-    items = ITEM_POOLS.get(wealth_level, ITEM_POOLS["medium"])  # Fallback to "medium" if wealth_level is invalid
-    return [{"item": item, "price": random.randint(10, 100)} for item in random.choices(items, k=random.randint(3, 7))]
-    #if the wealth_level key is not found in ITEM_POOLS, the function defaults to using the "medium" item pool.
+    # Fetch valid items from the imported modules
+    valid_items = weapons.valid_items + InWorldObjects.valid_items
+    
+    # Filter out invalid items
+    items = [item for item in ITEM_POOLS.get(wealth_level, []) if item in valid_items]
+
+    # Create inventory for the shop
+    inventory = {}
+    for item in random.choices(items, k=random.randint(3, 7)):
+        inventory[item] = {
+            "price": valid_items[item]["value"],  # Use the value from imported modules
+            "quantity": random.randint(1, 10),
+        }
+    return inventory
 
 # Function to generate shops
 def generate_shops():
+    #Generate shops for each region based on wealth and region data.
     #print("Generating shops...")
-    logger.debug("Generating shops...")
+    logger.debug(f"Generating {num_shops} shops for region {region_name} with wealth level {wealth_level}.")
+    
+    for region_name, region_info in region_data.items():
+        wealth_level = region_info["wealth"]
+        num_shops = max(3, random.randint(3, 7))  # Ensure at least 3 shops
 
-    # Define regions and their wealth levels
-    regions_with_wealth = {
-        "North": "high",  # Changed from "Rich" to "high"
-        "South": "medium",  # Changed from "Normal" to "medium"
-        "East": "low",  # Changed from "Poor" to "low"
-        "West": "medium",  # Changed from "Medium" to "medium"
-        "Central": "high"  # Changed from "High" to "high"
-    }
-
-    shops_data = {}
-
-    for region, wealth_level in regions_with_wealth.items():
-        print(f"Generating shops for region: {region} (Wealth: {wealth_level})")
-
-        # Determine the number of shops based on wealth level
-        num_shops = random.randint(2, 5) if wealth_level in ["medium", "high"] else random.randint(1, 3)
-
-        shops_data[region] = []
+        shops_data = []
 
         for i in range(num_shops):
-            shop_type = random.choices(
-                ["Shop", "CorporateStore", "Stash"],
-                weights=[4, 2, 1] if wealth_level in ["medium", "high"] else [3, 1, 2],
-            )[0]
+                shop_type = random.choice(["Shop", "Vendor", "CorporateStore"])
+                items_available = generate_inventory(wealth_level)
 
-            # Generate common attributes
-            common_attributes = {
-                "name": f"{shop_type}_{region}_{i+1}",
-                "items_available": generate_inventory(wealth_level),
-                "upkeep": random.randint(10, 50),
-                "is_concrete": True,
-                "secret_entrance": random.choice([True, False]),
-                "is_powered": random.choice([True, False]),
-                "energy_cost": random.randint(0, 10),
-                "security": {
-                    "level": random.randint(1, 5),
-                    "guards": random.choices(["Basic Guard", "Elite Guard"], k=random.randint(1, 3)),
-                    "difficulty_to_break_in": random.randint(1, 10),
-                    "surveillance": random.choice([True, False]),
-                    "alarm_system": random.choice([True, False])
-                }
+        shop_data = {
+            "name": f"{shop_type}_{region_name}_{i+1}",
+            "type": shop_type,
+            "items_available": items_available,
+            "cash": random.randint(100, 500),
+            "legality": "legal",
+            "upkeep": random.randint(10, 50),
+            "is_concrete": True,
+            "secret_entrance": random.choice([True, False]),
+            "is_powered": random.choice([True, False]),
+            "energy_cost": random.randint(0, 10),
+            "security": {
+                "level": random.randint(1, 5),
+                "guards": random.choices(["Basic Guard", "Elite Guard"], k=random.randint(1, 3)),
+                "difficulty_to_break_in": random.randint(1, 10),
+                "surveillance": random.choice([True, False]),
+                "alarm_system": random.choice([True, False])
             }
+        }
+        # Add generated shops to the region
+        region_info["locations"].extend(shops_data)
 
-
-            # Add type-specific attributes
-            if shop_type == "Shop":
-                shop = {
-                    "type": "Shop",
-                    "fun": random.randint(0, 5),
-                    **common_attributes
-                }
-            elif shop_type == "CorporateStore":
-                shop = {
-                    "type": "CorporateStore",
-                    "corporation": f"Corp_{region}",
-                    **common_attributes
-                }
-            elif shop_type == "Stash":
-                shop = {
-                    "type": "Stash",
-                    "stored_items": [],  # Initially empty
-                    **common_attributes
-                }
-
-            shops_data[region].append(shop)
-
-    print("Shop generation complete.")
-    return shops_data
-
-# Save shops data to JSON files
-def save_shops_to_json(shops_data, output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    for region, shops in shops_data.items():
-        region_path = os.path.join(output_dir, f"{region}_shops.json")
-        with open(region_path, "w") as f:
-            json.dump(shops, f, indent=4)
-        logger.debug(f"Shops data for {region} saved to {region_path}")
+        # Save the generated shop data to a JSON file
+    output_path = f"{region_name}_shops.json"
+    with open(output_path, "w") as file:
+        json.dump(shops_data, file, indent=4)
+    logger.info(f"Shops for region {region_name} saved to {output_path}.")
 
 # Example usage
 if __name__ == "__main__":
-    shops_data = generate_shops()
-    output_dir = r"C:\Users\Stuart\Python Scripts\scifiRPG\data\Test City\Shops"
-    save_shops_to_json(shops_data, output_dir)
+    # Define regions and their wealth levels
+    regions_with_wealth = {
+        "North": "high",
+        "South": "medium",
+        "East": "low",
+        "West": "medium",
+        "Central": "high"
+    }
+
+    # Generate shops for each region
+    for region, wealth in regions_with_wealth.items():
+        generate_shops(region, num_shops=5, wealth_level=wealth)
+
+    print("Shop generation complete.")

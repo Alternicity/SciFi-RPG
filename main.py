@@ -67,8 +67,8 @@ def start_gameplay(current_character, region_data):
 
 def main():
     print("Welcome.")
-    print("Gameplay selected. Initializing character selection.")
 
+#this section will begin when Play/Test Game is called from the main menu
     try:
         # Get characters using the character creation function
         characters = create_characters_as_objects()  # Generate the character list

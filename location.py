@@ -112,10 +112,10 @@ class Vendor(Location):
 class Shop(Vendor):
     def __init__(self, name, items_available):
         self.name = name
-        self.items_available = items_available
+        self.inventory = items_available or {}  # Synonymous with `items_available
     name: str = "QQ Store"
     fun: int = 0
-    items_available: List[str] = field(default_factory=list)
+    #items_available: List[str] = field(default_factory=list)
     
     is_concrete: bool = True
     secret_entrance: bool = False

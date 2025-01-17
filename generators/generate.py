@@ -1,9 +1,22 @@
 # generate.py
 # City and character data generation.
+import random
+import logging
+from generateRegions import generate_region
+from generateShops import generate_shops
 """
-There are now folders called Characters, Factions, Locations, Loyalties, Regions and Stores.
+There are now folders called Characters, Factions, Locations, Loyalties, Regions and Shops.
 Inside Factions are folders called Civilians, Corps, Gangs and The State.
 """
+# Centralize the regions and wealth levels here
+regions_with_wealth = {
+    "North": "Rich", #high
+    "South": "Normal", #medium
+    "East": "Poor", #low
+    "West": "Normal", #medium
+    "Central": "Rich", #high
+}
+
 from .generateLocation import generate_locations
 from generators.generateRegions import generate_region
 from generators.generateShops import generate_shops
@@ -24,20 +37,13 @@ def generate_city_data():
     logging.info("Starting city generation process...")
 
     try:
-        # Generate regions first, as they determine where locations and stores can go
         logging.info("Generating regions...")
-        generate_region()  # Generate city regions (North, South, East, West, Central)
+        region_data = generate_region(regions_with_wealth)
         logging.info("Regions generated successfully.")
 
-        # Generate locations based on the regions, ensuring no ports are in Central
-        logging.info("Generating locations...")
-        generate_locations()  # Locations for the regions, including port exclusions
-        logging.info("Locations generated successfully.")
-
-        # Generate stores in the city
-        logging.info("Generating stores...")
-        generate_stores()  # Stores located in various regions
-        logging.info("Stores generated successfully.")
+        logging.info("Generating shops...")
+        generate_shops(region_data)  # Pass the region data with wealth levels
+        logging.info("Shops generated successfully.")
 
         # Generate characters
         logging.info("Generating characters...")

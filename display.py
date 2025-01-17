@@ -1,3 +1,4 @@
+#display.py
 from tabulate import tabulate
 from characters import Character
 import logging
@@ -16,13 +17,13 @@ def display_menu():
     Displays the main menu and handles user choices.
     """
     characters = []  # Initialize as an empty list for later use
-
+    # The original main menu. The option to generate a city (call generate.py) should be here
     while True:
         print("\n=== Main Menu ===")
         print("1: Create Characters (Game Objects)")
         print("2: Create Characters (Serialized Data)")
         print("3: Load Serialized Characters")
-        print("4: Play/Test Game")
+        print("4: Play/Test Game") # this option should open the othe menu
         print("5: Exit")
 
         choice = input("Enter your choice: ")
