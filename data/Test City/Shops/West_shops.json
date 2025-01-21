@@ -3,36 +3,6 @@
         "type": "Shop",
         "fun": 1,
         "name": "Shop_West_1",
-        "items_available": [
-            {
-                "item": "Stylish Clothing",
-                "price": 98
-            },
-            {
-                "item": "Stylish Clothing",
-                "price": 98
-            },
-            {
-                "item": "Electronics",
-                "price": 96
-            },
-            {
-                "item": "Standard Food",
-                "price": 42
-            },
-            {
-                "item": "Electronics",
-                "price": 26
-            },
-            {
-                "item": "Stylish Clothing",
-                "price": 72
-            },
-            {
-                "item": "Standard Food",
-                "price": 30
-            }
-        ],
         "upkeep": 43,
         "is_concrete": true,
         "secret_entrance": true,
@@ -46,42 +16,29 @@
             "difficulty_to_break_in": 9,
             "surveillance": true,
             "alarm_system": false
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Stylish Clothing": {
+                "price": 72,
+                "quantity": 10
+            },
+            "Electronics": {
+                "price": 26,
+                "quantity": 10
+            },
+            "Standard Food": {
+                "price": 30,
+                "quantity": 10
+            }
         }
     },
     {
         "type": "Shop",
         "fun": 4,
         "name": "Shop_West_2",
-        "items_available": [
-            {
-                "item": "Stylish Clothing",
-                "price": 83
-            },
-            {
-                "item": "Standard Food",
-                "price": 67
-            },
-            {
-                "item": "Standard Food",
-                "price": 11
-            },
-            {
-                "item": "Stylish Clothing",
-                "price": 15
-            },
-            {
-                "item": "Standard Food",
-                "price": 52
-            },
-            {
-                "item": "Electronics",
-                "price": 61
-            },
-            {
-                "item": "Stylish Clothing",
-                "price": 33
-            }
-        ],
         "upkeep": 25,
         "is_concrete": true,
         "secret_entrance": false,
@@ -97,6 +54,23 @@
             "difficulty_to_break_in": 4,
             "surveillance": false,
             "alarm_system": false
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Stylish Clothing": {
+                "price": 33,
+                "quantity": 10
+            },
+            "Standard Food": {
+                "price": 52,
+                "quantity": 10
+            },
+            "Electronics": {
+                "price": 61,
+                "quantity": 10
+            }
         }
     }
 ]

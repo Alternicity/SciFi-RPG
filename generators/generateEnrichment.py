@@ -6,6 +6,11 @@ and introducing unique traits to locations and factions.
 
 Placeholder implementation for future expansion.
 """
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
+
+#I am considering having one enricher file for each generator
+#Will Enrichment affect serialized population data files, or instantiated game objects?
 from loader import initialize_shops
 from typing import List, Union
 from location import Shop, CorporateStore, Stash

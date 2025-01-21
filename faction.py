@@ -1,7 +1,10 @@
-from characters import Boss, CEO, Captain, Grunt, Manager
+from characters import Boss, CEO, Captain, Manager, Employee, GangMember
 from goals import Goal
 from tasks import Task
 import yaml
+import json
+from common import load_locations
+
 
 class Faction:
     def __init__(self, name, type, affiliation=None, goals=None):
@@ -58,11 +61,11 @@ class Faction:
         """
         hierarchy = {"Boss": [], "Mid-Tier": [], "Grunts": []}
         for member in self.members:
-            if isinstance(member, (Boss, CEO)):
+            if isinstance(member, Boss):
                 hierarchy["Boss"].append(member)
-            elif isinstance(member, (Captain, Manager)):
+            elif isinstance(member, Captain):
                 hierarchy["Mid-Tier"].append(member)
-            else:
+            elif isinstance(member, GangMember):  # Updated for GangMember as base for grunts
                 hierarchy["Grunts"].append(member)
         return hierarchy
 
@@ -101,7 +104,23 @@ def load_factions_from_yaml(filepath):
     factions = []
     for faction_data in data["factions"]:
         if faction_data["type"] == "corporation":
-            factions.append(Corporation(faction_data["name"], goals=faction_data["goals"]))
+            faction = Corporation(faction_data["name"], goals=faction_data["goals"])
         elif faction_data["type"] == "gang":
-            factions.append(Gang(faction_data["name"], affiliation=faction_data["affiliation"], goals=faction_data["goals"]))
+            faction = Gang(faction_data["name"], affiliation=faction_data["affiliation"], goals=faction_data["goals"])
+        
+        # Add members
+        for member_data in faction_data.get("members", []):
+            if member_data["role"] == "Boss":
+                member = Boss(member_data["name"], **member_data["attributes"])
+            elif member_data["role"] == "Captain":
+                member = Captain(member_data["name"], **member_data["attributes"])
+            elif member_data["role"] == "GangMember":
+                member = GangMember(member_data["name"], **member_data["attributes"])
+            faction.add_member(member)
+        
+        factions.append(faction)
     return factions
+
+#region_file should perhaps be replaced with test_city.json
+locations = load_locations(region_file, faction.name)
+print(f"{faction.name} operates in the following locations: {locations}")

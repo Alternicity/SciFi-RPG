@@ -1,217 +1,260 @@
 {
-    "wealth": "Normal",
+    "name": "North",
+    "nameForUser": "NorthVille",
+    "wealth": "Rich",
     "locations": [
         {
-            "name": "Shop_8386",
-            "side": "Unknown Side",
-            "security": {
-                "level": 3,
-                "guards": [
-                    "Elite Guard",
-                    "Elite Guard"
-                ],
-                "difficulty_to_break_in": 7,
-                "surveillance": true,
-                "alarm_system": true
-            },
-            "condition": "Unknown Condition",
-            "fun": 0,
-            "is_concrete": true,
-            "secret_entrance": true,
-            "entrance": 2,
-            "upkeep": 25,
-            "items_available": [],
-            "is_powered": false,
-            "energy_cost": 0
-        },
-        {
-            "name": "Shop_4929",
+            "name": "CorporateStore_8380",
             "side": "Unknown Side",
             "security": {
                 "level": 1,
-                "guards": [
-                    "Basic Guard"
-                ],
-                "difficulty_to_break_in": 2,
-                "surveillance": true,
-                "alarm_system": false
-            },
-            "condition": "Unknown Condition",
-            "fun": 0,
-            "is_concrete": true,
-            "secret_entrance": false,
-            "entrance": 1,
-            "upkeep": 83,
-            "items_available": [],
-            "is_powered": false,
-            "energy_cost": 0
-        },
-        {
-            "name": "Cafe_2992",
-            "side": "Unknown Side",
-            "security": {
-                "level": 1,
-                "guards": [
-                    "Elite Guard",
-                    "Elite Guard"
-                ],
-                "difficulty_to_break_in": 3,
-                "surveillance": true,
-                "alarm_system": true
-            },
-            "condition": "Unknown Condition",
-            "fun": 1,
-            "is_concrete": true,
-            "secret_entrance": true,
-            "entrance": 1,
-            "upkeep": 60,
-            "location": "North",
-            "ambiance_level": 1,
-            "is_powered": false,
-            "energy_cost": 0
-        },
-        {
-            "name": "Cafe_8023",
-            "side": "Unknown Side",
-            "security": {
-                "level": 2,
-                "guards": [
-                    "Elite Guard",
-                    "Elite Guard",
-                    "Basic Guard"
-                ],
+                "guards": [],
                 "difficulty_to_break_in": 1,
                 "surveillance": false,
-                "alarm_system": true
-            },
-            "condition": "Unknown Condition",
-            "fun": 1,
-            "is_concrete": true,
-            "secret_entrance": true,
-            "entrance": 2,
-            "upkeep": 48,
-            "location": "North",
-            "ambiance_level": 1,
-            "is_powered": false,
-            "energy_cost": 0
-        },
-        {
-            "name": "Nightclub_3343",
-            "side": "Unknown Side",
-            "security": {
-                "level": 3,
-                "guards": [
-                    "Basic Guard"
-                ],
-                "difficulty_to_break_in": 2,
-                "surveillance": true,
                 "alarm_system": false
-            },
-            "condition": "Unknown Condition",
-            "fun": 1,
-            "is_concrete": true,
-            "secret_entrance": false,
-            "entrance": 2,
-            "upkeep": 52,
-            "items_available": [],
-            "is_powered": false,
-            "energy_cost": 0
-        },
-        {
-            "name": "Nightclub_7307",
-            "side": "Unknown Side",
-            "security": {
-                "level": 5,
-                "guards": [
-                    "Elite Guard",
-                    "Basic Guard",
-                    "Elite Guard"
-                ],
-                "difficulty_to_break_in": 4,
-                "surveillance": true,
-                "alarm_system": true
-            },
-            "condition": "Unknown Condition",
-            "fun": 1,
-            "is_concrete": true,
-            "secret_entrance": false,
-            "entrance": 2,
-            "upkeep": 74,
-            "items_available": [],
-            "is_powered": false,
-            "energy_cost": 0
-        },
-        {
-            "name": "Nightclub_2623",
-            "side": "Unknown Side",
-            "security": {
-                "level": 2,
-                "guards": [
-                    "Elite Guard",
-                    "Elite Guard",
-                    "Basic Guard"
-                ],
-                "difficulty_to_break_in": 9,
-                "surveillance": true,
-                "alarm_system": true
-            },
-            "condition": "Unknown Condition",
-            "fun": 1,
-            "is_concrete": true,
-            "secret_entrance": false,
-            "entrance": 1,
-            "upkeep": 29,
-            "items_available": [],
-            "is_powered": false,
-            "energy_cost": 0
-        },
-        {
-            "name": "Stash_6131",
-            "side": "Unknown Side",
-            "security": {
-                "level": 3,
-                "guards": [
-                    "Basic Guard",
-                    "Elite Guard"
-                ],
-                "difficulty_to_break_in": 4,
-                "surveillance": false,
-                "alarm_system": true
             },
             "condition": "Unknown Condition",
             "fun": 0,
             "is_concrete": true,
             "secret_entrance": false,
-            "entrance": 1,
-            "upkeep": 48,
+            "entrance": [],
+            "upkeep": 15,
             "items_available": [],
-            "stored_items": [],
+            "cash": 1000,
+            "bankCardCash": 0,
+            "corporation": "Default",
             "is_powered": false,
-            "energy_cost": 0
+            "energy_cost": 0,
+            "inventory": {},
+            "legality": "Legal"
         },
         {
-            "name": "Park_1973",
+            "name": "CorporateStore_7933",
             "side": "Unknown Side",
             "security": {
-                "level": 4,
-                "guards": [
-                    "Basic Guard",
-                    "Elite Guard"
-                ],
-                "difficulty_to_break_in": 6,
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
                 "surveillance": false,
                 "alarm_system": false
             },
             "condition": "Unknown Condition",
-            "fun": 1,
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 15,
+            "items_available": [],
+            "cash": 1000,
+            "bankCardCash": 0,
+            "corporation": "Default",
+            "is_powered": false,
+            "energy_cost": 0,
+            "inventory": {},
+            "legality": "Legal"
+        },
+        {
+            "name": "Museum_9241",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 3,
             "is_concrete": true,
             "secret_entrance": true,
-            "entrance": 2,
-            "upkeep": 46,
+            "entrance": [],
+            "upkeep": 45,
             "location": "Central",
-            "ambiance_level": 1,
+            "artifact_count": 50,
+            "exhibits": [],
+            "is_powered": true,
+            "energy_cost": 100
+        },
+        {
+            "name": "Library_6050",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 2,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 20,
+            "location": "West",
+            "book_count": 10000,
+            "genres_available": [],
+            "is_powered": true,
+            "energy_cost": 50
+        },
+        {
+            "name": "Shop_2534",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 15,
+            "items_available": [],
+            "cash": 300,
+            "bankCardCash": 0,
+            "inventory": {},
             "is_powered": false,
             "energy_cost": 0
+        },
+        {
+            "name": "Shop_9972",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 15,
+            "items_available": [],
+            "cash": 300,
+            "bankCardCash": 0,
+            "inventory": {},
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Shop_4885",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 15,
+            "items_available": [],
+            "cash": 300,
+            "bankCardCash": 0,
+            "inventory": {},
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "ElectricalRepairWorkshop_5970",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 15,
+            "materials_required": [],
+            "items_available": [],
+            "is_powered": false,
+            "energy_cost": 0
+        },
+        {
+            "name": "Museum_9535",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 3,
+            "is_concrete": true,
+            "secret_entrance": true,
+            "entrance": [],
+            "upkeep": 45,
+            "location": "Central",
+            "artifact_count": 50,
+            "exhibits": [],
+            "is_powered": true,
+            "energy_cost": 100
+        },
+        {
+            "name": "Library_2506",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 2,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 20,
+            "location": "West",
+            "book_count": 10000,
+            "genres_available": [],
+            "is_powered": true,
+            "energy_cost": 50
+        },
+        {
+            "name": "CorporateStore_7715",
+            "side": "Unknown Side",
+            "security": {
+                "level": 1,
+                "guards": [],
+                "difficulty_to_break_in": 1,
+                "surveillance": false,
+                "alarm_system": false
+            },
+            "condition": "Unknown Condition",
+            "fun": 0,
+            "is_concrete": true,
+            "secret_entrance": false,
+            "entrance": [],
+            "upkeep": 15,
+            "items_available": [],
+            "cash": 1000,
+            "bankCardCash": 0,
+            "corporation": "Default",
+            "is_powered": false,
+            "energy_cost": 0,
+            "inventory": {},
+            "legality": "Legal"
         }
     ]
 }

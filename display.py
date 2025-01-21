@@ -1,147 +1,197 @@
-#display.py
 from tabulate import tabulate
-from characters import Character
 import logging
-import time
-from utils import list_characters
 from character_creation import create_characters_as_objects
-from loader import load_shops
-#import loader
+import loader
 import os
+from city_utils import regenerate_city_data
+from characters import Manager, Civilian, Character
+from location import Region
+import json
+
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
+
 # Setup logger
-logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+#This file should prbably contain the mapping dictionary for user facing region names
 
 def display_menu():
-    """
-    Displays the main menu and handles user choices.
-    """
-    characters = []  # Initialize as an empty list for later use
-    # The original main menu. The option to generate a city (call generate.py) should be here
+    """Display the main menu and handle user choices."""
     while True:
         print("\n=== Main Menu ===")
         print("1: Create Characters (Game Objects)")
         print("2: Create Characters (Serialized Data)")
         print("3: Load Serialized Characters")
-        print("4: Play/Test Game") # this option should open the othe menu
-        print("5: Exit")
-
-        choice = input("Enter your choice: ")
+        print("4: Play/Test Game")
+        print("5: Regenerate City Data")  # Add option to regenerate city
+        print("6: Exit")
+        
         try:
-            choice = int(choice)
+            choice = int(input("Enter your choice: "))
             if choice == 1:
-                # Create characters as objects
-                characters = create_characters_as_objects()  # Now doesn't require list_characters
+                characters = create_characters_as_objects()
                 print("\n=== Character Information ===")
-                print(list_characters(characters))  # Call list_characters separately
+                print(list_characters(characters))
             elif choice == 2:
-                # Placeholder for serialization feature
                 print("Feature to create and serialize characters is under development.")
             elif choice == 3:
-                # Placeholder for loading serialized data
                 print("Feature to load serialized characters is under development.")
             elif choice == 4:
-                # Placeholder for game/test logic
-                if characters:
-                    print("Starting game with current characters...")
-                else:
-                    print("No characters created yet. Please create characters first.")
+                # Start game logic, calling `start_game_menu` from gameplay.py
+                selected_character, region = start_game_menu()# variables are the expected return values
+                if selected_character and region:
+                    return selected_character, region  # Return for gameplay flow
             elif choice == 5:
+                regenerate_city_data()  # Call regeneration
+            elif choice == 6:
                 print("Exiting... Goodbye!")
                 break
             else:
                 print("Invalid choice. Please select a valid option.")
         except ValueError:
             print("Invalid input. Please enter a number.")
-            time.sleep(1)
+
+def start_game_menu():
+    """Start the game and handle character and region selection."""
+    print("Starting game...")
+
+    # Predefined characters to select from
+    character_data = [
+        {"type": "Manager", "name": "Carolina", "faction": "BlueCorp", "bankCardCash": 500, "fun": 1, "hunger": 3},
+        {"type": "Civilian", "name": "Charlie", "faction": "None", "occupation": "Shopkeeper"},
+    ]
+    characters = [
+        Manager(name="Carolina", faction="BlueCorp", bankCardCash=500, fun=1, hunger=3),
+        Civilian(name="Charlie", faction="None", occupation="Shopkeeper"),
+    ]
+
+    # Step 1: Select character
+    selected_character = select_character_menu(characters)
+    if not selected_character:
+        print("Character selection failed.")
+        return None, None
+
+    # Step 2: Select region
+    region = select_region_menu()
+    if not region:
+        print("Region selection failed. Exiting to main menu...")
+        return None, None  # Return None if region selection failed
+    
+    print(f"Selected region: {region.nameForUser}")  # Use the 'nameForUser' attribute
+
+    # Step 3: Use the selected character
+    selected_character_data = next(
+        (char for char in character_data if char["name"] == selected_character.name), None
+    )
+    if not selected_character_data:
+        print("Selected character data not found.")
+        return None, None
+
+    # Step 4: Load character in loader
+    loaded_characters = loader.load_characters(selected_character_data)
+
+    return loaded_characters[0], region
+    
+    # Step 5: Start gameplay
+    start_gameplay(selected_character, region)
 
 def select_character_menu(characters):
-    """
-    Displays a list of characters for the user to select.
-    """
+    """Allow the user to select a character."""
     print("\nCharacter Selection Menu:")
     print("Available Characters:")
-    for index, character in enumerate(characters, 1):
-        print(f"{index}. {character.name}")  # Assuming 'name' is an attribute of the character object
+    for i, char in enumerate(characters):
+        print(f"{i + 1}. {char.name} ({char.faction})")
 
     try:
-        choice = int(input("Select a character by number: "))
-        selected_character = characters[choice - 1]  # Adjust for 0-based indexing
-        return selected_character
-    except (ValueError, IndexError):
-        print("Invalid selection.")
+        choice = int(input("Enter the number of your choice: ")) - 1
+        if 0 <= choice < len(characters):
+            selected_character = characters[choice]
+            print(f"You selected: {selected_character.name}")
+            return selected_character
+        else:
+            print("Invalid selection.")
+            return None
+    except ValueError:
+        print("Invalid input.")
         return None
-       
-def select_region_menu():
-    region_list = ["North", "East", "West", "South", "Central"]
+
+def load_region_mappings():
+    region_file = get_file_path("scifiRPG", "data", "Test City", "Locations", "test_city.json")
+    print(f"Looking for region file at: {region_file}")  # Debugging print
     
-    # Display available regions with numbers
+    try:
+        with open(region_file, "r") as file:
+            data = json.load(file)
+            print(f"Loaded region mappings: {data}")  # Debug print
+            return data
+    except FileNotFoundError:
+        print(f"Error loading region mappings: {region_file} not found.")
+        return {}
+    except json.JSONDecodeError:
+        print(f"Error: {region_file} contains invalid JSON.")
+        return {}
+
+def select_region_menu():
+    """Allow the user to select a region."""
+
+    region_mappings = load_region_mappings()
+    
+    if not region_mappings:  # Check if region_mappings is empty
+        print("Error: No region mappings available.")
+        return None
+
+    region_list = list(region_mappings.keys())
+
     print("Available regions:")
     for idx, region in enumerate(region_list, 1):
-        print(f"{idx}. {region}")
+        print(f"{idx}. {region}")  # Display the region name to the user
     
-    # Get user input as a number
     try:
         selected_index = int(input("Select a region by number: ")) - 1
         if 0 <= selected_index < len(region_list):
             selected_region = region_list[selected_index]
-            return selected_region
+        # Return the full Region object
+            return Region(
+                name=selected_region,
+                nameForUser=region_mappings[selected_region]
+            )
         else:
             print("Invalid region selected. Exiting.")
-            return ""
+            return None
     except ValueError:
         print("Invalid input. Exiting.")
-        return ""
+        return None
 
 def show_character_details(character):
-    """
-    Display details of the selected character.
-    
-    Args:
-        character (Character): An instance of the Character class or its subclasses.
-    """
+    """Display character details."""
     print("\nCharacter Details:")
     character_table = [
-        ["Name", character.name],
-        ["Role", getattr(character, "char_role", "N/A")],  # Use getattr to handle missing attributes
-        ["Faction", character.faction],
-        ["Money", f"${getattr(character, 'bankCardCash', 0):.2f}"],
-        ["Hunger", getattr(character, "hunger", "N/A")],
-        ["Inventory", ", ".join(getattr(character, "inventory", []))]
+        ["Name", "Role", "Faction", "Money", "Hunger", "Inventory"],
+        [
+            character.name,
+            getattr(character, "char_role", "N/A"),
+            character.faction,
+            f"${getattr(character, 'bankCardCash', 0):.2f}",
+            getattr(character, "hunger", "N/A"),
+            ", ".join(getattr(character, "inventory", [])),
+        ],
     ]
+    print(tabulate(character_table, headers="firstrow", tablefmt="grid"))
+    #add a second row with 'Current location' showing selected characters current_location, current_region
 
-    print(tabulate(character_table, headers=["Attribute", "Value"], tablefmt="grid"))
-    print()
-
-def show_shops_in_region(region):
-    """Display the list of shops for the given region."""
-    logger.debug("Entered function XYZ")
-    print(f"Region passed to show_shops_in_region: {region}")  # Debug print
-    logger.debug(f"Current working directory: {os.getcwd()}")
-    logger.debug("About to call load_shops from loader.py")
-    shops = load_shops(region) #like this because from "loader import load_shops"
-    
-    if not shops:
-        print(f"No shops found in {region} region.")
+def show_locations_in_region(region, locations):
+    """Display locations in the specified region."""
+    print(f"\nAvailable Locations in {region}:")
+    if not locations:
+        print("No locations available in this region.")
         return
-    
-    print(f"Shops in {region} region:")
-    for shop in shops:
-        print(f"- {shop.name}")
-        print(f"Type: {shop.__class__.__name__}")
-        print(f"Security Level: {shop.security['level']}")
-        show_shop_inventory(shop)
-
 
 def show_shop_inventory(shop):
-    """
-    Display the inventory of a specific shop.
-    
-    Args:
-        shop (Shop): The shop object or dictionary.
-    """
-    print(f"\nShop: {shop.name if hasattr(shop, 'name') else shop.get('name', 'Unknown Shop')}")
-    inventory = shop.inventory if hasattr(shop, 'inventory') else shop.get("inventory", {})
+    """Display inventory of a specific shop."""
+    print(f"\nShop: {shop.name}")
+    inventory = shop.inventory
     if inventory:
         inventory_table = [
             [item, details.get("price", "N/A"), details.get("quantity", 0)]
@@ -151,7 +201,5 @@ def show_shop_inventory(shop):
     else:
         print("This shop has no items available.")
 
-
-if __name__ == "__main__":
-    characters = []  # Initialize characters list
-    display_menu(characters)
+def display_selected_character_current_region(character, region):
+    print(f"{character.name} is in {region.nameForUser}.")

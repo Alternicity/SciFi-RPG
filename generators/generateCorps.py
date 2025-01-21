@@ -1,4 +1,6 @@
 from distributions import generate_normal
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
 
 def generate_corporations(economic_level, num_corporations=None):
     """

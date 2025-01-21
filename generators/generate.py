@@ -1,76 +1,76 @@
-# generate.py
-# City and character data generation.
-import random
+#generate.py
+import os
+import json
 import logging
-from generateRegions import generate_region
-from generateShops import generate_shops
-"""
-There are now folders called Characters, Factions, Locations, Loyalties, Regions and Shops.
-Inside Factions are folders called Civilians, Corps, Gangs and The State.
-"""
-# Centralize the regions and wealth levels here
-regions_with_wealth = {
-    "North": "Rich", #high
-    "South": "Normal", #medium
-    "East": "Poor", #low
-    "West": "Normal", #medium
-    "Central": "Rich", #high
-}
+import sys
 
-from .generateLocation import generate_locations
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
+
+# Add the project root directory to sys.path(REMOVE THIS?)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+# Debug: Print current directory and sys.path
+print(f"Running generate.py from: {os.getcwd()}")
+print(f"sys.path: {sys.path}")
+
+
+# Import and run other generators
 from generators.generateRegions import generate_region
 from generators.generateShops import generate_shops
+from generators.generateCorps import generate_corporations
 from generators.generateCharacters import generate_character_data
 from generators.generateFactions import generate_factions
 from generators.generateGangs import generate_gangs
-from generators.generateCorps import generate_corporations
 from generators.generateEnrichment import generate_enrichment
-import logging
+from generators.generateCity import aggregate_city_data
 
-# Set up logging for debugging and progress tracking
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+#print("Imported all generators successfully!")
+
 
 def generate_city_data():
     """
     Generate city data, including regions, locations, stores, characters, factions, and gangs.
     """
     logging.info("Starting city generation process...")
+    regions_with_wealth = {
+        "North": "Rich",
+        "South": "Normal",
+        "East": "Poor",
+        "West": "Normal",
+        "Central": "Rich",
+    }
 
     try:
+        # Generate regions
         logging.info("Generating regions...")
         region_data = generate_region(regions_with_wealth)
-        logging.info("Regions generated successfully.")
 
+        # Pass generated region data to other generators
         logging.info("Generating shops...")
-        generate_shops(region_data)  # Pass the region data with wealth levels
-        logging.info("Shops generated successfully.")
+        generate_shops(region_data)
 
-        # Generate characters
         logging.info("Generating characters...")
-        generate_characters()  # Civilians, non-aligned characters
-        logging.info("Characters generated successfully.")
+        generate_character_data()
 
-        # Generate factions, ensuring that each faction's members are properly placed
         logging.info("Generating factions...")
-        generate_factions()  # Factions, including Civilians, Corps, Gangs, and The State
-        logging.info("Factions generated successfully.")
+        generate_factions()
 
-        # Generate gangs for the city
-        logging.info("Generating gangs...")
-        generate_gangs()  # Gang members and their associated territories
-        logging.info("Gangs generated successfully.")
+        """ logging.info("Generating gangs...")
+        generate_gangs() """
 
-        # Generate corporations for the city
-        logging.info("Generating corporations...")
-        generate_corporations()  # Corporate structures, employees, and business locations
-        logging.info("Corporations generated successfully.")
+        """ logging.info("Generating corporations...")
+        generate_corporations() """ #<- these two deprecated
 
-        # Generate enrichment to add color and buffs to existing data
         logging.info("Generating enrichment...")
         generate_enrichment()
-        logging.info("Enrichment generated successfully.")
+
+        # Aggregate city data after individual generators have run
+        aggregate_city_data()
 
     except Exception as e:
         logging.error(f"Error during city generation: {e}")
     else:
-        logging.info("City data generation complete.")
+        logging.info("City data generation completed successfully.")

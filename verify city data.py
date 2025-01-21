@@ -1,5 +1,8 @@
 import json
 
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
+
 def verify_city_data(city_data):
     # Check if the required keys exist in the city_data
     required_keys = ["regions"]
@@ -24,7 +27,7 @@ def verify_city_data(city_data):
     print("City data is valid.")
 
 # Load the city data
-with open('data/Locations/test_city.json', 'r') as f:
+region_file = get_file_path("scifiRPG", "data", "Test City", "Locations", "test_city.json")
     city_data = json.load(f)
 
 # Verify the data structure

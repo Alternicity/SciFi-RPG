@@ -2,12 +2,16 @@ import random
 import string
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, asdict
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 import logging
 #shop/vendor specific (at least at first)
-from typing import List, Union
+
 from location_security import Security
 logging.basicConfig(level=logging.INFO)
+
+from common import get_project_root
+#ALL files use this to get the project root
+
 
 # Decorator definition (must be placed before the class definition)
 """ def check_entrance_state(func):
@@ -63,6 +67,7 @@ class Location:
 @dataclass
 class Region:
     name: str
+    nameForUser: str
     locations: list = field(default_factory=list)
 #Each region will contain a list of Shop and other Location objects
 
@@ -102,7 +107,8 @@ class Vendor(Location):
     items_available: List[str] = field(default_factory=list)
     is_concrete: bool = False
     secret_entrance: bool = True
-
+    cash: int = 0
+    bankCardCash: int = 0
     # No need to define __init__; @dataclass handles it
     def __post_init__(self):
         super().__post_init__()
@@ -110,13 +116,12 @@ class Vendor(Location):
 
 @dataclass
 class Shop(Vendor):
-    def __init__(self, name, items_available):
-        self.name = name
-        self.inventory = items_available or {}  # Synonymous with `items_available
     name: str = "QQ Store"
+    legality: bool = True
     fun: int = 0
-    #items_available: List[str] = field(default_factory=list)
-    
+    inventory: dict = field(default_factory=dict)  # Replaces items_available
+    cash : int = 300
+    bankCardCash: int = 0
     is_concrete: bool = True
     secret_entrance: bool = False
     is_powered: bool = False
@@ -132,43 +137,36 @@ class Shop(Vendor):
 
     def to_dict(self):
         return asdict(self)
-    
+
     def display_inventory(self):
         """Display items and their prices."""
         print(f"{self.name}'s Shop Inventory:")
-        for item in self.items_available:
-            print(f"{item.name}: ${item.price}")
+        for item, details in self.inventory.items():
+            print(f"{item}: ${details['price']} (Quantity: {details['quantity']})")
 
     def sell_item(self, character, item_name):
-        # Find the item in the shop's inventory
-        item = next((item for item in self.items_available if item.name == item_name), None)
-        
-        if item:
-            if character.bankCardCash >= item.price:
-                # Deduct money from character
-                character.bankCardCash -= item.price
-                # Add item to character's inventory
-                character.inventory.append(item)
-                print(f"{item.name} sold to {character.name} for ${item.price}. Remaining balance: ${character.bankCardCash}")
+        """Sell an item to a character."""
+        if item_name in self.inventory:
+            item_details = self.inventory[item_name]
+            if character.bankCardCash >= item_details['price']:
+                # Deduct money and update inventory
+                character.bankCardCash -= item_details['price']
+                character.inventory.append(item_name)
+                item_details['quantity'] -= 1
+                print(f"{item_name} sold to {character.name} for ${item_details['price']}. Remaining balance: ${character.bankCardCash}")
             else:
                 print(f"{character.name} doesn't have enough money to buy {item_name}.")
         else:
             print(f"{item_name} is not available in {self.name}'s inventory.")
 
-    # No need to define __init__; @dataclass handles it
-    def sell_item(self, character, item):
-        if item in self.items_available:
-            print(f"Item {item} sold to {character.name}")
-            # Add item to character's inventory (or some similar behavior)
-        else:
-            print(f"Item {item} not available")
 
 @dataclass
 class CorporateStore(Vendor):
     name: str = "Stores"
+    corporation: str = "Default"  # Default value is now valid
     items_available: List[str] = field(default_factory=list)
     is_concrete: bool = True
-    
+    bankCardCash: int = 0
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
@@ -180,6 +178,11 @@ class CorporateStore(Vendor):
         surveillance=False,
         alarm_system=False
     ))
+
+    cash: int = 1000
+    bankCardCash: int = 0
+    inventory: dict = field(default_factory=dict)
+    legality: str = "Legal"
 
     def to_dict(self):
         return asdict(self)

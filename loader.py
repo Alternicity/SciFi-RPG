@@ -3,16 +3,19 @@ import json
 import logging
 from typing import List, Union
 from location import Shop, CorporateStore, Stash
-
+from characters import Character, Employee, Civilian, Manager
+from location_security import Security
+from character_creation import create_characters_as_objects
+#If loader.py already imports location, and location imports Security, you could access it as:
+#from location import Security
+from common import get_project_root
+#ALL files use this to get the project root
 
 # Setup logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-# Base directory for region data
-BASE_REGION_DIR = os.path.normpath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Test City", "Shops")
-)
+
 
 def get_region_file_path(region_name: str) -> str:
     """
@@ -71,31 +74,23 @@ def get_shops_file_path(region_name: str) -> str:
 def load_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash]]:
     """
     Loads the shops data for the specified region from the corresponding JSON file.
-    
-    Args:
-        region_name (str): The name of the region (e.g., 'North').
-    
     Returns:
         list: A list of shop objects created from the JSON data.
-    
-    Raises:
-        FileNotFoundError: If the shops file does not exist.
-        ValueError: If there is an error decoding the JSON data.
     """
     shops_file_path = get_shops_file_path(region_name)
 
     # Check if the file exists before attempting to open
     if not os.path.exists(shops_file_path):
-        logger.error(f"Shops file does not exist: {shops_file_path}")
+        #logger.error(f"Shops file does not exist: {shops_file_path}")
         raise FileNotFoundError(f"Shops data file '{shops_file_path}' not found.")
     
-    logger.debug(f"Loading shop data for region: {region_name}")
+    #logger.debug(f"Loading shop data for region: {region_name}")
     try:
         with open(shops_file_path, 'r') as file:
             shops_data = json.load(file)
-            logger.debug("Shops data loaded successfully.")
+            #logger.debug("Shops data loaded successfully.")
     except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON data from '{shops_file_path}': {e}")
+        #logger.error(f"Error decoding JSON data from '{shops_file_path}': {e}")
         raise ValueError(f"Error decoding JSON data from '{shops_file_path}': {e}")
     
         # Validate and parse shop data
@@ -120,11 +115,11 @@ def load_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash]]:
             shop = CorporateStore(
                 name=shop_data["name"],
                 corporation=shop_data["corporation"],
-                inventory=shop_data["inventory"],
-                cash=shop_data["cash"],
-                bankCardCash=shop_data["bankCardCash"],
-                legality=shop_data["legality"],
-                security=shop_data["security"]
+                inventory=shop_data.get("inventory", {}),
+                cash=shop_data.get("cash", 0),
+                bankCardCash=shop_data.get("bankCardCash", 0),
+                legality=shop_data.get("legality", "Legal"),
+                security=shop_data.get("security", Security())
             )
         elif shop_data["type"] == "Stash":
             shop = Stash(
@@ -137,7 +132,7 @@ def load_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash]]:
             )
         shops.append(shop)
 
-    logger.info(f"Successfully loaded {len(shops)} shops for region '{region_name}'.")
+    #logger.info(f"Successfully loaded {len(shops)} shops for region '{region_name}'.")
     return shops
 
 def validate_shop_data(shop_data: dict) -> bool:
@@ -167,7 +162,7 @@ def initialize_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash
     """
     Initializes shop objects for the given region.
     """
-    logger.debug(f"Initializing shops for region: {region_name}")
+    #logger.debug(f"Initializing shops for region: {region_name}")
     shops = load_shops(region_name)
 
     # Perform additional processing (e.g., assign faction ownership)
@@ -188,7 +183,7 @@ def load_region_data(region_name: str) -> dict:
         region_name (str): The name of the region (e.g., 'North').
     
     Returns:
-        dict: A dictionary containing the region data.
+        dict: A data structure containing the region data.
     
     Raises:
         FileNotFoundError: If the region data file does not exist.
@@ -211,7 +206,72 @@ def load_region_data(region_name: str) -> dict:
     
     return region_data
 
+def load_characters(selected_character_data):
+    #Loads serialized, pre-made character populations from json or yaml, and instantiates
+    #game objects.
+    #Use generateCharacters to make these
+    #For initital buy/sell shop testing this won't be used.
+    
+    #These characters, when loaded will need to be assigned variables and
+    #factions, needs, and current locations and a select few will be enriched (buffed)
+    #See also 
+    # Also, character will be assigned names from lists, based on race.
+    # load_characters_from_file in utils, which returns a list, should
+    #that be deprecated or renamed? 
+    #Load characters will thus need another file that follows it to
+    #to assign them, for example each shop will have 1 Manager, and 1+Employees, but
+    #see also initialize_shops()
+    """Load characters dynamically."""
+    logging.info("Loading characters...")
+    
+    characters = create_characters_as_objects()
 
+    # Validate input or default to empty list
+    if selected_character_data is None:
+        logging.error("No character data provided to loader.")
+        return []
+    
+    # Initialize the character list
+    characters = []
+
+# Placeholder character data (to be replaced by dynamic data later)
+    """ character_data = [
+        {"type": "Manager", "name": "Xarolina", "faction": "BlueCorp", "bankCardCash": 500, "fun": 1, "hunger": 3},
+        # Add more character data as needed
+    ] """
+
+    # Instantiate the selected character
+    data = selected_character_data
+    if data["type"] == "Manager":
+        character = Manager(
+            name=data["name"],
+            faction=data["faction"],
+            bankCardCash=data["bankCardCash"],
+            fun=data["fun"],
+            hunger=data["hunger"],
+        )
+    elif data["type"] == "Civilian":
+        character = Civilian(
+            name=data["name"],
+            faction=data["faction"],
+            occupation=data.get("occupation", "Unemployed"),
+        )
+    else:
+        character = Character(
+            name=data["name"],
+            faction=data["faction"],
+        )
+
+    characters.append(character)
+    #logging.info(f"Loaded characters: {characters}")
+    return characters
+    
+    l
+    
+    
+    
+
+    
 
 # Example usage
 if __name__ == "__main__":
@@ -221,3 +281,5 @@ if __name__ == "__main__":
         print(f"Loaded {len(shops)} shops for region '{region_name}'.")
     except Exception as e:
         print(f"Error: {e}")
+
+

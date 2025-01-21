@@ -1,6 +1,9 @@
 import json
 import os
 
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
+
 def parse_city_data(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -34,7 +37,7 @@ def save_data(data, folder_name, file_name):
     print(f"Saved: {output_path}")
 
 # Main logic
-file_path = "C:/Users/Stuart/Python Scripts/scifiRPG/data/Locations/test_city.json"
+region_file = get_file_path("scifiRPG", "data", "Test City", "Locations", "test_city.json")
 
 try:
     characters, locations = parse_city_data(file_path)

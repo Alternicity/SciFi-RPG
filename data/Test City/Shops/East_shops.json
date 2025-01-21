@@ -3,36 +3,6 @@
         "type": "Shop",
         "fun": 2,
         "name": "Shop_East_1",
-        "items_available": [
-            {
-                "item": "Used Electronics",
-                "price": 81
-            },
-            {
-                "item": "Basic Food",
-                "price": 37
-            },
-            {
-                "item": "Basic Food",
-                "price": 12
-            },
-            {
-                "item": "Basic Food",
-                "price": 15
-            },
-            {
-                "item": "Basic Food",
-                "price": 63
-            },
-            {
-                "item": "Basic Food",
-                "price": 19
-            },
-            {
-                "item": "Cheap Clothing",
-                "price": 91
-            }
-        ],
         "upkeep": 23,
         "is_concrete": true,
         "secret_entrance": false,
@@ -48,30 +18,29 @@
             "difficulty_to_break_in": 7,
             "surveillance": false,
             "alarm_system": true
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Used Electronics": {
+                "price": 81,
+                "quantity": 10
+            },
+            "Basic Food": {
+                "price": 19,
+                "quantity": 10
+            },
+            "Cheap Clothing": {
+                "price": 91,
+                "quantity": 10
+            }
         }
     },
     {
         "type": "Shop",
         "fun": 2,
         "name": "Shop_East_2",
-        "items_available": [
-            {
-                "item": "Used Electronics",
-                "price": 80
-            },
-            {
-                "item": "Cheap Clothing",
-                "price": 82
-            },
-            {
-                "item": "Used Electronics",
-                "price": 40
-            },
-            {
-                "item": "Used Electronics",
-                "price": 69
-            }
-        ],
         "upkeep": 40,
         "is_concrete": true,
         "secret_entrance": true,
@@ -87,6 +56,19 @@
             "difficulty_to_break_in": 8,
             "surveillance": true,
             "alarm_system": false
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Used Electronics": {
+                "price": 69,
+                "quantity": 10
+            },
+            "Cheap Clothing": {
+                "price": 82,
+                "quantity": 10
+            }
         }
     }
 ]

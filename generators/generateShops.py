@@ -7,6 +7,10 @@ import logging
 import weapons
 import InWorldObjects
 
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
+
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from location import Shop, Stash, Vendor, CorporateStore, Security
 

@@ -5,6 +5,7 @@ Directory: .
   - characters.py
   - character_creation.py
   - check invalid path.py
+  - city_utils.py
   - combat.py
   - common.py
   - create.py
@@ -13,6 +14,7 @@ Directory: .
   - economy.py
   - events.py
   - faction.py
+  - gameplay.py
   - goals.py
   - inventory.py
   - InWorldObjects.py
@@ -20,11 +22,14 @@ Directory: .
   - list files.py
   - ListCityData.py
   - ListClassesAndInheritance.py
+  - ListsClassesInObjjectsAndWeapons.py
   - loader.py
+  - loaderExtraFunctionsReuse.py
   - location.py
   - location_security.py
   - loyalty.py
   - main.py
+  - migrateShops.py
   - morale.py
   - motivation.py
   - object_factory.py
@@ -35,6 +40,7 @@ Directory: .
   - store.py
   - tasks.py
   - test.py
+  - testLoadShops.py
   - test_file_opening.py
   - utils.py
   - verify city data.py
@@ -589,6 +595,8 @@ Directory: ./.venv\Lib\site-packages\_yaml\__pycache__
 Directory: ./.venv\Scripts
 Directory: ./.vscode
   - launch.json
+  - settings.json
+  - tasks.json
 Directory: ./data
   - civilians.yaml
   - events.json
@@ -610,36 +618,16 @@ Directory: ./data\Test City\Factions\The State
   - the State.py
 Directory: ./data\Test City\Locations
   - locations.json
-  - Southville.json
+  - South.json
   - test_city.json
 Directory: ./data\Test City\Loyalties
 Directory: ./data\Test City\Regions
-  - Central.json
-  - East.json
-  - North.json
-  - South.json
-  - West.json
 Directory: ./data\Test City\Shops
   - Central_shops.json
   - East_shops.json
   - North_shops.json
   - South_shops.json
   - West_shops.json
-Directory: ./deprecated
-  - city_regions.json
-  - deprecated main.py
-  - FIX THE STATE.py
-  - Grunt.py
-  - legacy main menu.py
-  - legacy main mid dec 24.py
-  - legacy main.py
-  - locations.json
-  - old gang spawn test code.py
-  - runTheCity.py
-  - simulate_turn.py
-  - state cruft.py
-  - task delegation placeholder.py
-  - update loyalties.py
 Directory: ./generators
   - generate.py
   - generateCharacters.py

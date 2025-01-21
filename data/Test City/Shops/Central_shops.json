@@ -3,36 +3,6 @@
         "type": "Stash",
         "stored_items": [],
         "name": "Stash_Central_1",
-        "items_available": [
-            {
-                "item": "Advanced Electronics",
-                "price": 54
-            },
-            {
-                "item": "Advanced Electronics",
-                "price": 19
-            },
-            {
-                "item": "Advanced Electronics",
-                "price": 24
-            },
-            {
-                "item": "Advanced Electronics",
-                "price": 16
-            },
-            {
-                "item": "Designer Clothing",
-                "price": 41
-            },
-            {
-                "item": "Advanced Electronics",
-                "price": 22
-            },
-            {
-                "item": "Gourmet Food",
-                "price": 32
-            }
-        ],
         "upkeep": 19,
         "is_concrete": true,
         "secret_entrance": false,
@@ -46,34 +16,29 @@
             "difficulty_to_break_in": 2,
             "surveillance": true,
             "alarm_system": false
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Advanced Electronics": {
+                "price": 22,
+                "quantity": 10
+            },
+            "Designer Clothing": {
+                "price": 41,
+                "quantity": 10
+            },
+            "Gourmet Food": {
+                "price": 32,
+                "quantity": 10
+            }
         }
     },
     {
         "type": "Shop",
         "fun": 5,
         "name": "Shop_Central_2",
-        "items_available": [
-            {
-                "item": "Gourmet Food",
-                "price": 64
-            },
-            {
-                "item": "Designer Clothing",
-                "price": 47
-            },
-            {
-                "item": "Gourmet Food",
-                "price": 90
-            },
-            {
-                "item": "Advanced Electronics",
-                "price": 50
-            },
-            {
-                "item": "Gourmet Food",
-                "price": 28
-            }
-        ],
         "upkeep": 29,
         "is_concrete": true,
         "secret_entrance": false,
@@ -87,6 +52,23 @@
             "difficulty_to_break_in": 9,
             "surveillance": false,
             "alarm_system": true
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Gourmet Food": {
+                "price": 28,
+                "quantity": 10
+            },
+            "Designer Clothing": {
+                "price": 47,
+                "quantity": 10
+            },
+            "Advanced Electronics": {
+                "price": 50,
+                "quantity": 10
+            }
         }
     }
 ]

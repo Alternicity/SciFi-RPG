@@ -3,28 +3,6 @@
         "type": "CorporateStore",
         "corporation": "Corp_North",
         "name": "CorporateStore_North_1",
-        "items_available": [
-            {
-                "item": "Advanced Electronics",
-                "price": 61
-            },
-            {
-                "item": "Designer Clothing",
-                "price": 47
-            },
-            {
-                "item": "Advanced Electronics",
-                "price": 96
-            },
-            {
-                "item": "Designer Clothing",
-                "price": 92
-            },
-            {
-                "item": "Advanced Electronics",
-                "price": 80
-            }
-        ],
         "upkeep": 20,
         "is_concrete": true,
         "secret_entrance": true,
@@ -39,26 +17,25 @@
             "difficulty_to_break_in": 6,
             "surveillance": true,
             "alarm_system": true
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Advanced Electronics": {
+                "price": 80,
+                "quantity": 10
+            },
+            "Designer Clothing": {
+                "price": 92,
+                "quantity": 10
+            }
         }
     },
     {
         "type": "Shop",
         "fun": 0,
         "name": "Shop_North_2",
-        "items_available": [
-            {
-                "item": "Designer Clothing",
-                "price": 79
-            },
-            {
-                "item": "Designer Clothing",
-                "price": 31
-            },
-            {
-                "item": "Designer Clothing",
-                "price": 95
-            }
-        ],
         "upkeep": 32,
         "is_concrete": true,
         "secret_entrance": false,
@@ -73,6 +50,15 @@
             "difficulty_to_break_in": 1,
             "surveillance": false,
             "alarm_system": true
+        },
+        "legality": "Legal",
+        "bankCardCash": 0,
+        "cash": 0,
+        "inventory": {
+            "Designer Clothing": {
+                "price": 95,
+                "quantity": 10
+            }
         }
     }
 ]

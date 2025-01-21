@@ -4,8 +4,10 @@ import json
 import random
 import string
 
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(ROOT_DIR)
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
+
+
 from common import Status
 from characters import Character, Boss, Captain, Manager, Employee, Civilian, VIP, CorporateSecurity, RiotCop, GangMember
 #By appending ROOT_DIR to sys.path before the imports,

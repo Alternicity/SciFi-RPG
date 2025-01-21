@@ -1,9 +1,13 @@
+import os
 import json
 import yaml
 import random
 from .generateCorps import generate_corporations
 from .generateGangs import generate_gangs
 from characters import VIP, RiotCop
+from generators.generateState import generate_state
+from common import get_project_root, get_file_path
+#ALL files use this to get the project root
 
 def generate_factions():
     """
@@ -12,19 +16,60 @@ def generate_factions():
     """
     print("Generating factions...")
 
-    # Load existing city data
+    """ # Load existing city data
     with open("test_city.json", "r") as file:
         city_data = json.load(file)
-
     # Load locations data
     with open("locations.json", "r") as file:
-        locations_data = json.load(file)
+        locations_data = json.load(file) """
 
     # Determine the number of gangs and corporations
     num_gangs = random.randint(2, 3)
     num_corps = random.randint(4, 5)
 
     print(f"Generating {num_gangs} gangs and {num_corps} corporations.")
+
+    # Generate gang and corporation data
+    generate_gangs()  # Ensure gangs.json is created
+    generate_corporations()  # Ensure corporations.json is created
+    generate_state()
+    # Combine gangs and corporations into a single factions structure
+    factions = []
+
+    # Load gangs
+    try:
+        with open("data/gangs.json", "r") as file:
+            gangs = json.load(file)
+            factions.extend(gangs)
+    except FileNotFoundError:
+        print("No gangs data found. Skipping gangs.")
+
+    # Load corporations
+    try:
+        with open("data/corporations.json", "r") as file:
+            corporations = json.load(file)
+            factions.extend(corporations)
+    except FileNotFoundError:
+        print("No corporations data found. Skipping corporations.")
+
+
+    # Load the State
+    try:
+        with open("data/state.json", "r") as file:
+            state = json.load(file)
+            factions.append(state)
+    except FileNotFoundError:
+        print("No State data found. Skipping the State.")
+
+    # Save combined factions data
+    with open(output_path, "w") as file:
+        json.dump({"factions": factions}, file, indent=4)
+    print(f"Factions data saved to {output_path}")
+
+    # Save combined factions data
+    with open(output_path, "w") as file:
+        json.dump({"factions": factions}, file, indent=4)
+    print(f"Factions data saved to {output_path}")
 
     # Assign HQs for gangs and corporations
     available_locations = [
@@ -39,12 +84,6 @@ def generate_factions():
     gang_hqs = available_locations[:num_gangs]
     corp_hqs = available_locations[num_gangs:num_gangs + num_corps]
 
-    # Generate gangs
-    gangs = generate_gangs(num_gangs, gang_hqs)
-
-    # Generate corporations
-    corps = generate_corps(num_corps, corp_hqs)
-
     # Assign gangs and corporations to regions
     for region in city_data["city"]:
         if region != "Central":
@@ -52,60 +91,18 @@ def generate_factions():
                 gangs + corps, k=random.randint(1, len(gangs + corps))
             )
 
-    # Update test_city.json
-    with open("test_city.json", "w") as file:
+    #upadte this using from common import get_project_root, get_file_path
+region_file = get_file_path("data", "Test City", "Locations", "test_city.json")
+
+try:
+    with open(region_file, "w") as file:
         json.dump(city_data, file, indent=4)
+    print(f"Updated: {region_file}")
+except FileNotFoundError as e:
+    print(f"Error updating region file: {e}")
 
     print("Factions generated and test_city.json updated.")
 
-def generate_state(file_path="data/state.yaml", tax_rate=0.15, num_riot_cops=10):
-    """
-    Generates or overwrites the state.yaml file with the State's details.
-    
-    Args:
-        file_path (str): The path to save the state.yaml file.
-        tax_rate (float): The tax rate applied by the State.
-        num_riot_cops (int): The number of RiotCops to assign to the State.
-    """
 
-    state_name = "The State"
 
-    # Create a VIP character for the State
-    vip = VIP(name="State Leader", position="Governor", influence=90, faction=state_name)
 
-    # Generate RiotCops
-    riot_cops = [
-        RiotCop(name=f"RiotCop_{i+1}")
-        for i in range(num_riot_cops)
-    ]
-
-    # Define the State's details
-    state_data = {
-        "name": state_name,
-        "type": "corporation",
-        "affiliation": "none",
-        "resources": 10000,
-        "tax_rate": tax_rate,
-        "laws": ["Law 1", "Law 2", "Law 3"],
-        "goals": [
-            {"goal": "retain dominance", "priority": "high", "reward": 2000},
-            {"goal": "extract value", "priority": "high", "reward": 1500},
-        ],
-        "personnel": {
-            "VIP": {
-                "name": vip.name,
-                "influence": vip.influence,
-                "faction": vip.faction,
-            },
-            "RiotCops": [
-                {"name": cop.name}
-                for cop in riot_cops
-            ],
-        },
-    }
-
-    # Write the state data to a YAML file
-    with open(file_path, "w") as file:
-        yaml.dump(state_data, file, default_flow_style=False)
-    
-    print(f"State data saved to {file_path}")

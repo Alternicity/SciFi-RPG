@@ -6,7 +6,7 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def create_characters_as_objects():
-    logging.info("Creating characters as objects..")
+    #logging.info("Creating characters as objects..")
     characters = [
         #VIP(name="Jurgen", bankCardCash=10000, faction="The State", fun=1, hunger=2),
         Manager(name="Carolina", faction="BlueCorp", bankCardCash=500, fun=1, hunger=3),
