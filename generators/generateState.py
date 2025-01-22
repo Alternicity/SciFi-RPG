@@ -1,7 +1,10 @@
 from characters import VIP, RiotCop, Employee
+from pathlib import Path
 
+project_root = Path(__file__).parent.parent  # Adjust based on your directory structure
+state_file_path = project_root / "data" / "Test City" / "Factions" / "TheState" / "state.json"
 
-def generate_state(file_path="scifiRPG\data\Test City\Factions\TheState\state.json", tax_rate=0.15, num_riot_cops=10):
+def generate_state(file_path=r"scifiRPG\data\Test City\Factions\TheState\state.json", tax_rate=0.15, num_riot_cops=10):
     """
     Generates or overwrites the state.json file with the State's details.
 

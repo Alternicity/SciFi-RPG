@@ -40,6 +40,7 @@ def generate_region_menu():
     danger_level = get_valid_input("Enter Danger Level (1-10): ", 1, 10)
 
     # Generate the region
+    print("tmp comment: unexpectedly running from region_menu.py")
     try:
         region = generate_region(region_size, economic_level, danger_level)
     except Exception as e:

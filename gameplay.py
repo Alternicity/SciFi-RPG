@@ -3,6 +3,8 @@ from display import show_character_details, show_locations_in_region, display_se
 from loader import initialize_shops
 from dataclasses import dataclass, field
 
+from LoaderRuntime import load_locations_from_yaml
+
 from common import get_project_root, get_file_path
 #ALL files use this to get the project root
 
@@ -21,16 +23,13 @@ def gameplay(character, region):
     #show any pressing neeeds/motivations, ie "Character_name is hungry"
 
     # Use nameForUser for user-facing messages, and `name` for programmatic references
-
     print(f"\n{character.name} is in the {region.nameForUser} region.")
-    print("You can buy and sell items here.")
+    #This needs to be dealt with by display.py
+    
+# Call display function for locations - dynamic, yaml
+    show_locations_in_region(region, locations)
 
-    if region.locations:
-        print("Locations in this region:")
-        for location in region.locations:
-            print(f"- {location.name}")
-    else:
-        print("This region has no locations yet.")
+    
 
     # Gameplay loop
     while True:

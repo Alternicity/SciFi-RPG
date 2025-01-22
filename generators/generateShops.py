@@ -6,7 +6,7 @@ from dataclasses import asdict
 import logging
 import weapons
 import InWorldObjects
-
+from region_startup import regions_with_wealth
 from common import get_project_root, get_file_path
 #ALL files use this to get the project root
 
@@ -98,14 +98,7 @@ def generate_shops():
 
 # Example usage
 if __name__ == "__main__":
-    # Define regions and their wealth levels
-    regions_with_wealth = {
-        "North": "high",
-        "South": "medium",
-        "East": "low",
-        "West": "medium",
-        "Central": "high"
-    }
+    
 
     # Generate shops for each region
     for region, wealth in regions_with_wealth.items():

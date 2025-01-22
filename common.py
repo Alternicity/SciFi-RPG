@@ -28,3 +28,10 @@ def load_locations(filepath, faction_name):
         if faction_name in region.get("factions", []):
             locations.extend(region.get("locations", []))
     return locations
+
+# Define BASE_REGION_DIR dynamically
+BASE_REGION_DIR = get_file_path("data", "Test City", "Regions")
+
+# Define BASE_SHOPS_DIR dynamically
+BASE_SHOPS_DIR = get_file_path("data", "Test City", "Shops")
+

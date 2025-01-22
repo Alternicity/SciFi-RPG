@@ -3,9 +3,10 @@ import os
 import json
 import logging
 import sys
-
 from common import get_project_root, get_file_path
 #ALL files use this to get the project root
+from region_startup import regions_with_wealth
+#Ensure generate.py is only called from main.py and not executed as a standalone script.
 
 # Add the project root directory to sys.path(REMOVE THIS?)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -35,12 +36,11 @@ def generate_city_data():
     Generate city data, including regions, locations, stores, characters, factions, and gangs.
     """
     logging.info("Starting city generation process...")
-    regions_with_wealth = {
-        "North": "Rich",
-        "South": "Normal",
-        "East": "Poor",
-        "West": "Normal",
-        "Central": "Rich",
+    
+    region_wealth = get_region_wealth()
+    return {
+        region: {"nameForUser": region, "wealth": wealth}
+        for region, wealth in region_wealth.items()
     }
 
     try:
@@ -74,3 +74,8 @@ def generate_city_data():
         logging.error(f"Error during city generation: {e}")
     else:
         logging.info("City data generation completed successfully.")
+
+if __name__ == "__main__":
+    # Place executable code here
+    print(f"Running generate.py from: {os.getcwd()}")
+    print(f"sys.path: {sys.path}")

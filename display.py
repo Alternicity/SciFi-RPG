@@ -7,8 +7,10 @@ from city_utils import regenerate_city_data
 from characters import Manager, Civilian, Character
 from location import Region
 import json
+from region_startup import regions_with_wealth
+from LoaderRuntime import load_locations_from_yaml
 
-from common import get_project_root, get_file_path
+from common import get_project_root, get_file_path, BASE_REGION_DIR, BASE_SHOPS_DIR
 #ALL files use this to get the project root
 
 # Setup logger
@@ -118,20 +120,30 @@ def select_character_menu(characters):
         return None
 
 def load_region_mappings():
-    region_file = get_file_path("scifiRPG", "data", "Test City", "Locations", "test_city.json")
-    print(f"Looking for region file at: {region_file}")  # Debugging print
+
+    # List of region names
+    valid_regions = ["North", "East", "West", "South", "Central"]
+
+    region_mappings = {}
+    for region in valid_regions:
+        # Construct the region file path using BASE_REGION_DIR
+        region_file_path = os.path.join(BASE_REGION_DIR, f"{region}.json")
+        #print(f"Looking for region file at: {region_file_path}")  # Debugging print
+        
+        try:
+            # Open the respective region file
+            with open(region_file_path, "r") as file:
+                data = json.load(file)
+                region_mappings[region] = data  # Add region mappings to the dictionary
+                # Only print brief info about the region here
+                print(f"Loaded region data for {region}: {data.get('nameForUser', 'Unknown Region Name')}")
+
+        except FileNotFoundError:
+            print(f"Error loading region mappings for {region}: {region_file_path} not found.")
+        except json.JSONDecodeError:
+            print(f"Error: {region_file_path} contains invalid JSON.")
     
-    try:
-        with open(region_file, "r") as file:
-            data = json.load(file)
-            print(f"Loaded region mappings: {data}")  # Debug print
-            return data
-    except FileNotFoundError:
-        print(f"Error loading region mappings: {region_file} not found.")
-        return {}
-    except json.JSONDecodeError:
-        print(f"Error: {region_file} contains invalid JSON.")
-        return {}
+    return region_mappings
 
 def select_region_menu():
     """Allow the user to select a region."""
@@ -142,20 +154,27 @@ def select_region_menu():
         print("Error: No region mappings available.")
         return None
 
-    region_list = list(region_mappings.keys())
+    # Prepare region data for display
+    region_list = [
+        [idx + 1, data.get("nameForUser", region), data.get("wealth", "Unknown")]
+        for idx, (region, data) in enumerate(region_mappings.items())
+    ]
 
-    print("Available regions:")
-    for idx, region in enumerate(region_list, 1):
-        print(f"{idx}. {region}")  # Display the region name to the user
-    
+    # Display the regions using tabulate
+    print("\nAvailable Regions:")
+    print(tabulate(region_list, headers=["#", "Region", "Wealth"], tablefmt="pretty"))
+
     try:
-        selected_index = int(input("Select a region by number: ")) - 1
+        # Prompt user for selection
+        selected_index = int(input("\nSelect a region by number: ")) - 1
+
+        # Validate the selected index
         if 0 <= selected_index < len(region_list):
-            selected_region = region_list[selected_index]
-        # Return the full Region object
+            selected_region_key = list(region_mappings.keys())[selected_index]
+            selected_region_data = region_mappings[selected_region_key]
             return Region(
-                name=selected_region,
-                nameForUser=region_mappings[selected_region]
+                name=selected_region_key,
+                nameForUser=selected_region_data["nameForUser"]
             )
         else:
             print("Invalid region selected. Exiting.")
@@ -181,12 +200,23 @@ def show_character_details(character):
     print(tabulate(character_table, headers="firstrow", tablefmt="grid"))
     #add a second row with 'Current location' showing selected characters current_location, current_region
 
-def show_locations_in_region(region, locations):
+def show_locations_in_region(region):
     """Display locations in the specified region."""
-    print(f"\nAvailable Locations in {region}:")
-    if not locations:
-        print("No locations available in this region.")
+    locations_data = load_locations_from_yaml(region)
+    if not locations_data:
+        print(f"No locations found in {region}.")
         return
+    
+    print(f"Locations in {region}:")
+    for location in locations_data:
+        print(f"- {location['name']} (Type: {location['type']}, Security Level: {location['security_level']})")
+
+    # Prepare the data for tabulation: list of location names
+    location_data = [[loc['name']] for loc in locations_data]
+    
+    # Tabulate the data
+    print(tabulate(location_data, headers=["Location Name"], tablefmt="pretty"))
+
 
 def show_shop_inventory(shop):
     """Display inventory of a specific shop."""

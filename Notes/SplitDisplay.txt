@@ -1,0 +1,8 @@
+scifiRPG\data\Test City\Factions\Gangs
+
+Split display.py if Needed: If display.py is getting too large, consider dividing it into smaller files:
+
+menu_display.py: For menu-related display functions like display_menu(), start_game_menu().
+character_display.py: For character-related display functions like show_character_details().
+region_display.py: For region-related functions like select_region_menu() or show_locations_in_region().
+Then, update your imports in display.py or elsewhere to point to these new files.

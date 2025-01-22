@@ -16,17 +16,10 @@ def generate_factions():
     """
     print("Generating factions...")
 
-    """ # Load existing city data
-    with open("test_city.json", "r") as file:
-        city_data = json.load(file)
-    # Load locations data
-    with open("locations.json", "r") as file:
-        locations_data = json.load(file) """
 
     # Determine the number of gangs and corporations
     num_gangs = random.randint(2, 3)
     num_corps = random.randint(4, 5)
-
     print(f"Generating {num_gangs} gangs and {num_corps} corporations.")
 
     # Generate gang and corporation data
@@ -34,74 +27,69 @@ def generate_factions():
     generate_corporations()  # Ensure corporations.json is created
     generate_state()
     # Combine gangs and corporations into a single factions structure
-    factions = []
 
-    # Load gangs
+    # Load gang and corporation data
+    gangs = []
+    corporations = []
     try:
-        with open("data/gangs.json", "r") as file:
+        with open(r"scifiRPG\data\Test City\Factions\Gangs", "r") as file:
             gangs = json.load(file)
-            factions.extend(gangs)
     except FileNotFoundError:
-        print("No gangs data found. Skipping gangs.")
+        print("No gangs data found.")
 
-    # Load corporations
     try:
-        with open("data/corporations.json", "r") as file:
+        with open(r"scifiRPG\data\Test City\Factions\Corps", "r") as file:
             corporations = json.load(file)
-            factions.extend(corporations)
     except FileNotFoundError:
-        print("No corporations data found. Skipping corporations.")
+        print("No corporations data found.")
 
 
     # Load the State
     try:
-        with open("data/state.json", "r") as file:
+        with open(r"scifiRPG\data\Test City\Factions\TheState", "r") as file:
             state = json.load(file)
             factions.append(state)
     except FileNotFoundError:
         print("No State data found. Skipping the State.")
 
-    # Save combined factions data
-    with open(output_path, "w") as file:
-        json.dump({"factions": factions}, file, indent=4)
-    print(f"Factions data saved to {output_path}")
+    # Load region files dynamically
+    regions_path = get_file_path("data", "Regions")
+    region_files = [f for f in os.listdir(regions_path) if f.endswith(".json")]
 
-    # Save combined factions data
-    with open(output_path, "w") as file:
-        json.dump({"factions": factions}, file, indent=4)
-    print(f"Factions data saved to {output_path}")
+    for region_file in region_files:
+        region_path = os.path.join(regions_path, region_file)
+        print(f"Processing region: {region_file}")
 
-    # Assign HQs for gangs and corporations
-    available_locations = [
-        loc for loc in locations_data if loc["type"] == "HQ"
-    ]
-    random.shuffle(available_locations)
+        # Load region data
+        with open(region_path, "r") as file:
+            region_data = json.load(file)
 
-    # Check if there are enough HQs
-    if len(available_locations) < (num_gangs + num_corps):
-        raise ValueError("Not enough HQ locations available!")
+        # Find HQ locations
+        hq_locations = [
+            loc for loc in region_data.get("locations", []) if loc.get("type") == "HQ"
+        ]
+        if not hq_locations:
+            print(f"No HQ locations in {region_file}. Skipping.")
+            continue
 
-    gang_hqs = available_locations[:num_gangs]
-    corp_hqs = available_locations[num_gangs:num_gangs + num_corps]
+        # Assign factions to HQs
+        random.shuffle(hq_locations)
+        num_to_assign = min(len(hq_locations), num_gangs + num_corps)
+        assigned_gangs = gangs[:num_to_assign // 2]
+        assigned_corps = corporations[:num_to_assign // 2]
 
-    # Assign gangs and corporations to regions
-    for region in city_data["city"]:
-        if region != "Central":
-            city_data["city"][region]["factions"] = random.sample(
-                gangs + corps, k=random.randint(1, len(gangs + corps))
-            )
+        for idx, hq in enumerate(hq_locations):
+            if idx < len(assigned_gangs):
+                hq["faction"] = assigned_gangs[idx]
+            elif idx < len(assigned_gangs) + len(assigned_corps):
+                hq["faction"] = assigned_corps[idx - len(assigned_gangs)]
 
-    #upadte this using from common import get_project_root, get_file_path
-region_file = get_file_path("data", "Test City", "Locations", "test_city.json")
+        # Save updated region data
+        with open(region_path, "w") as file:
+            json.dump(region_data, file, indent=4)
+        print(f"Updated region: {region_file}")
 
-try:
-    with open(region_file, "w") as file:
-        json.dump(city_data, file, indent=4)
-    print(f"Updated: {region_file}")
-except FileNotFoundError as e:
-    print(f"Error updating region file: {e}")
-
-    print("Factions generated and test_city.json updated.")
+    print("Faction assignment complete.")
 
 
 

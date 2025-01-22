@@ -8,9 +8,8 @@ from location_security import Security
 from character_creation import create_characters_as_objects
 #If loader.py already imports location, and location imports Security, you could access it as:
 #from location import Security
-from common import get_project_root
 #ALL files use this to get the project root
-
+from common import BASE_REGION_DIR, BASE_SHOPS_DIR, get_project_root
 # Setup logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -41,7 +40,6 @@ def get_region_file_path(region_name: str) -> str:
     # Capitalize the first letter of the region name and construct the file name
     region_file_name = f"{region_name.capitalize()}_shops.json"  # Capitalize first letter
     region_file_path = os.path.join(BASE_REGION_DIR, region_file_name)
-    
     logger.debug(f"Resolved file path: {region_file_path}")
     
     # Normalize the path (this ensures compatibility with both Windows and Unix systems)
@@ -50,7 +48,7 @@ def get_region_file_path(region_name: str) -> str:
 
 def get_shops_file_path(region_name: str) -> str:
     """
-    Constructs the full path to the shops JSON file for a given region.
+    Constructs the full path to the shops JSON file for shops data.
     
     Args:
         region_name (str): The name of the region (e.g., 'North').
@@ -64,13 +62,13 @@ def get_shops_file_path(region_name: str) -> str:
         logger.error(f"Region name '{region_name}' is not valid.")
         raise ValueError(f"Region name '{region_name}' is not valid.")
     
-    region_file_name = f"{region_name.capitalize()}_shops.json"
-    shops_file_path = os.path.join(BASE_REGION_DIR, region_file_name)
+    shops_file_name = f"{region_name.capitalize()}_shops.json"
+    shops_file_path = os.path.join(BASE_SHOPS_DIR, shops_file_name)
     
+
     logger.debug(f"Resolved file path: {shops_file_path}")
     return os.path.normpath(shops_file_path)
-
-
+    
 def load_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash]]:
     """
     Loads the shops data for the specified region from the corresponding JSON file.
