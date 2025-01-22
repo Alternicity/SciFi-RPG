@@ -187,20 +187,19 @@ def load_region_data(region_name: str) -> dict:
         FileNotFoundError: If the region data file does not exist.
         ValueError: If there is an error decoding the JSON data.
     """
-    region_file_path = get_region_file_path(region_name)
+    file_path = os.path.join(BASE_REGION_DIR, f"{region_name}.json")
+    #region_file_path = get_region_file_path(region_name)
+    #Use BASE_REGION_DIR in common.py for this
 
     # Check if the file exists before attempting to open
-    if not os.path.exists(region_file_path):
-        logger.error(f"Region data file does not exist: {region_file_path}")
-        raise FileNotFoundError(f"Region data file '{region_file_path}' not found.")
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Region data file does not exist: {file_path}")
     
     try:
-        with open(region_file_path, 'r') as file:
-            region_data = json.load(file)
-            logger.debug(f"Region data loaded successfully from '{region_file_path}'.")
+        with open(file_path, "r", encoding="utf-8") as file:
+            return json.load(file)
     except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON data from '{region_file_path}': {e}")
-        raise ValueError(f"Error decoding JSON data from '{region_file_path}': {e}")
+        raise ValueError(f"Invalid JSON in file {file_path}: {e}")
     
     return region_data
 
@@ -263,13 +262,6 @@ def load_characters(selected_character_data):
     characters.append(character)
     #logging.info(f"Loaded characters: {characters}")
     return characters
-    
-    l
-    
-    
-    
-
-    
 
 # Example usage
 if __name__ == "__main__":

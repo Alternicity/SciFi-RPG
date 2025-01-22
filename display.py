@@ -9,7 +9,7 @@ from location import Region
 import json
 from region_startup import regions_with_wealth
 from LoaderRuntime import load_locations_from_yaml
-
+from create import create_all_regions, create_region
 from common import get_project_root, get_file_path, BASE_REGION_DIR, BASE_SHOPS_DIR
 #ALL files use this to get the project root
 
@@ -60,10 +60,10 @@ def start_game_menu():
     print("Starting game...")
 
     # Predefined characters to select from
-    character_data = [
+    """ character_data = [
         {"type": "Manager", "name": "Carolina", "faction": "BlueCorp", "bankCardCash": 500, "fun": 1, "hunger": 3},
         {"type": "Civilian", "name": "Charlie", "faction": "None", "occupation": "Shopkeeper"},
-    ]
+    ] """
     characters = [
         Manager(name="Carolina", faction="BlueCorp", bankCardCash=500, fun=1, hunger=3),
         Civilian(name="Charlie", faction="None", occupation="Shopkeeper"),
@@ -74,27 +74,28 @@ def start_game_menu():
     if not selected_character:
         print("Character selection failed.")
         return None, None
-
-    # Step 2: Select region
-    region = select_region_menu()
-    if not region:
-        print("Region selection failed. Exiting to main menu...")
-        return None, None  # Return None if region selection failed
     
-    print(f"Selected region: {region.nameForUser}")  # Use the 'nameForUser' attribute
+    # Step 2: Load regions as Region objects
+    region_names = ["Central", "East", "North", "South", "West"]
+    regions = []
+    for name in region_names:
+        try:
+            region = create_region(name)  # create_region loads the JSON and instantiates a Region
+            regions.append(region)
+        except Exception as e:
+            print(f"Error loading region '{name}': {e}")
 
-    # Step 3: Use the selected character
-    selected_character_data = next(
-        (char for char in character_data if char["name"] == selected_character.name), None
-    )
-    if not selected_character_data:
-        print("Selected character data not found.")
-        return None, None
+    if not regions:
+        print("No regions available. Exiting game.")
+        return selected_character, None
 
-    # Step 4: Load character in loader
-    loaded_characters = loader.load_characters(selected_character_data)
+    # Step 3: Select region
+    selected_region = select_region_menu(regions)
+    if not selected_region:
+        print("Region selection failed.")
+        return selected_character, None
 
-    return loaded_characters[0], region
+    return selected_character, selected_region
     
     # Step 5: Start gameplay
     start_gameplay(selected_character, region)
@@ -145,42 +146,24 @@ def load_region_mappings():
     
     return region_mappings
 
-def select_region_menu():
-    """Allow the user to select a region."""
-
-    region_mappings = load_region_mappings()
-    
-    if not region_mappings:  # Check if region_mappings is empty
-        print("Error: No region mappings available.")
-        return None
-
-    # Prepare region data for display
-    region_list = [
-        [idx + 1, data.get("nameForUser", region), data.get("wealth", "Unknown")]
-        for idx, (region, data) in enumerate(region_mappings.items())
+def select_region_menu(regions):
+    """Display a menu to select a region."""
+    table = [
+        [i + 1, region.nameForUser, f"({region.name})"] for i, region in enumerate(regions)
     ]
-
-    # Display the regions using tabulate
-    print("\nAvailable Regions:")
-    print(tabulate(region_list, headers=["#", "Region", "Wealth"], tablefmt="pretty"))
+    print(tabulate(table, headers=["#", "Region", "Code"], tablefmt="grid"))
 
     try:
-        # Prompt user for selection
-        selected_index = int(input("\nSelect a region by number: ")) - 1
-
-        # Validate the selected index
-        if 0 <= selected_index < len(region_list):
-            selected_region_key = list(region_mappings.keys())[selected_index]
-            selected_region_data = region_mappings[selected_region_key]
-            return Region(
-                name=selected_region_key,
-                nameForUser=selected_region_data["nameForUser"]
-            )
+        choice = int(input("Select a region by number: ")) - 1
+        if 0 <= choice < len(regions):
+            selected_region = regions[choice]
+            print(f"Selected region: {selected_region.nameForUser}")
+            return selected_region
         else:
-            print("Invalid region selected. Exiting.")
+            print("Invalid selection.")
             return None
     except ValueError:
-        print("Invalid input. Exiting.")
+        print("Invalid input.")
         return None
 
 def show_character_details(character):

@@ -35,3 +35,5 @@ BASE_REGION_DIR = get_file_path("data", "Test City", "Regions")
 # Define BASE_SHOPS_DIR dynamically
 BASE_SHOPS_DIR = get_file_path("data", "Test City", "Shops")
 
+# Define BASE_RUNTIME_DIR dynamically
+BASE_RUNTIME_DIR = get_file_path("scifiRPG", "data", "RuntimeData")

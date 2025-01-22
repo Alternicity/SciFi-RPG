@@ -68,7 +68,9 @@ class Location:
 class Region:
     name: str
     nameForUser: str
-    locations: list = field(default_factory=list)
+    shops: List[str] = field(default_factory=list)#default to empty list if not provided
+    locations: List[str] = field(default_factory=list)
+    factions: List[str] = field(default_factory=list)
 #Each region will contain a list of Shop and other Location objects
 
 @dataclass

@@ -1,12 +1,12 @@
-#generateRegion
+#generateRegions
 import random
 import json
 import os
 import logging
 import sys
-from common import get_project_root, get_file_path
+from common import get_project_root, get_file_path, BASE_RUNTIME_DIR
 #ALL files use this to get the project root
-
+from yamlManager import YAMLManager
 
 
 print(f"Current directory: {os.getcwd()}")
@@ -15,10 +15,6 @@ project_root = get_project_root()  # Call the function to get the project root
 print(f"Project root: {project_root}")
 print(f"sys.path: {sys.path}")
 
-""" from location import (
-    HQ, Shop, CorporateStore, MechanicalRepairWorkshop, ElectricalRepairWorkshop, Stash,
-    Factory, Nightclub, Mine, Powerplant, Airport, Port, Cafe, Park, Museum, Library
-) """
 # Import from scifiRPG
 
 from location import Region, Location
@@ -31,11 +27,17 @@ from location import (
 
 def generate_region(regions_with_wealth):
     """
-    Generate region data based on wealth levels and serialize to JSON files.
+    Generates a region and writes its data to a YAML file.
+
+    Args:
+        region_name (str): The name of the region (e.g., "North", "South").
+        region_data (dict): The data structure containing the region's attributes and locations.
+        yaml_manager (YAMLManager): The YAML manager instance for runtime data handling.
     """
     print("Generating city regions...")
     logging.debug("Entering generate_region function...")
     region_data = {}
+    yaml_manager = YAMLManager(BASE_RUNTIME_DIR)  # Use the consolidated runtime directory
 
     # Directory for output files
     output_dir = r'C:\Users\Stuart\Python Scripts\scifiRPG\data\Test City\Regions'

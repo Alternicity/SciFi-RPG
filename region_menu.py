@@ -42,7 +42,7 @@ def generate_region_menu():
     # Generate the region
     print("tmp comment: unexpectedly running from region_menu.py")
     try:
-        region = generate_region(region_size, economic_level, danger_level)
+        region = generate_region(region_size, economic_level, danger_level)#generates json
     except Exception as e:
         print(f"Error generating region: {e}")
         return

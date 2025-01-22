@@ -2,8 +2,10 @@
 import sys
 import os
 import logging
-from common import get_project_root
+from common import get_project_root, BASE_REGION_DIR
 #ALL files use this to get the project root
+from loader import load_region_data
+from display import start_game_menu
 
 # Debug: Print current directory and sys.path
 #print(f"Running main.py from: {os.getcwd()}")
@@ -51,26 +53,41 @@ def load_serialized_characters():
         logging.error(f"Error loading serialized characters: {e}")
         return []
 
-def start_gameplay(current_character, region_data):
-    """Manage gameplay flow with character interaction and region data."""
-    print("\n=== Gameplay Start ===\n")
-    show_character_details(current_character)
-    shops = region_data.get("shops", [])
-    show_locations_in_region(shops)
-    for shop in shops:
-        show_shop_inventory(shop)
-
-
 def main():
     """Main game loop."""
     while True:
         selected_character, region = display_menu()
         if selected_character and region:
-            print(f"Starting game with {selected_character.name} in {region}.")
+            print(f"Starting game with {selected_character.name} in {region.nameForUser}.")
             gameplay.gameplay(selected_character, region)  # Pass control to gameplay()
             break
         else:
             print("Failed to start game. Returning to main menu.")
 
+def start_gameplay(current_character, region_data):
+    """Manage gameplay flow with character interaction and region data."""
+    print("\n=== Gameplay Start ===\n")
+
+    #create_region() in create.py needs to be called for each region, draw on the appropraite json
+        #to create region Objects. Use load_region_data from loader.py
+
+    show_character_details(current_character)
+    print(f"Current character: {current_character}")
+
+    shops = region_data.get("shops", [])
+    print(f"Region data type: {type(region_data)}")
+    #is it an Object?
+
+    show_locations_in_region(shops)
+    for shop in shops:
+        show_shop_inventory(shop)
+
+
+
+
 if __name__ == "__main__":
-    main()  # Start the game
+    selected_character, region = start_game_menu()
+    if selected_character and region:
+        print(f"Starting game with {selected_character.name} in {region.nameForUser}.")
+    else:
+        print("Game initialization failed.")
