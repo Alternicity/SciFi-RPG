@@ -27,9 +27,12 @@ def gameplay(character, region):
     #This needs to be dealt with by display.py
     
 # Call display function for locations - dynamic, yaml
-    show_locations_in_region(region, locations)
-
-    
+    # Retrieve locations from the region object
+    if hasattr(region, 'locations'):
+        locations = region.locations  # Access the locations attribute of the region
+        show_locations_in_region(region, locations)  # Pass locations to the display function
+    else:
+        print(f"No locations found in {region.nameForUser}.")
 
     # Gameplay loop
     while True:
@@ -38,14 +41,14 @@ def gameplay(character, region):
 
         if action == "1":
             print("\nChoose a location to visit:")
-            # Display available locations (shops for now)
-            for idx, shop in enumerate(shops, start=1):
-                print(f"({idx}) {shop.name}")
+            # Display available locations
+            for idx, location in enumerate(locations, start=1):
+                print(f"({idx}) {location['name']}")
             try:
                 choice = int(input("Select a location by number: ")) - 1
-                if 0 <= choice < len(shops):
-                    selected_shop = shops[choice]
-                    print(f"Character {character.name} enters {selected_shop.name}.")
+                if 0 <= choice < len(locations):
+                    selected_location = locations[choice]
+                    print(f"Character {character.name} enters {selected_location['name']}.")
                     # Add character to location's list of visitors
                     # Present buy/sell/action menu
                 else:
@@ -60,8 +63,8 @@ def gameplay(character, region):
 
         elif action =="3":
             # Assuming `selected_character` and `current_region` are defined elsewhere
-            display_selected_character_current_region(selected_character, current_region)
-
+            display_selected_character_current_region(character, region)
+            #check this works correctly
         elif action == "4":
             print("\nExiting gameplay.")
             break

@@ -5,7 +5,8 @@ import logging
 from common import get_project_root, BASE_REGION_DIR
 #ALL files use this to get the project root
 from loader import load_region_data
-from display import start_game_menu
+from display import main_menu
+from gameplay import gameplay
 
 # Debug: Print current directory and sys.path
 #print(f"Running main.py from: {os.getcwd()}")
@@ -15,15 +16,10 @@ from display import start_game_menu
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-""" try:
-    from generators.generate import generate_city_data
-    print("Imported generate_city_data successfully!")
-except ImportError as e:
-    print(f"ImportError: {e}") """
 
 from generators.generate import generate_city_data
 from generators.generateCharacters import generate_character_data
-from display import show_locations_in_region, select_region_menu, show_character_details, show_shop_inventory, display_menu, select_character_menu
+from display import show_locations_in_region, select_region_menu, show_character_details, show_shop_inventory, main_menu, select_character_menu
 from loader import load_region_data
 from characters import (Boss, Captain, Employee, VIP, RiotCop, CorporateAssasin, Employee, GangMember,
                         CEO, Manager, CorporateSecurity, Civilian)
@@ -56,7 +52,7 @@ def load_serialized_characters():
 def main():
     """Main game loop."""
     while True:
-        selected_character, region = display_menu()
+        selected_character, region = main_menu()
         if selected_character and region:
             print(f"Starting game with {selected_character.name} in {region.nameForUser}.")
             gameplay.gameplay(selected_character, region)  # Pass control to gameplay()
@@ -64,7 +60,7 @@ def main():
         else:
             print("Failed to start game. Returning to main menu.")
 
-def start_gameplay(current_character, region_data):
+def start_gameplay(current_character, region_data): #Is this still used?
     """Manage gameplay flow with character interaction and region data."""
     print("\n=== Gameplay Start ===\n")
 
@@ -78,16 +74,10 @@ def start_gameplay(current_character, region_data):
     print(f"Region data type: {type(region_data)}")
     #is it an Object?
 
-    show_locations_in_region(shops)
+    show_locations_in_region(shops) 
     for shop in shops:
         show_shop_inventory(shop)
 
 
-
-
 if __name__ == "__main__":
-    selected_character, region = start_game_menu()
-    if selected_character and region:
-        print(f"Starting game with {selected_character.name} in {region.nameForUser}.")
-    else:
-        print("Game initialization failed.")
+    main()

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 #This file should prbably contain the mapping dictionary for user facing region names
 
-def display_menu():
+def main_menu():
     """Display the main menu and handle user choices."""
     while True:
         print("\n=== Main Menu ===")
@@ -41,8 +41,9 @@ def display_menu():
             elif choice == 3:
                 print("Feature to load serialized characters is under development.")
             elif choice == 4:
-                # Start game logic, calling `start_game_menu` from gameplay.py
-                selected_character, region = start_game_menu()# variables are the expected return values
+                # Start game logic, calling `character_and_region_selection` 
+                selected_character, region = character_and_region_selection()  # Expecting returned variables here
+
                 if selected_character and region:
                     return selected_character, region  # Return for gameplay flow
             elif choice == 5:
@@ -55,7 +56,7 @@ def display_menu():
         except ValueError:
             print("Invalid input. Please enter a number.")
 
-def start_game_menu():
+def character_and_region_selection():
     """Start the game and handle character and region selection."""
     print("Starting game...")
 
@@ -67,7 +68,7 @@ def start_game_menu():
     characters = [
         Manager(name="Carolina", faction="BlueCorp", bankCardCash=500, fun=1, hunger=3),
         Civilian(name="Charlie", faction="None", occupation="Shopkeeper"),
-    ]
+    ] #should this be moved to create.py?
 
     # Step 1: Select character
     selected_character = select_character_menu(characters)
@@ -183,22 +184,33 @@ def show_character_details(character):
     print(tabulate(character_table, headers="firstrow", tablefmt="grid"))
     #add a second row with 'Current location' showing selected characters current_location, current_region
 
-def show_locations_in_region(region):
+def show_locations_in_region(region, locations):
     """Display locations in the specified region."""
-    locations_data = load_locations_from_yaml(region)
-    if not locations_data:
-        print(f"No locations found in {region}.")
+    #locations_data = load_locations_from_yaml(region)
+
+    if not locations:
+        print(f"No locations found in {region.nameForUser}.")
         return
     
-    print(f"Locations in {region}:")
+    """ print(f"Locations in {region}:")
     for location in locations_data:
         print(f"- {location['name']} (Type: {location['type']}, Security Level: {location['security_level']})")
+ """
+    # Prepare the data for tabulation
+    table_data = []
+    for location in locations:
+        # Extract relevant fields
+        name = location.get("name", "Unknown Name")
+        condition = location.get("condition", "Unknown Condition")
+        fun = location.get("fun", "N/A")
+        security_level = location.get("security", {}).get("level", "N/A")
 
-    # Prepare the data for tabulation: list of location names
-    location_data = [[loc['name']] for loc in locations_data]
-    
-    # Tabulate the data
-    print(tabulate(location_data, headers=["Location Name"], tablefmt="pretty"))
+        # Add to table data
+        table_data.append([name, condition, fun, security_level])
+
+    # Display the table
+    headers = ["Name", "Condition", "Fun", "Security Level"]
+    print(tabulate(table_data, headers=headers, tablefmt="grid")) #try also tablefmt="pretty"
 
 
 def show_shop_inventory(shop):
