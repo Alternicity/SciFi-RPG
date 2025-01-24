@@ -26,8 +26,10 @@ from common import get_project_root
 
 @dataclass
 class Location:
+    region: Optional['Region'] = None  # Reference to the Region object (optional)
+    location: Optional['Location'] = None  # Specific location within the region (optional)
     name: str = "Unnamed Location"
-    side: str = "Unknown Side"
+    side: str = "Unknown Side" # marked for project wide deletion
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -106,7 +108,7 @@ class HQ(Location):
 @dataclass
 class Vendor(Location):
     items_available: list = field(default_factory=list)
-    items_available: List[str] = field(default_factory=list)
+    #items_available: List[str] = field(default_factory=list)
     is_concrete: bool = False
     secret_entrance: bool = True
     cash: int = 0
@@ -114,7 +116,7 @@ class Vendor(Location):
     # No need to define __init__; @dataclass handles it
     def __post_init__(self):
         super().__post_init__()
-        print(f"Initialized Vendor: {self.name}, Items Available: {', '.join(self.items_available)}")
+
 
 @dataclass
 class Shop(Vendor):
@@ -140,11 +142,7 @@ class Shop(Vendor):
     def to_dict(self):
         return asdict(self)
 
-    def display_inventory(self):
-        """Display items and their prices."""
-        print(f"{self.name}'s Shop Inventory:")
-        for item, details in self.inventory.items():
-            print(f"{item}: ${details['price']} (Quantity: {details['quantity']})")
+    
 
     def sell_item(self, character, item_name):
         """Sell an item to a character."""
@@ -156,6 +154,8 @@ class Shop(Vendor):
                 character.inventory.append(item_name)
                 item_details['quantity'] -= 1
                 print(f"{item_name} sold to {character.name} for ${item_details['price']}. Remaining balance: ${character.bankCardCash}")
+                # Placeholder for economy.py processing
+                # economy.process_transaction(character, self, item_name, item_details['price'])
             else:
                 print(f"{character.name} doesn't have enough money to buy {item_name}.")
         else:
@@ -277,8 +277,12 @@ class ElectricalRepairWorkshop(RepairWorkshop):
 @dataclass
 class Stash(Location):
     name: str = "Secret Stash 1"
+    legality: bool = False
     items_available: List[Any] = field(default_factory=list)
     stored_items: List[str] = field(default_factory=list)
+    inventory: dict = field(default_factory=dict)
+    cash: int = 0
+    bankCardCash: int = 0
     upkeep: int = 5
     is_concrete: bool = True
     secret_entrance: bool = True

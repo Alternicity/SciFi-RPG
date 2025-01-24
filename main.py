@@ -8,14 +8,8 @@ from loader import load_region_data
 from display import main_menu
 from gameplay import gameplay
 
-# Debug: Print current directory and sys.path
-#print(f"Running main.py from: {os.getcwd()}")
-#print(f"sys.path: {sys.path}")
-
-# Setup logger
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
 
 from generators.generate import generate_city_data
 from generators.generateCharacters import generate_character_data
@@ -24,18 +18,12 @@ from loader import load_region_data
 from characters import (Boss, Captain, Employee, VIP, RiotCop, CorporateAssasin, Employee, GangMember,
                         CEO, Manager, CorporateSecurity, Civilian)
 from utils import (ensure_file_exists, load_characters_and_generate_if_empty, generate_and_save_characters)
-from character_creation import create_characters_as_objects  # Import character creation function
-from city_utils import regenerate_city_data  # Import from the new module
+from character_creation import create_characters_as_objects  
+from city_utils import regenerate_city_data  
 import gameplay
-# main.py can now use regenerate_city_data without redefining it
-
-# Debug: Print current directory and sys.path
-#print(f"Running main.py from: {os.getcwd()}")
-#print(f"sys.path: {sys.path}")
 
 
 def load_serialized_characters():
-    """Load character data from serialized JSON."""
     try:
         with open("characters.json", "r") as f:
             data = json.load(f)
@@ -54,9 +42,10 @@ def main():
     while True:
         selected_character, region = main_menu()
         if selected_character and region:
+            # Set the character's initial location
+            selected_character.update_location(region, None)
             print(f"Starting game with {selected_character.name} in {region.nameForUser}.")
             gameplay.gameplay(selected_character, region)  # Pass control to gameplay()
-            break
         else:
             print("Failed to start game. Returning to main menu.")
 
@@ -64,15 +53,12 @@ def start_gameplay(current_character, region_data): #Is this still used?
     """Manage gameplay flow with character interaction and region data."""
     print("\n=== Gameplay Start ===\n")
 
-    #create_region() in create.py needs to be called for each region, draw on the appropraite json
-        #to create region Objects. Use load_region_data from loader.py
-
     show_character_details(current_character)
     print(f"Current character: {current_character}")
 
     shops = region_data.get("shops", [])
     print(f"Region data type: {type(region_data)}")
-    #is it an Object?
+    #is it an Object? Does this reflect the charcater's current_location var?
 
     show_locations_in_region(shops) 
     for shop in shops:

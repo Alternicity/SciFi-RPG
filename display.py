@@ -11,13 +11,10 @@ from region_startup import regions_with_wealth
 from LoaderRuntime import load_locations_from_yaml
 from create import create_all_regions, create_region
 from common import get_project_root, get_file_path, BASE_REGION_DIR, BASE_SHOPS_DIR
-#ALL files use this to get the project root
 
 # Setup logger
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-#This file should prbably contain the mapping dictionary for user facing region names
 
 def main_menu():
     """Display the main menu and handle user choices."""
@@ -27,7 +24,7 @@ def main_menu():
         print("2: Create Characters (Serialized Data)")
         print("3: Load Serialized Characters")
         print("4: Play/Test Game")
-        print("5: Regenerate City Data")  # Add option to regenerate city
+        print("5: Regenerate City Data")
         print("6: Exit")
         
         try:
@@ -60,15 +57,8 @@ def character_and_region_selection():
     """Start the game and handle character and region selection."""
     print("Starting game...")
 
-    # Predefined characters to select from
-    """ character_data = [
-        {"type": "Manager", "name": "Carolina", "faction": "BlueCorp", "bankCardCash": 500, "fun": 1, "hunger": 3},
-        {"type": "Civilian", "name": "Charlie", "faction": "None", "occupation": "Shopkeeper"},
-    ] """
-    characters = [
-        Manager(name="Carolina", faction="BlueCorp", bankCardCash=500, fun=1, hunger=3),
-        Civilian(name="Charlie", faction="None", occupation="Shopkeeper"),
-    ] #should this be moved to create.py?
+    # Predefined characters to select from character_creation.py
+    characters = create_characters_as_objects()
 
     # Step 1: Select character
     selected_character = select_character_menu(characters)
@@ -192,18 +182,14 @@ def show_locations_in_region(region, locations):
         print(f"No locations found in {region.nameForUser}.")
         return
     
-    """ print(f"Locations in {region}:")
-    for location in locations_data:
-        print(f"- {location['name']} (Type: {location['type']}, Security Level: {location['security_level']})")
- """
     # Prepare the data for tabulation
     table_data = []
     for location in locations:
         # Extract relevant fields
-        name = location.get("name", "Unknown Name")
-        condition = location.get("condition", "Unknown Condition")
-        fun = location.get("fun", "N/A")
-        security_level = location.get("security", {}).get("level", "N/A")
+        name = getattr(location, "name", "Unknown Name")
+        condition = getattr(location, "condition", "Unknown Condition")
+        fun = getattr(location, "fun", "N/A")
+        security_level = getattr(location.security, "level", "N/A") if hasattr(location, "security") else "N/A"
 
         # Add to table data
         table_data.append([name, condition, fun, security_level])
@@ -212,19 +198,21 @@ def show_locations_in_region(region, locations):
     headers = ["Name", "Condition", "Fun", "Security Level"]
     print(tabulate(table_data, headers=headers, tablefmt="grid")) #try also tablefmt="pretty"
 
-
+#Shop:
 def show_shop_inventory(shop):
-    """Display inventory of a specific shop."""
-    print(f"\nShop: {shop.name}")
-    inventory = shop.inventory
-    if inventory:
-        inventory_table = [
-            [item, details.get("price", "N/A"), details.get("quantity", 0)]
-            for item, details in inventory.items()
-        ]
-        print(tabulate(inventory_table, headers=["Item", "Price", "Quantity"], tablefmt="grid"))
-    else:
-        print("This shop has no items available.")
+    """Display the inventory of a shop in a tabulated format."""
+    if not shop.inventory:
+        print(f"{shop.name} has no items available.")
+        return
+
+    # Prepare the data for tabulation
+    table_data = []
+    for item, details in shop.inventory.items():
+        table_data.append([item, details.get("price", "N/A"), details.get("quantity", 0)])
+
+    # Display the table
+    headers = ["Item", "Price", "Quantity"]
+    print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 def display_selected_character_current_region(character, region):
     print(f"{character.name} is in {region.nameForUser}.")

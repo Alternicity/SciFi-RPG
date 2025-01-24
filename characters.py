@@ -4,11 +4,8 @@ from enum import Enum, auto
 from inventory import Inventory
 from common import Status
 from InWorldObjects import ObjectInWorld, Wallet
+from location import Location
 
-#There are repeated assignments (e.g., self.pistolIsLoaded in
-#  RiotCop) and unused parameters (e.g., **kwargs in some 
-# subclasses). Reviewing and cleaning these up would enhance 
-# clarity.
 class Character:
 
     VALID_SEXES = ("male", "female")  # Class-level constant
@@ -44,7 +41,7 @@ class Character:
 
         #initialization code
         self.name = name
-        self.current_location = None  # Tracks the character's location
+        self.current_location = Location(region=None, location=None)
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
         self.name = name
@@ -115,6 +112,30 @@ class Character:
         """
         self.loyalties[group] = self.loyalties.get(group, 0) + amount
         #if loyalty goes <0 a treachery event might be triggered
+
+    #def assess location_security()
+
+    def view_vendor_inventory(self, vendor):
+        """Display the inventory of a vendor."""
+        if hasattr(vendor, 'display_inventory'):
+            vendor.display_inventory()
+        else:
+            print(f"{vendor.name} does not have an inventory to display.")
+
+    #def rob_vendor(self, location, robbery_target):
+
+    def update_location(self, region, location):
+        """Update the character's current location."""
+        self.current_location.region = region
+        self.current_location.location = location
+
+    def get_current_region(self):
+        """Get the current region."""
+        return self.current_location.region
+
+    def get_current_location(self):
+        """Get the current location within the region."""
+        return self.current_location.location
 
 #Method overriding is used sparingly (e.g., issue_directive in 
 # Boss and CEO). Consider leveraging polymorphism more to reduce 

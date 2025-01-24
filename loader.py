@@ -6,6 +6,7 @@ from location import Shop, CorporateStore, Stash
 from characters import Character, Employee, Civilian, Manager
 from location_security import Security
 from character_creation import create_characters_as_objects
+from typing import List, Dict, Union
 #If loader.py already imports location, and location imports Security, you could access it as:
 #from location import Security
 #ALL files use this to get the project root
@@ -69,71 +70,32 @@ def get_shops_file_path(region_name: str) -> str:
     logger.debug(f"Resolved file path: {shops_file_path}")
     return os.path.normpath(shops_file_path)
     
-def load_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash]]:
+def load_shops(region_name: str) -> List[Dict]:
     """
     Loads the shops data for the specified region from the corresponding JSON file.
     Returns:
-        list: A list of shop objects created from the JSON data.
+        list: A list of shop dictionaries.
     """
     shops_file_path = get_shops_file_path(region_name)
 
     # Check if the file exists before attempting to open
     if not os.path.exists(shops_file_path):
-        #logger.error(f"Shops file does not exist: {shops_file_path}")
         raise FileNotFoundError(f"Shops data file '{shops_file_path}' not found.")
     
-    #logger.debug(f"Loading shop data for region: {region_name}")
     try:
         with open(shops_file_path, 'r') as file:
             shops_data = json.load(file)
-            #logger.debug("Shops data loaded successfully.")
     except json.JSONDecodeError as e:
-        #logger.error(f"Error decoding JSON data from '{shops_file_path}': {e}")
         raise ValueError(f"Error decoding JSON data from '{shops_file_path}': {e}")
     
-        # Validate and parse shop data
+    # Validate shop data
     for shop_data in shops_data:
         if not validate_shop_data(shop_data):
             raise ValueError(f"Invalid shop data: {shop_data}")
 
+    return shops_data
 
-    # Parse shop data and create shop objects
-    shops = []
-    for shop_data in shops_data:
-        if shop_data["type"] == "Shop":
-            shop = Shop(
-                name=shop_data["name"],
-                inventory=shop_data["inventory"],
-                cash=shop_data["cash"],
-                bankCardCash=shop_data["bankCardCash"],
-                legality=shop_data["legality"],
-                security=shop_data["security"]
-            )
-        elif shop_data["type"] == "CorporateStore":
-            shop = CorporateStore(
-                name=shop_data["name"],
-                corporation=shop_data["corporation"],
-                inventory=shop_data.get("inventory", {}),
-                cash=shop_data.get("cash", 0),
-                bankCardCash=shop_data.get("bankCardCash", 0),
-                legality=shop_data.get("legality", "Legal"),
-                security=shop_data.get("security", Security())
-            )
-        elif shop_data["type"] == "Stash":
-            shop = Stash(
-                name=shop_data["name"],
-                inventory=shop_data["inventory"],
-                cash=shop_data["cash"],
-                bankCardCash=shop_data["bankCardCash"],
-                legality=shop_data["legality"],
-                security=shop_data["security"]
-            )
-        shops.append(shop)
-
-    #logger.info(f"Successfully loaded {len(shops)} shops for region '{region_name}'.")
-    return shops
-
-def validate_shop_data(shop_data: dict) -> bool:
+def validate_shop_data(shop_data: Dict) -> bool:
     """
     Validates a single shop entry from the JSON data.
     Returns True if valid, False otherwise.
@@ -141,19 +103,18 @@ def validate_shop_data(shop_data: dict) -> bool:
     required_keys = {"type", "name", "inventory", "cash", "bankCardCash", "legality", "security"}
     missing_keys = required_keys - shop_data.keys()
     if missing_keys:
-        logger.error(f"Shop entry is missing required keys: {missing_keys}")
+        print(f"Shop entry is missing required keys: {missing_keys}")
         return False
     
     if shop_data["type"] == "CorporateStore" and "corporation" not in shop_data:
-        logger.error(f"CorporateStore entry missing 'corporation': {shop_data}")
+        print(f"CorporateStore entry missing 'corporation': {shop_data}")
         return False
-    else:
-        return True
 
     # Additional validation logic (e.g., value types, ranges)
-    if not isinstance(shop_data["inventory"], list):
-        logger.error(f"'inventory' must be a list: {shop_data}")
+    if not isinstance(shop_data["inventory"], dict):
+        print(f"'inventory' must be a dictionary: {shop_data}")
         return False
+
     return True
 
 def initialize_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash]]:
