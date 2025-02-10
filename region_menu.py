@@ -1,5 +1,5 @@
 from display import print_region_data  # Import from display.py
-from generators.generateRegions import generate_region  # Correct import statement
+
 
 
 def get_valid_input(prompt, min_value, max_value):
@@ -37,12 +37,12 @@ def generate_region_menu():
     economic_level = get_valid_input("Enter Economic Level (1-10): ", 1, 10)
 
     # Get danger level
-    danger_level = get_valid_input("Enter Danger Level (1-10): ", 1, 10)
+    DangerLevel = get_valid_input("Enter Danger Level (1-10): ", 1, 10)
 
     # Generate the region
     print("tmp comment: unexpectedly running from region_menu.py")
     try:
-        region = generate_region(region_size, economic_level, danger_level)#generates json
+        region = generate_region(region_size, economic_level, DangerLevel)#generates json
     except Exception as e:
         print(f"Error generating region: {e}")
         return

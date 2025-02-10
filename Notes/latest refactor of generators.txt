@@ -1,25 +1,20 @@
-
-
-
-We were refactoring/creating generator classes, several remain.
+Refactoring/creating generator classes, several remain.
 GenerateFactions.py needs to be created. It will create: The State, then call generateCorps.py, and generateGangs.py
 
-generateCorps will generate sufficient corporations to populate test_city.json
-and will draw on the relevant .py files I will post you.
-
-generateGangs will draw on the relevant .py files I post you and create gangs to populate the test_city.yaml
-
-generateCivilians.py will create a civilian population.
-generateFactions will need to import and draw from generateRegion to know the scale and territory factors, and maybe gangs and corps will each need to be associated with an HQ(Location), defined in location.py and locations.json
-Let's work systematically, one generator at a time, starting with GenerateFactions.py
-
-generateRegion.py
-generateCorps.py
-generateGangs.py
-location.py 
-locations.json
-test_city.json
-State.py
+#initial Poulation calculation based on Regions, locations etc, get_region_wealth
+    #poorer areas have more gangs, richer ones more corps
+    #minimum population levels per region
+    #factor in gang/corp/state representation in region
+    #create also transient population/wanderers
+    #Add an iteration mechanism like for each region, make these charcters
+    #Read region and, shop and location data
+    #for each Corporate store create
+    #this generator must be codeed in tandem with generateFactions
+    #Factions create Factions Objects, and these create  required character lists, 
+    #and generateCharacters.py createes these characters, associating them with those factions.
+    #Faction memebers default to starting in their Faction HQ
+    #This generator also needs to assign starting loyalties to characters, which needs to be refactored
+    #to be a dictionary or other data structure and include entries for loyalty to who, what, a quantity, and public/secret nature of that loyalty.
 
 
 
@@ -43,99 +38,10 @@ Factory(Location) concete
 Cafe(Location) concrete
 Park(Location) concrete
 
-generateFactions should decide the number of gangs and corps based on the region. 2-3 gangs and 42-5 corps. It must associate a gang/corp with an HQ, and call generateGangs and generateCorps, all of which update test_city.json
+generateFactions should decide the number of gangs and corps based on the region. 2-3 gangs and 4-6 corps. It must associate a gang/corp with an HQ, and call generateGangs and generateCorps, all of which update test_city.json
 
-state.py does not yet exist, state.yaml is small:
-name: "The State"
-type: "corporation"
-affiliation: "none"
-resources: 10000
-laws: ["Law 1", "Law 2", "Law 3"]
-goals:
-  - goal: "retain dominance"
-    priority: "high"
-    reward: 2000
-  - goal: "extract value"
-    priority: "high"
-    reward: 1500
+state.py does not yet exist
 
-An incomplete snippet of locations.jsonÖ
-[
-    {
-        "name": "Park",
-        "security_level": "Low",
-        "condition": "Well Maintained",
-        "fun": 5,
-        "required_workers": 0,
-        "primary_entrance": "Main Gate",
-        "secondary_entrance": "Side Path",
-        "secret_entrance": "Underground Tunnel",
-        "district": "East"
-    },
-    {
-        "name": "Warehouse",
-        "security_level": "Medium",
-        "condition": "Operational",
-        "required_workers": 10,
-        "primary_entrance": "Loading Bay",
-        "secondary_entrance": "Service Door",
-        "secret_entrance": null,
-        "district": "East"
-    },
-    {
-        "name": "Nightclub",
-        "security_level": "Medium",
-        "condition": "Well Maintained",
-        "fun": 7,
-        "required_workers": 5,
-        "primary_entrance": "Main Door",
-        "secondary_entrance": "VIP Entrance",
-        "secret_entrance": "Rooftop Ladder",
-        "district": "West"
-    },
-]
-
-snippet of the curretn test_city.json:
-{
-    "city": {
-        "East Side": {
-            "locations": [
-                {
-                    "name": "Park",
-                    "security_level": "Low",
-                    "condition": "Well Maintained",
-                    "fun": 5,
-                    "required_workers": 0,
-                    "primary_entrance": "Main Gate",
-                    "secondary_entrance": "Side Path",
-                    "secret_entrance": "Underground Tunnel"
-                },
-                {
-                    "name": "Warehouse",
-                    "security_level": "Medium",
-                    "condition": "Operational",
-                    "required_workers": 10,
-                    "primary_entrance": "Loading Bay",
-                    "secondary_entrance": "Service Door",
-                    "secret_entrance": null
-                }
-            ],
-            "factions": [
-                "Gang Alpha"
-            ],
-            "characters": [
-                {
-                    "name": "Boss Miguel",
-                    "role": "Gang Leader",
-                    "assigned_location": "Warehouse",
-                    "loyalties": {
-                        "Gang Alpha": 100,
-                        "State": 10,
-                        "Law": 5,
-                        "Free Market": 20
-                    }
-                },
-
-
+gameplay mode where player controls a low ranking character of a faction, but the Boss/CEO of taht factions trusts them and is vebose, exposing the workings of the GOAP and news/events to the plahyer.
 
 

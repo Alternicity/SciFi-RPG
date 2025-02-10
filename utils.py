@@ -8,30 +8,7 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
 import tabulate
-def list_characters(characters):
-    """
-    Display a list of existing characters in a table format.
-    """
-    print("Listing Characters, list_characters().")
 
-    if not characters:
-        print("No existing characters.")
-        return
-
-    # Extract data from object instances
-    table_data = [
-        [
-            char.name,
-            char.char_role,
-            char.faction,
-            char.bankCardCash,
-            char.fun,
-            char.hunger,
-        ]
-        for char in characters
-    ]
-    headers = ["Name", "Role", "Faction", "Bank Card Cash", "Fun", "Hunger"]
-    return tabulate.tabulate(table_data, headers=headers, tablefmt="fancy_grid")
 
 #from main.py
 def ensure_file_exists(file_path, default_data=None):
@@ -145,6 +122,8 @@ def create_item(data): #Might still be useful, but need updating
         size=data.get("size", "pocket_sized"),
     )
 
-
+def get_project_root():
+    # Set the project root directory explicitly
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
     

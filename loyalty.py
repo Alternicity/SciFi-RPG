@@ -68,52 +68,42 @@ class LoyaltySystem:
             return None
 
 
-def test_loyalty_system(character_registry):
-    """Test the loyalty system with entity ID creation and loyalty manipulation."""
-    loyalty_system = LoyaltySystem("Sample Region")
+def test_loyalty_system(character):
+    #Actions that a faction or character asks another character to take have a risk value
+    #If that characters loyalty exceeds that risk, they willl make the attempt
+    #If they succeed in taht task, their loyalty may increase and they will receive
+    #A a status buff.
 
-    # Fetch or create a character
-character_registry = list_existing_characters(character_registry) or {}
+def divided loyalty(character)
+    #If a character has a loyalty to  acharacter or a faction AND a loyalty to a rival
+    #character or faction then they have a divided loyalty.
 
-# Check if the registry is empty and handle character creation
-if not character_registry:
-    print("\nNo existing characters found. You will need to create a new one.")
-    entity_id = input(
-        "Enter a new entity ID (or press Enter to generate a random one): "
-    )
-    if not entity_id:
-        entity_id = generate_entity_id()
-    character = create_character_if_needed(entity_id, character_registry)
-    loyalty_system.add_character(character)
-else:
-    # Fetch or create an existing character
-    entity_id = input(
-        "\nEnter the entity ID you want to interact with, or press Enter to create a new one: "
-    )
+    #There needs to be a function for them to pick a side, if a situation demands it.
+    #One loyalty can become part of a hidden identity/loyalty.
 
-    if not entity_id:
-        entity_id = generate_entity_id()
-        print(f"Generated entity ID: {entity_id}")
-        character = create_character_if_needed(entity_id, character_registry)
-        loyalty_system.add_character(character)
-    elif entity_id in character_registry:
-        character = character_registry[entity_id]
-        loyalty_system.add_character(character)
-    else:
-        print(f"Entity ID {entity_id} not found. Creating a new character...")
-        character = create_character_if_needed(entity_id, character_registry)
-        loyalty_system.add_character(character)
+def hidden_loyalty
+    #some characters may be spies or traitors or assassin's an pretend to have loyalty to a give entity
+    #but really are loyalty to another, or to a motive like profit
 
-# Now that the character is added, create and manage loyalty data
-loyalty = Loyalty(entity_id)
-loyalty.add_loyalty("FactionA", 80)
-loyalty.add_loyalty("FactionB", 60)
-print(f"Current loyalties for {entity_id}: {loyalty.display_loyalties()}")
+def group mentality
+    #most characters give their loyalty to the same entities or character that their loved ones do
 
-# Save and load the loyalty data
-loyalty.save_loyalty()
-print(f"Loyalty data for {entity_id} saved.")
+def love()
+    #Characters may have a love loyalty which might cause the to PROACTIVLY attempt to help
+    #their loved ones, especially feed the and give gifts
 
-loyalty.load_loyalty()
-print(f"Loyalty data for {entity_id} loaded: {loyalty.display_loyalties()}")
+def erodeLoyalty()
+    #Sometimes an event can erode loyalties, for instance a psyop news event or badOptics outcome froma misssion
+
+def gainLoyalty()
+    #Sometimes a character can attempt to gain anothers loyalty, eith for themselves, or a faction.
+    #Feeding a character helps, especially if they are very hungry
+
+
+def convince()
+    #Sometimes a character will try to convince another that a certain idea or ideology is correct.
+    An attempt is made, a typical RPG test of skill (random number vs athe characters intelligence +charisma /2)
+    #And if it succeeds the recipient gets a resist attempt (random number gen vs their int + somethign /2)
+    #If a charcter becomes convinced they may also become VeryCanvinced and proclaim their new
+    #belief, and try to convince other characters as well.
 

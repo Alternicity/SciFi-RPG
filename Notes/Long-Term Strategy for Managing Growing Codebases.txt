@@ -1,0 +1,16 @@
+Long-Term Strategy for Managing Growing Codebases
+(A) Modularize Everything
+Separate concerns into clearly defined modules:
+generate_* → Only writes JSON (data generation)
+create_* → Only loads JSON & creates objects (game runtime)
+store_* → Only updates JSON when the game state changes
+(B) Prune Unused or Redundant Code ("Via Negativa")
+Keep the codebase minimal and remove:
+Old commented-out sections (unless needed for debugging)
+Functions that duplicate functionality
+(C) Improve Documentation
+Each function should answer:
+What does this function do?
+What data does it use?
+What does it return?
+Docstrings should assume the next person reading the code knows nothing.

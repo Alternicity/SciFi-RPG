@@ -5,16 +5,16 @@ from typing import List, Union
 from location import Shop, CorporateStore, Stash
 from characters import Character, Employee, Civilian, Manager
 from location_security import Security
-from character_creation import create_characters_as_objects
+#from character_creation_funcs import player_character_options
 from typing import List, Dict, Union
 #If loader.py already imports location, and location imports Security, you could access it as:
 #from location import Security
 #ALL files use this to get the project root
-from common import BASE_REGION_DIR, BASE_SHOPS_DIR, get_project_root
+from common import BASE_REGION_DIR, BASE_SHOPS_DIR, BASE_CHARACTERNAMES_DIR
 # Setup logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-
+import csv
 
 
 def get_region_file_path(region_name: str) -> str:
@@ -46,6 +46,29 @@ def get_region_file_path(region_name: str) -> str:
     # Normalize the path (this ensures compatibility with both Windows and Unix systems)
     return os.path.normpath(region_file_path)
 
+
+def get_gang_names_filepath():
+    """Returns the file path for the gang names data file."""
+    return "scifiRPG/data/Names/GangNames.txt"
+
+def load_gang_names(filepath):
+    """Loads gang name parts from file and returns two lists (first part, second part)."""
+    with open(filepath, "r") as file:
+        lines = file.readlines()
+
+    first_part, second_part = [], []
+    current_list = None
+
+    for line in lines:
+        line = line.strip()
+        if "First part:" in line:
+            current_list = first_part
+        elif "Second Part:" in line:
+            current_list = second_part
+        elif line and current_list is not None:
+            current_list.append(line)
+
+    return first_part, second_part
 
 def get_shops_file_path(region_name: str) -> str:
     """
@@ -164,25 +187,11 @@ def load_region_data(region_name: str) -> dict:
     
     return region_data
 
-def load_characters(selected_character_data):
-    #Loads serialized, pre-made character populations from json or yaml, and instantiates
-    #game objects.
-    #Use generateCharacters to make these
-    #For initital buy/sell shop testing this won't be used.
+""" def load_characters(selected_character_data):
     
-    #These characters, when loaded will need to be assigned variables and
-    #factions, needs, and current locations and a select few will be enriched (buffed)
-    #See also 
-    # Also, character will be assigned names from lists, based on race.
-    # load_characters_from_file in utils, which returns a list, should
-    #that be deprecated or renamed? 
-    #Load characters will thus need another file that follows it to
-    #to assign them, for example each shop will have 1 Manager, and 1+Employees, but
-    #see also initialize_shops()
-    """Load characters dynamically."""
     logging.info("Loading characters...")
     
-    characters = create_characters_as_objects()
+    characters = player_character_options()
 
     # Validate input or default to empty list
     if selected_character_data is None:
@@ -192,11 +201,6 @@ def load_characters(selected_character_data):
     # Initialize the character list
     characters = []
 
-# Placeholder character data (to be replaced by dynamic data later)
-    """ character_data = [
-        {"type": "Manager", "name": "Xarolina", "faction": "BlueCorp", "bankCardCash": 500, "fun": 1, "hunger": 3},
-        # Add more character data as needed
-    ] """
 
     # Instantiate the selected character
     data = selected_character_data
@@ -222,7 +226,38 @@ def load_characters(selected_character_data):
 
     characters.append(character)
     #logging.info(f"Loaded characters: {characters}")
-    return characters
+    return characters """
+
+def load_names_from_csv(filepath):
+    """
+    Loads names from a CSV file structured with separate Male, Female, and Family sections.
+    """
+    male_names = []
+    female_names = []
+    family_names = []
+    
+    with open(filepath, "r", encoding="utf-8") as file:
+        reader = csv.reader(file)
+        current_list = None
+        
+        for row in reader:
+            if not row:
+                continue
+            
+            if row[0].lower() == "id,male name":
+                current_list = male_names
+                continue
+            elif row[0].lower() == "id,female name":
+                current_list = female_names
+                continue
+            elif row[0].lower() == "id,family name":
+                current_list = family_names
+                continue
+            
+            if current_list is not None and len(row) > 1:
+                current_list.append(row[1].strip())
+    
+    return male_names, female_names, family_names
 
 # Example usage
 if __name__ == "__main__":

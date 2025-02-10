@@ -1,0 +1,18 @@
+"""Ultimately there should be several gameplay modes. A player could choose what type of character
+they want to control and they gameplay type adapts to that.
+
+Example 1: Player controls a low level recruit to a faction who must gain trust. The Boss/CEO of this 
+faction talks to them, opening narrative seeds.
+
+Example 2 Player controls a small group of characters, a minor faction, who have more powerful enemies.
+
+Example 3 Player controls Several colourful characters in a faction who can influence the Boss but not control him
+
+Example 4 Player controls an assassin who works for various factions, and ends up hunted.
+
+Example 5 Player controls a CEO trying to reach corporate goals via economic means
+
+Example 6 Player controls a gang Captain who inherits the Crown after an assassination event
+Gameplay becomes the Godfather
+
+Example 7 Player controls the mayor trying to manage a very corrupt city and balance the rival elemnts"""

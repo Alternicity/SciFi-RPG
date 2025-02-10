@@ -2,13 +2,24 @@
 import logging
 import json
 from pathlib import Path
-from loader import load_region_data, load_shops
-from location import Shop, CorporateStore, Stash, Region
+
+from loader import load_gang_names, get_gang_names_filepath
+from base_classes import Location, Character
+from location import Shop, CorporateStore, Stash, Region, UndevelopedRegion, VacantLot, HQ, MunicipalBuilding
+from characters import (Boss, Captain, Employee, VIP, RiotCop,
+                         CorporateAssasin, Employee, GangMember,
+                           CEO, Manager, CorporateSecurity, Civilian, GangMember, Child, Influencer,
+                           Babe, Detective)
+from faction import Corporation, Gang, State
+from goals import Goal
 from location_security import Security
 from common import BASE_REGION_DIR, BASE_SHOPS_DIR
 from typing import List, Dict, Union
 import os
-from typing import List, Union
+
+from character_creation_funcs import create_all_characters
+import random
+
 
 #from display import list_characters
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
@@ -19,14 +30,8 @@ logging.basicConfig(
     format="%(levelname)s:%(message)s"
 )
 
-def create_and_serialize_characters(): #for pre grame start world building
-    characters = [
-        RiotCop(name="John", faction="The State"),
-        CorporateAssasin(name="Jane", faction="BlueCorp"),
-    ]
-    with open("characters.json", "w") as f:
-        json.dump([char.__dict__ for char in characters], f, indent=4)
-    logging.info("Characters serialized to characters.json")
+
+    
 
 def create_object(data):#Might still be useful, but need updating
 
@@ -46,7 +51,7 @@ def create_object(data):#Might still be useful, but need updating
     if obj_type is None:
         raise ValueError("Missing 'type' in data.")
 
-    logger.info(f"Creating object of type {obj_type} with data: {data}.")
+    logging.info(f"Creating object of type {obj_type} with data: {data}.")
 
     if obj_type == "gang":
         return create_gang(data)
@@ -59,149 +64,137 @@ def create_object(data):#Might still be useful, but need updating
     else:
         raise ValueError(f"Unsupported type: {obj_type}")
     
-def create_all_regions() -> list:
-    """
-    Creates all region objects by loading their JSON data.
 
-    Returns:
-        list: A list of instantiated Region objects.
+def create_locations(region_name: str, wealth: str) -> List[Location]:
+    """Creates a list of location objects for a region based on its wealth level."""
+    location_objects = []
 
-    Raises:
-        FileNotFoundError: If the region directory is missing or empty.
-        ValueError: If a region JSON file is invalid.
-    """
-    regions = []
-    if not os.path.exists(BASE_REGION_DIR) or not os.listdir(BASE_REGION_DIR):
-        raise FileNotFoundError(f"No region JSON files found in {BASE_REGION_DIR}")
+    # Fetch location types for this wealth level
+    from location_types_by_wealth import LocationTypes
+    location_types = LocationTypes.location_types_by_wealth.get(wealth, [])
 
-    for file_name in os.listdir(BASE_REGION_DIR):
-        if file_name.endswith(".json"):
-            region_name = os.path.splitext(file_name)[0]  # Extract region name from filename
+    for location_class, count in location_types:
+        for _ in range(count):  # Create the specified number of locations
             try:
-                region = create_region(region_name)
-                regions.append(region)
+                location_obj = location_class(name=f"{location_class.__name__} in {region_name}")
+                location_objects.append(location_obj)
             except Exception as e:
-                print(f"Error creating region for {region_name}: {e}")
+                print(f"Error creating location {location_class.__name__} in {region_name}: {e}")
+
+    # Always create a MunicipalBuilding
+    municipal_building = MunicipalBuilding(name=f"Municipal Building in {region_name}")
+    location_objects.append(municipal_building)
+    return location_objects
+
+def create_regions():
+    """Create and return a list of Region objects with Locations inside them."""
+    print("Initializing regions as objects...")
+
+    region_wealth_levels = {
+        "NorthVille": "Normal",
+        "Easternhole": "Poor",
+        "Westborough": "Rich",
+        "SouthVille": "Normal",
+        "Downtown": "Rich",
+    }
+
+    # Store region objects
+    region_objects = []
+
+    for region, wealth in region_wealth_levels.items():
+        try:
+            location_list = create_locations(region, wealth)  # Get Location objects
+
+            region_obj = Region(
+                name=region,
+                shops=[loc for loc in location_list if isinstance(loc, Shop)],  # Extract Shops separately
+                locations=location_list,  # Full list of Locations
+                factions=[],
+                DangerLevel=None,
+            )
+
+            region_objects.append(region_obj)
+            print(f"Created region: {region} with {len(region_obj.locations)} locations.")
+
+        except Exception as e:
+            print(f"Error creating region '{region}': {e}")
+
+    return region_objects
+
+all_regions = create_regions()  # Ensure regions exist before creating factions
+
+
+
+
+def generate_gang_name(first_parts, second_parts):
+    """Generates a gang name by randomly combining first and second parts."""
+    return f"{random.choice(first_parts)} {random.choice(second_parts)}"
+
+def create_factions(locations):
+    """
+    Creates a State, gangs, and corporations for each region.
+    Assigns HQ locations from available locations.
+    """
+    print("Creating factions...")
+
+    factions = []  # Store created factions
+
+    # Find the Downtown region in all_regions
+    downtown_region = next((region for region in all_regions if region.name == "Downtown"), None)
+    if downtown_region is None:
+        raise ValueError("Error: Downtown region not found in all_regions.")
     
-    print(f"All {len(regions)} regions have been created as objects.")
-    return regions
+    all_characters = []
+    state = State(name="Unified Government", resources={"money": 1000000}, laws=["No theft", "Corporate tax"], region=downtown_region)
+    factions.append(state)
 
-def create_region(region_name: str) -> Region:
-    """
-    Reads JSON region data, instantiates a Region object, and populates it with locations.
-    Args: region_name (str): The name of the region (e.g., 'North').
-    Returns: Region: The instantiated Region object with associated locations.
-    """
-    region_file_path = Path(BASE_REGION_DIR) / f"{region_name}.json"
+    # Get the file path dynamically from loader.py
+    GANG_NAMES_FILE = get_gang_names_filepath()
 
-    try:
-        with open(region_file_path, "r") as file:
-            region_data = json.load(file)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"Region data file for '{region_name}' not found.")
-    except json.JSONDecodeError:
-        raise ValueError(f"Invalid JSON data in file: {region_file_path}")
-        
-        # Create the Region object
-    region = Region(
-        name=region_data["name"],
-        nameForUser=region_data.get("nameForUser", region_data["name"]),
-        shops=[],  # Initialize empty shops list
-        locations=[],  # Initialize empty locations list
-        factions=region_data.get("factions", [])
-    )
+    if os.path.exists(GANG_NAMES_FILE):
+        first_parts, second_parts = load_gang_names(GANG_NAMES_FILE)
+    else:
+        first_parts, second_parts = ["Default"], ["Gang"]
 
-    """ return region
-    except FileNotFoundError as e:
-        print(f"Region data file for '{region_name}' not found.")
-        raise
-    except KeyError as e:
-        print(f"Missing required field in region data for '{region_name}': {e}")
-        raise """
+    # Create 10 gangs
+    for _ in range(10):
+        gang_name = generate_gang_name(first_parts, second_parts)
+        gang = Gang(name=gang_name, violence_disposition="High")
+        factions.append(gang)
 
-def create_locations(region_name: str) -> List[Union[Shop, CorporateStore, Stash]]:
-    """
-    Creates location objects (shops, corporate stores, stashes) for the specified region.
-    Returns:
-        list: A list of instantiated location objects.
-    """
-    # Load raw shop data
-    #shops_data = load_shops(region_name)
+    # Create 10 corporations
+    for _ in range(10):
+        corp = Corporation(name=f"Corp_{random.randint(100, 999)}", violence_disposition="Low")
+        factions.append(corp)
 
-    shops_file_path = Path(BASE_SHOPS_DIR) / f"{region_name}.json"
+    # Now, create all characters for these factions
+    all_characters = create_all_characters(factions, locations, all_regions)
 
-try:
-        with open(shops_file_path, "r") as file:
-            shops_data = json.load(file)
-except FileNotFoundError:
-    raise FileNotFoundError(f"Shops data file for '{region_name}' not found.")
-except json.JSONDecodeError:
-    raise ValueError(f"Invalid JSON data in file: {shops_file_path}")
+    return factions, all_characters
 
-# Create location objects
-locations = []
-for shop_data in shops_data:
-    if shop_data["type"] == "Shop":
-        location = Shop(
-            region=None,  # Pass region (or the actual Region object)
-            location=None,  # Pass location (or the actual Location object)
-            name=shop_data["name"],
-            inventory=shop_data["inventory"],
-            cash=shop_data["cash"],
-            bankCardCash=shop_data["bankCardCash"],
-            legality=shop_data["legality"],
-            security=Security(**shop_data["security"])
-        )
-    elif shop_data["type"] == "CorporateStore":
-        location = CorporateStore(
-            region=None,  # Pass region (or the actual Region object)
-            location=None,  # Pass location (or the actual Location object)
-            name=shop_data["name"],
-            corporation=shop_data["corporation"],
-            inventory=shop_data.get("inventory", {}),
-            cash=shop_data.get("cash", 0),
-            bankCardCash=shop_data.get("bankCardCash", 0),
-            legality=shop_data.get("legality", "Legal"),
-            security=Security(**shop_data.get("security", {}))
-        )
-    elif shop_data["type"] == "Stash":
-        location = Stash(
-            region=None,  # Pass region (or the actual Region object)
-            location=None,  # Pass location (or the actual Location object)
-            name=shop_data["name"],
-            inventory=shop_data.get("inventory", {}),
-            cash=shop_data.get("cash", 0),
-            bankCardCash=shop_data.get("bankCardCash", 0),
-            legality=shop_data.get("legality", "Illegal"),
-            security=Security(**shop_data.get("security", {}))
-        )
-    locations.append(location)
 
-    return locations
 
-def associate_locations_with_region(region: Region, locations: List[Union[Shop, CorporateStore, Stash]]) -> Region:
-    """
-    Associates location objects with a region by 
-    updating the region's shops and locations lists.
-    Args:
-        region (Region): The Region object to update.
-        locations (list): A list of location objects (Shop, CorporateStore, Stash).
-    Returns:
-        Region: The updated Region object.
-    """
-    for location in locations:
-        if isinstance(location, Shop):
-            region.shops.append(location)  # Add shops to the shops list
-        else:
-            region.locations.append(location)  # Add non-shops to the locations list
 
-    return region
 
-# Example usage
-if __name__ == "__main__":
-    try:
-        region_name = "North"  # Example region name
-        region = create_region(region_name)
-        print(f"Successfully created region: {region}")
-    except Exception as e:
-        print(f"Error: {e}")
+def assign_hq(faction, region):
+    """Assigns an HQ to a faction and updates its attributes. If no HQ is found, assigns an 'acquire HQ' goal."""
+    available_hqs = [loc for loc in region.locations if isinstance(loc, HQ) and loc.faction is None]
+    
+    if available_hqs:
+        hq = available_hqs[0]  # Assign the first available HQ
+        hq.faction = faction
+        hq.name = f"{faction.name} HQ"  # Update HQ name
+        faction.HQ = hq  # Update faction's HQ attribute
+        print(f"{faction.name} HQ assigned: {hq.name} in {region.name}")
+    else:
+        print(f"No available HQ for {faction.name} in {region.name}. Assigning 'acquire HQ' goal.")
+        faction.add_goal(Goal(description="Acquire an HQ", goal_type="acquire HQ"))
+    
+
+from character_creation_funcs import create_all_characters
+def create_characters(factions, locations, all_regions):  
+    return create_all_characters(factions, locations)
+
+# Generate factions and characters
+all_factions, all_characters = create_factions(all_regions)
+all_characters = create_characters(all_factions, all_regions)

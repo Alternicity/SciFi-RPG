@@ -5,33 +5,6 @@ from location import Shop
 
 logging.basicConfig(level=logging.INFO)
 
-""" def load_shops(region):
-    """Load shops data from JSON files based on region."""
-    
-    print(f"Loading shops for region: {region}")
-    
-    # Construct the filename dynamically based on the region
-    region_file_name = f"{region.lower()}_shops.json"  # e.g., "north_shops.json"
-    
-    # Standardize the file path construction
-    shops_file_path = os.path.normpath(os.path.join("scifiRPG", "data", "Test City", "Shops", f"{region_file_name}_shops.json"))
-    
-    if not os.path.exists(shops_file_path):
-        print(f"Shops file {shops_file_path} does not exist.")
-        return []
-    
-    with open(shops_file_path, 'r') as f:
-        shops_data = json.load(f)
-
-    shops = []
-    for shop_info in shops_data:
-        shop_name = shop_info.get("name", "Unknown Shop")
-        items_available = shop_info.get("items_available", [])
-        shop = Shop(shop_name, items_available)  # Ensure Shop is properly imported
-        shops.append(shop)
-
-    return shops """
-
 class EconomyManager:
     def __init__(self):
         self.power_stations = []
@@ -78,7 +51,6 @@ class EconomyManager:
 
             if assigned_workers < required_workers:
                 print(f"Location {location.name} is understaffed. Needed: {required_workers}, Assigned: {assigned_workers}.")
-
 
 
     #Generate and Distribute Energy:    

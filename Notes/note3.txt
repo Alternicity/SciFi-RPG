@@ -1,0 +1,16 @@
+As gangs, corps/corporations and the state are all factions, I am considering making their generators a hierarchy, like regions>locations/shops.
+
+So, generate will call generateFactions, which will call generateGangs and generateCorps, and maybe a new generateState.
+
+Corps and Gangs must be associated with an HQ location, and their json make note of this, plus HQ json locations must have a variable updated to show which gang or corporation resides there.
+
+The State will have it's own HQ which must be defined as a class in locations.py; something like MunicipalBuilding.
+Also it must have some other locations specific to it that ust be created as locations classes, then json via generateState.py, like garbageCollectionCentre and TaxOffice, and Police Station.
+
+Also needed in characters.py is Classes: Detective, Taxman, GarbageCollector, StateDoctor, and StateNurse.
+
+
+When display regions show their wealth levels and maybe key features.
+
+want_more()
+addiction mechanism

@@ -1,0 +1,29 @@
+
+Would you like help designing a simple character selection function that fits within your current structure?
+
+
+
+This is currently handled in display.py main_menu()
+snippet:
+def main_menu():
+    """Display the main menu and handle user choices."""
+    while True:
+        print("\n=== Main Menu ===")
+        print("1: Play/Test Game")
+
+        print("6: Exit")
+        
+        try:
+            choice = int(input("Enter your choice: "))
+            if choice == 1:
+                # move this game logic, calling `character_and_region_selection` to a gameplay file
+                characters = player_character_options() 
+                
+                if selected_character and region:
+                    return selected_character, region  # Return for gameplay flow   
+
+This worked before but several things are now marked by pylance as undefined:
+player_character_options
+selected_character
+and
+region

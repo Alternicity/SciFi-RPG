@@ -1,0 +1,6 @@
+An influencer or other charcter with some scepticism attribute or function negates psy if they are in the same loaction or ..
+
+they attach/spread an anti-psy effect to other characters which works the same
+
+this can be generalised to other things, a
+ spread(X) function for beliefs, loyalties, etc

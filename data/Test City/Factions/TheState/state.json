@@ -1,0 +1,64 @@
+{
+    "name": "The State",
+    "type": "faction",
+    "affiliation": "none",
+    "resources": 10000,
+    "tax_rate": 0.2,
+    "laws": [
+        "Maintain Order",
+        "Enforce Taxes",
+        "Prohibit Unlawful Activity"
+    ],
+    "goals": [
+        {
+            "goal": "Maintain dominance over the region",
+            "priority": "high",
+            "reward": 2000
+        },
+        {
+            "goal": "Generate tax revenue",
+            "priority": "medium",
+            "reward": 1500
+        }
+    ],
+    "personnel": {
+        "VIP": {
+            "name": "Governor",
+            "position": "State Leader",
+            "influence": 95,
+            "faction": "The State"
+        },
+        "RiotCops": [
+            {
+                "name": "RiotCop_1"
+            },
+            {
+                "name": "RiotCop_2"
+            },
+            {
+                "name": "RiotCop_3"
+            },
+            {
+                "name": "RiotCop_4"
+            },
+            {
+                "name": "RiotCop_5"
+            },
+            {
+                "name": "RiotCop_6"
+            },
+            {
+                "name": "RiotCop_7"
+            },
+            {
+                "name": "RiotCop_8"
+            },
+            {
+                "name": "RiotCop_9"
+            },
+            {
+                "name": "RiotCop_10"
+            }
+        ]
+    }
+}

@@ -1,0 +1,10 @@
+DangerLevel is defined like this in common.py
+ and this is imported at the top of location.py where class Region is defined, although for some reason it is currently commented out.
+I'm not sure if that is the best place for it, nor am I certain that it needs to be an enum rather than an int, although that is more descriptive, though perhaps less conducive to later use in algorithms, so it could be level 1, 2, 3, 4 etc, or even color coded: green, amber, red, black/yellow which could work nicely with a hypothetical GUI element.
+
+
+class DangerLevel(Enum):
+    LOW = "low"
+    MID = "mid"
+    HIGH = "high"
+    WARZONE = "warzone"

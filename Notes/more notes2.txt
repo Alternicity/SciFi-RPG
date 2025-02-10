@@ -1,0 +1,30 @@
+
+In addition to the State, the xyz Corporation and  the abc gnags operate in this region.
+
+
+character inventories
+
+
+Very high intelligence lowers effective charaisma
+
+
+Should create_locations() be called from within createRegion in a for each loop so they are automatically scoped to a specific region.
+
+Class Psyop
+VIP and INtelAgent can create these
+VIP must have a protector faction, typically the state.
+
+Class Influencer
+CAn do psyop but has not protecotr
+
+Class Babe
+Trophy wife etc
+Might influence based on cha
+
+Class Child
+When created, must have parent attribute set to a character or Orphan (None)
+
+
+Secret/public identities
+For Assassin, spy etc
+Secret/public loyalties

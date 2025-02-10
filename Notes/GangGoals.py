@@ -22,4 +22,4 @@
 
 # if a gangs status is too low with civilians, they will call the police to attack the gang
 
-# Distribute goods (to civilians, raising the gangs status
+

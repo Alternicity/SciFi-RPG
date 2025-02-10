@@ -1,0 +1,64 @@
+Class refactor prompt
+
+
+**Character Class Refactor Summary**
+
+### **Overview**
+This refactor improves the `Character` class by ensuring that motivations are dynamically updated based on character needs rather than being manually initialized. This eliminates redundancy and makes the system more flexible and maintainable.
+
+Additionally, we are standardizing the use of `kwargs` to prevent `TypeError` issues caused by passing multiple values for the same argument. The goal is to maintain consistency across all character classes and ensure that `kwargs` is used properly for optional attributes.
+
+### **Key Changes**
+1. **Removed Manual Motivation Initialization**
+   - Previously, motivations were set manually in `__init__()` with a default list.
+   - Now, `self.update_motivations()` is responsible for setting motivations dynamically.
+
+2. **Ensured Motivations Are Derived from Needs**
+   - The `update_motivations()` function resets and recalculates motivations based on `self.needs`.
+   - No hardcoded default motivation list is assigned during initialization.
+
+3. **Refactored `kwargs` Handling to Prevent TypeErrors**
+   - Used `kwargs.get("attribute", default_value)` pattern consistently.
+   - Avoided direct assignment of attributes where `kwargs` is already providing values to prevent duplicate arguments.
+   - Ensured subclasses like `Boss`, `Captain`, etc., also follow the same pattern.
+
+### **Before the Refactor**
+```python
+initial_motivations = kwargs.get("motivations", ["earn_money", "eat", "sleep", "shelter"])
+from motivation import Motivation  
+self.motivations = [Motivation(m) for m in initial_motivations]
+self.update_motivations()
+```
+
+### **After the Refactor**
+```python
+self.update_motivations()  # Ensures motivations are always calculated dynamically
+```
+
+### **Handling `kwargs` Properly**
+Before:
+```python
+self.fun = kwargs.get("fun", fun)
+self.hunger = kwargs.get("hunger", hunger)
+```
+Issue: If `fun` and `hunger` are passed as both positional and keyword arguments, Python raises a `TypeError`.
+
+After:
+```python
+self.fun = kwargs.get("fun", 1)  # Default values are set inside kwargs.get()
+self.hunger = kwargs.get("hunger", 1)
+```
+
+### **Benefits**
+- **Eliminates redundant initialization** and potential inconsistencies.
+- **Ensures motivations update correctly** as a character’s needs change.
+- **Simplifies debugging** by keeping motivation logic centralized in `update_motivations()`.
+- **Prevents `TypeError` issues** caused by passing multiple values for the same argument.
+- **Improves maintainability** by removing hardcoded motivation defaults and ensuring consistent `kwargs` usage.
+
+### **Next Steps**
+- Apply this approach to other character subclasses (`Boss`, `Captain`, etc.).
+- Ensure that factions, roles, and loyalties align with this dynamic motivation system.
+- Continue refining character AI behaviors based on needs-driven motivation updates.
+- Standardize all character class initializations to follow the updated `kwargs` pattern.
+

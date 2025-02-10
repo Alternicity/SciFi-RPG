@@ -4,6 +4,8 @@ from distributions import generate_normal, generate_black_swan
 class Event:
     def __init__(self, name, event_type, effect, **kwargs):
         self.name = name
+        self.description = description
+        self.impact = impact or {}  # Dict to define changes caused by the event
         self.event_type = event_type
         self.effect = effect
         self.params = kwargs
@@ -67,3 +69,15 @@ def simulate_events(events, targets):
         target = targets.get(event.effect["resource"] or event.effect["attribute"])
         if target:
             event.apply(target)
+
+
+
+    def apply_to_faction(self, faction):
+        """Apply event changes to a faction."""
+        print(f"Applying event: {self.description}")
+        for key, value in self.impact.items():
+            if key in faction.resources:
+                faction.resources[key] += value
+
+#combatEvent
+#combatAftermath

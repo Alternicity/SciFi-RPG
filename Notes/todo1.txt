@@ -1,0 +1,1 @@
+move partner code from base_classes

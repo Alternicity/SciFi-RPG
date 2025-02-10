@@ -68,3 +68,10 @@ def deplete_weapon_resource(self, weapon):
 
 def Die(self):
     print(f"{self.name} has died")
+
+def CombatEvent
+    #When a combat begins, an event is triggered
+    #When a combat is over, and aftermath event is triggered
+
+def combatAftermath
+    #this event might atract medics, news crews, crowds and lawyers

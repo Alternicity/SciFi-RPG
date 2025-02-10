@@ -2,147 +2,18 @@
 import random
 from enum import Enum, auto
 from inventory import Inventory
-from common import Status
+from status import Status
 from InWorldObjects import ObjectInWorld, Wallet
-from location import Location
 
-class Character:
+from base_classes import Character, Location, Faction
 
-    VALID_SEXES = ("male", "female")  # Class-level constant
-    VALID_RACES = ("Terran", "Martian")  # Class-level constant
-
-    #common attributes (e.g., name, age, health) remain in the base class
-    is_concrete = False
-    def __init__(
-        self,
-        name,
-        entity_id,
-        bankCardCash=0,
-        fun=1,
-        hunger=1,
-        char_role="Civilian",
-        faction=None,
-        strength=10,
-        agility=10,
-        intelligence=10,
-        luck=10,
-        psy=10,
-        toughness=10,
-        morale=10,
-        race="Terran",
-        sex="male",
-        status=None,
-        loyalties=None,  # Default is None; initializes as a dictionary later
-        **kwargs,
-    ):
-        
-        # Generate entity_id if not provided
-        entity_id = entity_id or f"{char_role.upper()}-{hash(name)}"
-
-        #initialization code
-        self.name = name
-        self.current_location = Location(region=None, location=None)
-        self.shift = 'day'  # Can be 'day' or 'night'
-        self.is_working = False  # Tracks if the character is working
-        self.name = name
-        self.fun = kwargs.get("fun", fun)
-        self.hunger = kwargs.get("hunger", hunger)
-        self.faction = faction
-        self.strength = strength
-        self.agility = agility
-        self.intelligence = intelligence
-        self.luck = luck
-        self.psy = psy
-        self.toughness = toughness
-        self.morale = morale
-        self.race = race
-        self.sex = sex
-        self.entity_id = entity_id or f"{char_role.upper()}-{hash(name)}"
-        self.status = status  # Add status here
-        self.motivations = kwargs.get(
-            "motivations", []
-        )  # Use kwargs safely to add extra attributes
-        # validation
-        if sex not in self.VALID_SEXES:
-            raise ValueError(
-                f"Invalid sex: {sex}. Valid options are {self.VALID_SEXES}"
-            )
-        # variables to begin with lowercase letter, unlike Classes
-        if race not in self.VALID_RACES:
-            raise ValueError(
-                f"Invalid race: {race}. Valid options are {self.VALID_RACES}"
-            )
-
-        self.faction = faction
-        # Validate that faction is provided
-        if not self.faction:
-            raise ValueError("Faction must be specified for a character.")
-        self.weapon = None
-        self.strength = strength
-        self.agility = agility
-        self.intelligence = intelligence
-        self.toughness = toughness
-        self.morale = morale
-        self.health = 100 + toughness
-        self.bankCardCash = bankCardCash
-        #self.wallet = Wallet(cash=50, bankCardCash=100)  # Initialize with some default values
-        self.char_role = char_role
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory        self.char_role = char_role
-        self.status = status  # LOW, MID, HIGH, ELITE
-        self.inventory = kwargs.get("inventory", []) #!!!!
-        # Initialize loyalties as a dictionary
-        self.loyalties = loyalties or {}
-
-        # Handle other attributes from kwargs
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-    def __repr__(self):
-        return f"{self.name} (Faction: {self.faction}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
-    
-    def get_loyalty(self, group):
-        """
-        Get the loyalty level to a specific group. Returns 0 if the group is not in the dictionary.
-        """
-        return self.loyalties.get(group, 0)
-
-    def update_loyalty(self, group, amount):
-        """
-        Update the loyalty to a specific group. If the group is not in the dictionary, add it.
-        """
-        self.loyalties[group] = self.loyalties.get(group, 0) + amount
-        #if loyalty goes <0 a treachery event might be triggered
-
-    #def assess location_security()
-
-    def view_vendor_inventory(self, vendor):
-        """Display the inventory of a vendor."""
-        if hasattr(vendor, 'display_inventory'):
-            vendor.display_inventory()
-        else:
-            print(f"{vendor.name} does not have an inventory to display.")
-
-    #def rob_vendor(self, location, robbery_target):
-
-    def update_location(self, region, location):
-        """Update the character's current location."""
-        self.current_location.region = region
-        self.current_location.location = location
-
-    def get_current_region(self):
-        """Get the current region."""
-        return self.current_location.region
-
-    def get_current_location(self):
-        """Get the current location within the region."""
-        return self.current_location.location
 
 #Method overriding is used sparingly (e.g., issue_directive in 
 # Boss and CEO). Consider leveraging polymorphism more to reduce 
 # role-specific conditionals.
 class Boss(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Crime Boss", loyalties=None, **kwargs):
+    def __init__(self, name, faction, position="A Boss", loyalties=None, **kwargs):
         
         # Default loyalty setup for Boss
         default_loyalties = {
@@ -154,7 +25,7 @@ class Boss(Character):
             default_loyalties.update(loyalties)
         
         super().__init__(
-            name, faction=faction, entity_id=entity_id, char_role=char_role, status="ELITE", loyalties=default_loyalties, **kwargs
+            name, faction=faction, status="ELITE", loyalties=default_loyalties, **kwargs
         )
         self.directives = []  # High-level orders issued to Captains/Managers
         
@@ -170,7 +41,7 @@ class Boss(Character):
         self.directives = []  # List of high-level directives
 
 class CEO(Character):
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="CEO", loyalties=None, **kwargs):
+    def __init__(self, name, faction, position="A CEO", loyalties=None, **kwargs):
         
         # Default loyalty setup for CEO
         default_loyalties = {
@@ -181,16 +52,19 @@ class CEO(Character):
         if loyalties:
             default_loyalties.update(loyalties)
         
+        # Extract inventory safely from kwargs
+        inventory = kwargs.pop("inventory", [])
+
+        # Ensure required attributes are explicitly passed to Character
         super().__init__(
-            name, faction=faction, entity_id=entity_id, char_role="CEO", status=Status.ELITE, loyalties=default_loyalties, **kwargs
+            name, faction=faction, status="ELITE", loyalties=default_loyalties, **kwargs # Pass remaining keyword arguments safely
         )
         self.directives = []  # List of high-level directives
-        
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = inventory
         
         def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+            """Ensure correct string representation"""
+        return f"{super().__repr__()}, Faction: {self.faction}"
 
     def issue_directive(self, directive):
         print(f"{self.name} (CEO) issues directive: {directive}")
@@ -198,7 +72,7 @@ class CEO(Character):
 
 class Captain(Character):
     is_concrete = True
-    def __init__(self, name, faction, entity_id=None, position="Civilian", char_role="Ganger", loyalties=None, **kwargs):
+    def __init__(self, name, faction, position="A Captain", loyalties=None, **kwargs):
         
         # Default loyalty setup for Captain
         default_loyalties = {
@@ -206,44 +80,37 @@ class Captain(Character):
             "Law": 10,  # Distrust of the law by default
         }
         # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)
+        default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, entity_id=entity_id, char_role="Captain", status=Status.HIGH, loyalties=default_loyalties, **kwargs
+            name, faction=faction, status=Status.HIGH, loyalties=default_loyalties, **kwargs
         )
         
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        # Ensure inventory is a new list instance per character
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
 
-        def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, faction="None", entity_id=None, bankCardCash=500, position="Manager", char_role="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
+    def __init__(self, name, faction="None", bankCardCash=500, position="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
-            faction: 50,  # Somewhat loyal to faction
+            faction: 50 if faction else 0,  # Avoid issues if faction is None
             "Law": 40,
         }
-        # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)
+        # Merge defaults with provided loyalties safely
+        default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, entity_id=entity_id, char_role="Manager", bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            name, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, **kwargs
         )
         self.position = position
-        self.bankCardCash = bankCardCash
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-    
-    #this must be abstracted ffs
-    def buy_item(self, shop, item_name):
-        """Character buys an item from a shop."""
-        shop.sell_item(self, item_name)
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
 
     def __repr__(self):
             # Use Character's consistent representation and add faction info
@@ -251,70 +118,61 @@ class Manager(Character):
     
 class Subordinate(Character):
     is_concrete = False
-    def __init__(self, name, faction, strength, agility, intelligence, luck, psy, toughness, morale, race, entity_id=None, position="Civilian", char_role="Varies", loyalties=None, **kwargs):
+    def __init__(self, name, faction, strength, agility, intelligence, luck, psy, toughness, morale, race, position="A subordinate", loyalties=None, **kwargs):
         default_loyalties = {
-            faction: 20,
+            faction: 20 if faction else 0,  # Avoid issues if faction is None
             "Law": 20,  # Meh, whatever
         }
         # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)
-        super().__init__(name, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race="Terran", entity_id=entity_id, char_role=char_role, loyalties=default_loyalties, **kwargs)
-        self.tasks = []
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        default_loyalties.update(loyalties or {})
+
+        super().__init__(name, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, loyalties=default_loyalties, **kwargs)
+        self.tasks = []# Explicitly initialize task list
+
+        # Ensure inventory is correctly initialized
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
 
 class Employee(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, race="Terran", entity_id=None, position="Civilian", char_role="Employee", loyalties=None, **kwargs):
+    def __init__(self, name, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, race="Terran", position="An employee", loyalties=None, **kwargs):
         
         # Default loyalty setup for Employee
         default_loyalties = {
-            faction: 15,
+            faction: 15 if faction else 0,  # Avoid issues if faction is None
             "Law": 15,  # Distrust of the law by default
         }
         # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)
+        default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, entity_id=entity_id, char_role="Employee", status=Status.LOW, loyalties=default_loyalties, **kwargs
+            name, faction=faction, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, position=position, status=Status.LOW, loyalties=default_loyalties, **kwargs
         )
         
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        # Ensure inventory is correctly initialized
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
-        def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
 
 class CorporateSecurity(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, toughness=13, morale=11, race="Terran", entity_id=None, position="Civilian", char_role="Security", loyalties=None, **kwargs):
+    def __init__(self, name, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, toughness=13, morale=11, race="Terran", position="Security Guard", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateSecurity
         default_loyalties = {
-            faction: 50,  # Full loyalty to their own faction
-            "Law": 10,  # We are not cops
+            faction: 50 if faction else 0,  # Avoid issues if faction is None
+            "Law": 10,  # Not cops, just security
         }
-        # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)
+        # Merge defaults with provided loyalties safely
+        default_loyalties.update(loyalties or {})
 
         super().__init__(
-            name,
-            faction=faction,
-            entity_id=entity_id, 
-            char_role=char_role,
-            strength=strength,
-            agility=agility,
-            intelligence=intelligence,
-            luck=luck,
-            psy=psy,
-            toughness=toughness,
-            morale=morale,
-            race=race,
-            loyalties=default_loyalties,
-            **kwargs
+            name, faction=faction, strength=strength, agility=agility, 
+            intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
+            morale=morale, race=race, position=position, 
+            loyalties=default_loyalties, **kwargs
         )
         
         self.pistolIsLoaded = True
@@ -323,166 +181,245 @@ class CorporateSecurity(Subordinate):
         self.targetIsInMelee = False
         self.cash = 10
         self.bankCardCash = 100
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+
+        # Ensure inventory is correctly initialized
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
-        def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
 
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
-    def __init__(self, name, faction,  strength=12, agility=15, intelligence=15, toughness=13, morale=13, race="Terran", entity_id=None, position="Unknown", char_role="Assasin", loyalties=None, **kwargs):
+    def __init__(self, name, faction,  strength=12, agility=15, intelligence=15, toughness=13, morale=13, race="Terran", position="Unknown", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateAssasin
         default_loyalties = {
-            faction: 10,  # Where's the money?
-            "Law": 0,  # Distrust of the law by default
+            faction: 10 if faction else 0,  # Avoid issues if faction is None
+            "Law": 0,  # No trust in the law
         }
-        # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)
+        # Merge defaults with provided loyalties safely
+        default_loyalties.update(loyalties or {})
 
         super().__init__(
-            name,
-            faction=faction,
-            entity_id=entity_id, 
-            char_role=char_role,
-            strength=strength,
-            agility=agility,
-            intelligence=intelligence,
-            luck=0,
-            psy=0,
-            toughness=toughness,
-            morale=morale,
-            race=race,
-            loyalties=default_loyalties,
-            **kwargs
+            name, faction=faction, strength=strength, agility=agility, 
+            intelligence=intelligence, luck=0, psy=0, toughness=toughness, 
+            morale=morale, race=race, position=position, 
+            loyalties=default_loyalties, **kwargs
         )
         
+        # Assassin-specific weapon attributes
         self.rifleIsLoaded = True
         self.rifleCurrentAmmo = 15
-        self.pistolIsLoaded = True
-        self.pistolCurrentAmmo = 15
-        self.targetIsInMelee = False
+
+        # Override base class financial stats
         self.cash = 400
         self.bankCardCash = 1000
+
+        # Adjusted health based on toughness
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        
+
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
+
+    def __repr__(self):
+        """Ensures a consistent representation and includes faction information."""
+        return super().__repr__() + f", Position: {self.position}, Health: {self.health}"
 
 class GangMember(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, strength=12, agility=11, intelligence=7, luck=9, psy=2, toughness=14, morale=12, race="Terran", entity_id=None, position="Civilian", char_role="Ganger", loyalties=None, **kwargs):
-
+    def __init__(self, name, faction, strength=12, agility=11, intelligence=7, 
+                 luck=9, psy=2, toughness=14, morale=12, race="Terran", 
+                 position="Gangster", loyalties=None, **kwargs):
     # Default loyalty setup for GangMember
         default_loyalties = {
-            faction: 15,  # loyalty to their own faction
-            "Law": 0,  # Distrust of the law by default
+            faction: 15 if faction else 0,  # Ensure faction exists
+            "Law": 0,  # No trust in law enforcement
         }
         # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)   
+        default_loyalties.update(loyalties or {})   
         
         super().__init__(
-            name,
-            faction=faction,
-            entity_id=entity_id, 
-            char_role=char_role,
-            strength=strength,
-            agility=agility,
-            intelligence=intelligence,
-            luck=luck,
-            psy=psy,
-            toughness=toughness,
-            morale=morale,
-            race=race,
-            loyalties=default_loyalties,
-            **kwargs
+            name, faction=faction, strength=strength, agility=agility, 
+            intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
+            morale=morale, race=race, position=position, 
+            loyalties=default_loyalties, **kwargs
         )
         
         self.pistolIsLoaded = False
         self.pistolCurrentAmmo = 0
         self.tazerCharge = 0
         self.targetIsInMelee = False
-        self.gangMembership = "Blue"
         self.isAggressive = False
+
         self.cash = 50
         self.bankCardCash = 20
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        
-        def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
 
-class RiotCop(Character): #Subordinate? Of the state?
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
+        
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
+
+class RiotCop(Character):
     is_concrete = True
-    def __init__(self, name, faction="The State", bankCardCash=300, entity_id=None, position="Pig", char_role="RiotCop", toughness=14, loyalties=None, fun=0, hunger=0, **kwargs):
+    def __init__(self, name, start_region, faction="The State", 
+                 position="Pig", toughness=14, loyalties=None, fun=0, hunger=0, **kwargs):
+        
+        # Find a PoliceStation in the region
+        from location import PoliceStation
+        police_stations = [loc for loc in start_region.locations if isinstance(loc, PoliceStation)]
+        start_location = police_stations[0] if police_stations else None  # Pick first available or None
 
     # Default loyalty setup for RiotCop
         default_loyalties = {
-            faction: 80,  # loyalty to their own faction
-            "Law": 70,  # It's the law, and it pays me
+            faction: 80,  # High loyalty to their own faction
+            "Law": 70,  # Law-abiding mindset
         }
         # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)   
+        default_loyalties.update(loyalties or {})   
         
         super().__init__(
-            name,
-            faction=faction,
-            fun=fun,
-            hunger=hunger,
-            entity_id=entity_id, 
-            char_role=char_role,
-            strength=15,
-            agility=4,
-            intelligence=5,
-            luck=0,
-            psy=0,
-            toughness=toughness,
-            morale=8,
-            race="Terran",
-            loyalties=default_loyalties,
-            **kwargs
+            name, start_region, start_location, faction=faction,
+            fun=fun, hunger=hunger, strength=15, agility=4, intelligence=5, 
+            luck=0, psy=0, toughness=toughness, morale=8, race="Terran", 
+            loyalties=default_loyalties, position=position, **kwargs
         )
         
+        # Weapon & Combat Attributes
         self.pistolIsLoaded = False
         self.pistolCurrentAmmo = 0
         self.tazerCharge = 0
         self.targetIsInMelee = False
         self.isAggressive = True
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
         self.targetIsInMelee = False
+
+        # Armor & Finances
+        
         self.isArmored = True
         self.armorValue = 30
         self.cash = 50
         self.bankCardCash = 300
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
 
-        def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
+
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
 
 class Civilian(Character):
     is_concrete = True
-    def __init__(self, name, faction="None", entity_id=None, position="Civilian", char_role="Civilian", loyalties=None, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, race="Terran", **kwargs):
+    def __init__(self, name, start_location, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, position="Normie", race="Terran", loyalties=None, **kwargs):
+    
 
-    # Default loyalty setup for Civilian
+   # Default loyalty setup for Civilian
         default_loyalties = {
-            faction: 0,  # no faction
-            "Law": 45,  # We need someone to control the gangs
+            "Law": 45,  # Neutral stance on law
+        }
+        # Merge defaults with provided loyalties if given
+        loyalties = kwargs.pop("loyalties", None)  # Extract if present
+        if loyalties:
+            default_loyalties.update(loyalties)
+
+        kwargs["loyalties"] = default_loyalties  # Inject updated loyalties
+        kwargs.setdefault("faction", Faction)  # Avoids multiple faction values issue
+
+        super().__init__(
+            name, start_location=start_location, strength=strength, agility=agility, intelligence=intelligence, 
+            luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, race=race, 
+            **kwargs
+        )
+
+        # Weapon & Combat Attributes
+        self.pistolIsLoaded = False
+        self.pistolCurrentAmmo = 0
+        self.targetIsInMelee = False
+
+        self.cash = 50
+        self.bankCardCash = 50
+        # Inventory Initialization
+        self.inventory = kwargs.get("inventory", [])
+    
+    def __repr__(self):
+        """Ensures a consistent representation and includes faction and position."""
+        return super().__repr__() + f", Position: {self.position}, Faction: {self.faction}"
+
+class VIP(Civilian):
+    is_concrete = True
+    def __init__(self, name, start_location, start_region, bankCardCash=10000, position="Mayor", loyalties=None,
+        influence=0, strength=18, agility=10, intelligence=15, 
+        luck=0, psy=0, toughness=5, morale=7, race="Terran", fun=0, hunger=0, **kwargs):
+        kwargs.setdefault("faction", "The State")  # Set default only if not provided
+
+        # Find a MunicipalBuilding in the region
+        from location import MunicipalBuilding
+        municipal_buildings = [loc for loc in start_region.locations if isinstance(loc, MunicipalBuilding)]
+        start_location = municipal_buildings[0] if municipal_buildings else None  # Pick first available or None
+
+
+        # Default loyalty setup for VIP
+        default_loyalties = {
+            Faction: 90,  # loyalty to their own faction
+            "Law": 75,  # I have a nice life, so, yeah
         }
         # Merge defaults with provided loyalties
         if loyalties:
             default_loyalties.update(loyalties)
 
+        # Ensure `loyalties` is properly passed
+        kwargs["loyalties"] = default_loyalties
+        
+        # Pass correct arguments to `Civilian.__init__()`
+        super().__init__(
+            name,
+            strength=strength,
+            agility=agility,
+            intelligence=intelligence,
+            luck=luck,
+            psy=psy,
+            toughness=toughness,
+            morale=morale,
+            start_location=start_location,
+            start_region=start_region,
+            position=position,  # Ensure position is passed correctly
+            race=race,
+            **kwargs # faction is already in kwargs
+        )
+        
+        self.influence = influence
+        self.targetIsInMelee = False
+        self.cash = 500
+        self.bankCardCash = bankCardCash  # Redundant but ensures it's explicitly set for VIP
+        self.health = 120 + toughness
+        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.position = position
+        self.start_region = start_region  # Keep track of initial region
+        self.start_location = start_location  # Keep track of starting building
+
+
+    def __repr__(self):
+        return super().__repr__() + f", Position: {self.position}, Faction: {self.faction}"
+
+    
+class Child(Civilian):
+    is_concrete = True
+    def __init__(self, name, faction="None", parent=None, bankCardCash=0, position="Minor", loyalties=None,
+        influence=0, strength=3, agility=10, intelligence=5, 
+        luck=0, psy=0, toughness=5, morale=1, race="Terran", fun=2, hunger=2, **kwargs):
+        
+        # Default loyalty setup for Child
+        default_loyalties = {
+            parent: 90,  # loyalty to their own faction
+            "Law": 30,  # Don't steal!
+        }
+        # Merge defaults with provided loyalties
+        default_loyalties.update(loyalties or {})
+        
         super().__init__(
             name,
             faction=faction,
-            entity_id=entity_id, 
-            char_role=char_role,
-            position=position,  # Ensure position is passed to the Character constructor
+            fun=fun,
+            hunger=hunger,
+            position=position,  # Ensure position is passed correctly
             strength=strength,
             agility=agility,
             intelligence=intelligence,
@@ -492,40 +429,59 @@ class Civilian(Character):
             morale=morale,
             race=race,
             loyalties=default_loyalties,
+            bankCardCash=bankCardCash,
             **kwargs
         )
+        
+        self.parent = parent if isinstance(parent, Character) and parent.race == race else None
+        self.race = race
+        self.influence = influence
+        self.targetIsInMelee = False
+        self.cash = 500
+        self.bankCardCash = bankCardCash  
+        self.health = 120 + toughness
+        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
 
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
-        self.targetIsInMelee = False
-        self.cash = 50
-        self.bankCardCash = 50
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
 
-class VIP(Civilian):
+    def update_parent(self, new_parent):
+        """
+        Updates the parent attribute.
+
+        :param new_parent: A new parent (Character object) or None.
+        """
+        if new_parent is None or (isinstance(new_parent, Character) and new_parent.race == self.race):
+            self.parent = new_parent
+        else:
+            raise ValueError("New parent must be a Character of the same race or None.")
+
+    def orphan(self):
+        """Sets the parent attribute to 'Orphan'."""
+        self.parent = "Orphan"
+
+
+class Influencer(Civilian):
     is_concrete = True
-    def __init__(self, name, faction="None", bankCardCash=10000, entity_id=None, position="Mayor", char_role="Civilian", loyalties=None,
-        influence=0, strength=18, agility=10, intelligence=15, 
-        luck=0, psy=0, toughness=5, morale=7, race="Terran", fun=0, hunger=0, **kwargs):
+    def __init__(self, name, faction="None", bankCardCash=1000, position="Grifter", loyalties=None,
+        influence=8, strength=10, agility=10, intelligence=15, 
+        luck=0, psy=0, toughness=5, morale=2, race="Terran", fun=2, hunger=0, **kwargs):
         
-        # Default loyalty setup for VIP
+        # Default loyalty setup for Influencer
         default_loyalties = {
-            faction: 90,  # loyalty to their own faction
-            "Law": 75,  # I have a nice life, so, yeah
+            faction: 10,  # loyalty to their own faction, if any
+            "Law": 15,  # Just, whatever
         }
         # Merge defaults with provided loyalties
-        if loyalties:
-            default_loyalties.update(loyalties)
+        default_loyalties.update(loyalties or {})
         
         super().__init__(
             name,
             faction=faction,
             fun=fun,
             hunger=hunger,
-            entity_id=entity_id, 
-            char_role=char_role,
             position=position,  # Ensure position is passed correctly
             strength=strength,
             agility=agility,
@@ -545,39 +501,192 @@ class VIP(Civilian):
         self.pistolCurrentAmmo = 0
         self.targetIsInMelee = False
         self.tazerCharge = 0
-        self.cash = 500
-        self.bankCardCash = bankCardCash  # Redundant but ensures it's explicitly set for VIP
+        self.cash = 1000
+        self.bankCardCash = bankCardCash  
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
 
-        def __repr__(self):
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
+        
+class Babe(Civilian):
+    is_concrete = True
+    def __init__(self, name, faction="None", partner=None, bankCardCash=1000, position="Variously Attached", loyalties=None,
+        influence=7, strength=7, agility=10, intelligence=10, 
+        luck=0, psy=0, charisma=14, toughness=4, morale=0, race="Terran", fun=2, hunger=2, **kwargs):
+        
+        # Default loyalty setup for Babe
+        default_loyalties = {
+            partner: 4,  # loyalty if you can call it that
+            "Law": 15,  # Just, whatever
+        }
+        # Merge defaults with provided loyalties
+        default_loyalties.update(loyalties or {})
+        
+        super().__init__(
+            name,
+            faction=faction,
+            fun=fun,
+            partner=partner,
+            hunger=hunger,
+            position=position,  # Ensure position is passed correctly
+            strength=strength,
+            agility=agility,
+            intelligence=intelligence,
+            luck=luck,
+            psy=psy,
+            charisma=charisma,
+            toughness=toughness,
+            morale=morale,
+            race=race,
+            loyalties=default_loyalties,
+            bankCardCash=bankCardCash,
+            **kwargs
+        )
+        
+        self.influence = influence
+        self.pistolIsLoaded = False
+        self.pistolCurrentAmmo = 0
+        self.targetIsInMelee = False
+        self.tazerCharge = 0
+        self.cash = 1000
+        self.bankCardCash = bankCardCash  
+        self.health = 120 + toughness
+        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.position = position
+        self.partner = Character
+
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"
+    
+    def influence(self, target):
+    #TMP
+        from characterActions import influence
+        return influence(self, target)
+
+    def flirt(self, target):
+        """Calls the generic flirt action."""
+        from characterActions import flirt
+        return flirt(self, target)
+
+    def charm(self, target):
+        """Calls the generic charm action."""
+        from characterActions import charm
+        return charm(self, target)
+
+    def dump(self):
+        """Ends the relationship."""
+        self.remove_partner()
+        print(f"{self.name} has dumped their partner.")
+
+class Detective(Character): #Subordinate? Of the state?
+    is_concrete = True
+    def __init__(self, name, start_region, faction="The State", bankCardCash=800, position="Cop", toughness=13, loyalties=None, fun=0, hunger=0, **kwargs):
+
+    # Find a PoliceStation in the region
+        from location import PoliceStation
+        police_stations = [loc for loc in start_region.locations if isinstance(loc, PoliceStation)]
+        start_location = police_stations[0] if police_stations else None  # Pick first available or None
+
+    # Default loyalty setup for Detective
+        default_loyalties = {
+            faction: 80,  # loyalty to their own faction
+            "Law": 90,  # It's the law, no on should be above it
+        }
+        # Merge defaults with provided loyalties
+        default_loyalties.update(loyalties or {})   
+        
+        super().__init__(
+            name,
+            start_region,
+            start_location,
+            faction=faction,
+            fun=fun,
+            hunger=hunger,
+            strength=15,
+            agility=4,
+            intelligence=5,
+            luck=0,
+            psy=0,
+            toughness=toughness,
+            morale=8,
+            race="Terran",
+            loyalties=default_loyalties,
+            **kwargs
+        )
+        
+        # Weapon & Combat Attributes
+        self.pistolIsLoaded = False
+        self.pistolCurrentAmmo = 0
+        self.tazerCharge = 0
+        self.targetIsInMelee = False
+        self.isAggressive = True
+        self.targetIsInMelee = False
+
+        # Armor & Finances
+        
+        self.isArmored = True
+        self.armorValue = 30
+        self.cash = 50
+        self.bankCardCash = 300
+
+        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
+
+
+    def __repr__(self):
+        # Use Character's consistent representation and add faction info
+        return super().__repr__() + f", Faction: {self.faction}"   
+        
+class Taxman(Character):
+    is_concrete = True
+    def __init__(self, name, faction="State", bankCardCash=1000, position="Tax Official", loyalties=None, fun=-1, hunger=0, **kwargs):
+        
+        # Default loyalty setup for Manager
+        default_loyalties = {
+            faction: 50,  # Somewhat loyal to faction
+            "Law": 40,
+        }
+        # Merge defaults with provided loyalties
+        default_loyalties.update(loyalties or {})
+        
+        super().__init__(
+            name, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            hunger=hunger, **kwargs
+        )
+        self.position = position
+        self.bankCardCash = bankCardCash
+        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+    
+    # figure out how specific charcters store their specific actions, here or in that file or both
+
+    def __repr__(self):
             # Use Character's consistent representation and add faction info
             return super().__repr__() + f", Faction: {self.faction}"
     
-def create_character_if_needed(entity_id, character_registry):
-    """Create or fetch a character based on entity ID."""
-    if entity_id is None:
-        entity_id = generate_entity_id()
-
-    if entity_id not in character_registry:
-        print(f"Creating a new character with ID {entity_id}...")
-        chosen_role = select_role(
-            ["Captain", "Boss", "Manager", "Employee", "CEO"]
+class Accountant(Character):
+    is_concrete = True
+    def __init__(self, name, faction="None", bankCardCash=1000, position="Accountant", loyalties=None, fun=0, hunger=0, **kwargs):
+        
+        # Default loyalty setup for Manager
+        default_loyalties = {
+            faction: 70,  # Somewhat loyal to faction
+            "Law": 20,
+        }
+        # Merge defaults with provided loyalties
+        default_loyalties.update(loyalties or {})
+        
+        super().__init__(
+            name, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            hunger=hunger, **kwargs
         )
-        character = Character(
-            name=f"Character {entity_id}", entity_id=entity_id, char_role=chosen_role
-        )
-        character_registry[entity_id] = character
-        print(f"Character created with role: {chosen_role}")
-    else:
-        print(f"Entity ID {entity_id} already exists.")
-        character = character_registry[entity_id]
+        self.position = position
+        self.bankCardCash = bankCardCash
+        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+    
 
-    # Debugging the registry update
-
-    def debug_character(char):
-        print(f"DEBUG: {char.name} - Money: {char.wallet}, fun: {char.fun}, Hunger: {char.hunger}")
-
-        print(f"Updated Character Registry: {character_registry}")  # <-- Add this
-    return character
+    def __repr__(self):
+            # Use Character's consistent representation and add faction info
+            return super().__repr__() + f", Faction: {self.faction}"

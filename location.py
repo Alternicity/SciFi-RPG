@@ -4,80 +4,51 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional, Any, Union
 import logging
+from faction import Faction
 #shop/vendor specific (at least at first)
-
+from base_classes import Character, Location, Faction
 from location_security import Security
 logging.basicConfig(level=logging.INFO)
 
-from common import get_project_root
-#ALL files use this to get the project root
-
-
-# Decorator definition (must be placed before the class definition)
-""" def check_entrance_state(func):
-    def wrapper(self, *args, **kwargs):
-        if self.primary_entrance.state == "Open":  # Ensure entrance is open before calling function
-            print(f"Access granted to {self.name}.")
-            return func(self, *args, **kwargs)
-        else:
-            print(f"Access denied to {self.name}, entrance is closed.")
-            return None  # or handle denied access differently
-    return wrapper """
-
-@dataclass
-class Location:
-    region: Optional['Region'] = None  # Reference to the Region object (optional)
-    location: Optional['Location'] = None  # Specific location within the region (optional)
-    name: str = "Unnamed Location"
-    side: str = "Unknown Side" # marked for project wide deletion
-    security: Security = field(default_factory=lambda: Security(
-        level=1,
-        guards=[],
-        difficulty_to_break_in=1,
-        surveillance=False,
-        alarm_system=False
-    ))
-    condition: str = "Unknown Condition"
-    fun: int = 0
-    is_concrete: bool = False
-    secret_entrance: bool = False
-    entrance: List[str] = field(default_factory=list)  # Default to an empty list
-    upkeep: int = 0
-
-    def to_dict(self):
-        return asdict(self)
-
-    def __post_init__(self):
-        # Any additional setup logic if needed
-        pass
-
-    def add_entrance(self, *entrance):
-        self.entrance.extend(entrance)
-        print(f"entrance added to {self.name}: {', '.join(entrance)}")
-
-# Decorator to check entrance state
-""" def check_entrance_state(func):
-    def wrapper(self, *args, **kwargs):
-        if self.secret_entrance:
-            print(f"Accessing secret entrance to {self.name}.")
-            return func(self, *args, **kwargs)
-        else:
-            print(f"Secret entrance not available at {self.name}.")
-            return None
-    return wrapper """
+from common import DangerLevel #this was commented out once, probs for a circular imprt problem..
 
 @dataclass
 class Region:
     name: str
-    nameForUser: str
     shops: List[str] = field(default_factory=list)#default to empty list if not provided
+    locations: List[Location] = field(default_factory=list)
+    factions: List[str] = field(default_factory=list)
+    DangerLevel: Optional[DangerLevel] = None  # Defaults to None if not provided
+#Each region will contain a list of Shop and other Location objects
+    def add_location(self, location: Location):
+        """Adds a location to this region and updates the location's region reference."""
+        location.region = self
+        self.locations.append(location)
+        print(f"Added {location.name} to region {self.name}.")
+
+@dataclass
+class UndevelopedRegion(Region):
+    name: str
     locations: List[str] = field(default_factory=list)
     factions: List[str] = field(default_factory=list)
-#Each region will contain a list of Shop and other Location objects
+
+@dataclass
+class VacantLot(Location):
+    name: str = "Empty Land"
+    location: str = "N/A"
+    
+    upkeep: int = 0
+    ambiance_level: int = 0
+    fun: int = 0
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
 @dataclass
 class HQ(Location):
     name: str = "Base"
+    faction: Optional[Faction] = field(default=None)
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
@@ -99,11 +70,6 @@ class HQ(Location):
     def to_dict(self):
         # Use asdict to convert all dataclass attributes to a dictionary
         return asdict(self)
-    
-    """ def __post_init__(self):
-        # Any additional initialization logic
-        print(f"Initialized HQ: {self.name}, entrance: {', '.join(self.entrance)}")
- """
 
 @dataclass
 class Vendor(Location):
@@ -405,20 +371,6 @@ class Mine(Location):
     def to_dict(self):
         return asdict(self)
 
-    """ def secret_entrance_decorator(self, func):
-        Decorator method to allow access based on entrance state.
-        def wrapper(*args, **kwargs):
-            if self.secret_entrance:
-                print("Access granted through the secret entrance.")
-                return func(*args, **kwargs)
-            else:
-                print("Secret entrance is not available.")
-                return None
-        return wrapper 
-
-    @secret_entrance_decorator
-    def access_secret_entrance(self):
-        print(f"{self.name} secret entrance accessed.")"""
 
 @dataclass
 class Powerplant(Location):
@@ -767,7 +719,6 @@ class Park(Location):
 class Museum(Location):
     name: str = "City Museum"
     location: str = "Central"
-    
     upkeep: int = 45
     artifact_count: int = 50
     exhibits: List[str] = field(default_factory=list)  # List of exhibit names
@@ -792,7 +743,6 @@ class Museum(Location):
 class Library(Location):
     name: str = "Public Library"
     location: str = "West"
-    
     upkeep: int = 20
     book_count: int = 10000
     genres_available: List[str] = field(default_factory=list)  # List of genres
@@ -812,3 +762,239 @@ class Library(Location):
 
     def to_dict(self):
         return asdict(self)
+
+@dataclass
+class ResearchLab(Location):
+    name: str = "OmniLab"
+    prototypes_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
+    materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
+    equipment_list: List[str] = field(default_factory=list) #An empty list but lab must have something here
+    upkeep: int = 200
+    is_concrete: bool = True
+    secret_entrance: bool = True
+    is_powered: bool = False
+    energy_cost: int = 50
+
+    security: Security = field(default_factory=lambda: Security(
+        level=3,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=True,
+        alarm_system=True
+    ))
+
+
+    def to_dict(self):
+        return asdict(self)
+
+    def research_new_tech(self):
+            print(f"Lab at {self.name} is researching.")
+            # Logic for researching
+            
+
+    def produce_prototypes(self):
+        print(f"Lab at {self.name} is producing prototypes.")
+        # Logic for processing materials into goods
+        
+@dataclass
+class Warehouse(Location):
+    name: str = "Warehouse 5"
+    location: str = "wherever"
+    upkeep: int = 15
+    storage_capacity: int = 50 # will need to upgrade to a more complex data structure
+    fun: int = 0
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 10
+
+    security: Security = field(default_factory=lambda: Security(
+        level=1,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=False,
+        alarm_system=False
+    ))
+
+    def to_dict(self):
+        return asdict(self)
+
+        
+
+@dataclass
+class ApartmentBlock(Location):
+    name: str = "Mass Housing"
+    location: str = "wherever"
+    upkeep: int = 35
+    storage_capacity: int = 50 # LOL, will need to upgrade to a more complex data structure
+    fun: int = 0
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 30
+
+    security: Security = field(default_factory=lambda: Security(
+        level=1,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=False,
+        alarm_system=False
+    ))
+
+    def to_dict(self):
+        return asdict(self)
+
+    def spawn_gang(self):
+        pass
+        #lets gtfo and rob some mfers fam
+        #if there is sufficicient children with sufficient hunger, they become a gang and gangmembers
+        #OR if a special charcter recruits there
+
+
+
+@dataclass
+class House(Location):
+    name: str = "Fam House"
+    location: str = "wherever"
+    upkeep: int = 5
+    fun: int = 1
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 5
+    security: Security = field(default_factory=lambda: Security(
+        level=1,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=False,
+        alarm_system=False
+    ))
+    def to_dict(self):
+        return asdict(self)
+
+    def spawn_character(self):
+            return create_character(self)
+    #A stable environment, house+family MIGHT produce a useful character
+
+    
+
+@dataclass
+class SportsCentre(Location):
+    name: str = "The Stadium"
+    location: str = "wherever"
+    upkeep: int = 30
+    
+    ambiance_level: int = 1
+    fun: int = 1
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
+
+    security: Security = field(default_factory=lambda: Security(
+        level=1,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=False,
+        alarm_system=False
+    ))
+
+    def to_dict(self):
+        return asdict(self)
+
+    def give_Sport_session(self, character):
+        pass
+        #increase fun, and health default (not healing)
+
+        
+@dataclass
+class Holotheatre(Location):
+    name: str = "Zodeono"
+    location: str = "wherever"
+    upkeep: int = 15
+    
+    ambiance_level: int = 1
+    fun: int = 1
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
+
+    security: Security = field(default_factory=lambda: Security(
+        level=1,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=False,
+        alarm_system=False
+    ))
+
+    def to_dict(self):
+        return asdict(self)
+
+    def show_performance(self, character):
+            pass
+            #increase fun for attendants, but leave them wanting more...
+
+
+class MunicipalBuilding(Location):
+    name: str = "City Hall"
+    faction: Optional[Faction] = field(default=None)
+    items_available: List[str] = field(default_factory=list) 
+    resource_storage: Dict[str, int] = field(default_factory=dict)
+    special_features: List[str] = field(default_factory=list)
+    #entrance: List[str] = field(default_factory=list)
+    
+    is_concrete: bool = True
+    secret_entrance: bool = True
+    is_powered: bool = True
+    energy_cost: int = 100
+
+    security: Security = field(default_factory=lambda: Security(
+        level=2,
+        guards=[],
+        difficulty_to_break_in=2,
+        surveillance=True,
+        alarm_system=True
+    ))
+
+    def to_dict(self):
+        # Use asdict to convert all dataclass attributes to a dictionary
+        return asdict(self)
+
+@dataclass
+class PoliceStation(Location):
+    name: str = "The Yard"
+    items_available: List[str] = field(default_factory=list) 
+    resource_storage: Dict[str, int] = field(default_factory=dict)
+    special_features: List[str] = field(default_factory=list)
+    #entrance: List[str] = field(default_factory=list)
+    
+    is_concrete: bool = True
+    secret_entrance: bool = True
+    is_powered: bool = False
+    energy_cost: int = 0
+
+    security: Security = field(default_factory=lambda: Security(
+        level=1,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=False,
+        alarm_system=False
+    ))
+
+    def to_dict(self):
+        # Use asdict to convert all dataclass attributes to a dictionary
+        return asdict(self)
+    
+    def imprison(character):
+        return idk(self)
+    
+    def interogate(detective, character, targetInfo):
+        return(results)
+    
+    def torture(detective, character, targetInfo):
+        return(results)
+
+    def hostInvestigation(investigation):
+        return(results)
+    #also has a CopBar

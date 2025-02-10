@@ -1,6 +1,6 @@
 import json
 
-from common import get_project_root, get_file_path
+from common import get_file_path
 #ALL files use this to get the project root
 
 def verify_city_data(city_data):

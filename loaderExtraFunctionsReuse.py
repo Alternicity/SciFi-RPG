@@ -27,6 +27,7 @@ def _check_missing_keys(entry, required_keys):
     if missing_keys:
         raise ValueError(f"Missing required keys in entry: {missing_keys}")
     
+    #possibly deprecated
 def _validate_goal(goal):
     """Validate a goal entry."""
     if "goal" not in goal:

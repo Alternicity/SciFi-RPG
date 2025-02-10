@@ -1,115 +1,28 @@
+#display.py
 from tabulate import tabulate
 import logging
-from character_creation import create_characters_as_objects
+
 import loader
 import os
-from city_utils import regenerate_city_data
-from characters import Manager, Civilian, Character
-from location import Region
-import json
-from region_startup import regions_with_wealth
-from LoaderRuntime import load_locations_from_yaml
-from create import create_all_regions, create_region
-from common import get_project_root, get_file_path, BASE_REGION_DIR, BASE_SHOPS_DIR
+from collections import defaultdict
+from characters import (Boss, Captain, Employee, VIP, RiotCop,
+                         CorporateAssasin, Employee, GangMember,
+                           CEO, Manager, CorporateSecurity, Civilian, GangMember, Child, Influencer,
+                           Babe, Detective)
 
-# Setup logger
+from location import Region, UndevelopedRegion, VacantLot
+import json
+from region_startup import get_region_wealth
+from LoaderRuntime import load_locations_from_yaml
+from create import create_regions
+from menu_utils import get_user_choice
+from common import get_file_path, BASE_REGION_DIR, BASE_SHOPS_DIR
+from typing import List, Union
+from game import character_and_region_selection
+from character_creation_funcs import player_character_options
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-def main_menu():
-    """Display the main menu and handle user choices."""
-    while True:
-        print("\n=== Main Menu ===")
-        print("1: Create Characters (Game Objects)")
-        print("2: Create Characters (Serialized Data)")
-        print("3: Load Serialized Characters")
-        print("4: Play/Test Game")
-        print("5: Regenerate City Data")
-        print("6: Exit")
-        
-        try:
-            choice = int(input("Enter your choice: "))
-            if choice == 1:
-                characters = create_characters_as_objects()
-                print("\n=== Character Information ===")
-                print(list_characters(characters))
-            elif choice == 2:
-                print("Feature to create and serialize characters is under development.")
-            elif choice == 3:
-                print("Feature to load serialized characters is under development.")
-            elif choice == 4:
-                # Start game logic, calling `character_and_region_selection` 
-                selected_character, region = character_and_region_selection()  # Expecting returned variables here
-
-                if selected_character and region:
-                    return selected_character, region  # Return for gameplay flow
-            elif choice == 5:
-                regenerate_city_data()  # Call regeneration
-            elif choice == 6:
-                print("Exiting... Goodbye!")
-                break
-            else:
-                print("Invalid choice. Please select a valid option.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-
-def character_and_region_selection():
-    """Start the game and handle character and region selection."""
-    print("Starting game...")
-
-    # Predefined characters to select from character_creation.py
-    characters = create_characters_as_objects()
-
-    # Step 1: Select character
-    selected_character = select_character_menu(characters)
-    if not selected_character:
-        print("Character selection failed.")
-        return None, None
-    
-    # Step 2: Load regions as Region objects
-    region_names = ["Central", "East", "North", "South", "West"]
-    regions = []
-    for name in region_names:
-        try:
-            region = create_region(name)  # create_region loads the JSON and instantiates a Region
-            regions.append(region)
-        except Exception as e:
-            print(f"Error loading region '{name}': {e}")
-
-    if not regions:
-        print("No regions available. Exiting game.")
-        return selected_character, None
-
-    # Step 3: Select region
-    selected_region = select_region_menu(regions)
-    if not selected_region:
-        print("Region selection failed.")
-        return selected_character, None
-
-    return selected_character, selected_region
-    
-    # Step 5: Start gameplay
-    start_gameplay(selected_character, region)
-
-def select_character_menu(characters):
-    """Allow the user to select a character."""
-    print("\nCharacter Selection Menu:")
-    print("Available Characters:")
-    for i, char in enumerate(characters):
-        print(f"{i + 1}. {char.name} ({char.faction})")
-
-    try:
-        choice = int(input("Enter the number of your choice: ")) - 1
-        if 0 <= choice < len(characters):
-            selected_character = characters[choice]
-            print(f"You selected: {selected_character.name}")
-            return selected_character
-        else:
-            print("Invalid selection.")
-            return None
-    except ValueError:
-        print("Invalid input.")
-        return None
 
 def load_region_mappings():
 
@@ -128,7 +41,7 @@ def load_region_mappings():
                 data = json.load(file)
                 region_mappings[region] = data  # Add region mappings to the dictionary
                 # Only print brief info about the region here
-                print(f"Loaded region data for {region}: {data.get('nameForUser', 'Unknown Region Name')}")
+                print(f"Loaded region data for {region}: {data.get('name', 'Unknown Region Name')}")
 
         except FileNotFoundError:
             print(f"Error loading region mappings for {region}: {region_file_path} not found.")
@@ -137,49 +50,129 @@ def load_region_mappings():
     
     return region_mappings
 
-def select_region_menu(regions):
-    """Display a menu to select a region."""
-    table = [
-        [i + 1, region.nameForUser, f"({region.name})"] for i, region in enumerate(regions)
-    ]
-    print(tabulate(table, headers=["#", "Region", "Code"], tablefmt="grid"))
-
-    try:
-        choice = int(input("Select a region by number: ")) - 1
-        if 0 <= choice < len(regions):
-            selected_region = regions[choice]
-            print(f"Selected region: {selected_region.nameForUser}")
-            return selected_region
-        else:
-            print("Invalid selection.")
-            return None
-    except ValueError:
-        print("Invalid input.")
+def select_region_menu(regions: List[Union['Region', 'UndevelopedRegion']]):
+    """Displays region selection and returns the selected region."""
+    if not regions:
+        print("No regions available.")
         return None
 
+    table = [[i + 1, region.name] for i, region in enumerate(regions)]
+    print(tabulate(table, headers=["#", "Region"], tablefmt="grid"))
+
+    choice = get_user_choice(len(regions))
+    return regions[choice] if choice is not None else None
+
+from tabulate import tabulate
+
 def show_character_details(character):
-    """Display character details."""
+    """Display character details in tabulated format."""
     print("\nCharacter Details:")
-    character_table = [
-        ["Name", "Role", "Faction", "Money", "Hunger", "Inventory"],
+    
+    # First table with the first header row
+    character_table_1 = [
+        ["Name", "Health", "Faction", "Money", "Whereabouts", "Hunger", "Inventory"],
         [
             character.name,
-            getattr(character, "char_role", "N/A"),
+            getattr(character, "xxx", character.health),
             character.faction,
             f"${getattr(character, 'bankCardCash', 0):.2f}",
+            character.whereabouts,  # Uses the @property
             getattr(character, "hunger", "N/A"),
             ", ".join(getattr(character, "inventory", [])),
         ],
     ]
-    print(tabulate(character_table, headers="firstrow", tablefmt="grid"))
-    #add a second row with 'Current location' showing selected characters current_location, current_region
+
+    # Second table with the second header row
+    character_table_2 = [
+        ["Race", "Status", "Intelligence", "Fun", "Motivations", ""],  # Empty fields for alignment
+        [
+            getattr(character, "lorem", character.race),
+            character.status.value.title(),
+            #character.status.value retrieves the string value of the enum ("high")
+            #.title() capitalizes the first letter of the string, turning "high" into "High"
+
+            getattr(character, "xxx", self.intelligence),
+
+            getattr(character, "idk", character.fun),
+            ", ".join(character.motivations),  # Motivations (joined list)
+            ""
+        ],
+    ]
+    # Print the first table
+    print(tabulate(character_table_1, headers="firstrow", tablefmt="grid"))
+    
+    # Print the second table
+    print(tabulate(character_table_2, headers="firstrow", tablefmt="grid"))
+
+def display_filtered_character_summary(characters, gang_limit=3, corp_limit=3, civilian_limit=3):
+    """Displays filtered character summaries with limits."""
+    print("\n=== CHARACTER SUMMARY ===\n")
+
+    # Categorize characters by faction
+    faction_groups = defaultdict(list)
+    non_faction_characters = []
+
+    for char in characters:
+        if char.faction and char.faction != "None":
+            faction_groups[char.faction].append(char)
+        else:
+            non_faction_characters.append(char)
+
+    # Display faction characters
+    for faction, members in faction_groups.items():
+        print(f"\n--- {faction.upper()} ---")
+
+        bosses = [c for c in members if isinstance(c, Boss)]
+        captains = [c for c in members if isinstance(c, Captain)]
+        gang_members = [c for c in members if isinstance(c, GangMember)]
+
+        ceos = [c for c in members if isinstance(c, CEO)]
+        managers = [c for c in members if isinstance(c, Manager)]
+        employees = [c for c in members if isinstance(c, Employee)]
+        corp_security = [c for c in members if isinstance(c, CorporateSecurity)]
+
+        vip = [c for c in members if isinstance(c, VIP)]
+        riot_cops = [c for c in members if isinstance(c, RiotCop)]
+        detectives = [c for c in members if isinstance(c, Detective)]
+
+        # Show limited number of characters
+        for b in bosses[:1]: show_character_details(b)
+        for c in captains[:3]: show_character_details(c)
+        for g in gang_members[:gang_limit]: show_character_details(g)
+
+        for ceo in ceos[:1]: show_character_details(ceo)
+        for m in managers[:3]: show_character_details(m)
+        for e in employees[:corp_limit]: show_character_details(e)
+        for sec in corp_security[:corp_limit]: show_character_details(sec)
+
+        for v in vip[:1]: show_character_details(v)
+        for r in riot_cops[:3]: show_character_details(r)
+        for d in detectives[:2]: show_character_details(d)
+
+    # Display non-faction characters
+    print("\n--- NON-FACTION CHARACTERS ---")
+    civilians = [c for c in non_faction_characters if isinstance(c, Civilian)]
+    children = [c for c in non_faction_characters if isinstance(c, Child)]
+    babes = [c for c in non_faction_characters if isinstance(c, Babe)]
+
+    # Show one of each category
+    if civilians: show_character_details(civilians[0])
+    if children: show_character_details(children[0])
+    if babes: show_character_details(babes[0])
+
+    # Display message for remaining
+    print(f"... and {max(0, len(civilians)-1)}x similar Civilians.")
+    print(f"... and {max(0, len(children)-1)}x similar Children.")
+    print(f"... and {max(0, len(babes)-1)}x similar Babes.")
+
+
 
 def show_locations_in_region(region, locations):
     """Display locations in the specified region."""
     #locations_data = load_locations_from_yaml(region)
 
     if not locations:
-        print(f"No locations found in {region.nameForUser}.")
+        print(f"No locations found in {region.name}.")
         return
     
     # Prepare the data for tabulation
@@ -215,4 +208,38 @@ def show_shop_inventory(shop):
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 def display_selected_character_current_region(character, region):
-    print(f"{character.name} is in {region.nameForUser}.")
+    print(f"{character.name} is in {region.name}.")
+
+def list_characters(characters):
+    #Display a list of existing characters in a table format.
+   
+    for char in characters:
+        if isinstance(char, dict):
+            print(f"Character dictionary: {char}")
+            name = char.get('name', 'Unknown')  # Safely access dictionary attributes
+    else:
+        print(f"Character object: {char}")
+        name = char.name  # Access object attribute
+        print(f"Character Name: {name}")
+
+
+    print("Listing Characters, list_characters().")
+
+    if not characters:
+        print("No existing characters.")
+        return
+
+    # Extract data from object instances
+    table_data = [
+        [
+            char.name,
+            char.char_role,
+            char.faction,
+            char.bankCardCash,
+            char.fun,
+            char.hunger,
+        ]
+        for char in characters
+    ]
+    headers = ["Name", "Role", "Faction", "Bank Card Cash", "Fun", "Hunger"]
+    return tabulate.tabulate(table_data, headers=headers, tablefmt="fancy_grid")
