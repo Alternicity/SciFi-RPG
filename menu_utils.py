@@ -1,19 +1,31 @@
 #menu_utils.py
-#reusable menu and selection-related functions.
 from tabulate import tabulate
-
+from display import display_world
 from typing import Dict, Any
 
+
+try:
+    from create import initialize_regions
+    print("initialize_regions successfully imported.")
+except ImportError as e:
+    print(f"Failed to import initialize_regions: {e}")
+
+    
 def main_menu():
     """Display the main menu and return the user choice. Not a gameplay menu itself"""
     print("\n=== Main Menu ===")
     print("1: Play/Test Game")
+    print("2: Show world")
     print("6: Exit")
 
     choice = get_user_choice(1)
     select_character_menu()
 
-    choice = get_user_choice(6)  # Use menu_utils function
+    choice = get_user_choice(2)
+    from menu_utils import all_regions
+    display_world(all_regions)
+
+    choice = get_user_choice(6)
     return choice
 
 def get_menu_choice(options: Dict[str, Any]) -> Any:
@@ -40,7 +52,11 @@ def select_character_menu():
     """Displays character selection and returns the selected character."""
     from character_creation_funcs import player_character_options
     from display import show_character_details
-    playable_characters = player_character_options()  # Get list of playable characters
+    from create import all_regions, factions
+    
+  
+    playable_characters = player_character_options(all_regions, factions)  # Get list of playable characters
+    
 
     if not playable_characters:
         print("No characters available for selection.")
@@ -49,7 +65,8 @@ def select_character_menu():
     # Display available characters
     print("\nSelect a character:")
     for idx, character in enumerate(playable_characters, start=1):
-        print(f"{idx}. {character.name} ({character.faction})")
+        print(f"{idx}. {character.name} {character.faction.name} {character.faction.type.capitalize()}")
+
 
     # Get player's choice
     while True:

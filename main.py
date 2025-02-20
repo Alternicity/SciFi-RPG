@@ -1,10 +1,6 @@
 #main.py
-import sys
-import os
 import logging
-from common import BASE_REGION_DIR
 #ALL files use this to get the project root
-from loader import load_region_data
 
 from gameplay import gameplay
 from create import create_regions, create_factions, create_characters, create_locations, all_regions
@@ -16,17 +12,15 @@ from display import show_locations_in_region, select_region_menu, show_character
 from loader import load_region_data
 from characters import (Boss, Captain, Employee, VIP, RiotCop, CorporateAssasin, Employee, GangMember,
                         CEO, Manager, CorporateSecurity, Civilian)
-from utils import (ensure_file_exists, load_characters_and_generate_if_empty, generate_and_save_characters)
-from character_creation_funcs import player_character_options  
-import gameplay
 
+from character_creation_funcs import player_character_options
 
 def setup_game():
     """Initialize game world with existing regions, then create factions and characters."""
     all_locations = [create_locations(region.name, region.wealth) for region in all_regions]
-    all_factions, all_characters = create_factions(all_locations)  # Pass locations correctly
+    factions, all_characters = create_factions(all_locations)  # Pass locations correctly
 
-    return all_regions, all_factions, all_characters
+    return all_regions, factions, all_characters
 
 def main():
 
@@ -40,7 +34,7 @@ def start_gameplay(current_character, region_data): #Is this still used?
     print(f"Current character: {current_character}")
 
     shops = region_data.get("shops", [])
-    print(f"Region data type: {type(region_data)}")
+    #print(f"Region data type: {type(region_data)}")
     #is it an Object? Does this reflect the charcater's current_location var?
 
     show_locations_in_region(shops) 

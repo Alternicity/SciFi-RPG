@@ -1,13 +1,14 @@
 #motivation.py 
 from status import Status
 
-class Motivation:
-    VALID_MOTIVATIONS = {
+#see also def gameplay for some motivation code, when making AI
+VALID_MOTIVATIONS = {
         "earn_money": 5,
         "eat": 0,  # Starts at 0, increases with hunger
         "sleep": 0,  # Increases with fatigue
         "shelter": 3,
         "have_fun": 2,
+        "find_safety": 9,
         f"gain_{Status.LOW.value}": 4,
         f"gain_{Status.MID.value}": 5,
         f"gain_{Status.HIGH.value}": 6,
@@ -26,75 +27,72 @@ class Motivation:
         "decrease_hostilities": 4, #see reassureRivals(Boss, rivals): and offerTruce(Boss, rivals): but also offerFauxTruce(Boss, rivals):
         "sow_dissent": 4, #sowDissent(Character, rivals) #weaken a rival or enemy factions loyalities
         "patrol": 3, #patrol(character, region, targetObjects) A key FSM action for low level faction members
-        "snitch": 6, #snitch(character, target, location) If a character sees a crime, or feels threatened by faction behaviour
+        "snitch": 2, #snitch(character, target, location) If a character sees a crime, or feels threatened by faction behaviour
     }
 
-    def __init__(self, initial_motivation="earn_money"):
-        if initial_motivation not in self.VALID_MOTIVATIONS:
-            print(f"Warning: Invalid motivation '{initial_motivation}'. Defaulting to 'earn_money'.")
-            initial_motivation = "earn_money"
-        self.current = initial_motivation
+class MotivationManager:
+    """Handles NPC motivations dynamically, allowing updates without wiping existing motivations."""
+
+    def __init__(self, character):
+        self.character = character
+        self.motivations = {}  # Store motivations with urgency levels
+
+    def update_motivations(self):
+        """Dynamically update motivations based on needs but without removing existing ones."""
+        
+        # Define need-motivation links
+        need_mappings = {
+            "physiological": [("eat", 7), ("sleep", 8)],  
+            "safety": [("escape_danger", 8)],
+            "love_belonging": [("find_partner", 8)],
+            "esteem": [("gain_status", 7)],
+            "self_actualization": [("pursue_dreams", 7)],
+        }
+
+        # Update motivation urgency based on needs
+        for need, mappings in need_mappings.items():
+            for motivation, threshold in mappings:
+                if self.character.needs[need] >= threshold:
+                    urgency = self.character.needs[need]  # Use need level as motivation urgency
+                    self.motivations[motivation] = urgency
+
+        # Ensure at least one default motivation exists
+        if not self.motivations:
+            self.motivations["earn_money"] = 5
+
+    def get_highest_priority_motivation(self):
+        """Returns the most urgent motivation."""
+        return max(self.motivations, key=self.motivations.get, default="earn_money")
+
+    def get_motivations(self):
+        """Returns motivations sorted by urgency."""
+        return sorted(self.motivations.items(), key=lambda x: x[1], reverse=True)
+
+    def get_urgent_motivations(self, threshold=7):
+        """Returns a list of motivations with urgency above a threshold."""
+        return [motivation for motivation, urgency in self.motivations.items() if urgency >= threshold]
+
+    def get_default_urgency(motivation):
+        """Returns the default urgency for a given motivation."""
+        return VALID_MOTIVATIONS.get(motivation, 5)  # Default fallback
 
 
-    def change_motivation(self, new_motivation):
-        if new_motivation in self.VALID_MOTIVATIONS:
-            print(f"Motivation changed to {new_motivation}")
-            self.current = new_motivation
-        else:
-            print(f"Invalid motivation: {new_motivation}")
+#This function might be useful for If you want manual motivation
+#  overrides (e.g., forcing an NPC to change behavior suddenly)
+def change_motivation(self, name, urgency=None):
+    """Manually overrides a motivation's urgency or adds a new one."""
+    if name not in VALID_MOTIVATIONS:
+        print(f"Invalid motivation: {name}")
+        return
 
-    def __str__(self):
-        return self.current
+    if urgency is None:
+        urgency = VALID_MOTIVATIONS[name]  # Default urgency
 
-    """ def __init__(self, name, behaviour="passive", motivation="earn_money"):
-        self.name = name
-        self.behaviour = self.Behaviour(behaviour)
-        self.motivation = self.Motivation(motivation) """
+    self.motivation_manager.motivations[name] = urgency  # Update urgency dynamically
 
-    """ def display_character_state(self):
-        print(
-            f"{self.name}'s behaviour: {self.behaviour.current}, motivation: {self.motivation.current}"
-        ) """
 
-def check_needs(character, is_player=False):
-    """Check character needs, determine the strongest motivation, and print messages."""
+
+
     
-    messages = []
-    motivations = {}
 
-    # Link needs to motivations
-    if character.needs["physiological"] > 7:
-        messages.append("hungry")
-        motivations["eat"] = character.needs["physiological"]
-
-    if character.needs["physiological"] > 9:
-        messages.append("starving")
-        motivations["eat"] = max(motivations.get("eat", 0), character.needs["physiological"] + 1)
-
-    if character.needs["physiological"] > 8:
-        messages.append("tired")
-        motivations["sleep"] = character.needs["physiological"]
-
-    if character.needs["safety"] > 8:
-        messages.append("worried about safety")
-        motivations["escape_danger"] = character.needs["safety"]
-
-    if character.needs["love_belonging"] > 8:
-        messages.append("lonely")
-        motivations["find_partner"] = character.needs["love_belonging"]
-
-    # Determine the most urgent motivation
-    if motivations:
-        strongest_motivation = max(motivations, key=motivations.get)
-    else:
-        strongest_motivation = "earn_money"  # Default fallback
-
-    # Display status messages
-    if messages:
-        status_msg = ", ".join(messages)
-        if is_player:
-            print(f"I am {status_msg}.")
-        else:
-            print(f"{character.name} is {status_msg}.")
-
-    return strongest_motivation
+    

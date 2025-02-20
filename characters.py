@@ -13,7 +13,7 @@ from base_classes import Character, Location, Faction
 # role-specific conditionals.
 class Boss(Character):
     is_concrete = True
-    def __init__(self, name, faction, position="A Boss", loyalties=None, **kwargs):
+    def __init__(self, name, region, location, faction, position="A Boss", loyalties=None, **kwargs):
         
         # Default loyalty setup for Boss
         default_loyalties = {
@@ -25,23 +25,29 @@ class Boss(Character):
             default_loyalties.update(loyalties)
         
         super().__init__(
-            name, faction=faction, status="ELITE", loyalties=default_loyalties, **kwargs
+            name, faction=faction,  region=region,
+            location=location, status="ELITE", loyalties=default_loyalties, **kwargs
         )
         self.directives = []  # High-level orders issued to Captains/Managers
         
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
-        def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+        
+    
+    def __repr__(self):
+        return Character.__repr__(self) + f", Faction: {self.faction}"
 
-
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Boss, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Boss, {self.region}, {self.location}, {self.sublocation}"
+    
     def issue_directive(self, directive):
         print(f"{self.name} issues directive: {directive}")
         self.directives = []  # List of high-level directives
 
 class CEO(Character):
-    def __init__(self, name, faction, position="A CEO", loyalties=None, **kwargs):
+    def __init__(self, name, region, location, faction, position="A CEO", loyalties=None, **kwargs):
         
         # Default loyalty setup for CEO
         default_loyalties = {
@@ -57,22 +63,27 @@ class CEO(Character):
 
         # Ensure required attributes are explicitly passed to Character
         super().__init__(
-            name, faction=faction, status="ELITE", loyalties=default_loyalties, **kwargs # Pass remaining keyword arguments safely
+            name, faction=faction, region=region,
+            location=location, status="ELITE", loyalties=default_loyalties, **kwargs # Pass remaining keyword arguments safely
         )
         self.directives = []  # List of high-level directives
         self.inventory = inventory
         
-        def __repr__(self):
-            """Ensure correct string representation"""
-        return f"{super().__repr__()}, Faction: {self.faction}"
+    def __repr__(self):
+        return Character.__repr__(self) + f", Faction: {self.faction}"
 
     def issue_directive(self, directive):
         print(f"{self.name} (CEO) issues directive: {directive}")
         self.directives.append(directive)
-
+    
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"CEO, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"CEO, {self.region}, {self.location}, {self.sublocation}"
+    
 class Captain(Character):
     is_concrete = True
-    def __init__(self, name, faction, position="A Captain", loyalties=None, **kwargs):
+    def __init__(self, name, region, location, faction, position="A Captain", loyalties=None, **kwargs):
         
         # Default loyalty setup for Captain
         default_loyalties = {
@@ -83,19 +94,24 @@ class Captain(Character):
         default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, status=Status.HIGH, loyalties=default_loyalties, **kwargs
+            name, faction=faction,  region=region,
+            location=location, status=Status.HIGH, loyalties=default_loyalties, **kwargs
         )
         
         # Ensure inventory is a new list instance per character
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
 
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
+
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Captain, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Captain, {self.region}, {self.location}, {self.sublocation}"
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, faction="None", bankCardCash=500, position="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
+    def __init__(self, name, region, location, faction="None", bankCardCash=500, position="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -106,15 +122,21 @@ class Manager(Character):
         default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            name, faction=faction,  region=region,
+            location=location, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, **kwargs
         )
         self.position = position
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
 
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Manager, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Manager, {self.region}, {self.location}, {self.sublocation}"
+
+
     def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
     
 class Subordinate(Character):
     is_concrete = False
@@ -135,7 +157,7 @@ class Subordinate(Character):
 
 class Employee(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, race="Terran", position="An employee", loyalties=None, **kwargs):
+    def __init__(self, name, region, location, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, race="Terran", position="An employee", loyalties=None, **kwargs):
         
         # Default loyalty setup for Employee
         default_loyalties = {
@@ -146,19 +168,25 @@ class Employee(Subordinate):
         default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, position=position, status=Status.LOW, loyalties=default_loyalties, **kwargs
+            name, faction=faction,  region=region,
+            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, position=position, status=Status.LOW, loyalties=default_loyalties, **kwargs
         )
         
         # Ensure inventory is correctly initialized
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
 
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Employee, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Employee, {self.region}, {self.location}, {self.sublocation}"
+
+    
 class CorporateSecurity(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, toughness=13, morale=11, race="Terran", position="Security Guard", loyalties=None, **kwargs):
+    def __init__(self, name, region, location, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, toughness=13, morale=11, race="Terran", position="Security Guard", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateSecurity
         default_loyalties = {
@@ -169,7 +197,8 @@ class CorporateSecurity(Subordinate):
         default_loyalties.update(loyalties or {})
 
         super().__init__(
-            name, faction=faction, strength=strength, agility=agility, 
+            name, faction=faction,  region=region,
+            location=location, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
             morale=morale, race=race, position=position, 
             loyalties=default_loyalties, **kwargs
@@ -186,12 +215,16 @@ class CorporateSecurity(Subordinate):
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
 
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"CorpSecurity, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"CorpSecurity, {self.region}, {self.location}, {self.sublocation}"
+    
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
-    def __init__(self, name, faction,  strength=12, agility=15, intelligence=15, toughness=13, morale=13, race="Terran", position="Unknown", loyalties=None, **kwargs):
+    def __init__(self, name, region, location, faction,  strength=12, agility=15, intelligence=15, toughness=13, morale=13, race="Terran", position="Unknown", loyalties=None, **kwargs):
         
         # Default loyalty setup for CorporateAssasin
         default_loyalties = {
@@ -202,7 +235,8 @@ class CorporateAssasin(CorporateSecurity):
         default_loyalties.update(loyalties or {})
 
         super().__init__(
-            name, faction=faction, strength=strength, agility=agility, 
+            name,  region=region,
+            location=location, faction=faction, strength=strength, agility=agility, 
             intelligence=intelligence, luck=0, psy=0, toughness=toughness, 
             morale=morale, race=race, position=position, 
             loyalties=default_loyalties, **kwargs
@@ -222,12 +256,16 @@ class CorporateAssasin(CorporateSecurity):
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
 
     def __repr__(self):
-        """Ensures a consistent representation and includes faction information."""
-        return super().__repr__() + f", Position: {self.position}, Health: {self.health}"
-
+        return Character.__repr__(self) + f", Faction: {self.faction}"
+    
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"CorpAssassin, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"CorpAssassin, {self.region}, {self.location}, {self.sublocation}"
+    
 class GangMember(Subordinate):
     is_concrete = True
-    def __init__(self, name, faction, strength=12, agility=11, intelligence=7, 
+    def __init__(self, name, region, location, faction, strength=12, agility=11, intelligence=7, 
                  luck=9, psy=2, toughness=14, morale=12, race="Terran", 
                  position="Gangster", loyalties=None, **kwargs):
     # Default loyalty setup for GangMember
@@ -239,7 +277,8 @@ class GangMember(Subordinate):
         default_loyalties.update(loyalties or {})   
         
         super().__init__(
-            name, faction=faction, strength=strength, agility=agility, 
+            name, faction=faction,  region=region,
+            location=location, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
             morale=morale, race=race, position=position, 
             loyalties=default_loyalties, **kwargs
@@ -257,18 +296,18 @@ class GangMember(Subordinate):
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
-
+        return Character.__repr__(self) + f", Faction: {self.faction}"
+    
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Ganger, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Ganger, {self.region}, {self.location}, {self.sublocation}"
+    
 class RiotCop(Character):
     is_concrete = True
-    def __init__(self, name, start_region, faction="The State", 
+    def __init__(self, name, region, location,  faction="The State", 
                  position="Pig", toughness=14, loyalties=None, fun=0, hunger=0, **kwargs):
-        
-        # Find a PoliceStation in the region
-        from location import PoliceStation
-        police_stations = [loc for loc in start_region.locations if isinstance(loc, PoliceStation)]
-        start_location = police_stations[0] if police_stations else None  # Pick first available or None
+
 
     # Default loyalty setup for RiotCop
         default_loyalties = {
@@ -279,7 +318,8 @@ class RiotCop(Character):
         default_loyalties.update(loyalties or {})   
         
         super().__init__(
-            name, start_region, start_location, faction=faction,
+            name, region=region,
+            location=location, faction=faction,
             fun=fun, hunger=hunger, strength=15, agility=4, intelligence=5, 
             luck=0, psy=0, toughness=toughness, morale=8, race="Terran", 
             loyalties=default_loyalties, position=position, **kwargs
@@ -303,13 +343,18 @@ class RiotCop(Character):
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
 
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
+
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"RiotCop, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"RiotCop, {self.region}, {self.location}, {self.sublocation}"
 
 class Civilian(Character):
     is_concrete = True
-    def __init__(self, name, start_location, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, position="Normie", race="Terran", loyalties=None, **kwargs):
-    
+    def __init__(self, name, region, location, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, position="Normie", race="Terran", loyalties=None, **kwargs):
+        #print(f"Civilian created: {name}, Region: {region}, Location: {location}")
+
 
    # Default loyalty setup for Civilian
         default_loyalties = {
@@ -324,7 +369,7 @@ class Civilian(Character):
         kwargs.setdefault("faction", Faction)  # Avoids multiple faction values issue
 
         super().__init__(
-            name, start_location=start_location, strength=strength, agility=agility, intelligence=intelligence, 
+            name, region=region, location=location, strength=strength, agility=agility, intelligence=intelligence, 
             luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, race=race, 
             **kwargs
         )
@@ -333,6 +378,8 @@ class Civilian(Character):
         self.pistolIsLoaded = False
         self.pistolCurrentAmmo = 0
         self.targetIsInMelee = False
+        self.location
+        self.region
 
         self.cash = 50
         self.bankCardCash = 50
@@ -340,21 +387,33 @@ class Civilian(Character):
         self.inventory = kwargs.get("inventory", [])
     
     def __repr__(self):
-        """Ensures a consistent representation and includes faction and position."""
-        return super().__repr__() + f", Position: {self.position}, Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
 
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Civilian, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Civilian, {self.region}, {self.location}, {self.sublocation}"
+    
 class VIP(Civilian):
     is_concrete = True
-    def __init__(self, name, start_location, start_region, bankCardCash=10000, position="Mayor", loyalties=None,
+    def __init__(self, name, region, location, bankCardCash=10000, position="Mayor", loyalties=None,
         influence=0, strength=18, agility=10, intelligence=15, 
         luck=0, psy=0, toughness=5, morale=7, race="Terran", fun=0, hunger=0, **kwargs):
+
+        if region is None:
+            raise ValueError(f"Error: VIP {name} is being created with region=None! Check faction.region!")
+        if not region.locations:
+            print(f"Warning: Region {region.name} has no locations at VIP creation!")
+
+
         kwargs.setdefault("faction", "The State")  # Set default only if not provided
+        #print(f"Initializing VIP: {name}, Region: {region}, Location: {location}")  # Debugging
 
         # Find a MunicipalBuilding in the region
         from location import MunicipalBuilding
-        municipal_buildings = [loc for loc in start_region.locations if isinstance(loc, MunicipalBuilding)]
-        start_location = municipal_buildings[0] if municipal_buildings else None  # Pick first available or None
-
+        municipal_buildings = [loc for loc in region.locations if isinstance(loc, MunicipalBuilding)]
+        location = municipal_buildings[0] if municipal_buildings else None  # Pick first available or None
+        print(f"MunicipalBuilding = {MunicipalBuilding} ({type(MunicipalBuilding)})")
 
         # Default loyalty setup for VIP
         default_loyalties = {
@@ -370,7 +429,7 @@ class VIP(Civilian):
         
         # Pass correct arguments to `Civilian.__init__()`
         super().__init__(
-            name,
+            name=name,
             strength=strength,
             agility=agility,
             intelligence=intelligence,
@@ -378,8 +437,8 @@ class VIP(Civilian):
             psy=psy,
             toughness=toughness,
             morale=morale,
-            start_location=start_location,
-            start_region=start_region,
+            region=region,
+            location=location,
             position=position,  # Ensure position is passed correctly
             race=race,
             **kwargs # faction is already in kwargs
@@ -392,17 +451,21 @@ class VIP(Civilian):
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
-        self.start_region = start_region  # Keep track of initial region
-        self.start_location = start_location  # Keep track of starting building
+        self.region = region  # Keep track of initial region
+        self.location = location  # Is this being set properly?
 
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"VIP, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"VIP, {self.region}, {self.location}, {self.sublocation}"
 
     def __repr__(self):
-        return super().__repr__() + f", Position: {self.position}, Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
 
     
 class Child(Civilian):
     is_concrete = True
-    def __init__(self, name, faction="None", parent=None, bankCardCash=0, position="Minor", loyalties=None,
+    def __init__(self, name, region, location, faction="None", parent=None, bankCardCash=0, position="Minor", loyalties=None,
         influence=0, strength=3, agility=10, intelligence=5, 
         luck=0, psy=0, toughness=5, morale=1, race="Terran", fun=2, hunger=2, **kwargs):
         
@@ -417,6 +480,8 @@ class Child(Civilian):
         super().__init__(
             name,
             faction=faction,
+            region=region,
+            location=location,
             fun=fun,
             hunger=hunger,
             position=position,  # Ensure position is passed correctly
@@ -444,9 +509,13 @@ class Child(Civilian):
         self.position = position
 
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
 
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Child, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Child, {self.region}, {self.location}, {self.sublocation}"
+    
     def update_parent(self, new_parent):
         """
         Updates the parent attribute.
@@ -465,7 +534,7 @@ class Child(Civilian):
 
 class Influencer(Civilian):
     is_concrete = True
-    def __init__(self, name, faction="None", bankCardCash=1000, position="Grifter", loyalties=None,
+    def __init__(self, name, region, location, faction="None", bankCardCash=1000, position="Grifter", loyalties=None,
         influence=8, strength=10, agility=10, intelligence=15, 
         luck=0, psy=0, toughness=5, morale=2, race="Terran", fun=2, hunger=0, **kwargs):
         
@@ -480,6 +549,8 @@ class Influencer(Civilian):
         super().__init__(
             name,
             faction=faction,
+            region=region,
+            location=location,
             fun=fun,
             hunger=hunger,
             position=position,  # Ensure position is passed correctly
@@ -508,12 +579,16 @@ class Influencer(Civilian):
         self.position = position
 
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
-        
+        return Character.__repr__(self) + f", Faction: {self.faction}"
+
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Influencer, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Influencer, {self.region}, {self.location}, {self.sublocation}"
+
 class Babe(Civilian):
     is_concrete = True
-    def __init__(self, name, faction="None", partner=None, bankCardCash=1000, position="Variously Attached", loyalties=None,
+    def __init__(self, name, region, location, faction="None", partner=None, bankCardCash=1000, position="Variously Attached", loyalties=None,
         influence=7, strength=7, agility=10, intelligence=10, 
         luck=0, psy=0, charisma=14, toughness=4, morale=0, race="Terran", fun=2, hunger=2, **kwargs):
         
@@ -528,6 +603,8 @@ class Babe(Civilian):
         super().__init__(
             name,
             faction=faction,
+            region=region,
+            location=location,
             fun=fun,
             partner=partner,
             hunger=hunger,
@@ -559,9 +636,13 @@ class Babe(Civilian):
         self.partner = Character
 
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
     
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Babe, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Babe, {self.region}, {self.location}, {self.sublocation}"
+
     def influence(self, target):
     #TMP
         from characterActions import influence
@@ -584,13 +665,11 @@ class Babe(Civilian):
 
 class Detective(Character): #Subordinate? Of the state?
     is_concrete = True
-    def __init__(self, name, start_region, faction="The State", bankCardCash=800, position="Cop", toughness=13, loyalties=None, fun=0, hunger=0, **kwargs):
+    def __init__(self, name, region, location,  faction="The State", bankCardCash=800, position="Cop", toughness=13, loyalties=None, fun=0, hunger=0, **kwargs):
 
-    # Find a PoliceStation in the region
-        from location import PoliceStation
-        police_stations = [loc for loc in start_region.locations if isinstance(loc, PoliceStation)]
-        start_location = police_stations[0] if police_stations else None  # Pick first available or None
 
+        start_location = None  # Ensure start_location is always defined
+        
     # Default loyalty setup for Detective
         default_loyalties = {
             faction: 80,  # loyalty to their own faction
@@ -601,8 +680,8 @@ class Detective(Character): #Subordinate? Of the state?
         
         super().__init__(
             name,
-            start_region,
-            start_location,
+            region,
+            location,
             faction=faction,
             fun=fun,
             hunger=hunger,
@@ -635,14 +714,21 @@ class Detective(Character): #Subordinate? Of the state?
 
         self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
 
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Detective, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Detective, {self.region}, {self.location}, {self.sublocation}" 
+        
+        #Separates the raw data from the computed property – 
+                                                    #whereabouts is computed dynamically using multiple attributes
+                                                    #  (region, location, sublocation).
 
     def __repr__(self):
-        # Use Character's consistent representation and add faction info
-        return super().__repr__() + f", Faction: {self.faction}"   
+        return Character.__repr__(self) + f", Faction: {self.faction}"
         
 class Taxman(Character):
     is_concrete = True
-    def __init__(self, name, faction="State", bankCardCash=1000, position="Tax Official", loyalties=None, fun=-1, hunger=0, **kwargs):
+    def __init__(self, name, region, location, faction="State", bankCardCash=1000, position="Tax Official", loyalties=None, fun=-1, hunger=0, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -653,7 +739,8 @@ class Taxman(Character):
         default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            name, region=region,
+            location=location, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, **kwargs
         )
         self.position = position
@@ -663,12 +750,17 @@ class Taxman(Character):
     # figure out how specific charcters store their specific actions, here or in that file or both
 
     def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
     
+
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Taxman, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Taxman, {self.region}, {self.location}, {self.sublocation}"
+
 class Accountant(Character):
     is_concrete = True
-    def __init__(self, name, faction="None", bankCardCash=1000, position="Accountant", loyalties=None, fun=0, hunger=0, **kwargs):
+    def __init__(self, name, region, location, faction="None", bankCardCash=1000, position="Accountant", loyalties=None, fun=0, hunger=0, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -679,7 +771,8 @@ class Accountant(Character):
         default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            name, faction=faction, region=region,
+            location=location, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, **kwargs
         )
         self.position = position
@@ -688,5 +781,10 @@ class Accountant(Character):
     
 
     def __repr__(self):
-            # Use Character's consistent representation and add faction info
-            return super().__repr__() + f", Faction: {self.faction}"
+        return Character.__repr__(self) + f", Faction: {self.faction}"
+
+    
+    @property
+    def whereabouts(self):
+        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
+        return f"Accountant, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Accountant, {self.region}, {self.location}, {self.sublocation}"

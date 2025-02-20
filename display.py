@@ -11,43 +11,19 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                            Babe, Detective)
 
 from location import Region, UndevelopedRegion, VacantLot
-import json
-from region_startup import get_region_wealth
-from LoaderRuntime import load_locations_from_yaml
-from create import create_regions
-from menu_utils import get_user_choice
-from common import get_file_path, BASE_REGION_DIR, BASE_SHOPS_DIR
-from typing import List, Union
-from game import character_and_region_selection
-from character_creation_funcs import player_character_options
 
+#from menu_utils import get_user_choice
+#This file cannot import from menu_utils here, maybe lazy imports are ok
+from common import get_file_path, BASE_REGION_DIR
+from typing import List, Union
+from character_creation_funcs import player_character_options
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def load_region_mappings():
-
     # List of region names
     valid_regions = ["North", "East", "West", "South", "Central"]
-
     region_mappings = {}
-    for region in valid_regions:
-        # Construct the region file path using BASE_REGION_DIR
-        region_file_path = os.path.join(BASE_REGION_DIR, f"{region}.json")
-        #print(f"Looking for region file at: {region_file_path}")  # Debugging print
-        
-        try:
-            # Open the respective region file
-            with open(region_file_path, "r") as file:
-                data = json.load(file)
-                region_mappings[region] = data  # Add region mappings to the dictionary
-                # Only print brief info about the region here
-                print(f"Loaded region data for {region}: {data.get('name', 'Unknown Region Name')}")
-
-        except FileNotFoundError:
-            print(f"Error loading region mappings for {region}: {region_file_path} not found.")
-        except json.JSONDecodeError:
-            print(f"Error: {region_file_path} contains invalid JSON.")
-    
     return region_mappings
 
 def select_region_menu(regions: List[Union['Region', 'UndevelopedRegion']]):
@@ -59,6 +35,7 @@ def select_region_menu(regions: List[Union['Region', 'UndevelopedRegion']]):
     table = [[i + 1, region.name] for i, region in enumerate(regions)]
     print(tabulate(table, headers=["#", "Region"], tablefmt="grid"))
 
+    from menu_utils import get_user_choice
     choice = get_user_choice(len(regions))
     return regions[choice] if choice is not None else None
 
@@ -67,20 +44,33 @@ from tabulate import tabulate
 def show_character_details(character):
     """Display character details in tabulated format."""
     print("\nCharacter Details:")
+    print(str(character.whereabouts))  # No extra parentheses
     
+
+
     # First table with the first header row
     character_table_1 = [
         ["Name", "Health", "Faction", "Money", "Whereabouts", "Hunger", "Inventory"],
         [
             character.name,
             getattr(character, "xxx", character.health),
-            character.faction,
+            f"{character.faction.name} {character.faction.type.capitalize()}",
             f"${getattr(character, 'bankCardCash', 0):.2f}",
-            character.whereabouts,  # Uses the @property
+            str(character.whereabouts),  # Uses the @property
             getattr(character, "hunger", "N/A"),
             ", ".join(getattr(character, "inventory", [])),
         ],
     ]
+
+        # Retrieve motivations, defaulting to an empty list if not found
+    motivations = getattr(character, "motivations", [])
+
+    # Find the highest urgency value
+    highest_urgency = max((urgency for _, urgency in motivations), default=0)
+
+    # Extract motivations that match the highest urgency
+    top_motivations = [name for name, urgency in motivations if urgency == highest_urgency]
+    
 
     # Second table with the second header row
     character_table_2 = [
@@ -91,11 +81,10 @@ def show_character_details(character):
             #character.status.value retrieves the string value of the enum ("high")
             #.title() capitalizes the first letter of the string, turning "high" into "High"
 
-            getattr(character, "xxx", self.intelligence),
+            getattr(character, "xxx", getattr(character, "intelligence", "N/A")),
 
             getattr(character, "idk", character.fun),
-            ", ".join(character.motivations),  # Motivations (joined list)
-            ""
+        ", ".join(top_motivations),  # Use the precomputed motivations here
         ],
     ]
     # Print the first table
@@ -165,11 +154,38 @@ def display_filtered_character_summary(characters, gang_limit=3, corp_limit=3, c
     print(f"... and {max(0, len(children)-1)}x similar Children.")
     print(f"... and {max(0, len(babes)-1)}x similar Babes.")
 
+def display_character_whereabouts(character):
+    location = character.whereabouts  # Ensure evaluation as string
+    print(f"\n📍 **Current Location:** {location}")
 
+def display_world(all_regions):
+    """Display all regions, their locations, and danger levels in a tabulated format."""
+    table_data = []
+
+    for region in all_regions:
+        region_name = region.name if region.name else "Unknown Region"
+        location_names = ", ".join(loc.name for loc in region.locations) if region.locations else "No known locations"
+        danger_level = region.DangerLevel.name if region.DangerLevel else "Unknown"
+
+        table_data.append([region_name, location_names, danger_level])
+
+    print("\n🌍 **World Overview:**")
+    print(tabulate(table_data, headers=["Region", "Locations", "Danger Level"], tablefmt="grid"))
+
+def display_character_vicinity():
+    #shows where the character is in a table and what has got their attention there
+    #The columns should be charcter name, wherebouts and a third dynamic column called percepts that displays
+    #other proximal data, for example if there is danger or an attracive other character, or a partner, friend or event
+    #
+    pass
+
+def display_character_Summary():
+    #shows on what the characters attention is on. This will be a dynamic list, called Attention including motivations, goals, and environmental 
+    #proximal factors like friends, partners, enemies or dangers nearby.
+    pass
 
 def show_locations_in_region(region, locations):
     """Display locations in the specified region."""
-    #locations_data = load_locations_from_yaml(region)
 
     if not locations:
         print(f"No locations found in {region.name}.")

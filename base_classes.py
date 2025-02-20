@@ -4,20 +4,28 @@ from location_security import Security
 from typing import Optional
 from typing import List
 from goals import Goal
+import traceback
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from location import Region
+DEBUG_MODE = False  # Set to True when debugging
 
 
 
 class Faction:
-    def __init__(self, name, type, affiliation=None):
+    def __init__(self, name, type):
         self.name = name
         self.type = type  # "gang" or "corporation"
-        self.affiliation = affiliation  # Color or identifier (e.g., "red", "blue")
-        self.members = {}
+        
+        self.members = []
         #Expand Attributes: Use nested dictionaries if factions need even more data about members.
         self.goals = []  # List of active goals
         self.current_goal = None
+        self.Testconst = "Test"
         self.resources = {"money": 1000, "weapons": 10}  # Example default resources
         self.startingRegion = None
+
     def add_member(self, member, rank="low", wage=100, perceived_loyalty=1.0):
         if not hasattr(member, "name"):
             print(f"Invalid member object: {member}")
@@ -92,20 +100,19 @@ class Faction:
             print(f"{member.name} is not a member of {self.name}.")
 
     def __repr__(self):
-        return f"{self.name} ({self.type}, {len(self.members)} members, {self.resources['money']} money)"
-
+        return f"{self.name} {self.type.capitalize()}"
 
 class Character:
 
     VALID_SEXES = ("male", "female")  # Class-level constant
-    VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "French", "Chinese", "German", "Indian", "IndoAryan", "IranianPersian", "Japanese")  # Class-level constant
+    VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "Irish", "French", "Chinese", "German", "BlackAmerican", "Indian", "IndoAryan", "IranianPersian", "Japanese", "WhiteAryanNordic")  # Class-level constant
 
     is_concrete = False
     def __init__(
         self,
         name,
-        start_region,
-        start_location,
+        region,
+        location,
         initial_motivations=None,
         partner=None,
         bankCardCash=0,
@@ -119,6 +126,7 @@ class Character:
         psy=10,
         charisma=10,
         toughness=10,
+        observation=10, 
         morale=10,
         race="Terran",
         sex="male",
@@ -126,36 +134,54 @@ class Character:
         loyalties=None,  # Default is None; initializes as a dictionary later
         **kwargs,
     ):
-        from motivation import Motivation
-        if initial_motivations is None or not initial_motivations:
-            initial_motivations = ["earn_money"]  # Ensure at least one valid motivation
-        # Ensure we only initialize valid motivations
-        self.motivations = [Motivation(m) for m in initial_motivations if m in Motivation.VALID_MOTIVATIONS]
+        """ print(f"Character created, message from class Character {name}, "
+            f"Region: {region.name if region else 'None'}, "
+            f"Location: {location.name if location else 'None'}") """
+        #commented to reduce output verbosity
+
         
         #initialization code
         self.name = name
-        self.start_location = start_location
-        self.current_region = start_region  
-        self.current_location = start_location
+        self.current_location = location
+
+        from utils import get_region_by_name
+        from create import all_regions
+        self.region = get_region_by_name(region, all_regions) if isinstance(region, str) else region
+
+        self.location = location
+        self.current_region = region
+
+        print(f"In class Character, Initializing Character: {name}")
+
+        self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
+            "self_actualization": 2,})  # Example defaults
         
-        self.needs = {
-            "physiological": 10, 
-            "safety": 8,
-            "love_belonging": 7,
-            "esteem": 5,
-            "self_actualization": 2,
+        from motivation import MotivationManager
+        self.motivation_manager = MotivationManager(self)  # NEW: Handles motivation logic
+
+        # Update motivations on creation
+        self.motivation_manager.update_motivations()
+
+        # Tasks (individual objectives, replacing "goals")
+        self.tasks = kwargs.get("tasks", [])
+
+        # Perception-related attributes
+        self.percepts = {}  # List of things character notices (e.g., dangers, opportunities)
+                            #Key = Percept, Value = Weight of how attention grabbing it is
+                            #This should be  dynamically updating, like whereabouts
+                            #So does it need an @property function?
+                            # if you want percepts to always be dynamically updated when accessed, you should 
+                            # use @property. If it's just a list that updates via a function, then it's not necessary.
+        
+        self.observation = kwargs.get("observation", 10)  # Determines perception ability
+
+        # Social connections
+        self.social_connections = {
+            "friends": [],
+            "enemies": [],
+            "allies": [],
+            "partners": [partner] if partner else [],
         }
-
-        # Store motivations as objects, not strings
-        from motivation import Motivation  # Avoid circular import issues
-        self.motivations = (
-            [Motivation(m) for m in initial_motivations]
-            if initial_motivations
-            else []
-        )
-        self.update_motivations()
-
-
 
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
@@ -175,10 +201,10 @@ class Character:
         self.race = race
         self.sex = sex
         self.status = status  # Add status here
-        self.motivations = kwargs.get(
-            "motivations", []
-        )  # Use kwargs safely to add extra attributes
-        # validation
+
+        
+
+
         if sex not in self.VALID_SEXES:
             raise ValueError(
                 f"Invalid sex: {sex}. Valid options are {self.VALID_SEXES}"
@@ -193,16 +219,10 @@ class Character:
         if not self.faction:
             raise ValueError("Faction must be specified for a character.")
         self.weapon = None
-        self.strength = strength
-        self.agility = agility
-        self.intelligence = intelligence
-        self.toughness = toughness
-        self.morale = morale
         self.health = 100 + toughness
         self.bankCardCash = bankCardCash
         #self.wallet = Wallet(cash=50, bankCardCash=100)  # Initialize with some default values
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
-        self.status = status  # LOW, MID, HIGH, ELITE 
+        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory 
         # Initialize loyalties as a dictionary
         self.loyalties = kwargs.get("loyalties", {})  # Default to empty dictionary if not provided
 
@@ -214,39 +234,60 @@ class Character:
         if self.faction and hasattr(self.faction, "HQ"):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
 
+    
+    @property
+    def motivations(self):
+        """Returns motivations in a formatted way for display."""
+        return self.motivation_manager.get_motivations()
+
     def update_motivations(self):
-        """Updates motivations based on needs."""
-        from motivation import Motivation  # Ensure Motivation is imported
-        self.motivations.clear()  # Reset motivations
+        """Triggers motivation recalculation."""
+        self.motivation_manager.update_motivations()
+        #possibly deprecated for motivations.py or at least the names are confusingly the same
+    
+    
 
-        if self.needs["physiological"] > 7:
-            self.motivations.extend([Motivation("eat"), Motivation("sleep"), Motivation("shelter")])
-
-        if self.needs["safety"] > 7:
-            self.motivations.append(Motivation("find_safety"))
-
-        if self.needs["love_belonging"] > 7:
-            self.motivations.append(Motivation("seek_friends"))
-
-        if self.needs["esteem"] > 7:
-            self.motivations.append(Motivation("gain_status"))
-
-        if self.needs["self_actualization"] > 7:
-            self.motivations.append(Motivation("pursue_dreams"))
 
     @property
     def whereabouts(self):
-        """Returns whereabouts as 'Region, Location, Sublocation' or just 'Region, Location' or 'Region'."""
-        parts = [
-        self.current_region if self.current_region else "Unknown Region"
-        ]
-        if self.current_location:
-            parts.append(self.current_location)
-        if getattr(self, "current_sublocation", None):  # Safe way to check if the attribute exists
-            parts.append(self.current_sublocation)
-        return ", ".join(parts)
+        """Returns the character's full whereabouts dynamically."""
+        return f"{self._region}, {self._location}" if not hasattr(self, "_sublocation") else f"{self._region}, {self._location}, {self._sublocation}"
+
+    @whereabouts.setter
+    def whereabouts(self, new_location):
+        """Allows modifying whereabouts, handling region, location, and optional sublocation."""
+        parts = new_location.split(", ")
+        self._region = parts[0] if len(parts) > 0 else "Unknown"
+        self._location = parts[1] if len(parts) > 1 else "Unknown"
+        self._sublocation = parts[2] if len(parts) > 2 else None  # Future-proofing
+                                        
+    @property
+    def percepts(self):
+        """Dynamically calculates percepts based on observation."""
+        updated_percepts = {}
+        if self.observation > 5:
+            updated_percepts["Nearby Friend"] = 8
+            updated_percepts["Loud Noise"] = 6
+        if self.observation > 8:
+            updated_percepts["Hidden Enemy"] = 4
+        #If you need to store percepts persistently, you’ll need a separate _percepts variable.
+        return updated_percepts
+
+    @percepts.setter
+    def percepts(self, new_percepts):
+        """Allows setting percepts."""
+        if isinstance(new_percepts, dict):
+            self._percepts = new_percepts
+        else:
+            raise ValueError("Percepts must be a dictionary of {percept: weight}.")
+
+    
 
     def __repr__(self):
+        whereabouts_value = self.whereabouts  # Ensure evaluation
+        print(f"🔍 Debug: whereabouts = {whereabouts_value}")  # Now prints the actual value
+        print(f"🟢🟢🟢About to __repr__ in class Charcter")
+        
         return f"{self.name} (Faction: {self.faction}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
     
     def get_loyalty(self, group):
@@ -293,10 +334,12 @@ class Character:
 
 @dataclass
 class Location:
-    region: Optional['Region'] = None  # Reference to the Region object
-    location: Optional['Location'] = None  # Specific location within the region (optional)
+    region: Optional['Region'] = None  # Reference to the Region object, currently marked as not defined
+        #however Region cannot be imported to this file, base_classes, because location.py, where it is
+        #defined, imports base_classes
+
+    location: Optional['Location'] = None  # Specific location within the region (optional) WHY is this here?
     name: str = "Unnamed Location"
-    side: str = "Unknown Side" # marked for project wide deletion
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -311,9 +354,6 @@ class Location:
     entrance: List[str] = field(default_factory=list)  # Default to an empty list
     upkeep: int = 0
 
-    def to_dict(self):
-        return asdict(self)
-
     def __post_init__(self):
         # Any additional setup logic if needed
         pass
@@ -322,13 +362,10 @@ class Location:
         self.entrance.extend(entrance)
         print(f"entrance added to {self.name}: {', '.join(entrance)}")
 
-# Decorator to check entrance state
-""" def check_entrance_state(func):
-    def wrapper(self, *args, **kwargs):
-        if self.secret_entrance:
-            print(f"Accessing secret entrance to {self.name}.")
-            return func(self, *args, **kwargs)
-        else:
-            print(f"Secret entrance not available at {self.name}.")
-            return None
-    return wrapper """
+    def to_dict(self):
+        return {"name": self.name, "region": self.region.name if self.region else "None"}
+
+
+    def __repr__(self):
+        return f"Location({self.name})"
+

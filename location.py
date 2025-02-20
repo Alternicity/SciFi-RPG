@@ -26,6 +26,9 @@ class Region:
         self.locations.append(location)
         print(f"Added {location.name} to region {self.name}.")
 
+    def __str__(self):
+        return self.name  # Ensures `str(region)` returns just its name
+    
 @dataclass
 class UndevelopedRegion(Region):
     name: str
@@ -937,8 +940,7 @@ class Holotheatre(Location):
 
 
 class MunicipalBuilding(Location):
-    name: str = "City Hall"
-    faction: Optional[Faction] = field(default=None)
+    name: str = "City Hall" #should always be FactionState (Object)
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)

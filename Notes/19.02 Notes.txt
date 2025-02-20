@@ -1,0 +1,17 @@
+create_all_characters() is called twice, and I am deciding which call should be deleted.
+
+
+There is a simple wrapper function called character_creation_funcs that does nothing but call it. I have commented it out
+
+
+
+
+
+
+
+
+
+
+locations and location_objects appear to tbe the same thing
+
+class Character will ned to have an attentionattribute, which dynamically updates a list of what is on their mind. 

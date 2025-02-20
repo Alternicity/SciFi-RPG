@@ -10,7 +10,7 @@ from typing import List, Dict, Union
 #If loader.py already imports location, and location imports Security, you could access it as:
 #from location import Security
 #ALL files use this to get the project root
-from common import BASE_REGION_DIR, BASE_SHOPS_DIR, BASE_CHARACTERNAMES_DIR
+from common import BASE_REGION_DIR, BASE_SHOPS_DIR, BASE_CHARACTERNAMES_DIR, get_file_path
 # Setup logger
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -48,11 +48,34 @@ def get_region_file_path(region_name: str) -> str:
 
 
 def get_gang_names_filepath():
-    """Returns the file path for the gang names data file."""
-    return "scifiRPG/data/Names/GangNames.txt"
+    """Returns the fixed file path for the gang names data file."""
+    return get_file_path("scifiRPG", "data", "Names", "GangNames.txt")
+
+def get_corp_names_filepath():
+    """Returns the fixed file path for the gang names data file."""
+    return get_file_path("scifiRPG", "data", "Names", "CorpNames.txt")
 
 def load_gang_names(filepath):
     """Loads gang name parts from file and returns two lists (first part, second part)."""
+    with open(filepath, "r") as file:
+        lines = file.readlines()
+
+    first_part, second_part = [], []
+    current_list = None
+
+    for line in lines:
+        line = line.strip()
+        if "First part:" in line:
+            current_list = first_part
+        elif "Second Part:" in line:
+            current_list = second_part
+        elif line and current_list is not None:
+            current_list.append(line)
+
+    return first_part, second_part
+
+def load_corp_names(filepath):
+    """Loads corporation name parts from file and returns two lists (first part, second part)."""
     with open(filepath, "r") as file:
         lines = file.readlines()
 

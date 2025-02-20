@@ -6,11 +6,9 @@ from characterActions import move_character, visit_location
 from display import (
     show_character_details,
     display_selected_character_current_region,
-    display_character_location,
-    show_region_choices,
     display_filtered_character_summary,
 )
-from motivation import check_needs
+from motivation import MotivationManager
 
 
 def gameplay(character, region):
@@ -20,8 +18,19 @@ def gameplay(character, region):
     show_character_details(character)
     display_selected_character_current_region(character, region)
 
-    # Show any pressing needs/motivations
-    check_needs(character, is_player=character.is_player)
+    # Update motivations before displaying
+    character.motivation_manager.update_motivations()
+
+    # Get the most urgent motivations
+    urgent_motivations = character.motivation_manager.get_urgent_motivations()
+
+    # Show pressing needs/motivations
+    if urgent_motivations:
+        motivation_list = ", ".join(urgent_motivations)
+        if character.is_player:
+            print(f"You feel the urge to: {motivation_list}.")
+        else:
+            print(f"{character.name} feels the urge to: {motivation_list}.")
 
     # Display locations in the region
     if hasattr(region, 'locations'):
@@ -33,13 +42,21 @@ def gameplay(character, region):
     # Main Gameplay Loop
     while True:
         print("\n=== Gameplay Menu ===")
-        display_character_location(character)  # Ensure proper whereabouts are shown
+        from display import display_character_whereabouts
+        display_character_whereabouts(character)  # Ensure proper whereabouts are shown
 
         options = {
             "1": ("Visit Location", visit_location),
             "2": ("Move to another Region", move_region),
             "3": ("Display Characters Summary", view_characters),
             "4": ("Exit Gameplay", exit_gameplay),
+            "5": ("Display Civilians"),
+            "6": ("Display Employees"),
+            "8": ("Display Corporations"),
+            "9": ("Display Gangs"),
+
+
+            
         }
 
         action = get_menu_choice(options)
@@ -55,6 +72,12 @@ def move_region(character, region=None):
         move_character(character, selected_region)
         print(f"{character.name} has moved to {selected_region.name}.")
 
+def show_region_choices(get_all_regions):
+        #show regions the character can move to
+        #maybe build a map. cannot move to diametrically opposed region without passing through Downtown, ie
+        #she cant go directly from north to south region, OR if doing this, a message displays
+        #"passing through Downtown (Central) on the way to destinationRegion" Here a Downtown percept or event might be triggered
+    pass
 
 def view_characters(character, region):
     """Displays filtered character summaries."""
