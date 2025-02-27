@@ -39,8 +39,8 @@ class Boss(Character):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Boss, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Boss, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
     
     def issue_directive(self, directive):
         print(f"{self.name} issues directive: {directive}")
@@ -78,8 +78,8 @@ class CEO(Character):
     
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"CEO, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"CEO, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
     
 class Captain(Character):
     is_concrete = True
@@ -106,8 +106,8 @@ class Captain(Character):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Captain, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Captain, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
 class Manager(Character):
     is_concrete = True
@@ -131,8 +131,8 @@ class Manager(Character):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Manager, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Manager, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
 
     def __repr__(self):
@@ -180,8 +180,8 @@ class Employee(Subordinate):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Employee, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Employee, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
     
 class CorporateSecurity(Subordinate):
@@ -219,8 +219,8 @@ class CorporateSecurity(Subordinate):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"CorpSecurity, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"CorpSecurity, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
     
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
@@ -260,8 +260,8 @@ class CorporateAssasin(CorporateSecurity):
     
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"CorpAssassin, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"CorpAssassin, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
     
 class GangMember(Subordinate):
     is_concrete = True
@@ -300,8 +300,8 @@ class GangMember(Subordinate):
     
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Ganger, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Ganger, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
     
 class RiotCop(Character):
     is_concrete = True
@@ -347,8 +347,8 @@ class RiotCop(Character):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"RiotCop, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"RiotCop, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
 class Civilian(Character):
     is_concrete = True
@@ -391,8 +391,8 @@ class Civilian(Character):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Civilian, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Civilian, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
     
 class VIP(Civilian):
     is_concrete = True
@@ -411,9 +411,11 @@ class VIP(Civilian):
 
         # Find a MunicipalBuilding in the region
         from location import MunicipalBuilding
+        print(f"MunicipalBuilding imported to characters VIP as: {MunicipalBuilding}, type: {type(MunicipalBuilding)}")
+
         municipal_buildings = [loc for loc in region.locations if isinstance(loc, MunicipalBuilding)]
         location = municipal_buildings[0] if municipal_buildings else None  # Pick first available or None
-        print(f"MunicipalBuilding = {MunicipalBuilding} ({type(MunicipalBuilding)})")
+        print(f"MunicipalBuildingx = {MunicipalBuilding} ({type(MunicipalBuilding)})")
 
         # Default loyalty setup for VIP
         default_loyalties = {
@@ -456,8 +458,8 @@ class VIP(Civilian):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"VIP, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"VIP, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -513,8 +515,8 @@ class Child(Civilian):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Child, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Child, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
     
     def update_parent(self, new_parent):
         """
@@ -583,8 +585,8 @@ class Influencer(Civilian):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Influencer, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Influencer, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
 class Babe(Civilian):
     is_concrete = True
@@ -640,8 +642,8 @@ class Babe(Civilian):
     
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Babe, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Babe, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
     def influence(self, target):
     #TMP
@@ -716,8 +718,8 @@ class Detective(Character): #Subordinate? Of the state?
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Detective, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Detective, {self.region}, {self.location}, {self.sublocation}" 
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}" 
         
         #Separates the raw data from the computed property – 
                                                     #whereabouts is computed dynamically using multiple attributes
@@ -755,8 +757,8 @@ class Taxman(Character):
 
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Taxman, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Taxman, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
 class Accountant(Character):
     is_concrete = True
@@ -786,5 +788,5 @@ class Accountant(Character):
     
     @property
     def whereabouts(self):
-        """Returns the Manager's whereabouts dynamically, avoiding recursion."""
-        return f"Accountant, {self.region}, {self.location}" if not hasattr(self, "sublocation") else f"Accountant, {self.region}, {self.location}, {self.sublocation}"
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"

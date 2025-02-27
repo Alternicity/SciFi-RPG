@@ -6,12 +6,15 @@ from typing import List
 from goals import Goal
 import traceback
 from typing import TYPE_CHECKING, Optional
-
+from enum import Enum, auto
 if TYPE_CHECKING:
     from location import Region
 DEBUG_MODE = False  # Set to True when debugging
 
-
+class Posture(Enum):
+    STANDING = auto()
+    SITTING = auto()
+    LYING = auto()
 
 class Faction:
     def __init__(self, name, type):
@@ -24,7 +27,8 @@ class Faction:
         self.current_goal = None
         self.Testconst = "Test"
         self.resources = {"money": 1000, "weapons": 10}  # Example default resources
-        self.startingRegion = None
+        
+        self.region = None
 
     def add_member(self, member, rank="low", wage=100, perceived_loyalty=1.0):
         if not hasattr(member, "name"):
@@ -51,14 +55,17 @@ class Faction:
         else:
             print(f"{member_name} is not a member of {self.name}.")
 
-    def set_goal(self, current_goal):
+    def set_goal(self, goal):
         """
         Set a new goal for the faction, randomly chosen or specified.
         """
-        self.goals.append(current_goal)
-        print(f"Goal '{current_goal.description}' added to {self.name}.")
+        self.goals.append(goal)
+        self.current_goal = goal
+        self.current_goal.generate_objectives()
+        print(f"{self.name} has set a new goal: {self.current_goal.goal_type.capitalize()}")
 
-        #possiblz deprecated 
+        #possiblz deprecated
+        """ from goals import Goal
         if goal_type:
             self.current_goal = Goal(goal_type)
         else:
@@ -67,7 +74,7 @@ class Faction:
             self.current_goal = Goal(random.choice(available_goals))
 
         self.current_goal.generate_objectives()
-        print(f"{self.name} has set a new goal: {self.current_goal.goal_type.capitalize()}")
+        print(f"{self.name} has set a new goal: {self.current_goal.goal_type.capitalize()}") """
 
     def display_current_goal(self):
         """
@@ -129,7 +136,7 @@ class Character:
         observation=10, 
         morale=10,
         race="Terran",
-        sex="male",
+        sex="male", # change
         status=None,
         loyalties=None,  # Default is None; initializes as a dictionary later
         **kwargs,
@@ -142,16 +149,18 @@ class Character:
         
         #initialization code
         self.name = name
-        self.current_location = location
-
+        
+        self.is_player = False
         from utils import get_region_by_name
         from create import all_regions
         self.region = get_region_by_name(region, all_regions) if isinstance(region, str) else region
-
+        self.initial_motivations = initial_motivations or []
         self.location = location
-        self.current_region = region
+        
+        self.posture = Posture.STANDING
+        self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
+        #status loss, or lack of money, or tasks failed, or baf personal events
 
-        print(f"In class Character, Initializing Character: {name}")
 
         self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
             "self_actualization": 2,})  # Example defaults
@@ -202,9 +211,6 @@ class Character:
         self.sex = sex
         self.status = status  # Add status here
 
-        
-
-
         if sex not in self.VALID_SEXES:
             raise ValueError(
                 f"Invalid sex: {sex}. Valid options are {self.VALID_SEXES}"
@@ -244,14 +250,15 @@ class Character:
         """Triggers motivation recalculation."""
         self.motivation_manager.update_motivations()
         #possibly deprecated for motivations.py or at least the names are confusingly the same
-    
-    
-
 
     @property
     def whereabouts(self):
         """Returns the character's full whereabouts dynamically."""
-        return f"{self._region}, {self._location}" if not hasattr(self, "_sublocation") else f"{self._region}, {self._location}, {self._sublocation}"
+        region_name = self.region.name if hasattr(self.region, "name") else self.region
+        location_name = self.location.name if hasattr(self.location, "name") else self.location
+        sublocation = getattr(self, "_sublocation", None)
+        return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
+
 
     @whereabouts.setter
     def whereabouts(self, new_location):
@@ -281,7 +288,8 @@ class Character:
         else:
             raise ValueError("Percepts must be a dictionary of {percept: weight}.")
 
-    
+    def adjust_self_esteem(self, amount):
+        self.self_esteem = max(0, min(100, self.self_esteem + amount))
 
     def __repr__(self):
         whereabouts_value = self.whereabouts  # Ensure evaluation
@@ -338,7 +346,7 @@ class Location:
         #however Region cannot be imported to this file, base_classes, because location.py, where it is
         #defined, imports base_classes
 
-    location: Optional['Location'] = None  # Specific location within the region (optional) WHY is this here?
+    location: Optional['Location'] = None  # Specific location within the location
     name: str = "Unnamed Location"
     security: Security = field(default_factory=lambda: Security(
         level=1,
@@ -353,11 +361,18 @@ class Location:
     secret_entrance: bool = False
     entrance: List[str] = field(default_factory=list)  # Default to an empty list
     upkeep: int = 0
+    CATEGORIES = ["residential", "workplace", "public"]
+
+    # Instance-specific categories field
+    categories: List[str] = field(default_factory=list)
 
     def __post_init__(self):
         # Any additional setup logic if needed
         pass
 
+    def has_category(self, category):
+        return category in self.categories
+    
     def add_entrance(self, *entrance):
         self.entrance.extend(entrance)
         print(f"entrance added to {self.name}: {', '.join(entrance)}")

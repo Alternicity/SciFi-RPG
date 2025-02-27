@@ -1,0 +1,10 @@
+Move constants to the relevant class (like Character or Location).
+
+
+Fix the employee generation loop bug.
+
+
+Add debug output to verify initialization is happening correctly.
+
+
+Add a method in Location to handle multiple categories?

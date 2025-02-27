@@ -8,13 +8,15 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
 #🟢 🔴 🔵 🟡 🟠 🟣 ⚫ ⚪ 🟤
-
+from city_vars import game_state
 
 def get_region_by_name(name, all_regions): #these get functions get the object from a "string"
     """Finds and returns the region object by name."""
     return next((r for r in all_regions if r.name == name), None)
 
-
+def get_valid_races():
+    from base_classes import Character  # Lazy import to avoid circular dependency
+    return list(Character.VALID_RACES)
 
 def get_faction_by_name(faction_name, factions):
     matches = [f for f in factions if f.name == faction_name]
@@ -29,11 +31,17 @@ def get_faction_by_name(faction_name, factions):
     return matches[0]  # Ensure a single object is returned
 
 def get_location_by_name(name, all_regions):
-    for region in all_regions:
-        for location in region.locations:  # Assuming each region has a `.locations` list
-            if location.name == name:
-                return location
-    return None  # If not found
+    """Find and return a location by name from game_state.all_locations."""
+    print(f"DEBUG: Searching for '{name}' in game_state.all_locations...")
+
+    for location in game_state.all_locations:
+        print(f"DEBUG: Checking location: {location.name}")
+
+        if location.name.lower() == name.lower():  # Case-insensitive comparison
+            return location
+
+    print(f"WARNING: Could not find specified location '{name}'.")
+    return None
 
 from faction import Gang
 def create_gang(data): #

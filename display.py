@@ -61,7 +61,6 @@ def show_character_details(character):
             ", ".join(getattr(character, "inventory", [])),
         ],
     ]
-
         # Retrieve motivations, defaulting to an empty list if not found
     motivations = getattr(character, "motivations", [])
 
@@ -155,8 +154,80 @@ def display_filtered_character_summary(characters, gang_limit=3, corp_limit=3, c
     print(f"... and {max(0, len(babes)-1)}x similar Babes.")
 
 def display_character_whereabouts(character):
-    location = character.whereabouts  # Ensure evaluation as string
-    print(f"\n📍 **Current Location:** {location}")
+    """Displays the character's current location and region using direct attributes."""
+    location_name = character.location.name if character.location else "Unknown Location"
+    region_name = character.region.name if hasattr(character.region, "name") else str(character.region)
+
+    print(f"Current Location: {location_name} in {region_name if region_name else 'Unknown Region'}")
+
+
+def display_civilians():
+    pass
+
+def display_employees():
+    pass
+
+def display_corporations():
+    pass
+
+from tabulate import tabulate
+
+def display_gangs(game_state):
+    for gang in game_state.gangs:
+        # Table 1: Gang overview
+        boss_name = gang.boss.name if gang.boss else "No Boss"
+        hq_region = gang.region if gang.region else "Unknown Region"
+        num_captains = len([member for member in (gang.members or []) if isinstance(member, Captain)])
+        num_gangers = len([member for member in gang.members if isinstance(member, GangMember)])  # Assuming 'GangMember' class exists
+
+        gang_table = [
+            ["Name", "Boss", "Captains", "Gangers", "HQ"],
+            [gang.name, boss_name, num_captains, num_gangers, hq_region],
+        ]
+        print(tabulate(gang_table, headers="firstrow", tablefmt="grid"))
+
+        # Table 2: Gang goals
+        if gang.goals:
+            goal = gang.goals[0].goal_type
+            goal_status = gang.goals[0].status
+            target = gang.goals[0].target if gang.goals[0].target else "None"
+        else:
+            goal = "No Goal"
+            goal_status = "N/A"
+            target = "None"
+
+        goals_table = [
+            ["Race", "Violence", "Goal", "Goal Status", "Target"],
+            [gang.race, gang.violence_disposition, goal, goal_status, target],
+        ]
+        print(tabulate(goals_table, headers="firstrow", tablefmt="grid"))
+
+        # Add a space between gang entries for clarity
+        print("\n" + "-" * 50 + "\n")
+
+
+def display_state(state):
+    if not hasattr(state, 'state_staff') or not state.state_staff:
+        print("No staff members available for this State.")
+        return
+
+    # Group characters by class type
+    grouped_staff = {}
+    for character in state.state_staff:
+        class_name = character.__class__.__name__
+        if class_name not in grouped_staff:
+            grouped_staff[class_name] = []
+        grouped_staff[class_name].append([
+            character.name,
+            class_name,
+            character.location.name if character.location else "Unknown",
+            ", ".join(character.initial_motivations)
+        ])
+
+    # Display tables
+    for class_type, staff_data in grouped_staff.items():
+        print(f"\n{class_type} Staff:\n")
+        print(tabulate(staff_data, headers=["Name", "Class", "Whereabouts", "Motivations"], tablefmt="fancy_grid"))
 
 def display_world(all_regions):
     """Display all regions, their locations, and danger levels in a tabulated format."""
@@ -165,7 +236,7 @@ def display_world(all_regions):
     for region in all_regions:
         region_name = region.name if region.name else "Unknown Region"
         location_names = ", ".join(loc.name for loc in region.locations) if region.locations else "No known locations"
-        danger_level = region.DangerLevel.name if region.DangerLevel else "Unknown"
+        danger_level = region.danger_level.name if region.danger_level else "Unknown"
 
         table_data.append([region_name, location_names, danger_level])
 
@@ -184,16 +255,17 @@ def display_character_Summary():
     #proximal factors like friends, partners, enemies or dangers nearby.
     pass
 
-def show_locations_in_region(region, locations):
+def show_locations_in_region(region):
     """Display locations in the specified region."""
 
-    if not locations:
-        print(f"No locations found in {region.name}.")
+    # Ensure region has locations
+    if not hasattr(region, "locations") or not region.locations:
+        print(f"No locations available in {region.name}.")
         return
     
     # Prepare the data for tabulation
     table_data = []
-    for location in locations:
+    for location in region.locations:  # Accessing locations directly
         # Extract relevant fields
         name = getattr(location, "name", "Unknown Name")
         condition = getattr(location, "condition", "Unknown Condition")
@@ -205,7 +277,7 @@ def show_locations_in_region(region, locations):
 
     # Display the table
     headers = ["Name", "Condition", "Fun", "Security Level"]
-    print(tabulate(table_data, headers=headers, tablefmt="grid")) #try also tablefmt="pretty"
+    print(tabulate(table_data, headers=headers, tablefmt="grid"))  # Try also tablefmt="pretty"
 
 #Shop:
 def show_shop_inventory(shop):

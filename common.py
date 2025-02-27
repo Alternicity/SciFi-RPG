@@ -30,15 +30,7 @@ region_size_to_locations = {
     "large": 20,
 }
 
-    #fetch relevant faction locations
-def load_locations(filepath, faction_name):
-    with open(filepath, "r") as file:
-        data = json.load(file)
-    locations = []
-    for region in data.get("regions", []):
-        if faction_name in region.get("factions", []):
-            locations.extend(region.get("locations", []))
-    return locations
+
 
 
 BASE_CHARACTERNAMES_DIR = get_file_path("data", "Names")

@@ -16,19 +16,31 @@ class Corporation(Faction):
 
 class Gang(Faction):
     def __init__(self, name, violence_disposition, race):
-        super().__init__(name, type="gang")#is affiliation needed for the superclass?
+        super().__init__(name, type="gang")
         self.violence_disposition = violence_disposition
         self.HQ = None
         self.race = race
+        self.goal_status = None
+        self.boss = None
+        self.captains = []
+        self.members = []
+
+    def add_boss(self, boss):
+        if boss.race == self.race:  # Ensure race matches
+            self.boss = boss
+            boss.faction = self  # Assign faction to the boss
+        else:
+            raise ValueError(f"Boss race '{boss.race}' does not match gang race '{self.race}'.")
 
 class State(Faction):
     def __init__(self, name, resources, laws, region=None):
+        super().__init__(name, type="State")
         self.name = name
         self.resources = resources  # Dictionary of resources (e.g., money, food, etc.)
         self.laws = laws  # List of laws or policies (e.g., "no theft", "tax rates")
         self.type = "The State"
         self.HQ = None 
-        self.region = region
+        self.state_staff = []
         self.members = []
 
     def update_laws(self, new_law):
@@ -42,4 +54,5 @@ class GeneralPopulation(Faction):
         super().__init__(name, type="general population")
         self.violence_disposition = violence_disposition
         self.HQ = None
+        self.members
 #made so that Employee can be instantiated with a faction

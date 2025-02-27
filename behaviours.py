@@ -1,4 +1,6 @@
 #Possibly deprecated code, pasted here for now
+from enum import Enum, auto
+
 class Behaviour(Enum):
 
     def __init__(self, behaviour_type="passive"):
@@ -25,12 +27,13 @@ class Behaviour(Enum):
             self.behaviour_type = new_behaviour
         else:
             raise ValueError(f"Invalid Behaviour: {new_behaviour}")
-self.behaviour.change_behaviour("aggressive")  # Set default behaviour
-        self.weapons = {
-            "pistol": {"isArmed": True, "ammo": 30},
-            "tazer": {"isArmed": True, "tazerCharge": 10},
-
+        self.behaviour.change_behaviour("aggressive")  # Set default behaviour
         self.behaviour.change_behaviour("murderous")  # default behaviour
         self.behaviour.change_behaviour("stealth")  # default behaviour
         self.behaviour.change_behaviour("aggressive")  # default behaviour
         self.behaviour.change_behaviour("passive")  # default behaviour
+
+class Posture(Enum):
+    STANDING = auto()
+    SITTING = auto()
+    LYING = auto()

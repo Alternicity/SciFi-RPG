@@ -18,7 +18,8 @@ import os
 
 from character_creation_funcs import create_all_characters
 import random
-
+from utils import get_valid_races  # Import the function properly
+from city_vars import game_state
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
@@ -27,6 +28,8 @@ logging.basicConfig(
     format="%(levelname)s:%(message)s"
 )
 DEBUG_MODE = False  # Set to True when debugging
+
+ 
 
 def create_object(data):
 
@@ -46,30 +49,30 @@ def create_regions():
 
     from createLocations import create_locations
     # Store region objects
-    region_objects = []
-
+    all_regions = []
+    
     for region, wealth in region_wealth_levels.items():
         try:
-            location_list = create_locations(region, wealth)  # Get Location objects
-            #Are locations created twice, here and in main.py?
-
+            location_list = create_locations(region, wealth)
             region_obj = Region(
                 name=region,
                 shops=[loc for loc in location_list if isinstance(loc, Shop)],  # Extract Shops separately
                 locations=location_list,  # Full list of Locations
                 factions=[],
-                DangerLevel=None,
+                danger_level=None,
             )
-            #add each location to its region here, in its location_list setting its region attribute?
-            #
-            region_objects.append(region_obj)
+            all_regions.append(region_obj)
             
         except Exception as e:
             print(f"Error creating region '{region}': {e}")
 
-    return region_objects   
+    # Update game state
+    game_state.all_regions = all_regions
+
+    return all_regions   
 
 def create_gang_factions(num_gangs, all_regions):
+    from city_vars import game_state
     gangs = []
     VALID_RACES = Character.VALID_RACES  # Access the tuple from the class
 
@@ -101,7 +104,7 @@ def create_gang_factions(num_gangs, all_regions):
                  ["Bosozoku", "Tekiya", "Bakuto", "Yankii", "Umibozo", "Gokudō", "Lotus", "Brotherhood", "Fists"]),
     "Martian": (["Promethei", "Sabaea", "Xanthe", "Promethei", "Sabaea", "Tyrrhena", "Margaritifer", "Eudoxus", "Byalax"], 
                 ["Aurigans", "Synths", "FreeBreathers", "DeCrux", "Draconians", "Hydrans", "Corvids", "Zodians", "Machines"]),
-    "German": (["Aryan", "Armoured", "Xanthe", "Promethei", "Sabaea", "Tyrrhena", "Margaritifer", "Eudoxus", "Byalax"], 
+    "German": (["Aryan", "Armoured", "Blau", "Promethei", "Sabaea", "Tyrrhena", "Margaritifer", "Eudoxus", "Byalax"], 
                 ["Aurigans", "Synths", "FreeBreathers", "DeCrux", "Draconians", "Hydrans", "Corvids", "Zodians", "Machines"]),
     "Portuguese": (["Mau", "Amargo", "Azul", "Proxima", "Cheio", "Vermelho", "Educado", "Velho", "Feral", "Grosso", "Doce"], 
                    ["Braços", "Gente", "Pessoas", "Dentes", "Caralhos", "Cervejas", "Tomarenses", "Problemas", "Misericordias", "Templarios", "Cabeças", "Punhals", "Bêbados"]),
@@ -111,6 +114,7 @@ def create_gang_factions(num_gangs, all_regions):
     "BlackAmerican": (["Black", "Tooled", "Drip", "Goated", "Angelic", "Fanged", "Plastic", "Eyeball", "Hooded", "Strapped", "Sly", "Value"], 
                          ["Crips", "Hits", "Hoods", "Seps", "XYZ", "Homies", "Dreads", "Sweeties", "Xtians", "Panthers", "Boyz", "Orphans"])
 }
+    
     for i in range(num_gangs):
         # Assign race, ensuring diversity for at least the first len(VALID_RACES) gangs
         race = VALID_RACES[i % len(VALID_RACES)]  # Cycles through available races
@@ -118,16 +122,25 @@ def create_gang_factions(num_gangs, all_regions):
         # Generate gang name based on race
         race_specific_names = RACE_NAME_LOOKUP.get(race, (["Default"], ["Gang"]))
         first_part, second_part = race_specific_names
-
+        assigned_region = random.choice(all_regions)
         gang_name = f"{random.choice(first_part)} {random.choice(second_part)}"
-        
         gang = Gang(name=gang_name, violence_disposition="High", race=race)
+        gang.region = assigned_region  # Assign region before adding to list
         gangs.append(gang)
+        game_state.add_gang(gang)  # Add to global GameState
+        assigned_region.region_gangs.append(gang)  # Update region's gang list
+        assign_hq(gang, assigned_region)
+        #assign Boss
+        # Assign a random goal
+        random_goal_type = random.choice(Goal.VALID_GOALS)
+        goal_description = f"{gang.name} aims to {random_goal_type.replace('_', ' ')}."
+        gang.goals.append(Goal(description=goal_description, goal_type=random_goal_type))
+
 
     return gangs
 
 def create_corp_factions(num_corps, all_regions):
-    """Generates and returns a list of corporation factions using names from a file."""
+    from city_vars import game_state
     corporations = []
     
     CORP_NAMES_FILE = get_corp_names_filepath()
@@ -136,24 +149,34 @@ def create_corp_factions(num_corps, all_regions):
     else:
         first_parts, second_parts = ["Default"], ["Corporation"]
 
-    
+    hannival_region = random.choice(all_regions)
     hannival_corp = Corporation(name="Hannival", violence_disposition="Medium")
+    hannival_corp.region = hannival_region  
     corporations.append(hannival_corp)
+    game_state.add_corporation(hannival_corp)
+    hannival_region.region_corps.append(hannival_corp)  # Add the corporation to the region's list
+
+    assign_hq(hannival_corp, hannival_region)
 
     for _ in range(num_corps):
         corp_name = f"{random.choice(first_parts)} {random.choice(second_parts)}"
-        corp = Corporation(name=corp_name, violence_disposition="Low")
-        corporations.append(corp)
+        assigned_region = random.choice(all_regions)
 
+        corporation = Corporation(name=corp_name, violence_disposition="Low")
+        corporation.region = assigned_region
+        corporations.append(corporation)
+        game_state.add_corporation(corporation)
+        
+        assigned_region.region_corps.append(corporation)
+        assign_hq(corporation, assigned_region)
         if DEBUG_MODE:
-            print(f"DEBUG: Created Corporation - {corp.name}")
-        #print("Created Corporations:", [corp.name for corp in corporations])
+            print(f"DEBUG: Created Corporation - {corporation.name}")
+        
     return corporations
 
-def create_factions(locations, all_regions, location_objects):
-
-    print("Creating factions as list...")
-
+def create_factions(all_regions, all_locations):
+    from city_vars import game_state
+    print("all_regions content:", [region.name for region in all_regions])
     factions = []  # Store created factions
 
     # Find Downtown region
@@ -168,41 +191,30 @@ def create_factions(locations, all_regions, location_objects):
         laws=["No theft", "Corporate tax"],
         region=downtown_region
     )
+    state.region = downtown_region #I added this spontaneously, while on an epic coffee crash
+    game_state.set_state(state)
     factions.append(state)
 
-    print("About to create factions with faction.extend...")
-    # Create gangs and corporations separately
-    factions.extend(create_gang_factions(10, all_regions))
-    
-    print("Just went past faction.extend(create_gang_factions")
-    # Show Gang Objects here:
-    print("Created Gang Factions:")
+    # Debugging: Check what create_gang_factions() returns before extending factions
+    gang_factions = create_gang_factions(10, all_regions)
     for faction in factions:
         if faction.type == "Gang":
             print(f"- {faction.name} (Region: {faction.region} ) ({faction.type}) ({faction.reources})")
 
-    # Debugging: Check what create_gang_factions() returns before extending factions
-    gang_factions = create_gang_factions(10, all_regions)
-    print("Returned from create_gang_factions:", gang_factions)  # Check if anything is returned
-
     factions.extend(create_corp_factions(10, all_regions))
-    #these lines curently come after create_corp_factions() and create_gang_factions()
-    #so does that mean they run twice?
 
-
-    # Create all characters for these factions
-    all_characters = create_all_characters(factions, locations, all_regions, location_objects)
-    #marked for deletion?
-
+    
+    all_characters = create_all_characters(factions, all_locations, all_regions) #had also faction
+    
     return factions, all_characters
 
 
-def assign_hq(faction, region): #deos this get called?
-    
+def assign_hq(faction, region):
+     
     available_hqs = [loc for loc in region.locations if isinstance(loc, HQ) and loc.faction is None]
     
     if available_hqs: #does this iterate over the available HQs?
-        hq = available_hqs[0]  # Assign the first available HQ
+        hq = random.choice(available_hqs)  # Assign the first available HQ
         hq.faction = faction
         hq.name = f"{faction.name} HQ"  # Update HQ name
         faction.HQ = hq  # Update faction's HQ attribute
@@ -210,42 +222,22 @@ def assign_hq(faction, region): #deos this get called?
         #now remove that HQ from available_hqs? We dont want it reassigned to another faction
     else:
         print(f"No available HQ for {faction.name} in {region.name}. Assigning 'acquire HQ' goal.")
-        faction.add_goal(Goal(description="Acquire an HQ", goal_type="acquire HQ"))
+        if not any(goal.goal_type == "acquire HQ" for goal in faction.goals):
+            faction.set_goal(Goal(description="Acquire an HQ", goal_type="acquire HQ"))
+        
+        #if there are > a threshhold of gangs in one region, this could trigger a game event "turf war"
+        # Turf War Trigger
+        if len(region.region_gangs) > 3:  # Example threshold
+            print(f"Turf war brewing in {region.name}!")
+            region.trigger_event("turf_war")
 
 
 from character_creation_funcs import create_all_characters
-def create_characters(factions, locations, all_regions, location_objects): 
+def create_characters(factions, all_locations, all_regions): 
     #what is this function here for? 
-    return create_all_characters(factions, locations, all_regions, location_objects)
+    return create_all_characters(factions, all_locations, all_regions)
 
 
-def initialize_regions():
-    #why does this function exist?
-    return create_regions()
-
-# Ensure all_regions is initialized only once
-all_regions = initialize_regions()
-
-# Extract locations from all regions
-all_locations = [location for region in all_regions for location in region.locations]
-for region in all_regions:
-    all_locations.extend(region.locations)  # Collect all locations into one list
-
-
-from createLocations import create_locations
-#this import currently not accessed
-
-# Extract location objects from the regions
-location_objects = [location for region in all_regions for location in region.locations]
-#chatGPT can you explain what this line is doing?
-
-#adding location_objects here causes a highly verbose program output
-factions, all_characters = create_factions(all_locations, all_regions, location_objects)
-
-
-# create_character is only called here!
-#commented out for testing
-#all_characters = create_characters(factions, all_locations, all_regions, location_objects)
 
 
 

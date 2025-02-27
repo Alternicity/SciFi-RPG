@@ -1,6 +1,6 @@
 import json
 
-def simulate_day(characters, locations):
+def simulate_day(characters, all_locations):
     """
     Simulates a day in the game.
     """
@@ -10,7 +10,7 @@ def simulate_day(characters, locations):
             if char.is_working:
                 print(f"{char.name} is working at {char.current_location.name}.")
             else:
-                char.current_location = find_leisure_location(char, locations)
+                char.current_location = find_leisure_location(char, all_locations)
                 print(f"{char.name} is relaxing at {char.current_location.name}.")
 
     # Update fun and hunger
@@ -30,7 +30,7 @@ def simulate_day(characters, locations):
                 char.current_location = find_leisure_location(char, locations)
                 print(f"{char.name} is relaxing at {char.current_location.name}.")
 
-def save_simulation_data(characters, locations, day):
+def save_simulation_data(characters, all_locations, day):
     data = {
         "day": day,
         "characters": [
@@ -50,7 +50,7 @@ def save_simulation_data(characters, locations, day):
                 "type": loc.type,
                 "workers": [worker.name for worker in loc.current_workers]
             }
-            for loc in locations
+            for loc in all_locations
         ]
     }
     with open(f"simulation_day_{day}.json", "w") as file:

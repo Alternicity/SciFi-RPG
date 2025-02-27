@@ -2,8 +2,9 @@
 import logging
 #ALL files use this to get the project root
 
-from gameplay import gameplay
-from create import create_regions, create_factions, create_characters, create_locations, all_regions
+from game_logic import gameplay
+from create import create_regions, create_factions, create_characters
+from createLocations import create_locations
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -12,20 +13,44 @@ from display import show_locations_in_region, select_region_menu, show_character
 from loader import load_region_data
 from characters import (Boss, Captain, Employee, VIP, RiotCop, CorporateAssasin, Employee, GangMember,
                         CEO, Manager, CorporateSecurity, Civilian)
-
+from game import game
+from city_vars import game_state
 from character_creation_funcs import player_character_options
 
-def setup_game():
-    """Initialize game world with existing regions, then create factions and characters."""
-    all_locations = [create_locations(region.name, region.wealth) for region in all_regions]
-    factions, all_characters = create_factions(all_locations)  # Pass locations correctly
 
+import os
+
+def setup_game():
+    global factions, all_regions
+    """Initialize game world with existing regions, then create factions and characters."""
+    print("DEBUG: setup_game() is running!")
+    all_regions = create_regions() 
+    all_locations = [loc for region in all_regions for loc in create_locations(region.name, region.wealth)]
+    print("From setup, after all_locations initialiyed, All Regions:", [region.name for region in all_regions])
+    factions, all_characters = create_factions(all_regions, all_locations)
+    print(f"DEBUG from setup: game_state.all_locations = {[loc.name for loc in game_state.all_locations]}")
+
+    # Set up the game_state variables
+    game_state.all_regions = all_regions
+    game_state.all_locations = all_locations
+    game_state.factions = factions
+    game_state.all_characters = all_characters
+    #at one point AI said to call setup_game from main
     return all_regions, factions, all_characters
 
 def main():
-
+    setup_game()
     main_menu()
-    
+    game()
+
+def get_all_regions():
+    global all_regions
+    return all_regions
+
+def get_factions():
+    global factions
+    return factions
+
 def start_gameplay(current_character, region_data): #Is this still used?
     """Manage gameplay flow with character interaction and region data."""
     print("\n=== Gameplay Start ===\n")

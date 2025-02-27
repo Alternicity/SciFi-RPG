@@ -11,6 +11,7 @@ class Goal:
         "expand_territory",
         "maximise_profits",
         "eliminate_rivals",
+        "fight the state",
         "increase_influence",
         "defend_assets",
         "acquire HQ",
@@ -24,16 +25,23 @@ class Goal:
         "defend_assets": ["Fortify key areas", "Protect valuable resources"],
     }
 
-    def __init__(self, description, priority=1, target=None, status="pending", goal_type=None):
+    def __init__(self, description, goal_type=None, priority=1, target=None, status="pending", ):
         """Initialize a goal with the given type."""
-        if goal_type is not None and goal_type not in self.VALID_GOALS:
-            raise ValueError(f"Invalid goal_type: {goal_type}. Must be one of {self.VALID_GOALS}.")
         self.goal_type = goal_type if goal_type in self.VALID_GOALS else random.choice(self.VALID_GOALS)
         self.description = description  # A short description of the goal
+        self.priority = priority
         self.target = target  # Target entity or location (optional)
         self.status = status  # "pending", "in_progress", "completed", "failed"
         self.objectives = []
         self.generate_objectives()
+
+    def add_precondition(self, condition):
+        """Define when this goal should be selected in a GOAP system."""
+        self.preconditions.append(condition)
+
+    def add_effect(self, effect):
+        """Define what happens when this goal is completed."""
+        self.effects.append(effect)
 
     def update_status(self, new_status):
         """Update the goal's status."""
@@ -48,17 +56,21 @@ class Goal:
         #assign any credit or prestige
         return self.status == "completed"
 
+    def goal_type():
+        pass
+
     def generate_objectives(self):
         """Generate specific objectives based on the goal_type."""
         self.objectives = self.OBJECTIVE_MAP.get(self.goal_type, ["Perform general tasks"])
-        logging.info(f"Generated objectives for goal '{self.goal_type}': {self.objectives}")
+        #logging.info(f"Generated objectives for goal '{self.goal_type}': {self.objectives}")
 
     def generate_tasks(self):
-        """Convert objectives into tasks."""
+        """Convert objectives into tasks for NPCs."""
         tasks = []
         for objective in self.objectives:
             difficulty = random.choice(["easy", "medium", "hard"])
-            tasks.append(Task(name=objective, difficulty=difficulty))
+            task = Task(name=objective, difficulty=difficulty)
+            tasks.append(task)
         return tasks
 
     def complete_goal(self):
@@ -88,6 +100,13 @@ class Goal:
         """Mark the goal as failed."""
         self.status = "failed"
         logging.warning(f"Goal '{self.goal_type}' failed.")
+
+def generate_goal_templates():
+    return [
+        Goal(description="Expand territory", goal_type="expand_territory"),
+        Goal(description="Recruit new members", goal_type="increase_influence"),
+        Goal(description="Eliminate rival faction", goal_type="eliminate_rivals"),
+    ]
 
 class FactionGoal(Goal):
     def __init__(self, description, priority=1, target=None, status="pending", faction=None):

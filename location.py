@@ -15,10 +15,16 @@ from common import DangerLevel #this was commented out once, probs for a circula
 @dataclass
 class Region:
     name: str
-    shops: List[str] = field(default_factory=list)#default to empty list if not provided
+    wealth: str = "Normal"
+    shops: List[str] = field(default_factory=list)
     locations: List[Location] = field(default_factory=list)
     factions: List[str] = field(default_factory=list)
-    DangerLevel: Optional[DangerLevel] = None  # Defaults to None if not provided
+    danger_level: Optional[DangerLevel] = None
+    region_gangs: List = field(default_factory=list) #dataclass syntax.  ensures each instance of Region
+    #gets a unique list for region_gangs
+    
+    region_corps: List = field(default_factory=list)
+
 #Each region will contain a list of Shop and other Location objects
     def add_location(self, location: Location):
         """Adds a location to this region and updates the location's region reference."""
@@ -26,6 +32,9 @@ class Region:
         self.locations.append(location)
         print(f"Added {location.name} to region {self.name}.")
 
+    def trigger_event(self, event_type: str):
+        print(f"Event triggered: {event_type} in {self.name}")
+        
     def __str__(self):
         return self.name  # Ensures `str(region)` returns just its name
     
@@ -39,7 +48,7 @@ class UndevelopedRegion(Region):
 class VacantLot(Location):
     name: str = "Empty Land"
     location: str = "N/A"
-    
+    categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 0
     ambiance_level: int = 0
     fun: int = 0
@@ -56,7 +65,7 @@ class HQ(Location):
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
     #entrance: List[str] = field(default_factory=list)
-    
+    categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     is_concrete: bool = True
     secret_entrance: bool = True
     is_powered: bool = False
@@ -78,6 +87,7 @@ class HQ(Location):
 class Vendor(Location):
     items_available: list = field(default_factory=list)
     #items_available: List[str] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = False
     secret_entrance: bool = True
     cash: int = 0
@@ -92,6 +102,7 @@ class Shop(Vendor):
     name: str = "QQ Store"
     legality: bool = True
     fun: int = 0
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     inventory: dict = field(default_factory=dict)  # Replaces items_available
     cash : int = 300
     bankCardCash: int = 0
@@ -135,6 +146,7 @@ class Shop(Vendor):
 class CorporateStore(Vendor):
     name: str = "Stores"
     corporation: str = "Default"  # Default value is now valid
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[str] = field(default_factory=list)
     is_concrete: bool = True
     bankCardCash: int = 0
@@ -172,7 +184,7 @@ class CorporateStore(Vendor):
 class RepairWorkshop(Location, ABC):
     materials_required: List[str] = field(default_factory=list)
     items_available: List[Any] = field(default_factory=list)
-    
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = False
     secret_entrance: bool = False
     is_powered: bool = False
@@ -190,6 +202,7 @@ class RepairWorkshop(Location, ABC):
 class MechanicalRepairWorkshop(RepairWorkshop):
     name: str = "Greasehands"
     items_available: list = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     # Inherit materials_required from the parent class (RepairWorkshop)
     materials_required: List[str] = field(default_factory=list)
     upkeep: int = 15
@@ -219,6 +232,7 @@ class ElectricalRepairWorkshop(RepairWorkshop):
     name: str = "Sparks"
     materials_required: List[str] = field(default_factory=list)  # An empty list
     items_available: List[Any] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 15
     # Inherit materials_required from the parent class (RepairWorkshop)
     is_concrete: bool = True
@@ -257,7 +271,7 @@ class Stash(Location):
     secret_entrance: bool = True
     is_powered: bool = False
     energy_cost: int = 0
-
+    categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -287,6 +301,7 @@ class Factory(Location):
     goods_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
     items_available: List[Any] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 60
     is_concrete: bool = True
     secret_entrance: bool = False
@@ -319,6 +334,7 @@ class Nightclub(Location):
     name: str = "Music and Slappers"
     fun: int = 1
     items_available: List[Any] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 30
     is_concrete: bool = True
     secret_entrance: bool = True
@@ -357,6 +373,7 @@ class Mine(Location):
     name: str = "Typical Mine"
     fun: int = 0
     items_available: List[Any] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = True
     upkeep: int = 40
     secret_entrance: bool = True
@@ -379,6 +396,7 @@ class Mine(Location):
 class Powerplant(Location):
     name: str = "Le PowerPlant 1"
     energy_output: int = 1000
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[Any] = field(default_factory=list)
     connected_locations: List[Any] = field(default_factory=list)
     upkeep: int = 50
@@ -440,6 +458,7 @@ class Airport(Location):
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
     upkeep: int = 150
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[Any] = field(default_factory=list)
     is_concrete: bool = True
     secret_entrance: bool = True
@@ -532,6 +551,7 @@ class Port(Location):
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
     items_available: List[Any] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 40
     is_concrete: bool = True
     secret_entrance: bool = True
@@ -622,6 +642,7 @@ class Factory(Location):
     name: str = "Default Factory Name"
     raw_materials_needed: int = 100
     output_rate: int = 100
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 30
     items_available: List[Any] = field(default_factory=list)
     workers_needed: int = 5
@@ -662,7 +683,7 @@ class Cafe(Location):
     name: str = "Metro Cafe"
     location: str = "North"
     upkeep: int = 10
-    
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
     fun: int = 1
     is_concrete: bool = True
@@ -698,7 +719,7 @@ class Cafe(Location):
 class Park(Location):
     name: str = "Green Park"
     location: str = "Central"
-    
+    categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     upkeep: int = 15
     ambiance_level: int = 1
     fun: int = 1
@@ -724,6 +745,7 @@ class Museum(Location):
     location: str = "Central"
     upkeep: int = 45
     artifact_count: int = 50
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     exhibits: List[str] = field(default_factory=list)  # List of exhibit names
     fun: int = 3
     is_concrete: bool = True
@@ -746,6 +768,7 @@ class Museum(Location):
 class Library(Location):
     name: str = "Public Library"
     location: str = "West"
+    categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 20
     book_count: int = 10000
     genres_available: List[str] = field(default_factory=list)  # List of genres
@@ -773,6 +796,7 @@ class ResearchLab(Location):
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
     equipment_list: List[str] = field(default_factory=list) #An empty list but lab must have something here
     upkeep: int = 200
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = True
     secret_entrance: bool = True
     is_powered: bool = False
@@ -804,6 +828,7 @@ class Warehouse(Location):
     name: str = "Warehouse 5"
     location: str = "wherever"
     upkeep: int = 15
+    categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     storage_capacity: int = 50 # will need to upgrade to a more complex data structure
     fun: int = 0
     is_concrete: bool = True
@@ -829,6 +854,7 @@ class ApartmentBlock(Location):
     name: str = "Mass Housing"
     location: str = "wherever"
     upkeep: int = 35
+    categories: List[str] = field(default_factory=lambda: ["residential"])
     storage_capacity: int = 50 # LOL, will need to upgrade to a more complex data structure
     fun: int = 0
     is_concrete: bool = True
@@ -859,6 +885,7 @@ class ApartmentBlock(Location):
 class House(Location):
     name: str = "Fam House"
     location: str = "wherever"
+    categories: List[str] = field(default_factory=lambda: ["residential"])
     upkeep: int = 5
     fun: int = 1
     is_concrete: bool = True
@@ -886,7 +913,7 @@ class SportsCentre(Location):
     name: str = "The Stadium"
     location: str = "wherever"
     upkeep: int = 30
-    
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
     fun: int = 1
     is_concrete: bool = True
@@ -915,7 +942,7 @@ class Holotheatre(Location):
     name: str = "Zodeono"
     location: str = "wherever"
     upkeep: int = 15
-    
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
     fun: int = 1
     is_concrete: bool = True
@@ -938,14 +965,14 @@ class Holotheatre(Location):
             pass
             #increase fun for attendants, but leave them wanting more...
 
-
+@dataclass
 class MunicipalBuilding(Location):
-    name: str = "City Hall" #should always be FactionState (Object)
+    name: str = "City Hall" 
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
     #entrance: List[str] = field(default_factory=list)
-    
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = True
     secret_entrance: bool = True
     is_powered: bool = True
@@ -966,6 +993,7 @@ class MunicipalBuilding(Location):
 @dataclass
 class PoliceStation(Location):
     name: str = "The Yard"
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)

@@ -32,11 +32,11 @@ class EconomyManager:
             revenue = shop.sell_goods(product, quantity_sold)
             print(f"Shop {shop.name} sold {quantity_sold} of {product} for revenue: {revenue}")
     
-    def assign_workers_to_locations(characters, locations):
+    def assign_workers_to_locations(characters, all_locations):
         """
         Assign workers to locations based on their workforce needs.
         """
-        for location in locations:
+        for location in all_locations:
             required_workers = location.required_workers
             assigned_workers = 0
 

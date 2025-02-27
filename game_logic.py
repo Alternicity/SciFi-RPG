@@ -7,15 +7,15 @@ from display import (
     show_character_details,
     display_selected_character_current_region,
     display_filtered_character_summary,
+    display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
 )
 from motivation import MotivationManager
-
+from character_creation_funcs import generate_faction_characters
+from city_vars import game_state
 
 def gameplay(character, region):
-    """Manage gameplay flow with character interaction and region data."""
+    print("Gameplay has started!")
 
-    # Ensure character whereabouts are displayed properly
-    show_character_details(character)
     display_selected_character_current_region(character, region)
 
     # Update motivations before displaying
@@ -32,37 +32,48 @@ def gameplay(character, region):
         else:
             print(f"{character.name} feels the urge to: {motivation_list}.")
 
-    # Display locations in the region
-    if hasattr(region, 'locations'):
-        from display import show_locations_in_region
-        show_locations_in_region(region, region.locations)
-    else:
-        print(f"No locations found in {region.name}.")
+    
 
     # Main Gameplay Loop
     while True:
         print("\n=== Gameplay Menu ===")
-        from display import display_character_whereabouts
+        #from display import display_character_whereabouts
         display_character_whereabouts(character)  # Ensure proper whereabouts are shown
-
+        from display import display_state, display_gangs
         options = {
             "1": ("Visit Location", visit_location),
             "2": ("Move to another Region", move_region),
-            "3": ("Display Characters Summary", view_characters),
+            "3": ("Display Characters Summary", view_characters), #The CHARACTER, ie the player character
             "4": ("Exit Gameplay", exit_gameplay),
-            "5": ("Display Civilians"),
-            "6": ("Display Employees"),
-            "8": ("Display Corporations"),
-            "9": ("Display Gangs"),
+            "5": ("Display Civilians", display_civilians),
+            "6": ("Display Employees", display_employees),
+            "8": ("Display Corporations", display_corporations),
+            "9": ("Display Gangs", display_gangs),
+            "10": ("Display State", display_state),
 
-
-            
         }
 
-        action = get_menu_choice(options)
-        if action:
-            action(character, region)
+        # Get user choice
+        choice = get_menu_choice(options)
+        
+        if choice:  # If the choice is valid
+            action_name, action_function = options[choice]  # Unpack the tuple
 
+            if action_name == "Visit Location":
+                action_function(character, region)
+            elif action_name == "Display State":
+                #lazy import was here
+                if game_state.state:
+                    display_state(game_state.state)
+                else:
+                    print("State data is not yet initialized.")
+
+            elif action_name == "Display Gangs":
+                    display_gangs(game_state) #here, maybe use game_state.gang? see state above
+            
+            else:
+                # For all other display-related functions that require character and region
+                action_function(character, region)
 
 def move_region(character, region=None):
     """Handles moving a character to another region."""

@@ -2,6 +2,7 @@
 
 from location import Shop, CorporateStore
 from base_classes import Location
+from functools import partial
 
 def move_character(character, new_region=None, new_location=None):
     """Moves a character to a new region or location."""
@@ -19,39 +20,58 @@ def move_character(character, new_region=None, new_location=None):
     print(f"{character.name} has moved to {new_location.name if new_location else new_region.name}.")
 
 def visit_location(character, region):
-    """Allows a character to visit a location in the region."""
-    
+    """Allows a character to visit a location in their current region."""
+
+    from display import show_locations_in_region
+    from menu_utils import get_menu_choice
+
+    region = character.region  # Get character's current region
     locations = getattr(region, "locations", [])
+
     if not locations:
         print(f"No locations available in {region.name}.")
         return
 
-    # Display locations in the region using display.py
-    from display import show_locations_in_region 
-    show_locations_in_region(region, locations)
+    # Build menu options
+    
+    options = {
+            "1": ("Show Locations in Detail", lambda: show_locations_in_region(region, region.locations))
+        }
 
-    # Get user choice
-    try:
-        choice = int(input("Select a location by number: ")) - 1
-        if 0 <= choice < len(locations):
-            selected_location = locations[choice]
-            move_character(character, new_region=region, new_location=selected_location)
+    for idx, location in enumerate(region.locations, start=2):  # Use region.locations directly
+        options[str(idx)] = (f"Visit {location.name}", partial(visit_selected_location, character, location))
 
-            print(f"{character.name} enters {selected_location.name}.")
+        options[str(len(region.locations) + 2)] = ("Back", lambda: print("Returning to previous menu."))  # Back option
 
-            # Check if it's a vendor
-            if isinstance(selected_location, Shop):
-                from display import show_shop_inventory
-                show_shop_inventory(selected_location)
-            elif isinstance(selected_location, CorporateStore):
-                print(f"{selected_location.name} is a corporate store. Items are issued based on status.")
-            else:
-                print(f"{selected_location.name} is not a vendor.")
+        # Display menu and get user choice
+        choice = get_menu_choice(options)  # Get user input safely
+
+        # Execute selected action
+        if choice:
+            selected_action = options[choice][1]
+            selected_action()  # Call the function directly HERE location
         else:
             print("Invalid selection. Please try again.")
-    except ValueError:
-        print("Invalid input. Please enter a number.")
 
+
+def visit_selected_location(character, location):
+    """Handles the process of visiting a selected location."""
+
+    character.location = location  # Update the character's current location
+    character.region = location.region  # Ensure the region updates if needed
+    print(f"{character.name} enters {location.name}.")
+    #note there also exists move_character()
+
+    # Check if it's a vendor
+    if isinstance(location, Shop):
+        from display import show_shop_inventory
+        show_shop_inventory(location)
+    elif isinstance(location, CorporateStore):
+        print(f"{location.name} is a corporate store. Items are issued based on status.")
+    else:
+        print(f"{location.name} is not a vendor.")
+
+            
 def eat():
     pass
 
