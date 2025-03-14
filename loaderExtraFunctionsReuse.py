@@ -1,25 +1,3 @@
-def load_region_data(region_name: str) -> dict:
-    
-    logger.debug(f"load_region_data called with: {region_name}")
-    
-    # Get the file path for the region
-    region_file_path = get_region_file_path(region_name)
-    logger.debug(f"Loading region data from: {region_file_path}")
-    logger.debug(f"Region file path resolved to: {region_file_path}")
-    if not os.path.exists(region_file_path):
-        logger.error(f"Region file does not exist: {region_file_path}")
-
-
-    try:
-        with open(region_file_path, 'r') as file:
-            region_data = json.load(file)
-            return region_data
-    except FileNotFoundError:
-        logger.error(f"File not found: {region_file_path}")
-        raise FileNotFoundError(f"Region data file '{region_file_path}' not found.")
-    except ValueError as e:
-        logger.error(f"Error decoding JSON data from '{region_file_path}': {e}")
-        raise ValueError(f"Error decoding JSON data from '{region_file_path}': {e}")
 
 def _check_missing_keys(entry, required_keys):
     """Check if any required keys are missing in the entry."""

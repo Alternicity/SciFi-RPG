@@ -411,11 +411,9 @@ class VIP(Civilian):
 
         # Find a MunicipalBuilding in the region
         from location import MunicipalBuilding
-        print(f"MunicipalBuilding imported to characters VIP as: {MunicipalBuilding}, type: {type(MunicipalBuilding)}")
 
         municipal_buildings = [loc for loc in region.locations if isinstance(loc, MunicipalBuilding)]
         location = municipal_buildings[0] if municipal_buildings else None  # Pick first available or None
-        print(f"MunicipalBuildingx = {MunicipalBuilding} ({type(MunicipalBuilding)})")
 
         # Default loyalty setup for VIP
         default_loyalties = {
@@ -590,7 +588,7 @@ class Influencer(Civilian):
 
 class Babe(Civilian):
     is_concrete = True
-    def __init__(self, name, region, location, faction="None", partner=None, bankCardCash=1000, position="Variously Attached", loyalties=None,
+    def __init__(self, name, region, location, preferred_actions=None, faction="None", partner=None, bankCardCash=1000, position="Variously Attached", loyalties=None,
         influence=7, strength=7, agility=10, intelligence=10, 
         luck=0, psy=0, charisma=14, toughness=4, morale=0, race="Terran", fun=2, hunger=2, **kwargs):
         
@@ -604,6 +602,7 @@ class Babe(Civilian):
         
         super().__init__(
             name,
+            preferred_actions,
             faction=faction,
             region=region,
             location=location,
@@ -636,6 +635,10 @@ class Babe(Civilian):
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
         self.partner = Character
+
+        self.base_preferred_actions = {
+            self.flirt: "powerful man"
+        }
 
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -730,7 +733,7 @@ class Detective(Character): #Subordinate? Of the state?
         
 class Taxman(Character):
     is_concrete = True
-    def __init__(self, name, region, location, faction="State", bankCardCash=1000, position="Tax Official", loyalties=None, fun=-1, hunger=0, **kwargs):
+    def __init__(self, name, region, location, faction="State", bankCardCash=1000, position="Tax Official", preferred_actions=None, loyalties=None, fun=-1, hunger=0, **kwargs):
         
         # Default loyalty setup for Manager
         default_loyalties = {
@@ -741,15 +744,21 @@ class Taxman(Character):
         default_loyalties.update(loyalties or {})
         
         super().__init__(
-            name, region=region,
+            name,  region=region,
             location=location, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
-            hunger=hunger, **kwargs
+            hunger=hunger, preferred_actions=preferred_actions,**kwargs
         )
+        self.base_preferred_actions = {
+            self.squeeze_taxes: "corporation"
+        }
+
         self.position = position
         self.bankCardCash = bankCardCash
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
     
     # figure out how specific charcters store their specific actions, here or in that file or both
+    def squeeze_taxes(self, target):
+        print(f"{self.name} squeezes taxes from {target}!")
 
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"

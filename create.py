@@ -18,8 +18,8 @@ import os
 
 from character_creation_funcs import create_all_characters
 import random
-from utils import get_valid_races  # Import the function properly
-from city_vars import game_state
+
+
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
@@ -36,8 +36,20 @@ def create_object(data):
     pass
     
 def create_regions():
-    """Create and return a list of Region objects with Locations inside them."""
-    print("Initializing regions as objects...")
+    from create_game_state import get_game_state  # Keep this if needed
+    global game_state  # Ensure Python uses the global game_state
+    
+
+    if 'game_state' not in globals():  # Check if game_state exists in global scope
+        game_state = None  # Define it globally if missing
+
+    if game_state is None:
+        print(f"🔴 🔵DEBUG: game_state is None in create_regions(), calling get_game_state()")
+        game_state = get_game_state()  # Ensure it's assigned before use
+
+    #print(f"DEBUG: game_state inside create_regions() = {game_state}")
+
+    #print("Initializing regions as objects...")
 
     region_wealth_levels = {
         "NorthVille": "Normal",
@@ -53,7 +65,9 @@ def create_regions():
     
     for region, wealth in region_wealth_levels.items():
         try:
-            location_list = create_locations(region, wealth)
+            #print(f"DEBUG: Creating region '{region}' with wealth level {wealth}")
+            location_list = create_locations(region, wealth) #what exactly is wealth at this point?
+
             region_obj = Region(
                 name=region,
                 shops=[loc for loc in location_list if isinstance(loc, Shop)],  # Extract Shops separately
@@ -62,17 +76,16 @@ def create_regions():
                 danger_level=None,
             )
             all_regions.append(region_obj)
-            
+            #print(f"📌 DEBUG: Created regions: {all_regions}") #verbose
         except Exception as e:
             print(f"Error creating region '{region}': {e}")
 
-    # Update game state
     game_state.all_regions = all_regions
-
+    #print(f"DEBUG: All regions added to game_state: {len(game_state.all_regions)}")
     return all_regions   
 
 def create_gang_factions(num_gangs, all_regions):
-    from city_vars import game_state
+    from create_game_state import game_state
     gangs = []
     VALID_RACES = Character.VALID_RACES  # Access the tuple from the class
 
@@ -140,7 +153,7 @@ def create_gang_factions(num_gangs, all_regions):
     return gangs
 
 def create_corp_factions(num_corps, all_regions):
-    from city_vars import game_state
+    from create_game_state import game_state
     corporations = []
     
     CORP_NAMES_FILE = get_corp_names_filepath()
@@ -151,19 +164,24 @@ def create_corp_factions(num_corps, all_regions):
 
     hannival_region = random.choice(all_regions)
     hannival_corp = Corporation(name="Hannival", violence_disposition="Medium")
-    hannival_corp.region = hannival_region  
-    corporations.append(hannival_corp)
-    game_state.add_corporation(hannival_corp)
-    hannival_region.region_corps.append(hannival_corp)  # Add the corporation to the region's list
-
+    hannival_corp.region = hannival_region
     assign_hq(hannival_corp, hannival_region)
+    corporations.append(hannival_corp)
+
+    game_state.add_corporation(hannival_corp)
+    hannival_region.region_corps.append(hannival_corp)
 
     for _ in range(num_corps):
-        corp_name = f"{random.choice(first_parts)} {random.choice(second_parts)}"
+        corp_name = f"{random.choice(first_parts).replace(',', '')} {random.choice(second_parts).replace(',', '')}"
         assigned_region = random.choice(all_regions)
 
         corporation = Corporation(name=corp_name, violence_disposition="Low")
         corporation.region = assigned_region
+
+        # **Check if it already has an HQ before assigning**
+        if corporation.HQ is None:
+            assign_hq(corporation, assigned_region)
+
         corporations.append(corporation)
         game_state.add_corporation(corporation)
         
@@ -175,10 +193,10 @@ def create_corp_factions(num_corps, all_regions):
     return corporations
 
 def create_factions(all_regions, all_locations):
-    from city_vars import game_state
-    print("all_regions content:", [region.name for region in all_regions])
+    from create_game_state import game_state
+    #print("all_regions content:", [region.name for region in all_regions])
     factions = []  # Store created factions
-
+    #print("DEBUG: all_regions content:", [region.name for region in all_regions])
     # Find Downtown region
     downtown_region = next((region for region in all_regions if region.name == "Downtown"), None)
     if not downtown_region:
@@ -204,38 +222,73 @@ def create_factions(all_regions, all_locations):
     factions.extend(create_corp_factions(10, all_regions))
 
     
-    all_characters = create_all_characters(factions, all_locations, all_regions) #had also faction
+    all_characters = create_all_characters(factions, all_locations, all_regions, faction) #had also faction
     
     return factions, all_characters
 
+def create_HQ(region, faction_type="gang"):
+    """Dynamically creates an HQ for a faction in a given region."""
+    hq_name = f"{region.name} {'Corporate' if faction_type == 'corporate' else 'Gang'} HQ"
+    new_hq = HQ(name=hq_name, region=region)
+    
+    #print(f"Created new {faction_type} HQ: {hq_name} in {region.name}")
+    return new_hq
 
 def assign_hq(faction, region):
-     
+    if faction.HQ is not None:  # ✅ Prevent multiple HQ assignments
+        #print(f"{faction.name} already has an HQ in {faction.HQ.region.name}.")
+        return  # Exit the function early
+    
+    if isinstance(faction, Corporation):
+        hq_name = f"{faction.name} Corporate HQ"
+    else:
+        hq_name = f"{faction.name} HQ"  # Gangs get a generic HQ name
+
     available_hqs = [loc for loc in region.locations if isinstance(loc, HQ) and loc.faction is None]
     
-    if available_hqs: #does this iterate over the available HQs?
-        hq = random.choice(available_hqs)  # Assign the first available HQ
+    # If the faction is a corporation, ensure it gets an HQ
+    if isinstance(faction, Corporation) and not available_hqs:
+        #print(f"No available HQ for {faction.name}. Creating one.")
+        new_hq = create_HQ(region, faction_type="corporate")
+        region.locations.append(new_hq)
+        available_hqs.append(new_hq)
+
+    if available_hqs: 
+        hq = random.choice(available_hqs)
         hq.faction = faction
         hq.name = f"{faction.name} HQ"  # Update HQ name
         faction.HQ = hq  # Update faction's HQ attribute
-        print(f"{faction.name} HQ assigned: {hq.name} in {region.name}")
-        #now remove that HQ from available_hqs? We dont want it reassigned to another faction
+        #print(f"{faction.name} HQ assigned: in {region.name}")
+        
+    
     else:
-        print(f"No available HQ for {faction.name} in {region.name}. Assigning 'acquire HQ' goal.")
+        faction.is_street_gang = True
+        
+        region.region_street_gangs.append(faction)
+        game_state.all_street_gangs.append(faction)
+
+        
+
         if not any(goal.goal_type == "acquire HQ" for goal in faction.goals):
             faction.set_goal(Goal(description="Acquire an HQ", goal_type="acquire HQ"))
         
         #if there are > a threshhold of gangs in one region, this could trigger a game event "turf war"
         # Turf War Trigger
-        if len(region.region_gangs) > 3:  # Example threshold
-            print(f"Turf war brewing in {region.name}!")
-            region.trigger_event("turf_war")
+          # Example threshold
+            
+            street_gang_count = len(region.region_street_gangs)
+
+            if street_gang_count > 3 and not region.turf_war_triggered:  # Prevent repeated triggers
+                print(f"{street_gang_count} street gangs present in {region.name}, without HQs. Turf war brewing!")
+                region.trigger_event("turf_war")
+                region.turf_war_triggered = True
+                
 
 
-from character_creation_funcs import create_all_characters
+""" from character_creation_funcs import create_all_characters
 def create_characters(factions, all_locations, all_regions): 
     #what is this function here for? 
-    return create_all_characters(factions, all_locations, all_regions)
+    return create_all_characters(factions, all_locations, all_regions) """
 
 
 

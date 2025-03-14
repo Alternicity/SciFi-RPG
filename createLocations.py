@@ -1,14 +1,14 @@
 #create locations
-from location import MunicipalBuilding
+from location import MunicipalBuilding, Shop
 from base_classes import Location
 from typing import List
-
+from create_game_state import get_game_state
 
 
 def create_locations(region_name: str, wealth: str) -> List[Location]:
     """Creates a list of location objects for a region based on its wealth level."""
-    locations = [] #this is functionaly identical here to locations but shows up in character_creation_funcs as well
-    #so consider removing it and using locations here and there.
+    locations = [] 
+    game_state = get_game_state()
 
     # Fetch location types for this wealth level
     from location_types_by_wealth import LocationTypes
@@ -17,26 +17,36 @@ def create_locations(region_name: str, wealth: str) -> List[Location]:
     for location_class, count in location_types:
         for _ in range(count):  # Create the specified number of locations
             try:
-                # Pass region and name if required by the location class
                 location_obj = location_class(
-                    region=region_name,  # If region is needed, pass it here
+                    region=region_name,  
                     name=f"{location_class.__name__} in {region_name}"
                 )
                 locations.append(location_obj)
-                #print(f"Created location: {location_obj} of type {type(location_obj)}")
 
             except Exception as e:
                 print(f"Error creating location {location_class.__name__} in {region_name}: {e}")
 
+    # ✅ Update both region and game_state with the same shop instances
+    shop_instances = [loc for loc in locations if isinstance(loc, Shop)]
+    
+    from utils import get_region_by_name
+    region_obj = get_region_by_name(region_name, game_state.all_regions)  
+    if region_obj:
+        region_obj.locations.extend(shop_instances)  # Ensure they match!
+
     # Always create a MunicipalBuilding
     try:
         municipal_building = MunicipalBuilding(
-            region=region_name, 
+            region=region_name, #ALERT
             name=f"Municipal Building in {region_name}"
         )
         locations.append(municipal_building)
+
+        game_state.all_locations.append(municipal_building)
+        game_state.municipal_buildings[region_name] = municipal_building  
+
     except Exception as e:
         print(f"Error creating MunicipalBuilding in {region_name}: {e}")
-        print(f"MunicipalBuilding reference from createLocations import: {MunicipalBuilding} ({id(MunicipalBuilding)})")
 
+    #print(f"📌 DEBUG: Created locations for {region_name}: {locations}") #verbose
     return locations

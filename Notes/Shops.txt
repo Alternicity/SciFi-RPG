@@ -1,0 +1,13 @@
+Shops
+My character is able to enter a shop.
+Typical output:
+Karen enters Shop in Downtown.
+Shop in Downtown has no items available.
+After which gameplay is currently called, as the gameplay menu is displayed.
+Instead of displaying the gameplay menu a new menu should display, allowing access to the shops inventory and other options.
+
+There are several tasks
+1 Make sure employees are generated, have names and are distributed to locations, ensuring shops get some. The current "show employees" menu option doesnt work.
+2 Make sure shop and inventory code is connected.
+3 Make sure the inventory has a few ObjectInWorld objects.
+4 Make available the buy item function to the player

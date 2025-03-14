@@ -2,38 +2,44 @@
 from enum import Enum, auto
 
 class Behaviour(Enum):
+    DEAD = "dead"
+    UNCONSCIOUS = "unconscious"
+    PASSIVE = "passive"
+    AGGRESSIVE = "aggressive"
+    STEALTH = "stealth"
+    MURDEROUS = "murderous"
+    FLIRTY = "flirty"
+    SELLING = "selling"
+    DEFAULT = "default"
 
-    def __init__(self, behaviour_type="passive"):
-        self.behaviour_type = behaviour_type
-        self.allowed_actions = {
-            "dead": [],
-            "unconscious": [],
-            "aggressive": ["attack", "defend"],
-            "stealth": ["sneak", "hide"],
-            "passive": ["heal", "defend"],
-            "murderous": ["attack"],
-        }.get(behaviour_type, [])
+# Define allowed behaviors for each state
+ALLOWED_BEHAVIOURS = {
+    Behaviour.DEAD: [],
+    Behaviour.UNCONSCIOUS: [],
+    Behaviour.DEFAULT: ["earn", "enjoy"],
+}
+
+def get_allowed_behaviours(behaviour):
+    """Returns the allowed behaviours for a given behaviour type."""
+    return ALLOWED_BEHAVIOURS.get(behaviour, [])
+
+def set_default_behaviour():
+    """Returns a default set of behaviours."""
+    return {Behaviour.DEFAULT}
+
+class BehaviourManager:
+    """Manages character behaviours."""
+
+    def __init__(self, behaviour=Behaviour.DEFAULT):
+        self.behaviour_type = behaviour
 
     def change_behaviour(self, new_behaviour):
-        allowed_behaviours = [
-            "stealth",
-            "aggressive",
-            "passive",
-            "murderous",
-            "unconscious",
-            "dead",
-        ]
-        if new_behaviour in allowed_behaviours:
-            self.behaviour_type = new_behaviour
-        else:
+        """Change the character's behaviour if it's valid."""
+        if not isinstance(new_behaviour, Behaviour):
             raise ValueError(f"Invalid Behaviour: {new_behaviour}")
-        self.behaviour.change_behaviour("aggressive")  # Set default behaviour
-        self.behaviour.change_behaviour("murderous")  # default behaviour
-        self.behaviour.change_behaviour("stealth")  # default behaviour
-        self.behaviour.change_behaviour("aggressive")  # default behaviour
-        self.behaviour.change_behaviour("passive")  # default behaviour
+        self.behaviour_type = new_behaviour
 
-class Posture(Enum):
-    STANDING = auto()
-    SITTING = auto()
-    LYING = auto()
+
+
+
+    

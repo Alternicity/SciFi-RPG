@@ -1,7 +1,7 @@
 #game.py
 #Call gameplay(character, region)
 from menu_utils import select_character_menu
-from loader import load_region_data
+
 from game_logic import gameplay
 from character_creation_funcs import player_character_options
 #from create import all_regions

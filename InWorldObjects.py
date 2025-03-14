@@ -34,7 +34,7 @@ valid_items = [
     "CashWad", "Wallet", "HardDrive", "Medkit", 
     "FoodCrate", "Laptop", "MechanicalToolkit", "ElectricalToolkit", 
     "PowerGenerator", "WaterPurifier", "SmartPhone", "CommoditiesBox"
-]
+] 
 
 # Base class for all objects in the world
 class ObjectInWorld:

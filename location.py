@@ -1,3 +1,4 @@
+from __future__ import annotations
 import random
 import string
 from abc import ABC, abstractmethod
@@ -8,6 +9,7 @@ from faction import Faction
 #shop/vendor specific (at least at first)
 from base_classes import Character, Location, Faction
 from location_security import Security
+
 logging.basicConfig(level=logging.INFO)
 
 from common import DangerLevel #this was commented out once, probs for a circular imprt problem..
@@ -20,9 +22,10 @@ class Region:
     locations: List[Location] = field(default_factory=list)
     factions: List[str] = field(default_factory=list)
     danger_level: Optional[DangerLevel] = None
-    region_gangs: List = field(default_factory=list) #dataclass syntax.  ensures each instance of Region
-    #gets a unique list for region_gangs
-    
+    region_gangs: List = field(default_factory=list) #dataclass syntax.  ensures each instance of Region gets a unique list for region_gangs
+    region_street_gangs: List = field(default_factory=list)
+    turf_war_triggered: bool = False
+    characters_there: List = field(default_factory=list)
     region_corps: List = field(default_factory=list)
 
 #Each region will contain a list of Shop and other Location objects
@@ -86,24 +89,36 @@ class HQ(Location):
 @dataclass
 class Vendor(Location):
     items_available: list = field(default_factory=list)
-    #items_available: List[str] = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = False
     secret_entrance: bool = True
     cash: int = 0
     bankCardCash: int = 0
+
+    def show_inventory(self):
+        """Display available items in the shop."""
+        if self.inventory:
+            print(f"Items available in {self.name}:")
+            for item, details in self.inventory.items():
+                print(f"- {item}: ${details['price']} (Qty: {details['quantity']})")
+        else:
+            print(f"{self.name} has no items available.")
+
     # No need to define __init__; @dataclass handles it
     def __post_init__(self):
         super().__post_init__()
 
-
+from inventory import Inventory
+from characters import Employee
 @dataclass
 class Shop(Vendor):
     name: str = "QQ Store"
     legality: bool = True
+    employees_there: List['Employee'] = field(default_factory=list)
+    characters_there: List['Character'] = field(default_factory=list)
     fun: int = 0
     categories: List[str] = field(default_factory=lambda: ["workplace"])
-    inventory: dict = field(default_factory=dict)  # Replaces items_available
+    inventory: list = field(default_factory=list)
     cash : int = 300
     bankCardCash: int = 0
     is_concrete: bool = True
@@ -121,26 +136,37 @@ class Shop(Vendor):
 
     def to_dict(self):
         return asdict(self)
-
     
+    def add_employee(self, employee: 'Employee'):
+        self.employees_there.append(employee)
+        print(f"DEBUG: Employee {employee.name} added to {self.name}")
 
-    def sell_item(self, character, item_name):
+    def list_employees(self):
+        """Return a list of employees working at this shop."""
+        #should this be generalised to a less specific class?
+        return self.employees
+    
+    def sell_item(self, character, item_name, quantity=1):
         """Sell an item to a character."""
-        if item_name in self.inventory:
-            item_details = self.inventory[item_name]
-            if character.bankCardCash >= item_details['price']:
-                # Deduct money and update inventory
-                character.bankCardCash -= item_details['price']
-                character.inventory.append(item_name)
-                item_details['quantity'] -= 1
-                print(f"{item_name} sold to {character.name} for ${item_details['price']}. Remaining balance: ${character.bankCardCash}")
-                # Placeholder for economy.py processing
-                # economy.process_transaction(character, self, item_name, item_details['price'])
-            else:
-                print(f"{character.name} doesn't have enough money to buy {item_name}.")
-        else:
-            print(f"{item_name} is not available in {self.name}'s inventory.")
+        item = self.inventory.find_item(item_name)
+        if item and self.inventory.remove_item(item_name, quantity):
+            character.inventory.add_item(item, quantity)  # Assuming characters also use Inventory
+            print(f"{character.name} bought {quantity} {item_name}(s).")
+            return True
+        print(f"{item_name} is out of stock or not available in required quantity.")
+        return False
+    
+    def show_inventory(self):
+        print(f"Inventory of {self.name}: {self.inventory}")
 
+
+    def __post_init__(self):
+        from characterActions import exit_location
+        self.actions = {
+            "1": ("Browse Inventory", self.show_inventory),
+            "2": ("Sell Items", self.sell_item),
+            "3": ("Exit Shop", exit_location)
+        }
 
 @dataclass
 class CorporateStore(Vendor):

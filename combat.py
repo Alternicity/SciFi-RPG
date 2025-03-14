@@ -1,3 +1,10 @@
+from characterActions import register_action
+
+def attack_function(character):
+    print(f"{character.name} attacks!")
+
+
+
 def equip_weapon(self, weapon):
         self.weapon = weapon
         print(f"{self.name} equipped {weapon.name}")
@@ -52,6 +59,8 @@ def attack(self, target):
                         f"{self.name}'s {weapon.get('name', 'weapon')} is out of charge."
                     )
 
+def defend_function():
+     pass
 
 def deplete_weapon_resource(self, weapon):
     if "ammo" in weapon:
@@ -75,3 +84,9 @@ def CombatEvent
 
 def combatAftermath
     #this event might atract medics, news crews, crowds and lawyers
+
+#this table for compatibilty with characterActions.py 
+combat_actions = {
+    "Attack": attack_function,
+    "Defend": defend_function
+}

@@ -53,7 +53,7 @@ def get_gang_names_filepath():
 
 def get_corp_names_filepath():
     """Returns the fixed file path for the gang names data file."""
-    return get_file_path("scifiRPG", "data", "Names", "CorpNames.txt")
+    return get_file_path("data", "Names", "CorpNames.txt")
 
 def load_gang_names(filepath):
     """Loads gang name parts from file and returns two lists (first part, second part)."""
@@ -179,108 +179,39 @@ def initialize_shops(region_name: str) -> List[Union[Shop, CorporateStore, Stash
 
     return shops
 
-
-def load_region_data(region_name: str) -> dict:
-    """
-    Loads region-specific data from a JSON file.
-    
-    Args:
-        region_name (str): The name of the region (e.g., 'North').
-    
-    Returns:
-        dict: A data structure containing the region data.
-    
-    Raises:
-        FileNotFoundError: If the region data file does not exist.
-        ValueError: If there is an error decoding the JSON data.
-    """
-    file_path = os.path.join(BASE_REGION_DIR, f"{region_name}.json")
-    #region_file_path = get_region_file_path(region_name)
-    #Use BASE_REGION_DIR in common.py for this
-
-    # Check if the file exists before attempting to open
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Region data file does not exist: {file_path}")
-    
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in file {file_path}: {e}")
-    
-    return region_data
-
-""" def load_characters(selected_character_data):
-    
-    logging.info("Loading characters...")
-    
-    characters = player_character_options()
-
-    # Validate input or default to empty list
-    if selected_character_data is None:
-        logging.error("No character data provided to loader.")
-        return []
-    
-    # Initialize the character list
-    characters = []
-
-
-    # Instantiate the selected character
-    data = selected_character_data
-    if data["type"] == "Manager":
-        character = Manager(
-            name=data["name"],
-            faction=data["faction"],
-            bankCardCash=data["bankCardCash"],
-            fun=data["fun"],
-            hunger=data["hunger"],
-        )
-    elif data["type"] == "Civilian":
-        character = Civilian(
-            name=data["name"],
-            faction=data["faction"],
-            occupation=data.get("occupation", "Unemployed"),
-        )
-    else:
-        character = Character(
-            name=data["name"],
-            faction=data["faction"],
-        )
-
-    characters.append(character)
-    #logging.info(f"Loaded characters: {characters}")
-    return characters """
-
 def load_names_from_csv(filepath):
-    """
-    Loads names from a CSV file structured with separate Male, Female, and Family sections.
-    """
     male_names = []
     female_names = []
     family_names = []
     
-    with open(filepath, "r", encoding="utf-8") as file:
-        reader = csv.reader(file)
-        current_list = None
-        
-        for row in reader:
-            if not row:
+    current_category = None  # Keep track of which category we're reading
+
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()  # Remove spaces/newlines
+
+            if not line:  # Skip empty lines
                 continue
-            
-            if row[0].lower() == "id,male name":
-                current_list = male_names
-                continue
-            elif row[0].lower() == "id,female name":
-                current_list = female_names
-                continue
-            elif row[0].lower() == "id,family name":
-                current_list = family_names
-                continue
-            
-            if current_list is not None and len(row) > 1:
-                current_list.append(row[1].strip())
-    
+
+            # Check if line is a category header
+            if line.lower() == "male name":
+                current_category = "male"
+            elif line.lower() == "female name":
+                current_category = "female"
+            elif line.lower() == "family name":
+                current_category = "family"
+            else:
+                # If it's not a category header, it must be a name
+                if current_category == "male":
+                    male_names.append(line)
+                elif current_category == "female":
+                    female_names.append(line)
+                elif current_category == "family":
+                    family_names.append(line)
+
+    #print(f"DEBUG: Loaded {len(male_names)} male, {len(female_names)} female, {len(family_names)} family names")
     return male_names, female_names, family_names
+
 
 # Example usage
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 #city_vars.py
 #File to hold a class and object creation code to make accesible variables for other files to easily access
 
+#game_state = None  # Declare without instantiating
 
 #Actual code
 class GameState:
@@ -9,6 +10,7 @@ class GameState:
         self.civilians = []
         self.all_employees =  {}
         self.gangs = []
+        self.all_street_gangs = []
         self.corporations = []
         self.homes = [] #needs populating
         self.public_places = [] #needs populating
@@ -30,6 +32,7 @@ class GameState:
         self.easternhole_corps = []
         self.westborough_corps = []
         self.southville_corps = []
+        self.municipal_buildings = {}  # Format: {region_name: MunicipalBuilding}
 
         #placeholders
         hiring  =  {} #employers with job vacancies. Employer/character class wanted
@@ -58,5 +61,4 @@ class GameState:
 
     
 
-# Initialize the game_state globally
-game_state = GameState()
+    

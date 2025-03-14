@@ -31,7 +31,7 @@ region_size_to_locations = {
 }
 
 
-
+BASE_CORPORATION_NAMES = get_file_path("data", "Names")
 
 BASE_CHARACTERNAMES_DIR = get_file_path("data", "Names")
 

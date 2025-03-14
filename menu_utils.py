@@ -2,16 +2,16 @@
 from tabulate import tabulate
 from display import display_world
 from typing import Dict, Any
+from create_game_state import get_game_state
 
-
-""" try:
-    from main import setup_game
-    print("initialize_regions successfully imported.")
-except ImportError as e:
-    print(f"Failed to import initialize_regions: {e}") """
-
+# Ensure game_state is initialized correctly before use
+game_state = get_game_state()
     
-def main_menu():
+
+def main_menu(all_locations):
+    global game_state
+    game_state = get_game_state()
+
     while True:
         """Display the main menu and return the user choice. Not a gameplay menu itself"""
         print("\n=== Main Menu ===")
@@ -24,7 +24,9 @@ def main_menu():
             selected_character, region = select_character_menu()
             if selected_character:
                 from game import gameplay  # Import gameplay here to avoid circular imports
-                gameplay(selected_character, region)  # Start gameplay
+                print(f"DEBUG: in menu_utils line 27 character.region type = {type(region)}, value = {region}")
+                gameplay(selected_character, region, game_state.all_characters, game_state.all_regions, all_locations)  # Start gameplay
+
         elif choice == 1:  # User chose "Show World"
             from create import all_regions
             display_world(all_regions)
@@ -34,13 +36,20 @@ def main_menu():
         else:
             print("Invalid selection. Please try again.")
 
-def get_menu_choice(options):
-    for key, (description, _) in options.items():
-        print(f"{key}: {description}")
-    choice = input("Choose an option: ")
-    print("\n")
-    return choice if choice in options else None  # value[1] is the return value
+def get_menu_choice(options, filter_func=None):
+    """Displays a menu and returns the chosen option, filtering actions if needed."""
+    if filter_func:
+        options = {k: v for k, v in options.items() if filter_func(v)}
 
+    if not options:
+        print("No available actions.")
+        return None
+
+    for key, (desc, _) in options.items():
+        print(f"{key}: {desc}")
+
+    choice = input("Choose an option: ")
+    return choice if choice in options else None
 
 def get_user_choice(max_choice: int) -> int:
     """Gets user input for menu selection safely."""
@@ -61,8 +70,10 @@ def select_character_menu():
     """Displays the character selection menu, instantiates the chosen character, and returns it."""
 
     # Get character options
-    all_regions = get_all_regions()
-    factions = get_factions()
+    from create_game_state import game_state
+
+    all_regions = game_state.all_regions
+    factions = game_state.factions
     character_options = player_character_options(all_regions, factions)
 
     if not character_options:
@@ -89,16 +100,35 @@ def select_character_menu():
 
     # Show selected character details
     show_character_details(selected_character)
-    print("show_character_details(selected_character) has been called.")
+    #print("show_character_details(selected_character) has been called.")
 
     return selected_character, selected_character.region
 
+def location_menu(character, region, location):
+    """Menu for interacting with a location."""
+    from characterActions import talk_to_character, exit_location
+    from display import show_shop_inventory, display_employees
 
+    while True:
+        options = {
+            "1": ("Talk to Character", talk_to_character),
+            "2": ("View Shop Inventory", show_shop_inventory),
+            "3": ("View Employees", display_employees),
+            "4": ("Leave Location", exit_location)
+        }
 
-#is this still used?
-def display_character_summary(characters):
-    """Displays all characters using the show_character_details function."""
-    print("\n=== CHARACTER SUMMARY ===\n")
-    from display import show_character_details, display_filtered_character_summary #either or?
-    for char in characters:
-        display_filtered_character_summary(char)
+        choice = get_menu_choice(options)
+
+        if choice:
+            action_name, action_function = options[choice]
+            
+            if action_name == "Leave Location":
+                print(f"{character.name} leaves {location.name}.")
+                #update character.location AND game_state
+                break  # Exits the loop, returning to region
+
+            if action_function:
+                action_function(location)
+
+            
+

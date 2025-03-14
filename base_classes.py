@@ -1,11 +1,9 @@
 #base_classes.py
 from dataclasses import dataclass, field
 from location_security import Security
-from typing import Optional
-from typing import List
+from typing import Callable, Dict, Optional, TYPE_CHECKING, List, Any
 from goals import Goal
 import traceback
-from typing import TYPE_CHECKING, Optional
 from enum import Enum, auto
 if TYPE_CHECKING:
     from location import Region
@@ -62,7 +60,7 @@ class Faction:
         self.goals.append(goal)
         self.current_goal = goal
         self.current_goal.generate_objectives()
-        print(f"{self.name} has set a new goal: {self.current_goal.goal_type.capitalize()}")
+        #print(f"{self.name} has set a new goal: {self.current_goal.goal_type.capitalize()}")
 
         #possiblz deprecated
         """ from goals import Goal
@@ -108,6 +106,7 @@ class Faction:
 
     def __repr__(self):
         return f"{self.name} {self.type.capitalize()}"
+    
 
 class Character:
 
@@ -121,7 +120,9 @@ class Character:
         region,
         location,
         initial_motivations=None,
-        partner=None,
+        preferred_actions=None,
+        behaviors=None,
+        partner=None, #greyed from here
         bankCardCash=0,
         fun=1,
         hunger=1,
@@ -140,36 +141,46 @@ class Character:
         status=None,
         loyalties=None,  # Default is None; initializes as a dictionary later
         **kwargs,
-    ):
-        """ print(f"Character created, message from class Character {name}, "
-            f"Region: {region.name if region else 'None'}, "
-            f"Location: {location.name if location else 'None'}") """
-        #commented to reduce output verbosity
-
         
+    ):
         #initialization code
         self.name = name
-        
         self.is_player = False
-        from utils import get_region_by_name
-        from create import all_regions
-        self.region = get_region_by_name(region, all_regions) if isinstance(region, str) else region
+        from utils import get_region_by_name #line 150
+        from create_game_state import game_state  
+        all_regions = game_state.all_regions
+
+        from location import Region
+        region_obj = get_region_by_name(region, all_regions) if isinstance(region, str) else region
+        if not isinstance(region_obj, Region):
+            raise ValueError(f"Invalid region assigned to character: {region}")
+        self.region = region_obj
+
+
         self.initial_motivations = initial_motivations or []
         self.location = location
+        # Default preferred actions (subclasses can extend this)
+        self.base_preferred_actions = {}  
         
+        # Individual character preferences (overrides base)
+        self.preferred_actions = preferred_actions if preferred_actions else {}
+
+        from behaviours import set_default_behaviour, BehaviourManager
+        self.behaviors = set(behaviors) if behaviors else set_default_behaviour()
+        self.behaviour_manager = BehaviourManager()
         self.posture = Posture.STANDING
         self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
         #status loss, or lack of money, or tasks failed, or baf personal events
-
+        self.is_visibly_wounded = False
 
         self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
             "self_actualization": 2,})  # Example defaults
         
         from motivation import MotivationManager
         self.motivation_manager = MotivationManager(self)  # NEW: Handles motivation logic
-
         # Update motivations on creation
         self.motivation_manager.update_motivations()
+
 
         # Tasks (individual objectives, replacing "goals")
         self.tasks = kwargs.get("tasks", [])
@@ -191,7 +202,7 @@ class Character:
             "allies": [],
             "partners": [partner] if partner else [],
         }
-
+        #many things marked undefined after here, the entries aftre t equals sign
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
         self.partner = partner
@@ -210,7 +221,7 @@ class Character:
         self.race = race
         self.sex = sex
         self.status = status  # Add status here
-
+        
         if sex not in self.VALID_SEXES:
             raise ValueError(
                 f"Invalid sex: {sex}. Valid options are {self.VALID_SEXES}"
@@ -239,7 +250,19 @@ class Character:
     # Assign faction HQ if applicable
         if self.faction and hasattr(self.faction, "HQ"):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
+    def get_preferred_actions(self):
+        """Return combined preferences (base + individual)."""
+        combined = self.base_preferred_actions.copy()
+        combined.update(self.preferred_actions)  # Individual prefs override base
+        return combined
 
+    def add_preferred_action(self, action: Callable, target: Any):
+        """Add a preferred action for this character."""
+        self.preferred_actions[action] = target
+
+    def remove_preferred_action(self, action: Callable):
+        """Remove a preferred action."""
+        self.preferred_actions.pop(action, None)
     
     @property
     def motivations(self):
@@ -270,15 +293,15 @@ class Character:
                                         
     @property
     def percepts(self):
-        """Dynamically calculates percepts based on observation."""
+        """Dynamically generates percepts with actionable hints."""
         updated_percepts = {}
         if self.observation > 5:
-            updated_percepts["Nearby Friend"] = 8
-            updated_percepts["Loud Noise"] = 6
+            updated_percepts["Nearby Friend"] = {"weight": 8, "suggested_actions": ["Talk", "Trade"]}
+            updated_percepts["Loud Noise"] = {"weight": 6, "suggested_actions": ["Investigate"]}
         if self.observation > 8:
-            updated_percepts["Hidden Enemy"] = 4
-        #If you need to store percepts persistently, you’ll need a separate _percepts variable.
+            updated_percepts["Hidden Enemy"] = {"weight": 4, "suggested_actions": ["Ambush", "Avoid"]}
         return updated_percepts
+
 
     @percepts.setter
     def percepts(self, new_percepts):
@@ -291,10 +314,19 @@ class Character:
     def adjust_self_esteem(self, amount):
         self.self_esteem = max(0, min(100, self.self_esteem + amount))
 
+    def prefers_action(self, action):
+        """Check if an action aligns with the character's behaviors."""
+        action_behavior_map = {
+            "Eat": "Eating",
+            "Steal": "Thievy",
+            "Talk": "Social",
+        }
+        return action_behavior_map.get(action) in self.behaviors
+
     def __repr__(self):
-        whereabouts_value = self.whereabouts  # Ensure evaluation
+        """ whereabouts_value = self.whereabouts  # Ensure evaluation
         print(f"🔍 Debug: whereabouts = {whereabouts_value}")  # Now prints the actual value
-        print(f"🟢🟢🟢About to __repr__ in class Charcter")
+    """     
         
         return f"{self.name} (Faction: {self.faction}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
     
@@ -342,12 +374,13 @@ class Character:
 
 @dataclass
 class Location:
-    region: Optional['Region'] = None  # Reference to the Region object, currently marked as not defined
-        #however Region cannot be imported to this file, base_classes, because location.py, where it is
-        #defined, imports base_classes
+    region: Optional['Region'] = None  
 
     location: Optional['Location'] = None  # Specific location within the location
     name: str = "Unnamed Location"
+
+
+    actions: Dict[str, tuple[str, Callable]] = field(default_factory=dict)
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -362,14 +395,25 @@ class Location:
     entrance: List[str] = field(default_factory=list)  # Default to an empty list
     upkeep: int = 0
     CATEGORIES = ["residential", "workplace", "public"]
-
+    is_workplace: bool = False
+    characters_there: list = field(default_factory=list)  # Tracks characters present at this location
+    employees_there: list = field(default_factory=list)
     # Instance-specific categories field
-    categories: List[str] = field(default_factory=list)
+    categories: List[str] = field(default_factory=list) #ALERT
 
     def __post_init__(self):
         # Any additional setup logic if needed
         pass
+    
+        #Do the following functions need to change to suit a dataclass?
+    def list_characters(self):
+        """List characters currently at the location."""
+        return self.characters
 
+    def get_available_location_actions(self) -> Dict[str, tuple[str, Callable]]:
+        """Returns a dictionary of actions available at this location."""
+        return self.actions
+    
     def has_category(self, category):
         return category in self.categories
     

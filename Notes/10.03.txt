@@ -1,0 +1,257 @@
+Output and program flow are looking good again.
+I'd just like to pause to say thankyou chat.
+
+Program runs, and several menu options work.
+
+Things for us to look at:
+Only 1 employee seems to be getting created.
+The 1 employee has no name, judging by this output line
+DEBUG: Assigned Unknown Unknown to Shop in SouthVille
+
+
+DEBUG: Searching for 'Municipal Building' in game_state.all_locations...
+WARNING: Could not find specified location 'Municipal Building'.
+
+Sending the test character to the only shop with an employee and taking the display employees menu option I get
+DEBUG: Display Employees function called for Shop in Easternhole
+DEBUG: Display Employees called for Shop in Easternhole
+DEBUG: location object ID: 2674814368848
+
+File "c:\Users\Stuart\Python Scripts\scifiRPG\game_logic.py", line 102, in gameplay
+    gameplay(character, character.region, game_state.all_characters, all_regions)  # Ensure we return here
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Stuart\Python Scripts\scifiRPG\game_logic.py", line 87, in gameplay
+    display_employees(character.location)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\Stuart\Python Scripts\scifiRPG\display.py", line 181, in display_employees
+    print(f"DEBUG: shops list ID at employee creation: {id(shops)}")
+                                                               ^^^^^
+NameError: name 'shops' is not defined
+
+game_state has a self.shops = []
+which as it stands can only really be a list of all shops in the game.
+In the original program flow, and preferably now, gameplay will interact with region objects, which will have their own lists of locations and shops, and update game_state.
+game_state, an object to provide variables globally was created to solve problems with passing variables between functions and files, but I dont want to put everything in there ideally.
+
+From character_creation_funcs.py
+from faction import GeneralPopulation
+
+general_population_faction = GeneralPopulation(name="General Population", violence_disposition="low")
+
+
+def create_civilian_population(all_locations, num_civilians=10, num_employees=10):
+    """Generate civilians and employees, assigning them to logical locations."""
+    print(" create_civilian_population() is about to run")
+
+    civilians = []
+    employees = []
+
+    # Bias towards Terran by adding it more frequently
+    valid_races = get_valid_races()
+    race_pool = ["Terran"] * 5 + [race for race in valid_races if race != "Terran"]
+    race = random.choice(race_pool)
+
+    # Categorize locations
+    homes = [loc for loc in all_locations if loc.__class__.__name__ in RESIDENTIAL]
+    workplaces = [loc for loc in all_locations if loc.__class__.__name__ in WORKPLACES]
+    public_spaces = [loc for loc in all_locations if loc.__class__.__name__ in PUBLIC_PLACES]
+    
+    # Separate shops from other workplaces
+    shops = [loc for loc in workplaces if "Shop" in loc.name]  # Adjust as needed based on your naming conventions
+    other_workplaces = [loc for loc in workplaces if "Shop" not in loc.name]  # Other workplaces (non-shop)
+
+    # Debug: Show number of available shops and other workplaces
+    print(f"DEBUG: Found {len(shops)} shops and {len(other_workplaces)} other workplaces")
+
+
+    # Generate civilians
+    for _ in range(num_civilians):
+        VALID_RACES = Character.VALID_RACES
+        gender = random.choice(["male", "female"])
+        name = generate_name(race, gender)
+
+        home = random.choice(homes) if homes else None
+        public_place = random.choice(public_spaces) if public_spaces else None
+        location = home if home else public_place
+
+        # Ensure start_region is defined
+        region = location.region if location else None
+    
+        civilian = Civilian(
+            name=name,
+            region=region,
+            location=location,
+            race = random.choice(VALID_RACES),
+            faction=general_population_faction,
+            initial_motivations=["earn_money", "have_fun", "find_partner"]
+        )
+        civilians.append(civilian)
+        from create_game_state import game_state
+        game_state.civilians.append(civilian)
+        game_state.all_characters.append(civilians)
+        #print(f"DEBUG: Created {civilian.name} with faction {civilian.faction.name if civilian.faction else 'None'}")
+
+    # Generate employees
+    all_employees =  {} 
+    # Key: character.name, Value: character.workplace
+    print(f"DEBUG: Starting employee generation loop with num_employees={num_employees}")
+
+    for _ in range(num_employees):
+        race = random.choice(VALID_RACES)
+        gender = random.choice(["male", "female"])
+        name = generate_name(race, gender)
+
+        
+        default_faction = general_population_faction
+
+        #Employee initialization 
+        employee = Employee(
+            name=name,
+            faction=default_faction,  # Employees can be assigned to corporations later
+            region=region,  # Ensure start_region is passed
+            location=location,
+            race=race,
+            initial_motivations=["earn_money", "gain_mid", "have_fun"]
+        )
+        # Assign a workplace *after* employee instantiation
+    workplace = random.choice(shops) if shops else None
+    if not workplace:
+        workplace = random.choice(other_workplaces) if other_workplaces else None
+
+    # If workplace is found, update employee's attributes
+    if workplace:
+        employee.faction = getattr(workplace, 'faction', general_population_faction)
+        employee.region = workplace.region
+        employee.location = workplace  # Set location to actual workplace
+        print(f"🟢DEBUG: shops list ID at employee creation: {id(shops)}")
+        print(f"🟢🟢DEBUG: shops list ID at employee creation: {id(shops)}")
+
+        workplace.employees_there.append(employee)
+
+        # Track employees per workplace
+        if workplace.name not in all_employees:
+            all_employees[workplace.name] = []
+        all_employees[workplace.name].append(employee)
+        
+
+        print(f"DEBUG: Assigned {employee.name} to {workplace.name} (ID: {id(workplace)})")
+        print(f"DEBUG: {workplace.name} employees_there ID: {id(workplace.employees_there)}, employees count: {len(workplace.employees_there)}")
+
+    employees.append(employee)
+    game_state.all_characters.append(employee)
+
+    game_state.all_employees.update(all_employees)
+
+    # Debugging Output
+    print(f"DEBUG: Created {len(employees)} employees")
+    for shop, emp_list in all_employees.items():
+        print(f"DEBUG: {shop} has {len(emp_list)} employees")
+
+    for loc in other_workplaces + shops:
+        print(f"DEBUG: {loc.name} has {len(loc.employees_there)} employees at end of creation.")
+
+    return employees
+
+def create_all_characters(factions, all_locations, all_regions, faction):
+    print("\n" * 3)  # Line breaks for clarity
+    print("create_all_characters() is about to run")
+    #does this run twice? The print runs thrice
+    all_characters = []
+   
+
+    new_characters = generate_faction_characters(faction, all_regions, all_locations)
+
+    #print(f"✅ Finished {faction.name}, generated {len(new_characters)} characters")
+    all_characters.extend(new_characters)
+
+    civilians = create_civilian_population(all_locations)
+    all_characters.extend(civilians)
+
+    return all_characters
+
+from createLocations.py
+def create_locations(region_name: str, wealth: str) -> List[Location]:
+    """Creates a list of location objects for a region based on its wealth level."""
+    locations = [] 
+    game_state = get_game_state()
+
+    # Fetch location types for this wealth level
+    from location_types_by_wealth import LocationTypes
+    location_types = LocationTypes.location_types_by_wealth.get(wealth, [])
+
+    for location_class, count in location_types:
+        for _ in range(count):  # Create the specified number of locations
+            try:
+                location_obj = location_class(
+                    region=region_name,  
+                    name=f"{location_class.__name__} in {region_name}"
+                )
+                locations.append(location_obj)
+
+            except Exception as e:
+                print(f"Error creating location {location_class.__name__} in {region_name}: {e}")
+
+
+    # ✅ Extract shops and store them in game_state
+    if hasattr(game_state, 'shops'):
+        game_state.shops.extend([loc for loc in locations if isinstance(loc, Shop)])
+    else:
+        game_state.shops = [loc for loc in locations if isinstance(loc, Shop)]  # Create the attribute if missing
+
+    # Always create a MunicipalBuilding
+    try:
+        municipal_building = MunicipalBuilding(
+            region=region_name, #ALERT
+            name=f"Municipal Building in {region_name}"
+        )
+        locations.append(municipal_building)
+
+        game_state.all_locations.append(municipal_building)
+        game_state.municipal_buildings[region_name] = municipal_building  
+
+    except Exception as e:
+        print(f"Error creating MunicipalBuilding in {region_name}: {e}")
+
+    return locations
+
+def display_employees(location):
+    """Display all employees in a location if it has any."""  
+    print(f"DEBUG: Display Employees called for {location.name}")
+    print(f"DEBUG: location object ID: {id(location)}")
+
+    print(f"🔴🔴DEBUG: shops list ID at employee creation: {id(shops)}")
+    # Check if location has employees
+    if hasattr(location, 'employees_there'):
+        print(f"DEBUG: {location.name} employees_there ID: {id(location.employees_there)}, count: {len(location.employees_there)}")
+    # Check game_state.shops reference
+    if hasattr(game_state, 'shops'):
+        print(f"DEBUG: Checking game_state shops list ID: {id(game_state.shops)}")
+        for shop in game_state.shops:
+            print(f"DEBUG: game_state shop {shop.name} ID: {id(shop)}, employees ID: {id(shop.employees_there)}, count: {len(shop.employees_there)}")
+    
+    print("No employees present.")
+    # Try accessing shops via location (if applicable)
+    if hasattr(location, 'shops'):
+        print(f"DEBUG: Location has shops list with ID: {id(location.shops)}")
+    
+    # Try accessing shops via game_state
+    from create_game_state import game_state
+    if hasattr(game_state, 'shops'):
+        print(f"DEBUG: game_state has shops list with ID: {id(game_state.shops)}")
+    
+    # Check if the location itself has employees
+    if hasattr(location, 'employees_there'):
+        print(f"DEBUG: {location.name} has {len(location.employees_there)} employees at runtime")
+
+    if location.employees_there:
+        table_data = [
+            [employee.name, employee.__class__.__name__, ""]  # Name, Position, Notes
+            for employee in location.employees_there
+        ]
+
+        headers = ["Name", "Position", "Notes"]
+        print(f"\nEmployees at {location.name}:\n")
+        print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    else:
+        print(f"No employees present at {location.name}.")
+    return

@@ -17,6 +17,7 @@ from location import Region, UndevelopedRegion, VacantLot
 from common import get_file_path, BASE_REGION_DIR
 from typing import List, Union
 from character_creation_funcs import player_character_options
+from base_classes import Faction
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ def show_character_details(character):
         ["Race", "Status", "Intelligence", "Fun", "Motivations", ""],  # Empty fields for alignment
         [
             getattr(character, "lorem", character.race),
-            character.status.value.title(),
+            character.status.value.title() if character.status else "Unknown",
             #character.status.value retrieves the string value of the enum ("high")
             #.title() capitalizes the first letter of the string, turning "high" into "High"
 
@@ -108,8 +109,14 @@ def display_filtered_character_summary(characters, gang_limit=3, corp_limit=3, c
 
     # Display faction characters
     for faction, members in faction_groups.items():
-        print(f"\n--- {faction.upper()} ---")
+        if isinstance(faction, Faction):  # Ensure faction is an instance
+        
+            print(f"\n--- {faction.name} ---")
+        else:
+            print(f"WARNING: Expected an instance of Faction, but got {faction} of type {type(faction)}")
+            print(f"DEBUG: faction is {faction} of type {type(faction)}")
 
+        
         bosses = [c for c in members if isinstance(c, Boss)]
         captains = [c for c in members if isinstance(c, Captain)]
         gang_members = [c for c in members if isinstance(c, GangMember)]
@@ -164,8 +171,72 @@ def display_character_whereabouts(character):
 def display_civilians():
     pass
 
-def display_employees():
-    pass
+from location import Shop
+
+def display_employees(location, all_locations):
+    #print(f"🟢🟢 DEBUG: display_employees called with location={location} (Type: {type(location)})")
+    #print(f"🟢🟢 DEBUG: First item in all_locations (if any): {all_locations[0] if all_locations else 'No locations'}")
+
+    # Check all known locations
+    #print("🔎 DEBUG: Listing all shop instances and their employees:")
+    """ for shop in all_locations:
+        if isinstance(shop, Shop):
+            print(f"🔹 Shop: {shop.name}, ID: {id(shop)}, Employees: {len(shop.employees_there)}") """
+
+    # Find out if this location exists in all_locations
+    #if isinstance(location, list):
+        #print(f"⚠️ ERROR: display_employees received a list instead of a location object! {location}")
+        #return  # Prevent further errors
+
+    """ matching_shops = [shop for shop in all_locations if shop.name == location.name]
+    if not matching_shops:
+        print(f"❌ DEBUG: No matching shop found for {location.name} in all_locations!")
+    else:
+        print(f"✅ DEBUG: Found {len(matching_shops)} matching shop(s) for {location.name} in all_locations.")
+        for match in matching_shops:
+            print(f"  - Match ID: {id(match)}, Employees: {len(match.employees_there)}") """
+
+    # Check employees of the passed-in location
+    """ if hasattr(location, "employees_there"):
+        print(f"✅ DEBUG: location.employees_there ID: {id(location.employees_there)}, Count: {len(location.employees_there)}")
+    else:
+        print(f"❌ DEBUG: location.employees_there does not exist!") """
+
+    """ if location.employees_there:
+        table_data = [
+            [employee.name, employee.__class__.__name__, ""]  # Name, Position, Notes
+            for employee in location.employees_there
+        ]
+        headers = ["Name", "Position", "Notes"]
+        print(f"\nEmployees at {location.name}:\n")
+        print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    else:
+        print(f"No employees present at {location.name}.")
+  
+
+    print(f"DEBUG: Display Employees called for {location.name}")
+    print(f"DEBUG: location object ID: {id(location.name)}")
+
+    print(f"⚪🔴DEBUG: Character is at {location.name} (ID: {id(location)})")
+    
+    if hasattr(location, "employees_there"):  # Ensure location has an employees list
+        print(f"DEBUG: {location.name} has {len(location.employees_there)} employees, says display_employees")
+    else:
+        print(f"WARNING: {location.name} does not have an employees list!") """
+
+
+    # Check if the location itself has employees
+    if location.employees_there:
+        table_data = [
+            [employee.name, employee.__class__.__name__, ""]  # Name, Position, Notes
+            for employee in location.employees_there
+        ]
+
+        headers = ["Name", "Position", "Notes"]
+        print(f"\nEmployees at {location.name}:\n")
+        print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    else:
+        print(f"No employees present at {location.name}.")
 
 def display_corporations():
     pass
@@ -220,7 +291,7 @@ def display_state(state):
         grouped_staff[class_name].append([
             character.name,
             class_name,
-            character.location.name if character.location else "Unknown",
+            character.location.name if character.location else "Unknown", #ALERT
             ", ".join(character.initial_motivations)
         ])
 
@@ -234,9 +305,9 @@ def display_world(all_regions):
     table_data = []
 
     for region in all_regions:
-        region_name = region.name if region.name else "Unknown Region"
+        region_name = region.name if region.name else "Unknown Region" #ALERT
         location_names = ", ".join(loc.name for loc in region.locations) if region.locations else "No known locations"
-        danger_level = region.danger_level.name if region.danger_level else "Unknown"
+        danger_level = region.danger_level.name if region.danger_level else "Unknown"#ALERT
 
         table_data.append([region_name, location_names, danger_level])
 
@@ -299,6 +370,7 @@ def display_selected_character_current_region(character, region):
     print(f"{character.name} is in {region.name}.")
 
 def list_characters(characters):
+
     #Display a list of existing characters in a table format.
    
     for char in characters:
@@ -331,3 +403,44 @@ def list_characters(characters):
     ]
     headers = ["Name", "Role", "Faction", "Bank Card Cash", "Fun", "Hunger"]
     return tabulate.tabulate(table_data, headers=headers, tablefmt="fancy_grid")
+
+def compare_locations(all_locations, all_regions):
+    """Compares locations in all_locations vs. region.locations and lists missing ones."""
+    
+    all_location_names = {loc.name for loc in all_locations}  # Names from all_locations
+    region_location_names = set()  # Will store all locations from regions
+
+    for region in all_regions:
+        for loc in region.locations:
+            region_location_names.add(loc.name)
+
+    # Find missing locations
+    missing_from_all_locations = region_location_names - all_location_names
+    extra_in_all_locations = all_location_names - region_location_names
+
+    if missing_from_all_locations:
+        print("🚨 WARNING: These locations exist in regions but are missing from all_locations:")
+        for loc in missing_from_all_locations:
+            print(f" - {loc}")
+
+    if extra_in_all_locations:
+        print("⚠️ NOTICE: These locations exist in all_locations but are not assigned to any region:")
+        for loc in extra_in_all_locations:
+            print(f" - {loc}")
+
+    if not missing_from_all_locations and not extra_in_all_locations:
+        print("✅ All locations are correctly assigned.")
+
+    """Checks if all locations from all regions are properly included in all_locations."""
+    
+    missing_locations = []
+    
+    for region in all_regions:
+        for loc in region.locations:
+            if loc not in all_locations:
+                missing_locations.append(f"⚠️⚠️ MISSING: {loc.name} from {region.name}")
+
+    if missing_locations:
+        print("\n".join(missing_locations))
+    else:
+        print("✅ All locations are correctly assigned in all_locations!")
