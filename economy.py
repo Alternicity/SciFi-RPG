@@ -67,43 +67,8 @@ class EconomyManager:
             return item.value if item.legality == True else item.blackmarket_value
 
 
-    #possibly deprecated, legacy code
-    def buy(self, item, use_bank_card=False):
-        amount = self.calculate_item_cost(item)
-
-        # Check legality, which is now a boolean (True/False)
-        if item.legality is True:
-            self.make_normal_purchase(amount, use_bank_card)
-        elif item.legality is False:
-            self.make_black_market_purchase(amount)
-        else:
-            raise ValueError(f"Unknown legality type: {item.legality}")
-        
-
-    def make_black_market_purchase(self, amount):
-        """Make a purchase on the black market (only cash can be used)."""
-        if self.wallet.spend_cash(amount):
-            print(f"Black market purchase of {amount} successful.")
-        else:
-            print(f"Not enough cash for black market purchase.")
-
-    def make_normal_purchase(self, amount, use_bank_card=False):
-        """Make a normal purchase, either using cash or bank card."""
-        if use_bank_card:
-            if self.wallet.spend_bankCardCash(amount):
-                print(f"Purchase of {amount} using bank card successful.")
-            else:
-                print(f"Not enough bank card balance for purchase.")
-        else:
-            if self.wallet.spend_cash(amount):
-                print(f"Purchase of {amount} using cash successful.")
-            else:
-                print(f"Not enough cash for purchase.")
-
-    def pick_up_cashwad(self, cashwad):
-        """Pick up a CashWad and add the value to the wallet."""
-        print(f"Picked up a CashWad worth {cashwad.get_value()} cash.")
-        cashwad.add_to_wallet(self.wallet)
+    
+    
 
     def print_wallet(self):
         """Print the wallet's current balance (for debugging purposes)."""

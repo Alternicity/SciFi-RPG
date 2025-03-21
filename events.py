@@ -1,4 +1,3 @@
-import json
 from distributions import generate_normal, generate_black_swan
 
 class Event:
@@ -10,9 +9,19 @@ class Event:
         self.effect = effect
         self.params = kwargs
 
+    def handle_event(event_name, character, location):
+        """Stub for an event system that will handle outcomes of actions."""
+    event_outcomes = {
+        "success": lambda: print(f"{character.name} successfully completes the action."),
+        "detected": lambda: print(f"{character.name} was spotted! Guards are alerted."),
+        "parsimony_opportunity": lambda: print(f"{character.name} notices another opportunity."),
+        "triggered_trap": lambda: print(f"{character.name} sets off a trap! Trouble ahead."),
+    }
+    event_outcomes.get(event_name, lambda: print("Unknown event"))()
+
     def apply(self, target):
         """
-        Apply the event's effect to the target (e.g., economy, faction, character).
+        Older code that describes the rarity of game (not player) triggered events
         """
         if self.event_type == "normal":
             impact = generate_normal(self.params["mean"], self.params["std_dev"])
@@ -39,23 +48,6 @@ class Event:
 
         print(f"Event '{self.name}' occurred! Impact: {impact}")
 
-def load_events(file_path):
-    """
-    Load events from a JSON or YAML file.
-
-    Args:
-        file_path (str): Path to the file containing event data.
-
-    Returns:
-        list: A list of Event instances.
-    """
-    with open(file_path, "r") as file:
-        event_data = json.load(file)
-
-    events = []
-    for name, config in event_data.items():
-        events.append(Event(name=name, **config))
-    return events
 
 def simulate_events(events, targets):
     """

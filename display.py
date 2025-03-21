@@ -173,7 +173,7 @@ def display_civilians():
 
 from location import Shop
 
-def display_employees(location, all_locations):
+def display_employees(location):
     #print(f"🟢🟢 DEBUG: display_employees called with location={location} (Type: {type(location)})")
     #print(f"🟢🟢 DEBUG: First item in all_locations (if any): {all_locations[0] if all_locations else 'No locations'}")
 

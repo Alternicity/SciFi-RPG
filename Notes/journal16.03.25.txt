@@ -1,0 +1,16 @@
+The main menu broke when we tried to refactor it to use the new dynamic menu system, from its previous functioning hard coded menu. 
+I would still like to make the main menu work in this dynamic system but it was a task too hard for us previously. I cannot write the code alone, nor debug it, and I don't think you were able to write it either without breaking other things. I assume the fault is mine, I should make much more detailed prompts including more information.
+So this is the point in the program where I have to decide whether to freeze the code and keep the older functioning version, making subsequent menus dynamic, or not.
+A parallel problem was the use of the game_state object to access fundamental variables like all_characters to try and get access to these variables by passing them through functions.
+Passing such variables as parameters ended up with the unsolvable problem in main, and a similar issue was why the game_state object became necessary in the first place.
+The problem with using game_state is making sure it is updated at the right times.
+The problem with using both passed variables and game_state is that we are using two systems for tracking data.
+This prompt is becoming like a journal entry, I am ordering my thoughts here.
+
+TLDR: I dont want to completely roll back gameplay.py with its 
+class GameplayMenu:
+and 
+def gameplay(character, region):
+gameplay_menu = GameplayMenu()
+
+Unless that becomes truly necesssary.

@@ -1,0 +1,18 @@
+When entering a shop, for example the character should see displayed the employees and other characters there, options to speak (followed by another menu to choose who to speak to), an option to view the shops inventory(followed by a buy item/s menu) or observe their surroundings, an option to steal an item, and an option to rob the shop.
+
+Key Design Considerations
+Decouple Menus from Specific Locations:
+
+Instead of hardcoding shop-specific menus inside visit_location(), have locations define their available actions dynamically.
+Use a Base Class for Locations with Dynamic Menus:
+
+Each location type should define its own actions (Shop, CorporateStore, Nightclub, etc.).
+The base Location class should contain a method like get_menu_options() that each subclass overrides.
+A Unified Menu Display System (menu_utils.py)
+
+A single function to display menus dynamically based on location type.
+Example: If in a shop, display purchase-related options; if in a nightclub, show social interactions.
+Character Context Awareness:
+
+The menu should adjust depending on character type (e.g., a thief might get a "Steal" option).
+Some options should be locked behind conditions (e.g., robbing a shop requires a weapon).

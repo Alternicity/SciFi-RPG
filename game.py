@@ -9,7 +9,7 @@ from character_creation_funcs import player_character_options
 def game(all_regions):
     selected_character, region = select_character_menu()  # Retrieve character and region
     if selected_character:
-        gameplay(selected_character, region)  # Start gameplay with the selected character
+        gameplay(selected_character, region, all_regions)  # Start gameplay with the selected character
     else:
         print("No character selected. Returning to main menu.")
 

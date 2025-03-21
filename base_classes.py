@@ -375,12 +375,9 @@ class Character:
 @dataclass
 class Location:
     region: Optional['Region'] = None  
-
     location: Optional['Location'] = None  # Specific location within the location
     name: str = "Unnamed Location"
-
-
-    actions: Dict[str, tuple[str, Callable]] = field(default_factory=dict)
+    menu_options: List[str] = field(default_factory=list)
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -388,6 +385,9 @@ class Location:
         surveillance=False,
         alarm_system=False
     ))
+    from InWorldObjects import ObjectInWorld #check for circular import 
+    objects_present: list[ObjectInWorld] = field(default_factory=list)
+
     condition: str = "Unknown Condition"
     fun: int = 0
     is_concrete: bool = False
@@ -401,6 +401,20 @@ class Location:
     # Instance-specific categories field
     categories: List[str] = field(default_factory=list) #ALERT
 
+    def get_menu_options(self):
+        """Returns a list of available menu options for this location."""
+        return self.menu_options
+
+    @property
+    def stealable_items(self) -> list[ObjectInWorld]:
+        """Return a list of stealable items present at this location."""
+        return [obj for obj in self.objects_present if obj.is_stealable]
+
+    @property
+    def has_stealable_items(self) -> bool:
+        """Check if there are any stealable items in the location."""
+        return bool(self.stealable_items)
+    
     def __post_init__(self):
         # Any additional setup logic if needed
         pass
@@ -410,10 +424,6 @@ class Location:
         """List characters currently at the location."""
         return self.characters
 
-    def get_available_location_actions(self) -> Dict[str, tuple[str, Callable]]:
-        """Returns a dictionary of actions available at this location."""
-        return self.actions
-    
     def has_category(self, category):
         return category in self.categories
     

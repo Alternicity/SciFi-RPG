@@ -157,16 +157,11 @@ class Shop(Vendor):
         return False
     
     def show_inventory(self):
-        print(f"Inventory of {self.name}: {self.inventory}")
+        self.inventory.display_inventory()
 
 
     def __post_init__(self):
-        from characterActions import exit_location
-        self.actions = {
-            "1": ("Browse Inventory", self.show_inventory),
-            "2": ("Sell Items", self.sell_item),
-            "3": ("Exit Shop", exit_location)
-        }
+        self.menu_options.extend(["Observe", "View Shop Inventory", "Display Employees", "Buy", "Steal", "Rob", "Exit"])
 
 @dataclass
 class CorporateStore(Vendor):

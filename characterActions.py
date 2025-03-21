@@ -9,7 +9,8 @@ from functools import partial
 #from stealth_actions import stealth_actions
 
 def handle_actions(character):
-    """Handle character actions dynamically."""
+    from menu_utils import get_menu_choice
+    """Handle character actions dynamically based on location and character behavior."""
 
     if character.location is None:
         print(f"{character.name} is not in any location.")
@@ -18,62 +19,127 @@ def handle_actions(character):
     location = character.location
     available_actions = location.get_available_actions(character)
 
-    def action_is_available(action_name):
-        """Check if the action is available based on character behavior."""
-        return character.prefers_action(action_name)
-
     # Filter actions before showing menu
-    filtered_options = {name: func for name, func in available_actions.items() if action_is_available(name)}
+    filtered_options = {
+        name: func for name, func in available_actions.items() if action_is_available(character, name)
+    }
+
+    if not filtered_options:
+        print(f"No available actions for {character.name} in this location.")
+        return
 
     choice = get_menu_choice(filtered_options)
 
     if choice:
-        _, action_func = available_actions[choice]
+        _, action_func = filtered_options[choice]
         action_func()
 
-def visit_location(character, region, location):
-    """Handles the process of visiting a selected location."""
-    from display import show_locations_in_region
-    from menu_utils import get_menu_choice
-    from location import Region #tmp for debug below
-    region = character.region  # Get character's current region
-
-    # 🚨 Debugging: Check if region is valid
-    if not isinstance(region, Region):
-        print(f"🚨 ERROR: character.region is {type(region)}, expected Region object!")
-        return  # Exit the function early
-
-    locations = getattr(region, "locations", [])
-    if not locations:
-        print(f"No locations available in {region.name}.") #line 59
-
+def action_is_available(character, action_name):
+    """Check if the action is available based on character behavior and location actions."""
     
-    # If the character is already in a location, remove them from the old one
-    if character.location:
-        character.location.characters_there.remove(character)
-
-    character.location = location  # Update the character's current location
+    if character.location is None:
+        return False  # No actions if no location
     
-    #character.region = location.region  this line caused a region/string error
+    location = character.location
+    options = location.get_available_actions(character)
 
-    # Add the character to the new location's character list
-    location.characters_there.append(character)
-
-    print(f"{character.name} enters {location.name}.")
-    
-    # Check if it's a vendor
-    if isinstance(location, Shop):
-        #show a shop specific menu, see also location_menu
-        from display import show_shop_inventory
-        show_shop_inventory(location)
+    return action_name in options
 
 
-    elif isinstance(location, CorporateStore):
-        print(f"{location.name} is a corporate store. Items are issued based on status.")
-    else:
-        print(f"{location.name} is not a vendor.")
+def visit_location(character, region):
+    """Handles visiting a location dynamically."""
+    chosen_location = choose_location(region)  # This function should let the player pick
 
+    if chosen_location is None:
+        print("Error: No location was chosen!")  # Debugging print
         return
+    
+    character.location = chosen_location
+    chosen_location.characters_there.append(character)
+
+    print(f"{character.name} enters {chosen_location.name}.")
+    
+    # Get menu dynamically
+    from menu_utils import display_menu
+    while True:
+        options = chosen_location.get_menu_options(character)
+        choice = display_menu(options)
+        if choice == "3":  # "Leave" option
+            break
+        action = options.get(choice, (None, None))[1]
+        if action:
+            action()
+
+def choose_location(region):
+    """Displays available locations and allows player to select one."""
+    from menu_utils import display_menu
+    
+    locations = region.get_locations()
+    if not locations:
+        print("Error: No locations available in this region!")  # Debugging print
+        return None  # Ensure function doesn't crash
+
+    options = {idx: (loc.name, loc) for idx, loc in enumerate(locations, 1)}
+    
+    choice = display_menu(options)
+    
+    if choice not in options:
+        print("Error: Invalid choice!")  # Debugging print
+        return None
+
+    print(f"Chosen location: {options[int(choice)][1].name}")  # Debugging print
+    return options[int(choice)][1]  # Returns the selected location object
+
+
+def buy(character, location):
+    """Handle buying an item from a shop."""
+    if not isinstance(location, Shop):
+        print("You can't buy things here!")
+        return
+    
+    # Display shop inventory and get user's choice
+    chosen_item = location.select_item_for_purchase()
+    
+    if not chosen_item:
+        print("You didn't select anything to buy.")
+        return
+    
+    amount = character.calculate_item_cost(chosen_item)
+
+    # Determine if legal or black market purchase
+    if chosen_item.legality is True:
+        payment_method = input("Pay with (1) Cash or (2) Bank Card? ")
+        use_bank_card = payment_method == "2"
+        
+        if use_bank_card:
+            if character.wallet.spend_bankCardCash(amount):
+                print(f"Purchase of {chosen_item.name} using bank card successful.")
+            else:
+                print(f"Not enough bank card balance for purchase.")
+        else:
+            if character.wallet.spend_cash(amount):
+                print(f"Purchase of {chosen_item.name} using cash successful.")
+            else:
+                print(f"Not enough cash for purchase.")
+    elif chosen_item.legality is False:
+        character.make_black_market_purchase(amount)
+    else:
+        raise ValueError(f"Unknown legality type: {chosen_item.legality}")
+
+
+def make_black_market_purchase(self, amount):
+    """Make a purchase on the black market (only cash can be used)."""
+    if self.wallet.spend_cash(amount):
+        print(f"Black market purchase of {amount} successful.")
+    else:
+        print(f"Not enough cash for black market purchase.")
+
+    
+
+def pick_up_cashwad(self, cashwad):
+    """Pick up a CashWad and add the value to the wallet."""
+    print(f"Picked up a CashWad worth {cashwad.get_value()} cash.")
+    cashwad.add_to_wallet(self.wallet)
     
 from create_game_state import game_state
 def exit_location(character):
@@ -106,6 +172,7 @@ def enjoy(character, location, object, otherCharacter):
 
 def steal(character, location, targetResource):
     print(f"Ok, I got it, let's go")
+    #this action might trigger an event
     possibleEvents = {
     "success": "leave_quietly",
     "detected": "escape_fast",
@@ -125,21 +192,12 @@ def influence(actor, target):
 this can be generalised to other things, a
  spread(X) function for beliefs, loyalties, etc Contrast with charm() """
 
-from menu_utils import get_menu_choice #line 113
-def action_is_available(character, action_name, action_tuple):
-    """Check if the action is available based on character behavior and location actions."""
-    
-    if character.location is None:
-        return False  # No actions if no location
-    
-    location = character.location
-    options = location.get_available_actions(character)
-
-    return action_name in options
 
 
 
-def talk_to_character(location):
+
+
+def talk_to_character(location, character):
     """Let the player talk to a character in the location."""
     if not location.characters:
         print("No one is here to talk to.")
@@ -237,3 +295,7 @@ def get_available_actions(character):
 # Merge actions dynamically, here for future compatibility
 #available_actions.update(combat_actions)
 #available_actions.update(stealth_actions)
+
+def observe (location):
+    #include noticing increased xyz activity
+    pass
