@@ -46,49 +46,98 @@ def action_is_available(character, action_name):
     return action_name in options
 
 
-def visit_location(character, region):
-    """Handles visiting a location dynamically."""
-    chosen_location = choose_location(region)  # This function should let the player pick
+def visit_location(character, location=None):
+    """Presents a menu to visit a location within the region."""
+    from menu_utils import display_menu, get_available_options
+    from location_utils import get_visitable_locations
+    from characterActions import choose_location
+    region = character.region
+    locations = {}
 
-    if chosen_location is None:
-        print("Error: No location was chosen!")  # Debugging print
+    # If no location is passed, ask the player to choose one
+    if location is None:
+        locations = get_visitable_locations(region)
+        if not locations:
+            print(f"There are no locations to visit in {region.name}.")
+            return
+    
+    # If no location was passed, prompt the player to choose one
+    if not locations:  #line 65
+        print(f"There are no locations to visit in {region.name}.")
+        location = choose_location(region)
+
+        if not location:  # If no valid location is selected, return early
+            print("Error: No location was chosen! Returning to main menu.")
+            return
+    #is the following code now deprecated? choose_location(region) has already been called..
+    print("\nWhere would you like to go?")
+    choice = display_menu(locations)
+    if not choice:
+        print("Returning to the main menu.")
+        return
+    location = locations[choice][1]()  # Retrieve the selected location object
+    
+    #the following code is essential
+    character.location = location
+    location.characters_there.append(character)
+    print(f"{character.name} enters {location.name} in {character.region}.")
+
+    if not location:  # If no valid location is selected, exit
+        print("Error: No location was chosen!")
+
         return
     
-    character.location = chosen_location
-    chosen_location.characters_there.append(character)
 
-    print(f"{character.name} enters {chosen_location.name}.")
+
+    # This code relates to dynamic menu options, does it belong in visit_location?
+    options = get_available_options(location, character)  # Ensures options is a dict
+    if not options:  # Prevent passing an empty list or dict
+        print(f"There is nothing to do at {location.name}.")
+        return
     
-    # Get menu dynamically
-    from menu_utils import display_menu
-    while True:
-        options = chosen_location.get_menu_options(character)
-        choice = display_menu(options)
-        if choice == "3":  # "Leave" option
-            break
-        action = options.get(choice, (None, None))[1]
-        if action:
-            action()
+    print(f"Debug: from visit_location() - options type before display_menu() call: {type(options)}, value: {options}")
+    while True:#This keeps the player in the location menu until they choose to leave
+        choice = display_menu(options)  # Ensure display_menu gets a dict
+    
+        if choice and choice in options:
+            _, action_func = options[choice]
+            action_func()
 
+        # Optionally, allow the player to return to location selection
+            leave_option = next((key for key, (desc, _) in options.items() if "leave" in desc.lower()), None)
+            if choice == leave_option:
+                print(f"{character.name} leaves {location.name}.")
+                return
+        
 def choose_location(region):
     """Displays available locations and allows player to select one."""
     from menu_utils import display_menu
-    
-    locations = region.get_locations()
-    if not locations:
+    if not region.locations:
         print("Error: No locations available in this region!")  # Debugging print
-        return None  # Ensure function doesn't crash
+        return None  #not  crash
+    print(f"Debug: Available locations: {[loc.name for loc in region.locations]}")  # Debugging line
 
-    options = {idx: (loc.name, loc) for idx, loc in enumerate(locations, 1)}
-    
-    choice = display_menu(options)
-    
-    if choice not in options:
-        print("Error: Invalid choice!")  # Debugging print
-        return None
 
-    print(f"Chosen location: {options[int(choice)][1].name}")  # Debugging print
-    return options[int(choice)][1]  # Returns the selected location object
+    options = {idx: (loc.name, loc) for idx, loc in enumerate(region.locations, 1)}
+    
+    while True:#while True: loop for retrying input
+        choice = display_menu(options)
+        print(f"Debug: Raw input received from display_menu(): {repr(choice)}")  # Debugging line
+
+        if not choice:  # Handle empty input
+            print("Error: No input detected! Please enter a number.From choose_location")
+            continue
+        try:
+            choice = int(choice)
+        except ValueError:
+            print("Error: Invalid choice (not a number)!")
+            continue
+        if choice not in options:
+            print("Error: Invalid choice!")
+            continue
+
+        print(f"Chosen location: {options[choice][1].name}")  
+        return options[choice][1]
 
 
 def buy(character, location):

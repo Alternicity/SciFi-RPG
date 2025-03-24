@@ -116,9 +116,15 @@ class Shop(Vendor):
     legality: bool = True
     employees_there: List['Employee'] = field(default_factory=list)
     characters_there: List['Character'] = field(default_factory=list)
+     # menu_options should be defined with actions
+    menu_options: List[str] = field(default_factory=lambda: [
+        "View Shop Inventory",
+        "Buy",
+        "Steal"
+    ])
     fun: int = 0
     categories: List[str] = field(default_factory=lambda: ["workplace"])
-    inventory: list = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)  # Ensures it's always an Inventory object
     cash : int = 300
     bankCardCash: int = 0
     is_concrete: bool = True

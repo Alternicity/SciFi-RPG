@@ -374,7 +374,7 @@ class Character:
 
 @dataclass
 class Location:
-    region: Optional['Region'] = None  
+    region: Optional['Region'] = None
     location: Optional['Location'] = None  # Specific location within the location
     name: str = "Unnamed Location"
     menu_options: List[str] = field(default_factory=list)
@@ -401,10 +401,11 @@ class Location:
     # Instance-specific categories field
     categories: List[str] = field(default_factory=list) #ALERT
 
-    def get_menu_options(self):
-        """Returns a list of available menu options for this location."""
-        return self.menu_options
-
+    def get_menu_options(self, character):
+        """Returns only the static menu options defined in a location."""
+        return self.menu_options  # No need to involve dynamic_options here
+        #I still dont understand why we need a function for this, rather than lists of options in each subclass, like shop
+        #returns a list - self.menu_options
     @property
     def stealable_items(self) -> list[ObjectInWorld]:
         """Return a list of stealable items present at this location."""

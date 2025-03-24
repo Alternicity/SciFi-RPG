@@ -44,9 +44,7 @@ def gameplay(selected_character, region):
         
         static_options = {
     1: ("Visit Location", lambda: visit_location(character, region)),
-    #2: ("Move to another Region", lambda: show_region_choices(game_state.all_regions)),
     2: ("Move to another Region", lambda: move_region(character, show_region_choices(game_state.all_regions), game_state.all_regions)),
-
     3: ("Display Characters Summary", lambda: display_character_Summary()),
     4: ("Display Factions", lambda: display_factions()),
     5: ("Dev", lambda: dev_mode()),
@@ -54,10 +52,16 @@ def gameplay(selected_character, region):
 }
         dynamic_options = build_gameplay_menu(selected_character.location, selected_character)
 
+        if not isinstance(dynamic_options, dict):
+            print("Error: dynamic_options is not a dictionary!", type(dynamic_options))
+            dynamic_options = {}  # Prevent crashes
+
         # Merge static and dynamic menu options
         options = {**static_options, **dynamic_options}  # Ensure dictionary format
         choice = get_menu_choice(options)
 
+        print(f"Debug: static_options before merging: {static_options}")
+        print(f"Debug: dynamic_options before merging: {dynamic_options}")
         if not choice:
             continue  # Skip invalid input
         
