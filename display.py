@@ -46,8 +46,6 @@ def show_character_details(character):
     """Display character details in tabulated format."""
     print("\nCharacter Details:")
     print(str(character.whereabouts))  # No extra parentheses
-    
-
 
     # First table with the first header row
     character_table_1 = [
@@ -57,7 +55,7 @@ def show_character_details(character):
             getattr(character, "xxx", character.health),
             f"{character.faction.name} {character.faction.type.capitalize()}",
             f"${getattr(character, 'bankCardCash', 0):.2f}",
-            str(character.whereabouts),  # Uses the @property
+            str(character.whereabouts),
             getattr(character, "hunger", "N/A"),
             ", ".join(getattr(character, "inventory", [])),
         ],
@@ -162,10 +160,8 @@ def display_filtered_character_summary(characters, gang_limit=3, corp_limit=3, c
 
 def display_character_whereabouts(character):
     """Displays the character's current location and region using direct attributes."""
-    location_name = character.location.name if character.location else "Unknown Location"
-    region_name = character.region.name if hasattr(character.region, "name") else str(character.region)
-
-    print(f"Current Location: {location_name} in {region_name if region_name else 'Unknown Region'}")
+    location_name = character.location.name if isinstance(character.location, Location) else str(character.location)
+    print(f"Current Location: {location_name}")  # Removed extra region
 
 
 def display_civilians():

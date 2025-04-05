@@ -1,0 +1,6 @@
+create_all_characters() is about to run
+generate_faction_characters() executed, created 0 state characters
+
+seen twice in output
+
+🔴🔵🔵DEBUG: game_state is None in create_

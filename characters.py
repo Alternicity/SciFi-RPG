@@ -380,7 +380,7 @@ class Civilian(Character):
         self.targetIsInMelee = False
         self.location
         self.region
-
+        self.is_employee = False
         self.cash = 50
         self.bankCardCash = 50
         # Inventory Initialization

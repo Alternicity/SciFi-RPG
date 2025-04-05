@@ -10,7 +10,9 @@ import random
 from loader import load_names_from_csv
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 from utils import get_faction_by_name, get_location_by_name, get_region_by_name
-from location import MunicipalBuilding, Location, PoliceStation, HQ
+from location import MunicipalBuilding, PoliceStation, HQ, Shop, CorporateStore, MechanicalRepairWorkshop, ElectricalRepairWorkshop, Factory, Nightclub, Mine, Powerplant, Airport, Port, Cafe, Warehouse, ResearchLab, Museum, Library, SportsCentre, Holotheatre, Park, VacantLot, ApartmentBlock, House
+
+
 
 
 
@@ -58,7 +60,8 @@ def generate_name(race, gender):
     return full_name
 
 def generate_faction_characters(faction, all_regions, all_locations):
-    from create_game_state import game_state
+    from create_game_state import get_game_state
+    game_state = get_game_state()
     MuniBuildings = None  # Initialize at the start of the function
     valid_races = get_valid_races()
     state_staff = []
@@ -93,7 +96,8 @@ def generate_faction_characters(faction, all_regions, all_locations):
     )
 
         # Assign boss to the correct gang in GameState
-        from create_game_state import game_state  # Assuming game_state is accessible
+        from create_game_state import get_game_state
+        game_state = get_game_state()
         for gang in game_state.gangs:
             if gang.name == faction.name:  # Match gang by name
                 gang.add_boss(boss)
@@ -180,8 +184,6 @@ def generate_faction_characters(faction, all_regions, all_locations):
         municipal_buildings = [loc for loc in faction.region.locations if isinstance(loc, MunicipalBuilding)] if faction.region else []
         #print(f"Municipal buildings found: {municipal_buildings}")
 
-        
-
         if municipal_buildings:
             MuniBuildings = municipal_buildings[0]
         elif faction.region.locations:
@@ -243,11 +245,14 @@ def generate_faction_characters(faction, all_regions, all_locations):
     return characters
 
 # Define location categories (if 'type' is not present in the Location class)
-WORKPLACES = {"Shop", "CorporateStore", "MechanicalRepairWorkshop", "ElectricalRepairWorkshop",
-              "Factory", "Nightclub", "Mine", "Powerplant", "Airport", "Port", "Cafe",
-              "Warehouse", "ResearchLab", "Museum", "Library", "SportsCentre", "Holotheatre"}
-PUBLIC_PLACES = {"Museum", "Library", "SportsCentre", "Holotheatre", "Park", "VacantLot"}
-RESIDENTIAL = {"ApartmentBlock", "House"}
+WORKPLACES = (Shop, CorporateStore, MechanicalRepairWorkshop, ElectricalRepairWorkshop,
+              Factory, Nightclub, Mine, Powerplant, Airport, Port, Cafe,
+              Warehouse, ResearchLab, Museum, Library, SportsCentre, Holotheatre)
+#These now refer to actual classes not strings.
+
+#At some point you may need to import other locations listed below if they are handled as classes in logic.
+PUBLIC_PLACES = (Museum, Library, SportsCentre, Holotheatre, Park, VacantLot)
+RESIDENTIAL = (ApartmentBlock, House)
 
 
 # Outside the function (global or passed in)
@@ -256,132 +261,78 @@ from faction import GeneralPopulation
 general_population_faction = GeneralPopulation(name="General Population", violence_disposition="low")
 
 
-def create_civilian_population(all_locations, all_regions, num_civilians=10, num_employees=10):
-    """Generate civilians and employees, assigning them to logical locations."""
-    print(" create_civilian_population() is about to run")
-
+def create_civilian_population(all_locations, all_regions, num_civilians=10):
+    """Generate civilians and assign them logical locations."""
     civilians = []
-    employees = []
-
-    # Bias towards Terran by adding it more frequently
-    valid_races = get_valid_races()
-    race_pool = ["Terran"] * 5 + [race for race in valid_races if race != "Terran"]
-    race = random.choice(race_pool)
-
-    # Categorize locations
-    homes = [loc for loc in all_locations if loc.__class__.__name__ in RESIDENTIAL]
-    workplaces = [loc for loc in all_locations if loc.__class__.__name__ in WORKPLACES]
-    public_spaces = [loc for loc in all_locations if loc.__class__.__name__ in PUBLIC_PLACES]
     
-    # Separate shops from other workplaces
-    shops = [loc for loc in workplaces if "Shop" in loc.name]  # Adjust as needed based on your naming conventions
-    other_workplaces = [loc for loc in workplaces if "Shop" not in loc.name]  # Other workplaces (non-shop)
-
-    # Debug: Show number of available shops and other workplaces
-    print(f"DEBUG: Found {len(shops)} shops and {len(other_workplaces)} other workplaces")
-
-
-    # Generate civilians
+    # Bias towards Terran by adding it more frequently
+    valid_races = Character.VALID_RACES
+    race_pool = ["Terran"] * 5 + [race for race in valid_races if race != "Terran"]
+    
+    # Categorize locations
+    homes = [loc for loc in all_locations if isinstance(loc, RESIDENTIAL)]
+    public_spaces = [loc for loc in all_locations if isinstance(loc, PUBLIC_PLACES)]
+    
     for _ in range(num_civilians):
-        VALID_RACES = Character.VALID_RACES
+        race = random.choice(race_pool)
         gender = random.choice(["male", "female"])
         name = generate_name(race, gender)
-
+        
         home = random.choice(homes) if homes else None
         public_place = random.choice(public_spaces) if public_spaces else None
         location = home if home else public_place
-
         
-        if location:
-            region = next((r for r in all_regions if r.name == location.region), None)
-            #print(f"DEBUG: Found region {region.name if region else None} for location {location.name}")
-        else:
-            region = None
-            print("DEBUG: No location provided, region set to None")
-    
+        region = next((r for r in all_regions if r.name == location.region), None) if location else None
+        
         civilian = Civilian(
-            name=generate_name(race=race, gender=gender),
+            name=name,
             region=region,
             location=location,
             race=race,
             faction=general_population_faction,
-            initial_motivations=["earn_money", "have_fun", "find_partner"]
+            initial_motivations=["earn_money", "have_fun", "find_partner"],
         )
+        # 80% chance this civilian is an employee
+        civilian.is_employee = random.random() < 0.8
+        
         civilians.append(civilian)
-        from create_game_state import game_state
+        from create_game_state import get_game_state
+        game_state = get_game_state()
         game_state.civilians.append(civilian)
-        game_state.all_characters.append(civilians)
-        #print(f"DEBUG: Created {civilian.name} with faction {civilian.faction.name if civilian.faction else 'None'}")
+        game_state.all_characters.append(civilian)
+    
+    return civilians
 
-    # Generate employees
-    from collections import defaultdict
+def assign_workplaces(civilians, all_locations):
+    """Assigns workplaces to civilians, prioritizing shops."""
+    workplaces = [loc for loc in all_locations if isinstance(loc, tuple(WORKPLACES))]
+    shop_instances = [loc for loc in workplaces if isinstance(loc, Shop)]
+    shop_index = 0  # Ensures round-robin assignment to shops
 
-    all_employees = defaultdict(list)  # Dictionary where values are lists
+    #Instead of using the actual workplace object as a dictionary key, you can use its unique id() (or its .name if those are unique).
+    workplace_counts = {id(place): 0 for place in workplaces}  # Use unique ID as key
 
-    for _ in range(num_employees):
-        race = random.choice(VALID_RACES)
-        gender = random.choice(["male", "female"])
-        name = generate_name(race, gender)
+    for civilian in civilians:
+        correct_workplace = None
 
-        default_faction = general_population_faction
+        if civilian.is_employee:
+            if shop_instances:
+                # Assign employees in order to shops first
+                correct_workplace = shop_instances[shop_index % len(shop_instances)]
+                shop_index += 1  # Move to next shop in order
+            elif workplaces:
+                correct_workplace = random.choice(workplaces)
 
-        employee = Employee(
-            name=name,
-            faction=default_faction,
-            region=region,
-            location=location,
-            race=race,
-            initial_motivations=["earn_money", "gain_mid", "have_fun"]
-        )
-
-        all_employees["by_name"].append(employee)  # Store in "by_name" list
-
-        if shops:
-            workplace_name = random.choice(shops).name  # Pick a name
-            workplace = next((s for s in region.locations if s.name == workplace_name), None)  # Find the correct shop
-        else:
-            workplace = None
-
-        if not workplace:
-            workplace = random.choice(other_workplaces) if other_workplaces else None
-
-        if workplace:
-            employee.faction = getattr(workplace, 'faction', general_population_faction)
-            employee.region = workplace.region
-            employee.location = workplace
-
-        #print(f"DEBUG: Attempting to assign {employee.name} to {workplace.name}, but it's not in all_locations.")
-
-        from location import Shop
-        if workplace:
-            correct_workplace = next((loc for loc in all_locations if loc.name == workplace.name and isinstance(loc, Shop)), None)
             if correct_workplace:
-                correct_workplace.employees_there.append(employee)
-                #print(f"DEBUG: {employee.name} correctly assigned to {correct_workplace} in {correct_workplace.region} (ID: {id(correct_workplace)})")
-                #verbose
+                correct_workplace.employees_there.append(civilian)
+                civilian.workplace = correct_workplace
+                workplace_counts[id(correct_workplace)] += 1
+                print(f"✅ DEBUG: Assigned {civilian.name} to {correct_workplace.name} in {correct_workplace.region}")
             else:
-                #print(f"WARNING: Could not find {workplace.name} in provided all_locations list!")
-                pass
-            print(f"⚪🔴DEBUG: Assigned {employee.name} to {workplace.name} (workplace ID: {id(workplace)})")
+                print(f"⚠️ WARNING: No available workplaces for {civilian.name}")
 
-            all_employees[workplace.name].append(employee)  # Store by workplace
+    return civilians
 
-        employees.append(employee)
-        game_state.all_characters.append(employee)
-
-    game_state.all_employees.update(all_employees)  # Merge into game state
-
-    print(f"DEBUG: Created {len(employees)} employees")
-    for shop, emp_list in all_employees.items():
-        if shop == "by_name":
-            continue  # Skip "by_name"
-        print(f"DEBUG: {shop} has {len(emp_list)} employees")
-
-    for loc in other_workplaces:
-        pass
-        #print(f"DEBUG: {loc.name} has {len(loc.employees_there)} employees at end of creation.")
-
-    return employees
 
 def create_all_characters(factions, all_locations, all_regions, faction):
     print("\n" * 3)  # Line breaks for clarity
@@ -389,13 +340,13 @@ def create_all_characters(factions, all_locations, all_regions, faction):
     #does this run twice? The print runs thrice
     all_characters = []
    
-
     new_characters = generate_faction_characters(faction, all_regions, all_locations)
 
     #print(f"✅ Finished {faction.name}, generated {len(new_characters)} characters")
     all_characters.extend(new_characters)
 
     civilians = create_civilian_population(all_locations, all_regions)
+    assign_workplaces(civilians, all_locations) #I added a call here
     all_characters.extend(civilians)
 
     return all_characters
@@ -422,7 +373,7 @@ def select_character_menu():
     from character_creation_funcs import player_character_options
     from display import show_character_details
     from create import all_regions, factions
-
+    from base_classes import Character
     character_options = player_character_options(all_regions, factions)
 
     if not character_options:
@@ -447,6 +398,10 @@ def select_character_menu():
                 selected_character.is_player = True
                 global current_character  # Declare global to use it in other modules
                 current_character = selected_character
+
+                #I had to add this line to make it be defined:
+                character = selected_character
+                print(f"🔴🔴DEBUG: {character.name} location.name = {character.location.name}")
                 break
             else:
                 print("Invalid choice. Please select a valid number.")
@@ -470,12 +425,10 @@ def player_character_options(all_regions, factions):
     return character_data
     
 def instantiate_character(char_data, all_regions, factions):
-    from create_game_state import game_state
-    
-    print(f"⚫ ⚪ 🟤DEBUG: game_state = {game_state}")  # 🔍 Check if game_state is None
+    from create_game_state import get_game_state
+    game_state = get_game_state()    
     if game_state is None:
         print("ERROR: game_state is not initialized!")
-
 
     """Instantiate the selected PLAYER character with relevant data."""
     from utils import get_faction_by_name, get_region_by_name, get_location_by_name  # Assuming they exist
@@ -483,15 +436,11 @@ def instantiate_character(char_data, all_regions, factions):
     # Dynamically retrieve factions, regions, and locations
     faction = get_faction_by_name("Hannival" if char_data["name"] == "Karen" else "White Gang", factions)
     region = get_region_by_name("Downtown" if char_data["name"] == "Karen" else "Easternhole", all_regions)
-
-    #print(f"DEBUG: Available locations: {[loc.name for loc in game_state.all_locations]}")
-
-
-    #print(f"DEBUG: Searching for 'Municipal Building' in region {region.name}")
     location = get_location_by_name("Municipal Building" if char_data["name"] == "Karen" else "Stash", all_regions)
     if location is None:
         print(f"Warning: Could not find specified location for {char_data['name']}. Defaulting to region center.")
-        location = region  # Fallback to the region itself
+        location = region.locations[0] if region.locations else None
+
     
     character = char_data["class"](
         name=char_data["name"],
@@ -502,12 +451,7 @@ def instantiate_character(char_data, all_regions, factions):
         fun=1,
         hunger=3
     )
-    if game_state.player_character:
-        print(f"DEBUG: {character.name} starts in {character.location.name}, {character.region.name}")
-
-    else:
-        print("DEBUG: Player character not set yet.")
-
+    
     game_state.player_character = character  # Set the instantiated character as the player character
     return character
 

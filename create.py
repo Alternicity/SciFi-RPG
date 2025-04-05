@@ -85,7 +85,8 @@ def create_regions():
     return all_regions   
 
 def create_gang_factions(num_gangs, all_regions):
-    from create_game_state import game_state
+    from create_game_state import get_game_state
+    game_state = get_game_state()
     gangs = []
     VALID_RACES = Character.VALID_RACES  # Access the tuple from the class
 
@@ -153,7 +154,9 @@ def create_gang_factions(num_gangs, all_regions):
     return gangs
 
 def create_corp_factions(num_corps, all_regions):
-    from create_game_state import game_state
+    from create_game_state import get_game_state
+    game_state = get_game_state()
+
     corporations = []
     
     CORP_NAMES_FILE = get_corp_names_filepath()
@@ -193,10 +196,13 @@ def create_corp_factions(num_corps, all_regions):
     return corporations
 
 def create_factions(all_regions, all_locations):
-    from create_game_state import game_state
+    from create_game_state import get_game_state
+    game_state = get_game_state()
+    print(f"create_factions() called from {__name__}")
+
     #print("all_regions content:", [region.name for region in all_regions])
     factions = []  # Store created factions
-    #print("DEBUG: all_regions content:", [region.name for region in all_regions])
+
     # Find Downtown region
     downtown_region = next((region for region in all_regions if region.name == "Downtown"), None)
     if not downtown_region:
@@ -214,7 +220,7 @@ def create_factions(all_regions, all_locations):
     factions.append(state)
 
     # Debugging: Check what create_gang_factions() returns before extending factions
-    gang_factions = create_gang_factions(10, all_regions)
+    gang_factions = create_gang_factions(10, all_regions) #gang_faction greyed, not accesssed
     for faction in factions:
         if faction.type == "Gang":
             print(f"- {faction.name} (Region: {faction.region} ) ({faction.type}) ({faction.reources})")
@@ -222,8 +228,9 @@ def create_factions(all_regions, all_locations):
     factions.extend(create_corp_factions(10, all_regions))
 
     
-    all_characters = create_all_characters(factions, all_locations, all_regions, faction) #had also faction
-    
+    all_characters = create_all_characters(factions, all_locations, all_regions, faction)
+    print(f"create_all_characters() called from {__name__}")
+
     return factions, all_characters
 
 def create_HQ(region, faction_type="gang"):
@@ -232,7 +239,7 @@ def create_HQ(region, faction_type="gang"):
     new_hq = HQ(name=hq_name, region=region)
     
     #print(f"Created new {faction_type} HQ: {hq_name} in {region.name}")
-    return new_hq
+    return new_hq #this var appears unused?
 
 def assign_hq(faction, region):
     if faction.HQ is not None:  # ✅ Prevent multiple HQ assignments
@@ -283,12 +290,6 @@ def assign_hq(faction, region):
                 region.trigger_event("turf_war")
                 region.turf_war_triggered = True
                 
-
-
-""" from character_creation_funcs import create_all_characters
-def create_characters(factions, all_locations, all_regions): 
-    #what is this function here for? 
-    return create_all_characters(factions, all_locations, all_regions) """
 
 
 

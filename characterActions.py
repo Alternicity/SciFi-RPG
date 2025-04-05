@@ -58,13 +58,13 @@ def visit_location(character, location=None):
     if location is None:
         locations = get_visitable_locations(region)
         if not locations:
-            print(f"There are no locations to visit in {region.name}.")
+            #print(f"There are no locations to visit in {region.name}.")
             return
     
     # If no location was passed, prompt the player to choose one
     if not locations:  #line 65
-        print(f"There are no locations to visit in {region.name}.")
-        location = choose_location(region)
+        #print(f"There are no locations to visit in {region.name}.")
+        location = choose_location(character, region)
 
         if not location:  # If no valid location is selected, return early
             print("Error: No location was chosen! Returning to main menu.")
@@ -109,13 +109,13 @@ def visit_location(character, location=None):
                 print(f"{character.name} leaves {location.name}.")
                 return
         
-def choose_location(region):
+def choose_location(character, region):
     """Displays available locations and allows player to select one."""
     from menu_utils import display_menu
     if not region.locations:
         print("Error: No locations available in this region!")  # Debugging print
         return None  #not  crash
-    print(f"Debug: Available locations: {[loc.name for loc in region.locations]}")  # Debugging line
+    #print(f"Debug: Available locations: {[loc.name for loc in region.locations]}")  # Debugging line
 
 
     options = {idx: (loc.name, loc) for idx, loc in enumerate(region.locations, 1)}
@@ -125,19 +125,21 @@ def choose_location(region):
         print(f"Debug: Raw input received from display_menu(): {repr(choice)}")  # Debugging line
 
         if not choice:  # Handle empty input
-            print("Error: No input detected! Please enter a number.From choose_location")
+            print("Error: No input detected!")
             continue
         try:
             choice = int(choice)
         except ValueError:
             print("Error: Invalid choice (not a number)!")
             continue
+
         if choice not in options:
             print("Error: Invalid choice!")
             continue
-
-        print(f"Chosen location: {options[choice][1].name}")  
-        return options[choice][1]
+        chosen_loc = options[choice][1]  # This is the actual Location object
+        character.location = chosen_loc
+        print(f"Chosen location: {chosen_loc.name}")
+        return chosen_loc
 
 
 def buy(character, location):
@@ -190,7 +192,9 @@ def pick_up_cashwad(self, cashwad):
     print(f"Picked up a CashWad worth {cashwad.get_value()} cash.")
     cashwad.add_to_wallet(self.wallet)
     
-from create_game_state import game_state
+    from create_game_state import get_game_state
+    game_state = get_game_state()
+    
 def exit_location(character):
     from game_logic import gameplay
     """Handles exiting a location and return to gameplay."""

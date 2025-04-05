@@ -19,7 +19,7 @@ def create_locations(region_name: str, wealth: str) -> List[Location]:
             try:
                 location_obj = location_class(
                     region=region_name,  
-                    name=f"{location_class.__name__} in {region_name}"
+                    name=location_class.__name__
                 )
                 locations.append(location_obj)
 
@@ -33,6 +33,8 @@ def create_locations(region_name: str, wealth: str) -> List[Location]:
     region_obj = get_region_by_name(region_name, game_state.all_regions)  
     if region_obj:
         region_obj.locations.extend(shop_instances)  # Ensure they match!
+    for shop in shop_instances:
+        print(f"✅ DEBUG: Created {shop.name} in {shop.region} (ID: {id(shop)})")
 
     # Always create a MunicipalBuilding
     try:

@@ -107,6 +107,7 @@ class Vendor(Location):
     # No need to define __init__; @dataclass handles it
     def __post_init__(self):
         super().__post_init__()
+        print(f"DEBUG: CorporateStore name = {self.name}")
 
 from inventory import Inventory
 from characters import Employee
@@ -127,6 +128,7 @@ class Shop(Vendor):
     inventory: Inventory = field(default_factory=Inventory)  # Ensures it's always an Inventory object
     cash : int = 300
     bankCardCash: int = 0
+    robbable: bool = True
     is_concrete: bool = True
     secret_entrance: bool = False
     is_powered: bool = False
@@ -165,8 +167,12 @@ class Shop(Vendor):
     def show_inventory(self):
         self.inventory.display_inventory()
 
-
+    def __hash__(self):
+        return hash((self.name, self.region))  # Hash based on immutable attributes
+    
     def __post_init__(self):
+        super().__post_init__()
+        print(f"🛒 DEBUG: Created Shop {self.name} in {self.region}")
         self.menu_options.extend(["Observe", "View Shop Inventory", "Display Employees", "Buy", "Steal", "Rob", "Exit"])
 
 @dataclass
@@ -193,6 +199,9 @@ class CorporateStore(Vendor):
     bankCardCash: int = 0
     inventory: dict = field(default_factory=dict)
     legality: str = "Legal"
+
+    def __repr__(self):
+        return f"{self.name}"  # Just return the name, avoid redundant class name
 
     def to_dict(self):
         return asdict(self)

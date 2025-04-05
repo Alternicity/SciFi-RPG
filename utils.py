@@ -27,7 +27,7 @@ def get_faction_by_name(faction_name, factions):
 
     return matches[0]  # Ensure a single object is returned
 
-def get_location_by_name(name, all_regions):
+def get_location_by_name(name, all_regions): #line 30
     """Find and return a location by name from game_state.all_locations."""
     from create_game_state import get_game_state
     print(f"DEBUG: Searching for '{name}' in game_state.all_locations...")
@@ -60,6 +60,7 @@ def create_corporation(data):
 
 def create_weapon(data): #Might still be useful, but need updating
     """Create a Weapon object."""
+    from weapons import Weapon
     if "name" not in data:
         raise ValueError("Missing required attribute 'name' for Weapon.")
     return Weapon(
@@ -73,6 +74,7 @@ def create_weapon(data): #Might still be useful, but need updating
 
 def create_item(data): #Might still be useful, but need updating
     """Create an ObjectInWorld object."""
+    from InWorldObjects import ObjectInWorld
     if "name" not in data:
         raise ValueError("Missing required attribute 'name' for Item.")
     return ObjectInWorld(
@@ -89,21 +91,12 @@ def get_project_root():
     # Set the project root directory explicitly
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-def get_location_by_name(name, all_regions):
-    """Find and return a location by name from game_state.all_locations."""
-    print(f"DEBUG: Searching for '{name}' in game_state.all_locations...")
-    from create_game_state import game_state
-    for location in game_state.all_locations:
-        if location.name.lower() == name.lower():  # Case-insensitive comparison
-            return location
-
-    print(f"WARNING: Could not find specified location '{name}'.")
-    return None
-
 
 # ✅ Move the test outside the function to prevent recursion
 if __name__ == "__main__":
-    from create_game_state import game_state  # Import only for testing
+    from create_game_state import get_game_state
+    game_state = get_game_state()
+
     if not hasattr(game_state, "all_locations") or game_state.all_locations is None:
         print("ERROR: game_state.all_locations is None or uninitialized!")
     else:

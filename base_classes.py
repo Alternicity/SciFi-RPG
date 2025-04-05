@@ -147,14 +147,15 @@ class Character:
         self.name = name
         self.is_player = False
         from utils import get_region_by_name #line 150
-        from create_game_state import game_state  
+        from create_game_state import get_game_state
+        game_state = get_game_state()
         all_regions = game_state.all_regions
 
         from location import Region
-        region_obj = get_region_by_name(region, all_regions) if isinstance(region, str) else region
-        if not isinstance(region_obj, Region):
+        self.region = get_region_by_name(region, all_regions) if isinstance(region, str) else region
+        if not isinstance(self.region, Region):
             raise ValueError(f"Invalid region assigned to character: {region}")
-        self.region = region_obj
+        
 
 
         self.initial_motivations = initial_motivations or []
@@ -273,24 +274,18 @@ class Character:
         """Triggers motivation recalculation."""
         self.motivation_manager.update_motivations()
         #possibly deprecated for motivations.py or at least the names are confusingly the same
-
+    
     @property
     def whereabouts(self):
         """Returns the character's full whereabouts dynamically."""
         region_name = self.region.name if hasattr(self.region, "name") else self.region
         location_name = self.location.name if hasattr(self.location, "name") else self.location
         sublocation = getattr(self, "_sublocation", None)
+        print(f"DEBUG: Accessing whereabouts -> region: {region_name}, location: {location_name}")
         return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
 
 
-    @whereabouts.setter
-    def whereabouts(self, new_location):
-        """Allows modifying whereabouts, handling region, location, and optional sublocation."""
-        parts = new_location.split(", ")
-        self._region = parts[0] if len(parts) > 0 else "Unknown"
-        self._location = parts[1] if len(parts) > 1 else "Unknown"
-        self._sublocation = parts[2] if len(parts) > 2 else None  # Future-proofing
-                                        
+
     @property
     def percepts(self):
         """Dynamically generates percepts with actionable hints."""
@@ -365,17 +360,17 @@ class Character:
 
     def get_current_region(self):
         """Get the current region."""
-        return self.current_location.region
+        return self.location.region
 
     def get_current_location(self):
         """Get the current location within the region."""
-        return self.current_location.location
+        return self.location.location
 
 
 @dataclass
 class Location:
     region: Optional['Region'] = None
-    location: Optional['Location'] = None  # Specific location within the location
+    child_location: Optional['Location'] = None  # Specific location within the location
     name: str = "Unnamed Location"
     menu_options: List[str] = field(default_factory=list)
     security: Security = field(default_factory=lambda: Security(
@@ -387,7 +382,7 @@ class Location:
     ))
     from InWorldObjects import ObjectInWorld #check for circular import 
     objects_present: list[ObjectInWorld] = field(default_factory=list)
-
+    robbable: bool = False
     condition: str = "Unknown Condition"
     fun: int = 0
     is_concrete: bool = False
@@ -406,15 +401,6 @@ class Location:
         return self.menu_options  # No need to involve dynamic_options here
         #I still dont understand why we need a function for this, rather than lists of options in each subclass, like shop
         #returns a list - self.menu_options
-    @property
-    def stealable_items(self) -> list[ObjectInWorld]:
-        """Return a list of stealable items present at this location."""
-        return [obj for obj in self.objects_present if obj.is_stealable]
-
-    @property
-    def has_stealable_items(self) -> bool:
-        """Check if there are any stealable items in the location."""
-        return bool(self.stealable_items)
     
     def __post_init__(self):
         # Any additional setup logic if needed
@@ -437,5 +423,5 @@ class Location:
 
 
     def __repr__(self):
-        return f"Location({self.name})"
+        return self.name  # Just return the name directly
 

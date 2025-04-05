@@ -60,7 +60,7 @@ def gameplay(selected_character, region):
         options = {**static_options, **dynamic_options}  # Ensure dictionary format
         choice = get_menu_choice(options)
 
-        print(f"Debug: static_options before merging: {static_options}")
+        #print(f"Debug: static_options before merging: {static_options}")
         print(f"Debug: dynamic_options before merging: {dynamic_options}")
         if not choice:
             continue  # Skip invalid input
@@ -78,7 +78,6 @@ def move_region(character, selected_region, all_regions):
         return  
 
     # Ensure selected_region is a valid instance from game_state
-    
     game_state = get_game_state()
 
     from utils import get_region_by_name
@@ -87,18 +86,9 @@ def move_region(character, selected_region, all_regions):
         print(f"ERROR: Region {selected_region.name} not found in game_state! Keeping current region.")
         return
 
-    # Debugging info before moving
-    #print(f"DEBUG: BEFORE moving - character.region ID = {id(character.region)}, value = {character.region}")
-    #print(f"DEBUG: Moving to region ID = {id(region_obj)}, value = {region_obj}")
-
     # Move character to new region
     character.region = region_obj  
     character.location = None  # Clear location since they moved
-
-    # Debugging info after moving
-    #print(f"DEBUG: AFTER moving - character.region ID = {id(character.region)}, value = {character.region}")
-    #print(f"{character.name} has moved to {region_obj.name}.")
-
 
 def show_region_choices(all_regions):
         #for the future

@@ -86,16 +86,14 @@ def get_available_options(location, character):
     # Character-based actions
     print(f"Debug: {character.name} preferred actions: {character.get_preferred_actions()}")
 
-    if hasattr(location, "has_stealable_items") and location.has_stealable_items():
-        option_list.append(("Steal an Item", lambda: steal(character, location, location.get_random_stealable_item())))
-        print(f"Debug: {character.name} can steal at {location.name}, adding 'Steal' option.")
-
-    if hasattr(location, "robbable") and location.robbable():
+    from base_classes import Location
+    if not isinstance(location, Location):
+        print(f"Error: Expected a Location, but got {type(location).__name__}")
+        return {}
+    if location.robbable:
         option_list.append(("Rob the Place", lambda: rob(character, location)))
         print(f"Debug: {character.name} can rob {location.name}, adding 'Rob' option.")
 
-    if hasattr(location, "menu_options"):
-        print(f"Debug: {location.name} has menu_options: {location.menu_options}")
 
     # Include predefined `menu_options` in `Shop`
     if hasattr(location, "menu_options") and isinstance(location.menu_options, list):
@@ -106,26 +104,44 @@ def get_available_options(location, character):
     # Convert the list to a dictionary
     available_options = {idx + 1: (desc, func) for idx, (desc, func) in enumerate(option_list)}
 
-    print(f"Debug: Final available options for {location.name}: {available_options}")
+    #print(f"Debug: Final available options for {location.name}: {available_options}")
 
     return available_options  # Now always a dictionary
 
+def get_event_menu_options(character, location):
+    active_events = [] #placeholder to avoid this being marked as undefined below
+    menu_items = []
+    for event in active_events:
+        if event.affects(location):
+            menu_items.extend(event.get_menu_options(character))
+    return menu_items
+
 def build_gameplay_menu(location, character):
     """Combines location-based options with general gameplay menu."""
+    print(f"Debug: Character {character.name} is at {type(character.location).__name__}")
     location = character.location  # Get location from character
     region = character.region
     
+    #print(f"Debug: From build_gameplay_menu calling get_available_options() with {type(location).__name__} instead of Location")
     options = get_available_options(location, character)
 
     if not isinstance(options, dict):
         print(f"Error: get_available_options did not return a dictionary! Type: {type(options)}")
-    options = {}  # Ensure it doesn't crash
+        options = {}  
 
-    # Ensure options is in the correct format
-    options = {idx: (desc, func) for idx, (desc, func) in options.items()} 
+    # Ensure options is in the correct format; deduplication logic
+    seen = set()
+    deduped_options = {}
+    idx = 1
+    for _, (desc, func) in options.items():
+        if desc not in seen:
+            deduped_options[idx] = (desc, func)
+            seen.add(desc)
+            idx += 1
+
+    options = deduped_options 
     
-
-    print(f"Debug: In build_gameplay_menu: Options type before returning: {type(options)}, value: {options}")
+    #print(f"Debug: In build_gameplay_menu: Options type before returning: {type(options)}, value: {options}")
 
     return options 
 
@@ -184,7 +200,8 @@ def select_character_menu():
     """Displays the character selection menu, instantiates the chosen character, and returns it."""
 
     # Get character options
-    from create_game_state import game_state
+    from create_game_state import get_game_state
+    game_state = get_game_state()
 
     all_regions = game_state.all_regions
     factions = game_state.factions
