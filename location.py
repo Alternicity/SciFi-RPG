@@ -119,9 +119,12 @@ class Shop(Vendor):
     characters_there: List['Character'] = field(default_factory=list)
      # menu_options should be defined with actions
     menu_options: List[str] = field(default_factory=lambda: [
+        "Observe",
         "View Shop Inventory",
+        "Display Employees",
         "Buy",
-        "Steal"
+        "Steal",
+        "Exit"
     ])
     fun: int = 0
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -173,7 +176,6 @@ class Shop(Vendor):
     def __post_init__(self):
         super().__post_init__()
         print(f"🛒 DEBUG: Created Shop {self.name} in {self.region}")
-        self.menu_options.extend(["Observe", "View Shop Inventory", "Display Employees", "Buy", "Steal", "Rob", "Exit"])
 
 @dataclass
 class CorporateStore(Vendor):

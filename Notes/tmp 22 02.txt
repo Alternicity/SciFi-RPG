@@ -1,9 +1,9 @@
-File "c:\Users\Stuart\Python Scripts\scifiRPG\character_creation_funcs.py", line 165, in generate_faction_characters
+File "c:\Users\Stuart\Python Scripts\scifiRPG\character_creation_funcs.py", line 165, in create_faction_characters
     location=location_objects.get,  #NOTE
              ^^^^^^^^^^^^^^^^^^^^
 AttributeError: 'list' object has no attribute 'get'
 
-File "c:\Users\Stuart\Python Scripts\scifiRPG\character_creation_funcs.py", line 165, in generate_faction_characters
+File "c:\Users\Stuart\Python Scripts\scifiRPG\character_creation_funcs.py", line 165, in create_faction_characters
     location=location_objects.get,  #NOTE
              ^^^^^^^^^^^^^^^^^^^^
 AttributeError: 'list' object has no attribute 'get'

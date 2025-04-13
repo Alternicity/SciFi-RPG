@@ -26,10 +26,6 @@ class ItemType(Enum):
 # as they are not used to create objects directly. 
 # This ensures clarity and avoids redundancy while adhering to OOP principles.
 
-# abstract or mid-abstract classes should not directly require 
-#specific attributes like damage or damage points. Instead, these attributes
-#  should be defined in the concrete classes, which will instantiate objects.
-
 valid_items = [
     "CashWad", "Wallet", "HardDrive", "Medkit", 
     "FoodCrate", "Laptop", "MechanicalToolkit", "ElectricalToolkit", 
@@ -39,25 +35,31 @@ valid_items = [
 # Base class for all objects in the world
 class ObjectInWorld:
     is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, item_type):
+    def __init__(self, name, toughness, value, item_type, size, blackmarket_value, damage_points=None, legality=True):
         self.name = name
         self.toughness = toughness
         self.value = value
         self.item_type = item_type  # 'weapon', 'armor', etc.
-
-
+        self.size = size
+        self.blackmarket_value = blackmarket_value
+        self.damage_points = damage_points
+        self.legality = legality
+        self.item_type = item_type
 #only concrete, fully implementable classes have the damage_points
 #and legality attributes.
 #Any object that represents something that could potentially break or
 #degrade over time should have damage_points.
 
 class Item:
-    def __init__(self, name, price):
+    def __init__(self, name, price, size, quantity=1, category=None, description=""):
         self.name = name
         self.price = price
-    
+        self.quantity = quantity  # Support for stackable items
+        self.category = category
+        self.description = description
+        self.size = size
     def __repr__(self):
-        return f"{self.name} (${self.price})"
+        return f"{self.name} (${self.price}) x{self.quantity}"
 
 
 class CashWad(ObjectInWorld):
@@ -111,13 +113,13 @@ class Wallet:
             return True
         return False
 
-    def spend_bankCardCash(self, amount):
-        """Spend bank card cash, return True if successful, False if not enough."""
-        if self.bankCardCash >= amount:
-            self.bankCardCash -= amount
+    """ def spend_bankCardCash(self, price):
+        Spend bank card cash, return True if successful, False if not enough.
+        if self.bankCardCash >= price:
+            self.bankCardCash -= price
             return True
-        return False
-
+        return False """
+        #marked for deletion.characters spend money, not wallets
 
 class HardDrive(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -237,8 +239,10 @@ class SmartPhone(ObjectInWorld):
             damage_points=15,
             legality=True,
             value=200,
+            item_type="gadget",
             blackmarket_value=200,
             size=Size.POCKET_SIZED,
+
         )
 
 class CommoditiesBox(ObjectInWorld):

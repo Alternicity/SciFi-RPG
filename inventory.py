@@ -14,7 +14,7 @@ class Inventory:
 
     def __init__(self, max_capacity=None):
         """Initialize an inventory with optional maximum capacity."""
-        self.items = []
+        self.items = {}  # key: item.name, value: item object
         self.max_capacity = max_capacity
 
     def _validate_item(self, item):
@@ -26,70 +26,62 @@ class Inventory:
 
     def find_item(self, item_name):
         """Find an item in the inventory by name."""
-        for item in self.items:
+        for item in self.items.values():
             if item.name == item_name:
                 return item
         return None
 
     def add_item(self, item, quantity=1):
-        """Add an item to the inventory or update quantity if stackable.."""
         self._validate_item(item)
-
         if self.max_capacity and len(self.items) >= self.max_capacity:
-            logging.warning(f"Inventory is full. Cannot add {item.name}.")
+            logging.warning(f"Inventory full. Can't add {item.name}")
             return False
-        # Check if item already exists (stackable)
-        existing_item = self.find_item(item.name)
-        if existing_item:
+
+        if item.name in self.items:
+            existing_item = self.items[item.name]
             if hasattr(existing_item, "quantity"):
                 existing_item.quantity += quantity
-                logging.info(f"{item.name} quantity updated to {existing_item.quantity}.")
+                logging.info(f"Updated {item.name} to quantity {existing_item.quantity}")
             else:
-                logging.warning(f"{item.name} does not support quantities.")
-            return True
-        
-        # Add new item
-        if hasattr(item, "quantity"):
+                logging.warning(f"{item.name} does not support quantity.")
+        else:
             item.quantity = quantity
-        self.items.append(item)
-        logging.info(f"{item.name} added to the inventory.")
+            self.items[item.name] = item
+            logging.info(f"Added {item.name} to inventory.")
         return True
 
     def remove_item(self, item_name, quantity=1):
-        """Remove an item or decrease its quantity if stackable."""
-        item = self.find_item(item_name)
+        item = self.items.get(item_name)
         if not item:
-            logging.warning(f"{item_name} not found in inventory.")
+            logging.warning(f"{item_name} not found.")
             return False
-
         if hasattr(item, "quantity"):
             if item.quantity > quantity:
                 item.quantity -= quantity
-                logging.info(f"{quantity} of {item_name} removed. Remaining: {item.quantity}.")
                 return True
             elif item.quantity == quantity:
-                self.items.remove(item)
-                logging.info(f"{item_name} completely removed from inventory.")
+                del self.items[item_name]
                 return True
             else:
-                logging.warning(f"Not enough {item_name} to remove. Current quantity: {item.quantity}.")
+                logging.warning(f"Not enough {item_name}.")
                 return False
         else:
-            self.items.remove(item)
-            logging.info(f"{item_name} removed from inventory.")
+            del self.items[item_name]
             return True
         
     def display_inventory(self):
-        """Display the inventory contents."""
         if not self.items:
-            logging.info("Inventory is empty.")
+            print("Inventory is empty.")
             return
-        logging.info("Inventory contents:")
-        for item in self.items:
-            if hasattr(item, "quantity"):
-                print(f"- {item.name} (x{item.quantity})")
-            else:
-                print(f"- {item.name}")
+        print("Inventory contents:")
+        for item in self.items.values():
+            q = getattr(item, "quantity", "N/A")
+            print(f"- {item.name} (x{q})")
+            
+    # make Inventory itself iterable:
+    def __iter__(self):
+        return iter(self.items.values())
+
 
 # Example Usage
 if __name__ == "__main__":

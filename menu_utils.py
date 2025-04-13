@@ -1,6 +1,6 @@
 #menu_utils.py
 from tabulate import tabulate
-from display import display_world
+from display import display_world, show_shop_inventory
 from typing import Dict, Any
 from create_game_state import get_game_state
 
@@ -55,6 +55,39 @@ class GameplayMenu:
         """Convert menu_options to the format required"""
         return self.menu_options
 
+class DisplayFactionsMenu:
+    def __init__(self):
+        self.menu_options: List[str] = [
+            "Display Corporations",
+            "Display Gangs",
+            "Display The State",
+            "Display Civilian Population",
+            "Display Filtered Character Summary",
+            "Return to previous menu",
+        ]
+
+def get_display_factions_option_functions(self, game_state):
+    from display import display_corporations, display_gangs, display_state, display_civilians, display_filtered_character_summary
+    return {
+        1: ("Display Corporations", lambda: display_corporations(game_state.corporations)),
+        2: ("Display Gangs", lambda: display_gangs(game_state)),
+        3: ("Display The State", lambda: display_state(game_state.state)),
+        4: ("Display Civilian Population", lambda: display_civilians(game_state.civilians)),
+        5: ("Display Filtered Character Summary", lambda: display_filtered_character_summary(game_state.characters)),
+        6: ("Return to previous menu", lambda: None)
+    }
+
+def run(self, game_state):# This name must change, also game:state is passed in and this breaks the design pattern
+    while True:
+        print("\n=== Display Factions ===")
+        options = self.get_option_functions(game_state)
+        choice = get_menu_choice(options)
+        if choice == "Return to previous menu":
+            break
+
+def show_shop_inventory_and_run_menu(character, location):
+    show_shop_inventory(character, location)
+    ShopPurchaseMenu(character, location).run()
 
 def get_available_options(location, character):
     """Determine available menu options based on character and location."""
@@ -70,18 +103,16 @@ def get_available_options(location, character):
 
     # Location-based actions
     if hasattr(location, "employees_there"):
-        print(f"Debug: {location.name} has employees_there: {location.employees_there}")
+        print(f"Debug: {location.name} has employees_there: {[emp.name for emp in location.employees_there]}")
     if hasattr(location, "characters_there"):
-        print(f"Debug: {location.name} has characters_there: {location.characters_there}")
+        print(f"Debug: {location.name} has characters_there: {[char.name for char in location.characters_there]}")
 
     if hasattr(location, "employees_there") and location.employees_there:
         option_list.append(("Display Employees", lambda: display_employees(location)))
-        print(f"Debug: Employees present at {location.name}, adding 'Display Employees' option.")
 
     if hasattr(location, "characters_there") and location.characters_there:
         option_list.append(("Talk to a Character", lambda: talk_to_character(location, character)))
         print(f"Debug: Characters present at {location.name}, adding 'Talk to a Character' option.")
-
 
     # Character-based actions
     print(f"Debug: {character.name} preferred actions: {character.get_preferred_actions()}")
@@ -90,23 +121,41 @@ def get_available_options(location, character):
     if not isinstance(location, Location):
         print(f"Error: Expected a Location, but got {type(location).__name__}")
         return {}
-    if location.robbable:
+    if location.robbable and "Rob" in character.get_preferred_actions():
         option_list.append(("Rob the Place", lambda: rob(character, location)))
         print(f"Debug: {character.name} can rob {location.name}, adding 'Rob' option.")
 
 
     # Include predefined `menu_options` in `Shop`
+    from display import show_shop_inventory #possibly delete this
     if hasattr(location, "menu_options") and isinstance(location.menu_options, list):
         for action_name in location.menu_options:
-            option_list.append((action_name, lambda: print(f"Selected action: {action_name}")))
-            print(f"Debug: Added '{action_name}' from menu_options.")
-
+            if action_name == "View Shop Inventory":
+                option_list.append((
+                    action_name,
+                    lambda loc=location: show_shop_inventory_and_run_menu(character, loc)
+                ))
     # Convert the list to a dictionary
     available_options = {idx + 1: (desc, func) for idx, (desc, func) in enumerate(option_list)}
 
     #print(f"Debug: Final available options for {location.name}: {available_options}")
 
     return available_options  # Now always a dictionary
+
+def get_menu_choice_from_list(options, prompt="Choose one:"):
+    #for now this is only used for buying in shops
+    for i, opt in enumerate(options, 1):
+        print(f"{i}. {opt}")
+    choice = input(prompt + " ")
+    try:
+        index = int(choice) - 1
+        if 0 <= index < len(options):
+            return options[index]
+    except ValueError:
+        pass
+    print("Invalid choice.")
+    return None
+
 
 def get_event_menu_options(character, location):
     active_events = [] #placeholder to avoid this being marked as undefined below
@@ -117,8 +166,7 @@ def get_event_menu_options(character, location):
     return menu_items
 
 def build_gameplay_menu(location, character):
-    """Combines location-based options with general gameplay menu."""
-    print(f"Debug: Character {character.name} is at {type(character.location).__name__}")
+    """Currently Combines location-based options with general gameplay menu."""
     location = character.location  # Get location from character
     region = character.region
     
@@ -140,9 +188,6 @@ def build_gameplay_menu(location, character):
             idx += 1
 
     options = deduped_options 
-    
-    #print(f"Debug: In build_gameplay_menu: Options type before returning: {type(options)}, value: {options}")
-
     return options 
 
 
@@ -152,11 +197,11 @@ def get_menu_choice(options, filter_func=None):
         options = {k: v for k, v in options.items() if filter_func(v)}
 
     if not options:
-        print("No available options.")
+        print("No available options, from get_menu_choice")
         return None
 
     print("\nAvailable actions:")
-    for key, (desc, action) in options.items(): #line 109
+    for key, (desc, action) in options.items():
         print(f"{key}: {desc}")
 
     while True:
@@ -180,6 +225,41 @@ def get_menu_choice(options, filter_func=None):
         else:
             print("Please enter a number.")
 
+class ShopPurchaseMenu:
+    def __init__(self, character, shop):
+        assert hasattr(shop, "inventory"), "ShopPurchaseMenu expects a Shop object with an 'inventory' attribute"
+        assert hasattr(character, "wallet"), "ShopPurchaseMenu expects a Character object with a 'wallet' attribute"
+        print(f"[DEBUG] ShopPurchaseMenu created with shop: {shop.name}, character: {character.name}")
+        self.character = character
+        self.shop = shop
+
+    def get_purchase_options(self):
+        """Returns a dict of {index: (desc, func)} for items the player can buy."""
+        print("🟡🟡DEBUG: Generating purchase options for shop:", self.shop.name)
+        purchase_options = {}
+        for i, item in enumerate(self.shop.inventory, start=1):
+            label = f"Buy {item.name} - ${item.price} ({item.quantity} in stock)"
+            purchase_options[i] = (label, lambda it=item: buy(self.character, self.shop, it))  # Bind item
+            
+        cancel_index = len(purchase_options) + 1
+        purchase_options[cancel_index] = ("Cancel", lambda: None)
+        return purchase_options
+
+    def run(self):
+        print("\n=== Buy Items from Shop ===")
+        options = self.get_purchase_options()
+        choice = get_menu_choice(options)
+        
+        if choice:
+            desc, action = options.get(choice, (None, None))
+            if action:
+                action()  # Perform the selected action
+
+
+def shop_options(shop, character):
+    return ShopPurchaseMenu(shop, character).get_options()
+    #allow future dynamic menus to incorporate ShopPurchaseMenu logic without 
+    #entering its run loop, useful for faction-directed purchases or auto-buy logic.
 
 def get_user_choice(max_choice: int) -> int:
     """Gets user input for main menu selection safely."""
@@ -273,7 +353,7 @@ def location_menu(character, location):#deprecated?
 def display_menu(options: dict):
     """Displays a dynamic menu and returns the chosen action."""
     if not options:
-        print("No available options.")
+        print("No available options, from display_menu")
         return None
     
     while True:

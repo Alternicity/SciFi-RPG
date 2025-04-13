@@ -1,6 +1,8 @@
 create_all_characters() is about to run
-generate_faction_characters() executed, created 0 state characters
+create_faction_characters() executed, created 0 state characters
 
 seen twice in output
 
 🔴🔵🔵DEBUG: game_state is None in create_
+
+State still uses class Employee, but Civilians are just Civilians now, with an atrribute.create_TheState()

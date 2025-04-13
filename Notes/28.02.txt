@@ -1,1 +1,1 @@
-update generate_faction_characters to update game_state
+update create_faction_characters to update game_state

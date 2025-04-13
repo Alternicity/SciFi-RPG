@@ -1,8 +1,6 @@
 from characters import Boss, CEO, Captain, Manager, Employee, GangMember
 from goals import Goal
 from tasks import Task
-import yaml
-import json
 
 from base_classes import Character, Location, Faction
 
@@ -13,6 +11,33 @@ class Corporation(Faction):
         
         self.violence_disposition = violence_disposition
         self.HQ = None
+
+        # New attributes
+        self.CEO = None
+        self.managers = []
+        self.accountants = []
+        self.security = []
+        self.employees = []
+        self.members = []  # All employees, accountants, security, managers (not CEO)
+
+    def add_CEO(self, ceo):
+        self.CEO = ceo
+
+    def add_manager(self, manager):
+        self.managers.append(manager)
+        self.members.append(manager)
+
+    def add_accountant(self, accountant):
+        self.accountants.append(accountant)
+        self.members.append(accountant)
+
+    def add_security(self, guard):
+        self.security.append(guard)
+        self.members.append(guard)
+
+    def add_employee(self, employee):
+        self.employees.append(employee)
+        self.members.append(employee)
 
 class Gang(Faction):
     def __init__(self, name, violence_disposition, race):
@@ -35,11 +60,11 @@ class Gang(Faction):
 
 class State(Faction):
     def __init__(self, name, resources, laws, region=None):
-        super().__init__(name, type="State")
+        super().__init__(name, type="state")
         self.name = name
         self.resources = resources  # Dictionary of resources (e.g., money, food, etc.)
         self.laws = laws  # List of laws or policies (e.g., "no theft", "tax rates")
-        self.type = "The State"
+        self.type = "state"
         self.HQ = None 
         self.state_staff = []
         self.members = []

@@ -10,7 +10,7 @@ from display import (
     display_filtered_character_summary, display_character_Summary, display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
 )
 from motivation import MotivationManager
-from character_creation_funcs import generate_faction_characters
+from character_creation_funcs import create_faction_characters
 
 from create_game_state import get_game_state
 
@@ -61,7 +61,7 @@ def gameplay(selected_character, region):
         choice = get_menu_choice(options)
 
         #print(f"Debug: static_options before merging: {static_options}")
-        print(f"Debug: dynamic_options before merging: {dynamic_options}")
+        #print(f"Debug: dynamic_options before merging: {dynamic_options}")
         if not choice:
             continue  # Skip invalid input
         

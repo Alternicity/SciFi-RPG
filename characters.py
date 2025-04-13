@@ -111,32 +111,48 @@ class Captain(Character):
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, region, location, faction="None", bankCardCash=500, position="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
+    def __init__(self, name, region, location, faction="None", position="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
         
-        # Default loyalty setup for Manager
-        default_loyalties = {
-            faction: 50 if faction else 0,  # Avoid issues if faction is None
-            "Law": 40,
-        }
-        # Merge defaults with provided loyalties safely
-        default_loyalties.update(loyalties or {})
+        wallet = kwargs.pop("wallet", Wallet(bankCardCash=500))
+
+        # Safe default for faction
+        self.faction = faction
+
+        # Setup default loyalties
+        default_loyalties = {}
+        if faction:
+            default_loyalties[faction] = 50
+        default_loyalties["Law"] = 40
+        if loyalties:
+            default_loyalties.update(loyalties)
         
+         # Initialize base Character
         super().__init__(
             name, faction=faction,  region=region,
-            location=location, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            location=location, wallet=wallet, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, **kwargs
         )
         self.position = position
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
-
-    @property
-    def whereabouts(self):
         
-        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
+        # HQ logic (acts like __post_init__)
+        self.HQ = None
+        if self.faction and hasattr(self.faction, "HQ") and self.faction.HQ:
+            self.HQ = self.faction.HQ
+            self.location = self.HQ
+            print(f"🏢 Manager {self.name} starts at HQ: {self.HQ.name}")
+        else:
+            print(f"⚠️ Manager {self.name} has no HQ assigned!")
+        
+    def whereabouts(self):
+        region_name = self.region.name if hasattr(self.region, "name") else str(self.region)
+        location_name = getattr(self.location, "name", str(self.location))
+        sublocation = getattr(self, "sublocation", None)
 
+        return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        return f"{self.name} (Faxction: {self.faction.name if self.faction else 'None'}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
+
     
 class Subordinate(Character):
     is_concrete = False
@@ -268,6 +284,9 @@ class GangMember(Subordinate):
     def __init__(self, name, region, location, faction, strength=12, agility=11, intelligence=7, 
                  luck=9, psy=2, toughness=14, morale=12, race="Terran", 
                  position="Gangster", loyalties=None, **kwargs):
+
+        wallet = kwargs.pop("wallet", Wallet(bankCardCash=500))
+
     # Default loyalty setup for GangMember
         default_loyalties = {
             faction: 15 if faction else 0,  # Ensure faction exists
@@ -278,7 +297,7 @@ class GangMember(Subordinate):
         
         super().__init__(
             name, faction=faction,  region=region,
-            location=location, strength=strength, agility=agility, 
+            location=location, wallet=wallet, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
             morale=morale, race=race, position=position, 
             loyalties=default_loyalties, **kwargs

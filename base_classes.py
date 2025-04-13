@@ -23,7 +23,6 @@ class Faction:
         #Expand Attributes: Use nested dictionaries if factions need even more data about members.
         self.goals = []  # List of active goals
         self.current_goal = None
-        self.Testconst = "Test"
         self.resources = {"money": 1000, "weapons": 10}  # Example default resources
         
         self.region = None
@@ -119,11 +118,11 @@ class Character:
         name,
         region,
         location,
+        wallet=None,
         initial_motivations=None,
         preferred_actions=None,
         behaviors=None,
-        partner=None, #greyed from here
-        bankCardCash=0,
+        partner=None,
         fun=1,
         hunger=1,
         faction=None,
@@ -238,9 +237,15 @@ class Character:
             raise ValueError("Faction must be specified for a character.")
         self.weapon = None
         self.health = 100 + toughness
-        self.bankCardCash = bankCardCash
-        #self.wallet = Wallet(cash=50, bankCardCash=100)  # Initialize with some default values
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory 
+        
+        from InWorldObjects import Wallet
+        self.wallet = wallet if wallet else Wallet()
+        print(f"[DEBUG, from class Character] {self.name} wallet: {self.wallet.bankCardCash}")
+
+        from inventory import Inventory
+        self.inventory = kwargs.get("inventory", Inventory())
+
+
         # Initialize loyalties as a dictionary
         self.loyalties = kwargs.get("loyalties", {})  # Default to empty dictionary if not provided
 
@@ -264,7 +269,18 @@ class Character:
     def remove_preferred_action(self, action: Callable):
         """Remove a preferred action."""
         self.preferred_actions.pop(action, None)
-    
+
+    def display_location(self):
+        region_name = self.region.name if hasattr(self.region, "name") else str(self.region)
+        location_name = self.location.name if hasattr(self.location, "name") else str(self.location)
+        # Future stub: sublocation
+        sublocation = getattr(self, "sublocation", None)
+        if not self.region or not self.location:
+            return "Location data missing"
+        if sublocation:
+            return f"{region_name}, {location_name}, {sublocation}"
+        return f"{region_name}, {location_name}"
+
     @property
     def motivations(self):
         """Returns motivations in a formatted way for display."""

@@ -3,7 +3,7 @@
 from location import Shop, CorporateStore
 from base_classes import Location
 from functools import partial
-
+import copy
 # In characterActions.py
 #from combat_actions import combat_actions placeholders
 #from stealth_actions import stealth_actions
@@ -141,41 +141,82 @@ def choose_location(character, region):
         print(f"Chosen location: {chosen_loc.name}")
         return chosen_loc
 
+def select_item_to_buy(shop):
+    from menu_utils import get_menu_choice_from_list
 
-def buy(character, location):
-    """Handle buying an item from a shop."""
-    if not isinstance(location, Shop):
+    item_names = list(shop.inventory.items.keys())
+
+    if not item_names:
+        print("Nothing is available for sale.")
+        return None
+
+    choice = get_menu_choice_from_list(item_names, "Select an item to buy:")
+    return choice
+
+def buy(character, shop, item):
+    location = character.location
+    if not isinstance(shop, Shop):
         print("You can't buy things here!")
         return
-    
-    # Display shop inventory and get user's choice
-    chosen_item = location.select_item_for_purchase()
-    
-    if not chosen_item:
-        print("You didn't select anything to buy.")
-        return
-    
-    amount = character.calculate_item_cost(chosen_item)
 
-    # Determine if legal or black market purchase
-    if chosen_item.legality is True:
-        payment_method = input("Pay with (1) Cash or (2) Bank Card? ")
-        use_bank_card = payment_method == "2"
-        
-        if use_bank_card:
-            if character.wallet.spend_bankCardCash(amount):
-                print(f"Purchase of {chosen_item.name} using bank card successful.")
-            else:
-                print(f"Not enough bank card balance for purchase.")
-        else:
-            if character.wallet.spend_cash(amount):
-                print(f"Purchase of {chosen_item.name} using cash successful.")
-            else:
-                print(f"Not enough cash for purchase.")
-    elif chosen_item.legality is False:
-        character.make_black_market_purchase(amount)
+    # Show inventory and funds
+    from display import show_shop_inventory
+    show_shop_inventory(character, shop)
+    print(f"{character.name}'s bank card balance: ${character.wallet.bankCardCash}")
+
+    # Let player pick an item
+    item_name = select_item_to_buy(location)
+    if not item_name:
+        print("Purchase cancelled.")
+        return
+
+    # Look up item object and price
+    item_obj = shop.inventory.items.get(item_name)
+    if not item_obj or item_obj.quantity <= 0:
+        print("Item is out of stock.")
+        return
+
+    price = item_obj.price
+
+    if character.wallet.bankCardCash < price:
+        print(f"{character.name} can't afford the {item_name}.")
+        character.adjust_self_esteem(-5)
+        character.fun -= 1
+        return
+
+    # Deduct funds. 
+    character.wallet.bankCardCash -= price
+
+    # Deepcopy item before giving it to character
+    item_copy = copy.deepcopy(item_obj)
+    item_copy.quantity = 1  # Important: avoid giving full stock amount
+    character.inventory.add_item(item_copy)
+
+    # ✅ Decrease stock in the shop
+    item_obj.quantity -= 1
+    if item_obj.quantity <= 0:
+        del shop.inventory.items[item_name]
     else:
-        raise ValueError(f"Unknown legality type: {chosen_item.legality}")
+        shop.inventory.items[item_name] = item_obj
+
+    # Give money to shop
+    location.bankCardCash += price
+
+    # Mood & self-esteem logic
+    if character.wallet.bankCardCash == 0:
+        character.adjust_self_esteem(-5)
+        print(f"{character.name} feels anxious after spending their last money.")
+    else:
+        character.adjust_self_esteem(5)
+        print(f"{character.name} feels good after buying a {item_name}.")
+
+    # Optional: boost fun
+    if hasattr(character, "fun"):
+        character.fun += 1
+
+    print(f"{character.name} bought a {item_name} for ${price}.")
+    print(f"{character.name}'s wallet after purchase: ${character.wallet.bankCardCash}")
+
 
 
 def make_black_market_purchase(self, amount):
@@ -244,10 +285,6 @@ def influence(actor, target):
 
 this can be generalised to other things, a
  spread(X) function for beliefs, loyalties, etc Contrast with charm() """
-
-
-
-
 
 
 def talk_to_character(location, character):

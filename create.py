@@ -88,7 +88,7 @@ def create_gang_factions(num_gangs, all_regions):
     from create_game_state import get_game_state
     game_state = get_game_state()
     gangs = []
-    VALID_RACES = Character.VALID_RACES  # Access the tuple from the class
+    VALID_RACES = Character.VALID_RACES  # Access from the from the class
 
     #GANG Race name lookup table
     RACE_NAME_LOOKUP = {
@@ -223,13 +223,16 @@ def create_factions(all_regions, all_locations):
     gang_factions = create_gang_factions(10, all_regions) #gang_faction greyed, not accesssed
     for faction in factions:
         if faction.type == "Gang":
-            print(f"- {faction.name} (Region: {faction.region} ) ({faction.type}) ({faction.reources})")
+            print(f"- {faction.name} (Region: {faction.region}) ({faction.type}) ({faction.resources})")
+
 
     factions.extend(create_corp_factions(10, all_regions))
 
     
-    all_characters = create_all_characters(factions, all_locations, all_regions, faction)
+    all_characters = create_all_characters(factions, all_locations, all_regions)
     print(f"create_all_characters() called from {__name__}")
+    print(f"✅ Total characters created: {len(all_characters)}")
+
 
     return factions, all_characters
 

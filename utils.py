@@ -27,22 +27,17 @@ def get_faction_by_name(faction_name, factions):
 
     return matches[0]  # Ensure a single object is returned
 
-def get_location_by_name(name, all_regions): #line 30
-    """Find and return a location by name from game_state.all_locations."""
-    from create_game_state import get_game_state
-    print(f"DEBUG: Searching for '{name}' in game_state.all_locations...")
-    
-    game_state = get_game_state()  # ✅ Ensure we get the latest instance
-    
-    if not game_state or not game_state.all_locations:
-        print("ERROR: game_state or game_state.all_locations is not initialized!")
+def get_location_by_name(name, all_regions):
+    """Find and return a location by name by searching through regions."""
+    if not all_regions:
+        print("ERROR: all_regions is not initialized or empty!")
         return None
     
-    for location in game_state.all_locations:
-        #print(f"DEBUG: Checking location: {location.name}")
-
-        if location.name.lower() == name.lower():  # Case-insensitive comparison
-            return location
+    for region in all_regions:
+        for location in getattr(region, "locations", []):
+            if location.name.lower() == name.lower():  # Case-insensitive
+                return location
+    return None
 
 from faction import Gang
 def create_gang(data): #

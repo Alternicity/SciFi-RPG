@@ -35,7 +35,18 @@ def create_locations(region_name: str, wealth: str) -> List[Location]:
         region_obj.locations.extend(shop_instances)  # Ensure they match!
     for shop in shop_instances:
         print(f"✅ DEBUG: Created {shop.name} in {shop.region} (ID: {id(shop)})")
+        from InWorldObjects import SmartPhone, Size, Item
+        from weapons import Pistol #is importing within a for loop inefficient?
 
+        # Instantiate items
+        smartphone = SmartPhone()
+        pistol = Pistol()
+
+        # Add to inventory
+        shop.inventory.add_item(Item("SmartPhone", price=200, quantity=5, size=Size.POCKET_SIZED))
+        shop.inventory.add_item(Item("Pistol", price=500, quantity=2, size=Size.ONE_HANDED))
+
+        print(f"🛒 DEBUG: Added items to {shop.name} inventory.")
     # Always create a MunicipalBuilding
     try:
         municipal_building = MunicipalBuilding(

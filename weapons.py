@@ -11,27 +11,25 @@ valid_items = [
 #Weapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them
 class Weapon(ObjectInWorld):
-    is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, size, damage,):
-        super().__init__(name, toughness, value, item_type="weapon")
-        self.size = size
+    is_concrete = False
+    def __init__(self, name, toughness, value, size, blackmarket_value, damage_points, legality, damage):
+        super().__init__(name, toughness, value, "weapon", size, blackmarket_value, damage_points, legality)
+        self.damage = damage
 
 #RangedWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them
 class RangedWeapon(Weapon):
-    is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, size, damage, ammo, range):
-        super().__init__(name, toughness, value, size, damage)
-        self.range = range # Common attribute for all ranged weapons
-
-
+    def __init__(self, name, toughness, value, size, blackmarket_value, damage_points, legality, damage, range, ammo):
+        super().__init__(name, toughness, value, size, blackmarket_value, damage_points, legality, damage)
+        self.range = range
+        self.ammo = ammo
 
 #MeleeWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them
 class MeleeWeapon(Weapon):
-    is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, size, damage):
-        super().__init__(name, toughness, value, size, damage)
+    is_concrete = False
+    def __init__(self, name, toughness, value, size, damage, blackmarket_value=50, damage_points=10, legality=True):
+        super().__init__(name, toughness, value, size, blackmarket_value, damage_points, legality, damage)
 
 #only concrete, fully implementable classes have the damage_points
 #and legality attributes.
@@ -41,23 +39,20 @@ class MeleeWeapon(Weapon):
 #damage they deal in combat) and damage_points
 
 class Pistol(RangedWeapon):
-    is_concrete = True  # A concrete class will create objects and have more attributes
+    is_concrete = True
     def __init__(self, value=100, ammo=12, legality=True): 
         super().__init__(
             name="Pistol",
             toughness=Toughness.NORMAL,
             value=value,
-            damage=10,  # Damage for the Pistol
-            size=Size.ONE_HANDED,  # size is now passed here
-            ammo=12,
-            range=50
+            size=Size.ONE_HANDED,
+            blackmarket_value=150,
+            damage_points=10,
+            legality=legality,
+            damage=10,
+            range=50,
+            ammo=ammo,
         )
-        self.value = value
-        self.legality = legality
-        self.item_type = "weapon"
-        range=50,
-
-
 
 class SMG(RangedWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes

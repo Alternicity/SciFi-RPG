@@ -45,21 +45,23 @@ from tabulate import tabulate
 def show_character_details(character):
     """Display character details in tabulated format."""
     print("\nCharacter Details:")
-    print(str(character.whereabouts))  # No extra parentheses
+   # In display.py:
+    print(character.display_location())  # for console line output
+
 
     # First table with the first header row
     character_table_1 = [
-        ["Name", "Health", "Faction", "Money", "Whereabouts", "Hunger", "Inventory"],
-        [
-            character.name,
-            getattr(character, "xxx", character.health),
-            f"{character.faction.name} {character.faction.type.capitalize()}",
-            f"${getattr(character, 'bankCardCash', 0):.2f}",
-            str(character.whereabouts),
-            getattr(character, "hunger", "N/A"),
-            ", ".join(getattr(character, "inventory", [])),
-        ],
-    ]
+    ["Name", "Health", "Faction", "Money", "Location", "Hunger", "Inventory"],
+    [
+        character.name,
+        getattr(character, "xxx", character.health),
+        f"{character.faction.name} {character.faction.type.capitalize()}",
+        f"${character.wallet.bankCardCash:.2f}",
+        character.display_location(),  # 👈 cleaner and safer
+        getattr(character, "hunger", "N/A"),
+        ", ".join(getattr(character, "inventory", [])),
+    ],
+]
         # Retrieve motivations, defaulting to an empty list if not found
     motivations = getattr(character, "motivations", [])
 
@@ -170,56 +172,6 @@ def display_civilians():
 from location import Shop
 
 def display_employees(location):
-    #print(f"🟢🟢 DEBUG: display_employees called with location={location} (Type: {type(location)})")
-    #print(f"🟢🟢 DEBUG: First item in all_locations (if any): {all_locations[0] if all_locations else 'No locations'}")
-
-    # Check all known locations
-    #print("🔎 DEBUG: Listing all shop instances and their employees:")
-    """ for shop in all_locations:
-        if isinstance(shop, Shop):
-            print(f"🔹 Shop: {shop.name}, ID: {id(shop)}, Employees: {len(shop.employees_there)}") """
-
-    # Find out if this location exists in all_locations
-    #if isinstance(location, list):
-        #print(f"⚠️ ERROR: display_employees received a list instead of a location object! {location}")
-        #return  # Prevent further errors
-
-    """ matching_shops = [shop for shop in all_locations if shop.name == location.name]
-    if not matching_shops:
-        print(f"❌ DEBUG: No matching shop found for {location.name} in all_locations!")
-    else:
-        print(f"✅ DEBUG: Found {len(matching_shops)} matching shop(s) for {location.name} in all_locations.")
-        for match in matching_shops:
-            print(f"  - Match ID: {id(match)}, Employees: {len(match.employees_there)}") """
-
-    # Check employees of the passed-in location
-    """ if hasattr(location, "employees_there"):
-        print(f"✅ DEBUG: location.employees_there ID: {id(location.employees_there)}, Count: {len(location.employees_there)}")
-    else:
-        print(f"❌ DEBUG: location.employees_there does not exist!") """
-
-    """ if location.employees_there:
-        table_data = [
-            [employee.name, employee.__class__.__name__, ""]  # Name, Position, Notes
-            for employee in location.employees_there
-        ]
-        headers = ["Name", "Position", "Notes"]
-        print(f"\nEmployees at {location.name}:\n")
-        print(tabulate(table_data, headers=headers, tablefmt="grid"))
-    else:
-        print(f"No employees present at {location.name}.")
-  
-
-    print(f"DEBUG: Display Employees called for {location.name}")
-    print(f"DEBUG: location object ID: {id(location.name)}")
-
-    print(f"⚪🔴DEBUG: Character is at {location.name} (ID: {id(location)})")
-    
-    if hasattr(location, "employees_there"):  # Ensure location has an employees list
-        print(f"DEBUG: {location.name} has {len(location.employees_there)} employees, says display_employees")
-    else:
-        print(f"WARNING: {location.name} does not have an employees list!") """
-
 
     # Check if the location itself has employees
     if location.employees_there:
@@ -347,20 +299,28 @@ def show_locations_in_region(region):
     print(tabulate(table_data, headers=headers, tablefmt="grid"))  # Try also tablefmt="pretty"
 
 #Shop:
-def show_shop_inventory(shop):
+def show_shop_inventory(character, shop):
     """Display the inventory of a shop in a tabulated format."""
-    if not shop.inventory:
+    from menu_utils import ShopPurchaseMenu
+    if not shop.inventory.items:
         print(f"{shop.name} has no items available.")
         return
 
-    # Prepare the data for tabulation
     table_data = []
-    for item, details in shop.inventory.items():
-        table_data.append([item, details.get("price", "N/A"), details.get("quantity", 0)])
+    for item in shop.inventory:
+        #properly iterate over the Item objects, shop.inventory.items is a dictionary
+        if isinstance(item, str):
+            print(f"⚠️ Warning: Expected Item object, got string '{item}'. Skipping.")
+            continue
+        table_data.append([item.name, item.price, item.quantity])
 
-    # Display the table
     headers = ["Item", "Price", "Quantity"]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
+    print(f"{character.name} has ${character.wallet.bankCardCash} on their bank card.")
+    
+    ShopPurchaseMenu(character, shop).run()
+
+
 
 def display_selected_character_current_region(character, region):
     print(f"{character.name} is in {region.name}.")

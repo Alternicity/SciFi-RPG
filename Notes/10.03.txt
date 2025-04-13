@@ -159,7 +159,7 @@ def create_all_characters(factions, all_locations, all_regions, faction):
     all_characters = []
    
 
-    new_characters = generate_faction_characters(faction, all_regions, all_locations)
+    new_characters = create_faction_characters(faction, all_regions, all_locations)
 
     #print(f"✅ Finished {faction.name}, generated {len(new_characters)} characters")
     all_characters.extend(new_characters)
