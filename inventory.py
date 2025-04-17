@@ -17,7 +17,7 @@ class Inventory:
         self.items = {}  # key: item.name, value: item object
         self.max_capacity = max_capacity
 
-    def _validate_item(self, item):
+    def _validate_item(self, item): #old code
         """Validate an item before adding or updating it."""
         if item is None:
             raise ValueError("Item cannot be None.")
@@ -47,7 +47,7 @@ class Inventory:
         else:
             item.quantity = quantity
             self.items[item.name] = item
-            logging.info(f"Added {item.name} to inventory.")
+            print(f"Added {item.name} to inventory.")
         return True
 
     def remove_item(self, item_name, quantity=1):

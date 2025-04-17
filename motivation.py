@@ -13,6 +13,10 @@ VALID_MOTIVATIONS = {
         f"gain_{Status.MID.value}": 5,
         f"gain_{Status.HIGH.value}": 6,
         f"gain_{Status.ELITE.value}": 7,
+        "join_gang": 5,
+        "join_faction": 5,
+        "obtain_weapon": 5,
+        "obtain_ranged_weapon": 5,
         "protect_vip": 5,
         "steal_money": 4,
         "steal_object": 3,
@@ -40,22 +44,6 @@ class MotivationManager:
     def update_motivations(self):
         """Dynamically update motivations based on needs but without removing existing ones."""
         
-        # Define need-motivation links
-        need_mappings = {
-            "physiological": [("eat", 7), ("sleep", 8)],  
-            "safety": [("escape_danger", 8)],
-            "love_belonging": [("find_partner", 8)],
-            "esteem": [("gain_status", 7)],
-            "self_actualization": [("pursue_dreams", 7)],
-        }
-
-        # Update motivation urgency based on needs
-        for need, mappings in need_mappings.items():
-            for motivation, threshold in mappings:
-                if self.character.needs[need] >= threshold:
-                    urgency = self.character.needs[need]  # Use need level as motivation urgency
-                    self.motivations[motivation] = urgency
-
         # Ensure at least one default motivation exists
         if not self.motivations:
             self.motivations["earn_money"] = 5

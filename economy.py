@@ -66,10 +66,6 @@ class EconomyManager:
                 raise ValueError("The item must have a 'legality' attribute.")
             return item.value if item.legality == True else item.blackmarket_value
 
-
-    
-    
-
     def print_wallet(self):
         """Print the wallet's current balance (for debugging purposes)."""
         print(f"Cash in wallet: {self.wallet.cash}")

@@ -18,13 +18,11 @@ class Faction:
     def __init__(self, name, type):
         self.name = name
         self.type = type  # "gang" or "corporation"
-        
         self.members = []
         #Expand Attributes: Use nested dictionaries if factions need even more data about members.
         self.goals = []  # List of active goals
         self.current_goal = None
         self.resources = {"money": 1000, "weapons": 10}  # Example default resources
-        
         self.region = None
 
     def add_member(self, member, rank="low", wage=100, perceived_loyalty=1.0):
@@ -106,6 +104,15 @@ class Faction:
     def __repr__(self):
         return f"{self.name} {self.type.capitalize()}"
     
+class Factionless(Faction):
+    def __init__(self, name):
+        super().__init__(name="Factionless", type="neutral")
+        self.name = name
+        self.type = type
+        self.goals = []
+        self.current_goal = None
+        self.resources = {}
+        self.region = None
 
 class Character:
 
@@ -138,7 +145,8 @@ class Character:
         race="Terran",
         sex="male", # change
         status=None,
-        loyalties=None,  # Default is None; initializes as a dictionary later
+        loyalties=None,# Default is None; initializes as a dictionary later
+        custom_skills=None,
         **kwargs,
         
     ):
@@ -160,8 +168,12 @@ class Character:
         self.initial_motivations = initial_motivations or []
         self.location = location
         # Default preferred actions (subclasses can extend this)
-        self.base_preferred_actions = {}  
-        
+        self.base_preferred_actions = {}
+
+        self.skills = self.default_skills()
+        if custom_skills:
+            self.skills.update(custom_skills)
+
         # Individual character preferences (overrides base)
         self.preferred_actions = preferred_actions if preferred_actions else {}
 
@@ -188,11 +200,9 @@ class Character:
         # Perception-related attributes
         self.percepts = {}  # List of things character notices (e.g., dangers, opportunities)
                             #Key = Percept, Value = Weight of how attention grabbing it is
-                            #This should be  dynamically updating, like whereabouts
+                            #This should be  dynamically updating.
                             #So does it need an @property function?
-                            # if you want percepts to always be dynamically updated when accessed, you should 
-                            # use @property. If it's just a list that updates via a function, then it's not necessary.
-        
+                            
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
 
         # Social connections
@@ -233,14 +243,16 @@ class Character:
             )
 
         # Validate that faction is provided
-        if not self.faction:
-            raise ValueError("Faction must be specified for a character.")
+        """ if not self.faction:
+            raise ValueError("Faction must be specified for a character.") """
+        #remove 
+
         self.weapon = None
         self.health = 100 + toughness
         
         from InWorldObjects import Wallet
         self.wallet = wallet if wallet else Wallet()
-        print(f"[DEBUG, from class Character] {self.name} wallet: {self.wallet.bankCardCash}")
+        #print(f"[DEBUG, from class Character] {self.name} wallet: {self.wallet.bankCardCash}")
 
         from inventory import Inventory
         self.inventory = kwargs.get("inventory", Inventory())
@@ -261,6 +273,9 @@ class Character:
         combined = self.base_preferred_actions.copy()
         combined.update(self.preferred_actions)  # Individual prefs override base
         return combined
+    
+    def get_attribute(self, name):
+        return getattr(self, name, 0)  # default to 0 if not found
 
     def add_preferred_action(self, action: Callable, target: Any):
         """Add a preferred action for this character."""
@@ -280,6 +295,21 @@ class Character:
         if sublocation:
             return f"{region_name}, {location_name}, {sublocation}"
         return f"{region_name}, {location_name}"
+
+    def default_skills(self):
+        # Basic human-level skills
+        return {
+            "stealth": 4,
+            "melee_attack": 2,
+            "melee_defend": 3,
+            "dodge": 2,
+            "persuasion": 5,
+            "threaten": 3,
+            "complain": 7,
+        }
+
+    def get_skill(self, skill_name):
+        return self.skills.get(skill_name, 1)  # Minimum 1
 
     @property
     def motivations(self):
@@ -305,6 +335,7 @@ class Character:
     @property
     def percepts(self):
         """Dynamically generates percepts with actionable hints."""
+        #types> characters, events, utility, factions, locations, regions, chainOfActions
         updated_percepts = {}
         if self.observation > 5:
             updated_percepts["Nearby Friend"] = {"weight": 8, "suggested_actions": ["Talk", "Trade"]}
@@ -423,9 +454,19 @@ class Location:
         pass
     
         #Do the following functions need to change to suit a dataclass?
-    def list_characters(self):
-        """List characters currently at the location."""
-        return self.characters
+    def list_characters(self, exclude=None):
+        if exclude is None:
+            exclude = []
+
+        present = []
+        if hasattr(self, "characters_there"):
+            present += self.characters_there
+        if hasattr(self, "employees_there"):
+            present += self.employees_there
+
+        # Remove excluded
+        present = [c for c in present if c not in exclude]
+        return present
 
     def has_category(self, category):
         return category in self.categories

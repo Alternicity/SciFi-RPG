@@ -225,6 +225,9 @@ def create_factions(all_regions, all_locations):
         if faction.type == "Gang":
             print(f"- {faction.name} (Region: {faction.region}) ({faction.type}) ({faction.resources})")
 
+    from base_classes import Faction
+    factionless = Faction("Factionless", "independent")
+    factions.append(factionless)
 
     factions.extend(create_corp_factions(10, all_regions))
 

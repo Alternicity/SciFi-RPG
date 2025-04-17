@@ -5,6 +5,7 @@ from location import Shop
 from location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
 from faction import GeneralPopulation
 from characters import Civilian
+from InWorldObjects import Wallet
 general_population_faction = GeneralPopulation(name="General Population", violence_disposition="low")
 
 def create_civilian_population(all_locations, all_regions, num_civilians=10):
@@ -30,7 +31,8 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
         location = home if home else public_place
         
         region = next((r for r in all_regions if r.name == location.region), None) if location else None
-        
+
+        random_cash = random.randint(5, 500)
         civilian = Civilian(
             name=name,
             region=region,
@@ -38,16 +40,20 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
             race=race,
             faction=general_population_faction,
             initial_motivations=["earn_money", "have_fun", "find_partner"],
+            wallet=Wallet(bankCardCash=random_cash),
         )
         # 80% chance this civilian is an employee
         civilian.is_employee = random.random() < 0.8
         
+        if location:
+            location.characters_there.append(civilian)
+
         civilians.append(civilian)
         from create_game_state import get_game_state
         game_state = get_game_state()
         game_state.civilians.append(civilian)
         game_state.all_characters.append(civilian)
-    
+        print(f"Civilian {civilian.name} has: {civilian.wallet.bankCardCash}")
     return civilians
 
 def assign_workplaces(civilians, all_locations):
@@ -74,7 +80,7 @@ def assign_workplaces(civilians, all_locations):
                 correct_workplace.employees_there.append(civilian)
                 civilian.workplace = correct_workplace
                 workplace_counts[id(correct_workplace)] += 1
-                print(f"✅ DEBUG: Assigned {civilian.name} to {correct_workplace.name} in {correct_workplace.region}")
+                print(f"Assigned {civilian.name} to {correct_workplace.name} in {correct_workplace.region}")
             else:
                 print(f"⚠️ WARNING: No available workplaces for {civilian.name}")
 

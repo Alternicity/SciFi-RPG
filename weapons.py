@@ -12,15 +12,17 @@ valid_items = [
 #at the level of the most specific concrete classes that directly need them
 class Weapon(ObjectInWorld):
     is_concrete = False
-    def __init__(self, name, toughness, value, size, blackmarket_value, damage_points, legality, damage):
-        super().__init__(name, toughness, value, "weapon", size, blackmarket_value, damage_points, legality)
+    def __init__(self, name, toughness, price, size, blackmarket_value, damage_points, legality, damage, owner_name=None, intimidation=1):
+        super().__init__(name=name, toughness=toughness, item_type="Weapon", size=size, blackmarket_value=blackmarket_value, price=price, damage_points=damage_points, legality=legality, owner_name=owner_name)
         self.damage = damage
+        self.intimidation = intimidation  # Base intimidation factor
 
 #RangedWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them
 class RangedWeapon(Weapon):
-    def __init__(self, name, toughness, value, size, blackmarket_value, damage_points, legality, damage, range, ammo):
-        super().__init__(name, toughness, value, size, blackmarket_value, damage_points, legality, damage)
+    is_concrete = False
+    def __init__(self, name, toughness, price, size, blackmarket_value, damage_points, legality, damage, range, ammo, intimidation=3):
+        super().__init__(name=name, toughness=toughness, price=price, size=size, blackmarket_value=blackmarket_value, damage_points=damage_points, legality=legality, damage=damage, intimidation=intimidation)
         self.range = range
         self.ammo = ammo
 
@@ -28,8 +30,8 @@ class RangedWeapon(Weapon):
 #at the level of the most specific concrete classes that directly need them
 class MeleeWeapon(Weapon):
     is_concrete = False
-    def __init__(self, name, toughness, value, size, damage, blackmarket_value=50, damage_points=10, legality=True):
-        super().__init__(name, toughness, value, size, blackmarket_value, damage_points, legality, damage)
+    def __init__(self, name, toughness, price, size, damage, blackmarket_value=50, damage_points=10, legality=True, owner_name=None, intimidation=2):
+        super().__init__(name=name, toughness=toughness, price=price, size=size, blackmarket_value=blackmarket_value, damage_points=damage_points, legality=legality, owner_name=owner_name, damage=damage, intimidation=intimidation)
 
 #only concrete, fully implementable classes have the damage_points
 #and legality attributes.
@@ -40,11 +42,11 @@ class MeleeWeapon(Weapon):
 
 class Pistol(RangedWeapon):
     is_concrete = True
-    def __init__(self, value=100, ammo=12, legality=True): 
+    def __init__(self, price=500, quantity=1, ammo=12, legality=True): 
         super().__init__(
             name="Pistol",
             toughness=Toughness.NORMAL,
-            value=value,
+            price=price,
             size=Size.ONE_HANDED,
             blackmarket_value=150,
             damage_points=10,
@@ -52,7 +54,10 @@ class Pistol(RangedWeapon):
             damage=10,
             range=50,
             ammo=ammo,
+            intimidation=7
         )
+        self.owner_name = None
+        self.human_readable_id = "Unowned Pistol"
 
 class SMG(RangedWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -68,6 +73,7 @@ class SMG(RangedWeapon):
             damage=25,
             ammo=30,
             range=50,
+            intimidation=10
         )
         self.blackmarket_value = 500  # Set blackmarket_value directly in SMG
         self.item_type = "weapon"
@@ -85,6 +91,7 @@ class Rifle(RangedWeapon):
             ammo=30,
             charge=0,
             range=200,
+            intimidation=13
         )
         self.value = value
         self.legality = legality
@@ -103,6 +110,7 @@ class Shotgun(RangedWeapon):
             ammo=8,
             charge=0,
             range=40,
+            intimidation=13
         )
         self.value = value
         self.legality = legality
@@ -119,6 +127,7 @@ class Sword(MeleeWeapon):
             size=Size.ONE_HANDED,  # size is now passed here
             damage=15,  # Damage for the Sword
             charge=0,
+            intimidation=4
         )
         self.value = value
         self.legality = legality
@@ -126,18 +135,23 @@ class Sword(MeleeWeapon):
 
 class Knife(MeleeWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, value=50, legality=True):
+    def __init__(self, price=50, legality=True, owner_name=None):
         super().__init__(
             name="Knife",
             toughness=Toughness.DURABLE,
-            legality=legality,
-            value=value,
+            price=price,
             size=Size.ONE_HANDED,  # size is now passed here
             damage=8,  # Damage for the Knife
+            blackmarket_value=30,
+            damage_points=5,
+            legality=legality,
+            owner_name=owner_name,
+            intimidation=3
         )
-        self.value = value
+        self.price = price
         self.legality = legality
         self.item_type = "weapon"
+        self.human_readable_id = f"{owner_name}'s Knife" if owner_name else "Unowned Knife"
 
 class Club(MeleeWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -149,7 +163,7 @@ class Club(MeleeWeapon):
             value=value,
             size=Size.ONE_HANDED,  # size is now passed here
             damage=12,  # Damage for the Club
-            charge=0, # not used by this object, delete?
+            intimidation=3
         )
         self.value = value
         self.legality = legality
@@ -166,6 +180,7 @@ class Electrobaton(MeleeWeapon):
             size=Size.ONE_HANDED,  # size is now passed here
             damage=12,  # Damage for the Club
             charge=0,
+            intimidation=5
         )
         self.value = value
         self.legality = legality

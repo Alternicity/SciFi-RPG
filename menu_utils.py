@@ -3,7 +3,7 @@ from tabulate import tabulate
 from display import display_world, show_shop_inventory
 from typing import Dict, Any
 from create_game_state import get_game_state
-
+from InWorldObjects import ObjectInWorld
 # Ensure game_state is initialized correctly before use
 game_state = get_game_state()
     
@@ -35,7 +35,7 @@ def main_menu(all_locations):
         else:
             print("Invalid selection. Please try again.")
 
-from characterActions import talk_to_character, steal, rob, buy
+
 from location import Shop
 from display import display_employees
 from typing import List
@@ -86,11 +86,12 @@ def run(self, game_state):# This name must change, also game:state is passed in 
             break
 
 def show_shop_inventory_and_run_menu(character, location):
-    show_shop_inventory(character, location)
-    ShopPurchaseMenu(character, location).run()
+    show_shop_inventory(character, location)# just print
+    ShopPurchaseMenu(character, location).run()# just one run call
 
 def get_available_options(location, character):
     """Determine available menu options based on character and location."""
+    from characterActions import talk_to_character, talk_to_employee, talk_to_customer, rob, steal
     available_options = {}
 
     if location is None:
@@ -99,35 +100,71 @@ def get_available_options(location, character):
 
     option_list = []  # Collect options before converting to dict
 
-    print(f"Debug: Checking available options for {location.name}.")
+    #print(f"Debug: Checking available options for {location.name}.")
 
     # Location-based actions
     if hasattr(location, "employees_there"):
+        employee_names = {emp.name for emp in location.employees_there}
+    else:
+        employee_names = set()
         print(f"Debug: {location.name} has employees_there: {[emp.name for emp in location.employees_there]}")
-    if hasattr(location, "characters_there"):
-        print(f"Debug: {location.name} has characters_there: {[char.name for char in location.characters_there]}")
 
+    if hasattr(location, "characters_there"):
+        non_employee_chars = [char for char in location.characters_there if char.name not in employee_names]
+        print(f"Debug: {location.name} has characters_there (non-employees): {[char.name for char in non_employee_chars]}")
+
+    #consolidate
     if hasattr(location, "employees_there") and location.employees_there:
         option_list.append(("Display Employees", lambda: display_employees(location)))
 
+
+    if hasattr(location, "employees_there") and location.employees_there:
+        option_list.append(("Talk to an Employee", lambda: talk_to_employee(location, character)))
+
     if hasattr(location, "characters_there") and location.characters_there:
-        option_list.append(("Talk to a Character", lambda: talk_to_character(location, character)))
-        print(f"Debug: Characters present at {location.name}, adding 'Talk to a Character' option.")
+        non_employees = [char for char in location.characters_there if char not in location.employees_there]
+        if non_employees:
+            option_list.append(("Talk to a Customer", lambda: talk_to_customer(location, character)))
 
     # Character-based actions
-    print(f"Debug: {character.name} preferred actions: {character.get_preferred_actions()}")
+    #print(f"Debug: {character.name} preferred actions: {character.get_preferred_actions()}")
 
     from base_classes import Location
     if not isinstance(location, Location):
         print(f"Error: Expected a Location, but got {type(location).__name__}")
         return {}
     if location.robbable and "Rob" in character.get_preferred_actions():
-        option_list.append(("Rob the Place", lambda: rob(character, location)))
-        print(f"Debug: {character.name} can rob {location.name}, adding 'Rob' option.")
+        option_list.append(("Rob the Place", lambda: rob(character, location, target_item=None)))
+        #update above line to pass specified target
+        #should we be instantiating a Robbery object here_
+        #print(f"Debug: {character.name} can rob {location.name}, adding 'Rob' option.")
+
+    # Allow stealing if location has stealable inventory and character prefers stealth
+    # Check if there are any stealable ObjectInWorld items present
+    if hasattr(location, "inventory"):
+        #print(f"[DEBUG] {location.name} has inventory attribute.")
+        if location.inventory.items:
+            # Cleanest (uses your custom __iter__)
+            #print(f"[DEBUG] {location.name} has items in inventory: {[item.name for item in location.inventory]}")
+            if "Steal" in character.get_preferred_actions():
+                print(f"[DEBUG] {character.name} prefers stealing.")
+                for item in location.inventory:
+                    #print(f"[DEBUG] Checking item {item.name} ({type(item).__name__})")
+
+                    if isinstance(item, ObjectInWorld):
+                        #print(f"[DEBUG] {item.name} is an ObjectInWorld. Adding to steal options.")
+                        option_list.append((f"Steal {item.name}", lambda i=item: steal(character, location, i)))
+            else:
+                print(f"[DEBUG] {character.name} does not prefer stealing.")
+        else:
+            print(f"[DEBUG] {location.name} inventory is empty.")
+    else:
+        print(f"[DEBUG] {location.name} has no inventory.")
+
+                #If you have some locations like Park or Alley that don’t carry an inventory at all, this code will now safely skip them.
 
 
     # Include predefined `menu_options` in `Shop`
-    from display import show_shop_inventory #possibly delete this
     if hasattr(location, "menu_options") and isinstance(location.menu_options, list):
         for action_name in location.menu_options:
             if action_name == "View Shop Inventory":
@@ -171,7 +208,7 @@ def build_gameplay_menu(location, character):
     region = character.region
     
     #print(f"Debug: From build_gameplay_menu calling get_available_options() with {type(location).__name__} instead of Location")
-    options = get_available_options(location, character)
+    options = get_available_options(location, character) #add event
 
     if not isinstance(options, dict):
         print(f"Error: get_available_options did not return a dictionary! Type: {type(options)}")
@@ -234,8 +271,8 @@ class ShopPurchaseMenu:
         self.shop = shop
 
     def get_purchase_options(self):
+        from characterActions import buy
         """Returns a dict of {index: (desc, func)} for items the player can buy."""
-        print("🟡🟡DEBUG: Generating purchase options for shop:", self.shop.name)
         purchase_options = {}
         for i, item in enumerate(self.shop.inventory, start=1):
             label = f"Buy {item.name} - ${item.price} ({item.quantity} in stock)"
@@ -294,9 +331,21 @@ def select_character_menu():
     # Display character choices
     print("\nSelect a character:")
     for idx, char_data in enumerate(character_options, start=1):
-        print(f"{idx}. {char_data['name']}, {char_data['class'].__name__}")
+        faction_name = char_data.get("faction_name") or "Factionless"
+        print(f"{idx}. {char_data['name']}, {char_data['class'].__name__}, Faction: {faction_name}")
+
+
+
+    #old, but works
+    """ for idx, char_data in enumerate(character_options, start=1):
+        print(f"{idx}. {char_data['name']}, {char_data['class'].__name__}") """
 
     # Get user's choice
+
+    #tmp block
+    """ for i, option in enumerate(character_options):
+        print(f"{i + 1}: {option['name']}") """
+
     while True:
         try:
             choice = int(input("Enter the number of your chosen character: ")) - 1
@@ -372,8 +421,6 @@ def display_menu(options: dict):
 
         print("Invalid choice. Try again.")
         
-
-
         return choice  # Ensure input is returned
 
 def select_item_for_purchase(shop):
@@ -388,8 +435,9 @@ def select_item_for_purchase(shop):
     item_name = input("Enter the name of the item you want to buy: ").strip()
     return item_name if item_name else None  # Return the item name if provided
 
-    print("Available items:")
+#marked for deletion
+    """ print("Available items:")
     item_options = {str(i+1): item for i, item in enumerate(shop.inventory)}
 
     choice = get_menu_choice(item_options)
-    return item_options.get(choice)
+    return item_options.get(choice) """

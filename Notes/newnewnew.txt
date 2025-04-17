@@ -1,0 +1,1 @@
+Remove or archive the legacy sell_item() and select_item_to_buy() functions if they're unused.

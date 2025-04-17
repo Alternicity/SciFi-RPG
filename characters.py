@@ -97,9 +97,6 @@ class Captain(Character):
             name, faction=faction,  region=region,
             location=location, status=Status.HIGH, loyalties=default_loyalties, **kwargs
         )
-        
-        # Ensure inventory is a new list instance per character
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
 
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -113,7 +110,8 @@ class Manager(Character):
     is_concrete = True
     def __init__(self, name, region, location, faction="None", position="Manager", loyalties=None, fun=1, hunger=1, **kwargs):
         
-        wallet = kwargs.pop("wallet", Wallet(bankCardCash=500))
+        random_cash = random.randint(400, 1000)
+        wallet = kwargs.pop("wallet", Wallet(bankCardCash=random_cash))
 
         # Safe default for faction
         self.faction = faction
@@ -139,7 +137,7 @@ class Manager(Character):
         if self.faction and hasattr(self.faction, "HQ") and self.faction.HQ:
             self.HQ = self.faction.HQ
             self.location = self.HQ
-            print(f"🏢 Manager {self.name} starts at HQ: {self.HQ.name}")
+            print(f"Manager {self.name} starts at: {self.HQ.name} + has {self.wallet.bankCardCash}")
         else:
             print(f"⚠️ Manager {self.name} has no HQ assigned!")
         
@@ -149,6 +147,17 @@ class Manager(Character):
         sublocation = getattr(self, "sublocation", None)
 
         return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
+
+    def default_skills(self):
+        base = super().default_skills()
+        base.update({
+            "organize_employees": 12,
+            "observation": 10,
+            "appease": 12,
+            "persuade": 12,
+            "complain": 13,
+        })
+        return base
 
     def __repr__(self):
         return f"{self.name} (Faxction: {self.faction.name if self.faction else 'None'}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
@@ -166,9 +175,6 @@ class Subordinate(Character):
 
         super().__init__(name, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, loyalties=default_loyalties, **kwargs)
         self.tasks = []# Explicitly initialize task list
-
-        # Ensure inventory is correctly initialized
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
 
 class Employee(Subordinate):
@@ -187,9 +193,6 @@ class Employee(Subordinate):
             name, faction=faction,  region=region,
             location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, position=position, status=Status.LOW, loyalties=default_loyalties, **kwargs
         )
-        
-        # Ensure inventory is correctly initialized
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -226,9 +229,6 @@ class CorporateSecurity(Subordinate):
         self.targetIsInMelee = False
         self.cash = 10
         self.bankCardCash = 100
-
-        # Ensure inventory is correctly initialized
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
         
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -269,8 +269,18 @@ class CorporateAssasin(CorporateSecurity):
         # Adjusted health based on toughness
         self.health = 120 + toughness
 
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
-
+          # List to store items in the character's inventory
+        def default_skills(self):
+            base = super().default_skills()
+            base.update({
+                "stealth": 15,
+                "melee_attack": 15,
+                "melee_defend": 13,
+                "dodge": 13,
+                "infiltration": 14,
+            })
+            return base
+        
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
     
@@ -288,12 +298,12 @@ class GangMember(Subordinate):
         wallet = kwargs.pop("wallet", Wallet(bankCardCash=500))
 
     # Default loyalty setup for GangMember
-        default_loyalties = {
-            faction: 15 if faction else 0,  # Ensure faction exists
-            "Law": 0,  # No trust in law enforcement
-        }
+        default_loyalties = {}
+        if faction:
+            default_loyalties[faction] = 15
+        default_loyalties["Law"] = 0
         # Merge defaults with provided loyalties
-        default_loyalties.update(loyalties or {})   
+        default_loyalties.update(loyalties or {})
         
         super().__init__(
             name, faction=faction,  region=region,
@@ -312,7 +322,16 @@ class GangMember(Subordinate):
         self.cash = 50
         self.bankCardCash = 20
 
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []
+    def default_skills(self):
+        base = super().default_skills()
+        base.update({
+            "stealth": 8,
+            "melee_attack": 11,
+            "melee_defend": 10,
+            "dodge": 7,
+            "threaten": 7,
+        })
+        return base
         
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -359,7 +378,7 @@ class RiotCop(Character):
         self.cash = 50
         self.bankCardCash = 300
 
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
+          # List to store items in the character's inventory
 
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -736,7 +755,7 @@ class Detective(Character): #Subordinate? Of the state?
         self.cash = 50
         self.bankCardCash = 300
 
-        self.inventory = kwargs.get("inventory", []) if "inventory" in kwargs else []  # List to store items in the character's inventory
+          # List to store items in the character's inventory
 
     @property
     def whereabouts(self):

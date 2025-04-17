@@ -11,7 +11,7 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                            Babe, Detective)
 
 from location import Region, UndevelopedRegion, VacantLot
-
+from visual_effects import loading_bar, color_text
 #from menu_utils import get_user_choice
 #This file cannot import from menu_utils here, maybe lazy imports are ok
 from common import get_file_path, BASE_REGION_DIR
@@ -50,16 +50,26 @@ def show_character_details(character):
 
 
     # First table with the first header row
+    if character.faction:
+            faction_name = character.faction.name
+            faction_type = character.faction.type.capitalize()
+    else:
+        faction_name = "None"
+        faction_type = "Independent"
+        #f"{character.faction.name} {character.faction.type.capitalize()}",
+        faction_name = character.faction.name if character.faction else "None"
+        faction_type = character.faction.type.capitalize() if character.faction else "Unaffiliated"
+
     character_table_1 = [
     ["Name", "Health", "Faction", "Money", "Location", "Hunger", "Inventory"],
     [
         character.name,
         getattr(character, "xxx", character.health),
-        f"{character.faction.name} {character.faction.type.capitalize()}",
+        f"{faction_name} ({faction_type})",
         f"${character.wallet.bankCardCash:.2f}",
         character.display_location(),  # 👈 cleaner and safer
         getattr(character, "hunger", "N/A"),
-        ", ".join(getattr(character, "inventory", [])),
+        ", ".join(character.inventory.items.keys()) if character.inventory and character.inventory.items else "(Empty)"
     ],
 ]
         # Retrieve motivations, defaulting to an empty list if not found
@@ -71,27 +81,37 @@ def show_character_details(character):
     # Extract motivations that match the highest urgency
     top_motivations = [name for name, urgency in motivations if urgency == highest_urgency]
     
-
+    from visual_effects import RESET, RED, GREEN, PURPLE, BROWN
     # Second table with the second header row
     character_table_2 = [
         ["Race", "Status", "Intelligence", "Fun", "Motivations", ""],  # Empty fields for alignment
         [
             getattr(character, "lorem", character.race),
-            character.status.value.title() if character.status else "Unknown",
-            #character.status.value retrieves the string value of the enum ("high")
-            #.title() capitalizes the first letter of the string, turning "high" into "High"
+
+            color_text(character.status.value.title(), GREEN)
+            if character.status and character.status.value == "HIGH"
+            else character.status.value.title() if character.status else "Unknown",
 
             getattr(character, "xxx", getattr(character, "intelligence", "N/A")),
 
-            getattr(character, "idk", character.fun),
+            color_text(str(character.fun), RED) if character.fun < 4 else str(character.fun),
         ", ".join(top_motivations),  # Use the precomputed motivations here
         ],
     ]
     # Print the first table
     print(tabulate(character_table_1, headers="firstrow", tablefmt="grid"))
     
+    print("Loading", end="", flush=True)
+    loading_bar()
+
     # Print the second table
     print(tabulate(character_table_2, headers="firstrow", tablefmt="grid"))
+    print("\n🎒 Debugging Inventory:")
+    if character.inventory.items:
+        for name, item in character.inventory.items.items():
+            print(f"  {name} - Qty: {item.quantity}, Type: {type(item).__name__}, ID: {id(item)}")
+    else:
+        print("  (Empty)")
 
 def display_filtered_character_summary(characters, gang_limit=3, corp_limit=3, civilian_limit=3):
     """Displays filtered character summaries with limits."""
@@ -316,11 +336,7 @@ def show_shop_inventory(character, shop):
 
     headers = ["Item", "Price", "Quantity"]
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
-    print(f"{character.name} has ${character.wallet.bankCardCash} on their bank card.")
     
-    ShopPurchaseMenu(character, shop).run()
-
-
 
 def display_selected_character_current_region(character, region):
     print(f"{character.name} is in {region.name}.")

@@ -10,6 +10,6 @@ class Memory:
     def recall(self):
         return f"Memory of {self.subject}: {self.details} (Importance: {self.importance})"
 
-class FactionRelatedMemory
+class FactionRelatedMemory:
     def __init__(self, subject, details, importance=5):
         self.it_worked_there_before = {} # location/actions or action list

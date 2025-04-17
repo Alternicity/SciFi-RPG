@@ -22,6 +22,9 @@ def create_faction_characters(faction, all_regions, factions=None):
         return create_corporation_characters(faction, factions)
     elif isinstance(faction, State):
         return create_TheState_characters(faction)
+    elif faction.name == "Factionless":
+        # ✅ Skip creating characters for factionless
+        return []
     else:
         raise ValueError(f"Unknown faction type: {faction}")
 
@@ -44,6 +47,9 @@ def create_all_characters(factions, all_locations, all_regions):
     civilians = create_civilian_population(all_locations, all_regions)
     assign_workplaces(civilians, all_locations)
     all_characters.extend(civilians)
+    
+    from game_logic import assign_random_civilians_to_random_shops
+    assign_random_civilians_to_random_shops(all_regions)  # Now regions are ready
 
     return all_characters
 
@@ -64,7 +70,7 @@ def create_all_characters(factions, all_locations, all_regions):
     
     selected_faction = random.choice(available_corporations)  # Pick one at random """
 
-from base_classes import Character
+
 def select_character_menu():
     """Displays character selection and returns the selected character and their region."""
     from character_creation_funcs import player_character_options
@@ -115,6 +121,9 @@ def player_character_options(all_regions, factions):
     """Return a list of dictionaries with character DATA instead of full objects."""
     # Define character options as data dictionaries
     from InWorldObjects import Wallet
+    from weapons import Knife
+    from inventory import Inventory
+    from base_classes import Factionless #foes this need adding to factions and game_state
     character_data = [
     {
         "class": Manager,
@@ -123,16 +132,20 @@ def player_character_options(all_regions, factions):
         "region_name": "Downtown",
         "location_name": "Corporate HQ",
         "wallet": Wallet(bankCardCash=500),
-        "preferred_actions": {}
+        "preferred_actions": {},
+        "initial_motivations": ["ObtainWeapon", "IncreaseStatus", "JoinGang"]
     },
     {
         "class": GangMember,
         "name": "Swiz",
-        "faction_name": "The Black Fangs",
+        "faction_name": "Factionless",
         "region_name": "Easternhole",
-        "location_name": "Stash",
+        "location_name": "None",
+        "inventory": Inventory([Knife(owner_name="Swiz")]),
         "wallet": Wallet(bankCardCash=50),
-        "preferred_actions": {"Rob": 1, "Steal": 2}
+        "preferred_actions": {"Rob": 1, "Steal": 2},
+        "initial_motivations": ["ObtainWeapon", "IncreaseStatus", "JoinGang"],
+        "custom_skills": {"stealth": 12, "observation": 6}
     }
 ]
 
@@ -153,21 +166,28 @@ def instantiate_character(char_data, all_regions, factions):
     location_name = char_data.get("location_name")
 
     # Lookups
-    faction = get_faction_by_name(faction_name, factions)
+    if faction_name is None or faction_name == "Factionless":
+        # Find the Factionless instance by name
+        faction = next((f for f in factions if f.name == "Factionless"), None)
+    else:
+        faction = get_faction_by_name(faction_name, factions)
+
+        if faction is None and faction_name != "Factionless":
+            print(f"[Warning] No faction found with name: {faction_name}")
+            return None
+    
     region = get_region_by_name(region_name, all_regions)
     location = get_location_by_name(location_name, all_regions)
     wallet = char_data.get("wallet", Wallet())
 
-    if faction is None:
-        print(f"❌ ERROR: No faction found with name '{faction_name}'")
+    """ if faction_name is None:
+        faction = None
+    elif faction is None:
+        print(f"❌ ERROR, from character_creation_funcs: No faction found with name '{faction_name}'")
+        return None """
+
     if region is None:
         print(f"❌ ERROR: No region found with name '{region_name}'")
-    """ if location is None:
-        print(f"⚠️ Warning: Could not find location '{location_name}' for {char_data['name']}. Defaulting to region center.")
-        location = region.locations[0] if region and region.locations else None """
-        #this Warning shows up in program output.
-        #return to examine this, is it still coming from get_location_by_name, and thus game_state?
-
 
     # Create character
     character = char_data["class"](
@@ -178,9 +198,11 @@ def instantiate_character(char_data, all_regions, factions):
         wallet=wallet,
         fun=1,
         hunger=3,
-        preferred_actions=char_data.get("preferred_actions", {})
+        preferred_actions=char_data.get("preferred_actions", {}),
+        initial_motivations=char_data.get("initial_motivations", []),
+        custom_skills=char_data.get("custom_skills")
     )
-
+    print(f"✅ Character {character.name} instantiated.")
     game_state.player_character = character
     return character
 

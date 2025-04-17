@@ -30,7 +30,7 @@ def create_locations(region_name: str, wealth: str) -> List[Location]:
     shop_instances = [loc for loc in locations if isinstance(loc, Shop)]
     
     from utils import get_region_by_name
-    region_obj = get_region_by_name(region_name, game_state.all_regions)  
+    region_obj = get_region_by_name(region_name, game_state.all_regions)  #game_state!
     if region_obj:
         region_obj.locations.extend(shop_instances)  # Ensure they match!
     for shop in shop_instances:
@@ -43,8 +43,15 @@ def create_locations(region_name: str, wealth: str) -> List[Location]:
         pistol = Pistol()
 
         # Add to inventory
-        shop.inventory.add_item(Item("SmartPhone", price=200, quantity=5, size=Size.POCKET_SIZED))
-        shop.inventory.add_item(Item("Pistol", price=500, quantity=2, size=Size.ONE_HANDED))
+        shop.inventory.add_item(SmartPhone(price=200, quantity=5))
+        shop.inventory.add_item(Pistol(price=500, quantity=2))
+
+
+        if isinstance(shop, Shop):
+            print(f"🔍 {shop.name} initial inventory (object-level):")
+            for name, item in shop.inventory.items.items():
+                print(f"    {name}: {item.quantity} (type: {type(item)})")
+
 
         print(f"🛒 DEBUG: Added items to {shop.name} inventory.")
     # Always create a MunicipalBuilding

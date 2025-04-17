@@ -9,6 +9,7 @@ from faction import Faction
 #shop/vendor specific (at least at first)
 from base_classes import Character, Location, Faction
 from location_security import Security
+from InWorldObjects import CashRegister
 
 logging.basicConfig(level=logging.INFO)
 
@@ -137,6 +138,7 @@ class Shop(Vendor):
     is_powered: bool = False
     energy_cost: int = 0
     upkeep: int = 15
+    cash_register: CashRegister = field(default_factory=lambda: CashRegister("Register", 10, "currency", 1, 1000))
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -170,6 +172,12 @@ class Shop(Vendor):
     def show_inventory(self):
         self.inventory.display_inventory()
 
+    def debug_print_inventory(self):
+        print(f"🛍️ DEBUG: Inventory of {self.name}")
+        for name, item in self.inventory.items.items():
+            print(f"  {name} - Qty: {item.quantity} - Type: {type(item).__name__}, ID: {id(item)}")
+        print("─" * 40)
+        
     def __hash__(self):
         return hash((self.name, self.region))  # Hash based on immutable attributes
     

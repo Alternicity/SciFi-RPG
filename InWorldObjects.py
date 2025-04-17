@@ -35,16 +35,18 @@ valid_items = [
 # Base class for all objects in the world
 class ObjectInWorld:
     is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, value, item_type, size, blackmarket_value, damage_points=None, legality=True):
+    def __init__(self, name, toughness, item_type, size, blackmarket_value, price=0, damage_points=None, legality=True,  owner_name=None):
         self.name = name
         self.toughness = toughness
-        self.value = value
         self.item_type = item_type  # 'weapon', 'armor', etc.
         self.size = size
         self.blackmarket_value = blackmarket_value
+        self.price = price
         self.damage_points = damage_points
         self.legality = legality
-        self.item_type = item_type
+        #self.item_type = item_type
+        #does this need to be here as well?
+        self.owner_name = owner_name
 #only concrete, fully implementable classes have the damage_points
 #and legality attributes.
 #Any object that represents something that could potentially break or
@@ -232,18 +234,20 @@ class WaterPurifier(ObjectInWorld):
 
 class SmartPhone(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self):
+    def __init__(self, price=200, quantity=1,):
         super().__init__(
             name="SmartPhone",
             toughness=Toughness.FRAGILE,
             damage_points=15,
             legality=True,
-            value=200,
             item_type="gadget",
-            blackmarket_value=200,
+            blackmarket_value=50,
+            price=price,
             size=Size.POCKET_SIZED,
-
         )
+        self.quantity = quantity
+        self.owner_name = None
+        self.human_readable_id = "Unowned SmartPhone"
 
 class CommoditiesBox(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -257,4 +261,19 @@ class CommoditiesBox(ObjectInWorld):
             blackmarket_value=200,
             size=Size.TWO_HANDED,
         )
+class CashRegister(ObjectInWorld):
+    def __init__(self,  name, toughness, item_type, size, blackmarket_value, initial_cash=0):
+        super().__init__(name, toughness, item_type, size, blackmarket_value)
+        self.cash = initial_cash
 
+    def deposit(self, amount):
+        self.cash += amount
+
+    def withdraw(self, amount):
+        actual = min(self.cash, amount)
+        self.cash -= actual
+        return actual
+
+    def create_cashwad(self, amount):
+        taken = self.withdraw(amount)
+        return CashWad(amount=taken)
