@@ -291,6 +291,7 @@ class Character:
         sublocation = getattr(self, "sublocation", None)
         if not self.region or not self.location:
             return "display_location: Location data missing"
+            #print(f"Deciding where to go; {character.name} is in {character.region} but no specific location")
         if sublocation:
             return f"{region_name}, {location_name}, {sublocation}"
         return f"{region_name}, {location_name}"

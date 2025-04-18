@@ -67,7 +67,7 @@ def show_character_details(character):
         getattr(character, "xxx", character.health),
         f"{faction_name} ({faction_type})",
         f"${character.wallet.bankCardCash:.2f}",
-        character.display_location(),  # 👈 cleaner and safer
+        character.display_location(),
         getattr(character, "hunger", "N/A"),
         ", ".join(character.inventory.items.keys()) if character.inventory and character.inventory.items else "(Empty)"
     ],
