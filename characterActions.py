@@ -7,6 +7,8 @@ import random
 from visual_effects import loading_bar, RED, color_text
 from conversation import Conversation
 from menu_utils import get_menu_choice
+from typing import Dict, Tuple, Any
+from weapons import Weapon
 # In characterActions.py
 #from combat_actions import combat_actions placeholders
 #from stealth_actions import stealth_actions
@@ -114,9 +116,8 @@ def visit_location(character, location=None):
         if not locations:
             #print(f"There are no locations to visit in {region.name}.")
             return
-    
-    # If no location was passed, prompt the player to choose one
-    if not locations:  #line 65
+
+    if not locations:
         #print(f"There are no locations to visit in {region.name}.")
         location = choose_location(character, region)
 
@@ -124,7 +125,6 @@ def visit_location(character, location=None):
             print("Error: No location was chosen! Returning to main menu.")
             return
     #is the following code now deprecated? choose_location(region) has already been called..
-    print("\nWhere would you like to go?")
     choice = display_menu(locations)
     if not choice:
         print("Returning to the main menu.")
@@ -136,9 +136,9 @@ def visit_location(character, location=None):
     location.characters_there.append(character)
     print(f"{character.name} enters {location.name} in {character.region}.")
 
-    if isinstance(location, Shop):
+    """ if isinstance(location, Shop):
         print(f"🧾 {location.name} shows you their current stock:")
-        location.debug_print_inventory()
+        location.debug_print_inventory() """
 
     if not location:  # If no valid location is selected, exit
         print("Error: No location was chosen!")
@@ -391,9 +391,11 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
     if success:
         stolen_item = copy.deepcopy(target_item)
         location.inventory.remove_item(target_item.name)
-        character.inventory.add_item(stolen_item)
-
         print(f"{character.name} {color_text('steals', RED)} a {stolen_item.name} from {location.name}.")
+        character.inventory.add_item(stolen_item)
+        
+        if isinstance(stolen_item, Weapon):
+            character.inventory.update_primary_weapon()
         character.update_motivations()
 
         # Update intimidation if item has intimidate attribute
@@ -421,97 +423,114 @@ this can be generalised to other things, a
 
 
 def talk_to_character(location, character):
-    #If you're not using talk_to_character() anywhere else, you can fully replace it with this more flexible one>
-    #talk_to_character_group
-    """Let the player talk to a character in the location."""
-    if not location.characters:
-        print("No one is here to talk to.")
+    # legacy/general version
+    people = getattr(location, "characters_there", [])
+    if not people:
+        print("No one here to talk to.")
         return
 
-    # Display characters present
-    character_options = {str(i+1): (char.name, char) for i, char in enumerate(location.characters)}
+    # Build options from the 'people' list, not from 'character'
+    options = {
+        i + 1: (p.name, p)
+        for i, p in enumerate(people)
+    }
 
-    # Add a cancel option
-    character_options["0"] = ("Cancel", None)
+    selected = _select_with_cancel(options, cancel_label="Back")
+    if not selected:
+        return
 
-    from menu_utils import get_menu_choice #New
-    choice = get_menu_choice(character_options)
-
-    if choice and choice in character_options:
-        selected_character = character_options[choice][1]
-        if selected_character is None:
-            print("You decide not to talk to anyone.")
-            # Go back to location menu
-            from characterActions import visit_location  # Lazy import to avoid circular dependency
-            visit_location(character, location)
-            return
-        print(f"You start talking to {selected_character.name}.")  # Placeholder for dialogue system
-    else:
-        print("Invalid choice.")
+    convo = Conversation(speaker=selected, listener=character)
+    convo.start()
         
-def talk_to_character_group(entity_with_characters, initiator, context_name="here"):
-    """
-    Allow the player to talk to any character present in a Region or Location.
-    `entity_with_characters` must have a `.characters_there` attribute.
-    """
-    character_list = getattr(entity_with_characters, "characters_there", [])
-
-    if not character_list:
+def talk_to_character_group(entity, initiator, context_name="here"):
+    people = getattr(entity, "characters_there", [])
+    if not people:
         print(f"No one is {context_name} to talk to.")
         return
 
-    character_options = {str(i+1): (char.name, char) for i, char in enumerate(character_list)}
-    print(f"People {context_name}:")
-    for key, (name, _) in character_options.items():
-        print(f"{key}. {name}")
+    options = {
+        i+1: (p.name, p)
+        for i, p in enumerate(people)
+    }
 
-    choice = input("Choose a character to talk to: ")
 
-    if choice in character_options:
-        selected_character = character_options[choice][1]
-        conversation = Conversation(speaker=selected_character, listener=initiator)
-        conversation.start()
-    else:
-        print("Invalid choice.")
+    selected = _select_with_cancel(options, cancel_label="Back")
+    if not selected:
+        return  # or re-display the shop menu if you're nested in a loop
+
+    convo = Conversation(speaker=selected, listener=initiator)
+    convo.start()
 
 def talk_to_customer(location, character):
-    """Talk to a non-employee present in the location."""
-    non_employees = [char for char in location.characters_there if char not in location.employees_there]
+    non_employees = [
+        c for c in location.characters_there
+        if c not in getattr(location, "employees_there", [])
+    ]
     if not non_employees:
-        print("There are no customers to talk to.")
+        print("No customers here to talk to.")
         return
 
-    options = {str(i + 1): (char.name, char) for i, char in enumerate(non_employees)}
-    choice = get_menu_choice(options)
+    options = {
+    i + 1: (cust.name, cust)
+    for i, cust in enumerate(non_employees)
+}
 
-    if choice and choice in options:
-        selected_character = options[choice][1]
-        conversation = Conversation(speaker=selected_character, listener=character)
-        conversation.start()
-    else:
-        print("Invalid choice.")
+    selected = _select_with_cancel(options, cancel_label="Back")
+    if not selected:
+        return
+
+    convo = Conversation(speaker=selected, listener=character)
+    convo.start()
 
 def talk_to_employee(location, character):
-    """Talk to an employee at the location."""
-    employees = location.employees_there
+    employees = getattr(location, "employees_there", [])
     if not employees:
-        print("No employees are here to talk to.")
+        print("No employees here to talk to.")
         return
 
-    options = {str(i + 1): (char.name, char) for i, char in enumerate(employees)}
-    choice = get_menu_choice(options)
+    options = {
+        i+1: (emp.name, emp)
+        for i, emp in enumerate(employees)
+    }
 
-    if choice and choice in options:
-        selected_character = options[choice][1]
-        conversation = Conversation(speaker=selected_character, listener=character)
-        conversation.start()
-    else:
-        print("Invalid choice.")
+    selected = _select_with_cancel(options, cancel_label="Back")
+    if not selected:
+        return
+
+    convo = Conversation(speaker=selected, listener=character)
+    convo.start()
+
+def _select_with_cancel(options: Dict[int, Tuple[str, Any]], cancel_label="Cancel"):
+    """Displays a selection menu with a cancel option and returns the selected item or None."""
+    # Add cancel option at key 0
+    menu = {0: (cancel_label, None)}
+    menu.update(options)
+
+    for key, (label, _) in menu.items():
+        print(f"{key}: {label}")
+
+    while True:
+        choice = input("Choose an option (or 0 to cancel): ").strip()
+
+        if not choice:
+            print("No input detected. Please enter a number.")
+            continue
+
+        if not choice.isdigit():
+            print("Invalid input. Please enter a number.")
+            continue
+
+        choice = int(choice)
+        if choice in menu:
+            _, value = menu[choice]
+            return value
+        else:
+            print("Invalid choice. Try again.")    
 
 def flirt(actor, target):
     print(f"{actor.name} flirts with {target.name}.")
     # Add flirt logic here.
-    # success creates an attraction goal in a target character. cumulative.
+    # success creates an attraction goal in a target character. cumulative. Can create simps
     #overuse with too many characters causes a status lowering event
 
 def charm(actor, target):
@@ -610,9 +629,8 @@ def get_available_actions(character):
 #available_actions.update(combat_actions)
 #available_actions.update(stealth_actions)
 
-def observe (location):
-    #include noticing increased xyz activity
-    pass
 
-def observe_item(item):
-    return getattr(item, "human_readable_id", item.name)
+
+def call_police(self, crime_type, region, location):
+    print(f"{self.name} calls the police: '{crime_type} at {location.name}, {region}!'")
+    # Then trigger a new Event or dispatch responders

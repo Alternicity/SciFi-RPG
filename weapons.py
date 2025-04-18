@@ -1,7 +1,7 @@
 #weapons.py split from InWorldObject to shorten file sizes
 
 from InWorldObjects import ObjectInWorld, Size, Toughness
-
+import logging
 
 valid_items = [
     "Pistol", "SMG", "Rifle", "Shotgun", 
@@ -16,6 +16,19 @@ class Weapon(ObjectInWorld):
         super().__init__(name=name, toughness=toughness, item_type="Weapon", size=size, blackmarket_value=blackmarket_value, price=price, damage_points=damage_points, legality=legality, owner_name=owner_name)
         self.damage = damage
         self.intimidation = intimidation  # Base intimidation factor
+        self.name = name
+        self.owner = owner_name      # Original or legal owner
+        self.user = None        # Currently wielding the weapon
+        self.history = []  # List of (character, event_type, timestamp)
+
+    def assign_user(self, character):
+        self.user = character
+        logging.info(f"{character.name} is now using {self.name}")
+
+    def change_ownership(self, new_owner):
+        self.owner = new_owner
+        logging.info(f"{self.name} is now owned by {new_owner.name}")
+        #switch to prints at some point?
 
 #RangedWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them

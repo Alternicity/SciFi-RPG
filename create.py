@@ -12,7 +12,7 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
 from faction import Corporation, Gang, State
 from goals import Goal
 from location_security import Security
-
+from visual_effects import loading_bar, RED, color_text
 from typing import List, Dict, Union
 import os
 
@@ -292,7 +292,7 @@ def assign_hq(faction, region):
             street_gang_count = len(region.region_street_gangs)
 
             if street_gang_count > 3 and not region.turf_war_triggered:  # Prevent repeated triggers
-                print(f"{street_gang_count} street gangs present in {region.name}, without HQs. Turf war brewing!")
+                print(f"{street_gang_count} street gangs present in {region.name}, without HQs. {color_text('Turf war brewing!', RED)}")
                 region.trigger_event("turf_war")
                 region.turf_war_triggered = True
                 

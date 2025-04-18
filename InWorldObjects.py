@@ -47,6 +47,9 @@ class ObjectInWorld:
         #self.item_type = item_type
         #does this need to be here as well?
         self.owner_name = owner_name
+        self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID
+#It's probably cleaner and safer if all items that go in inventory have quantity by default (even if quantity=1 for weapons).
+
 #only concrete, fully implementable classes have the damage_points
 #and legality attributes.
 #Any object that represents something that could potentially break or
@@ -64,21 +67,21 @@ class Item:
         return f"{self.name} (${self.price}) x{self.quantity}"
 
 
-class CashWad(ObjectInWorld):
+class CashWad(ObjectInWorld): #REMOVE ALL VALUE
     is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, value):
+    def __init__(self, amount):
         super().__init__(
             name="Cash Wad",
-            toughness="Fragile",  # Assuming 'Fragile' is an attribute, you can adjust this
+            toughness="Fragile",
+            item_type="currency",
             damage_points=3,
             legality=True,
-            value=value,
-            blackmarket_value=value,
-            size="Pocket Sized"  # Assuming 'Pocket Sized' is a defined Size type
+            price=amount,  # standardized on 'price'
+            blackmarket_value=amount,
+            size="Pocket Sized"
         )
-        damage_points=3,
-        legality=True,
-        
+        self.amount = amount  # optional but helpful
+
     def get_value(self):
         """Return the value of the CashWad.
         A CashWad in an in game object that is a quantity of money"""
@@ -86,9 +89,9 @@ class CashWad(ObjectInWorld):
 
     def add_to_wallet(self, wallet):
         """Add the value of the CashWad to the wallet."""
-        wallet.add_cash(self.value)
-        print(f"Added {self.value} cash from CashWad to wallet.")
-        self.value = 0  # Cash has been transferred to the wallet
+        wallet.add_cash(self.price)
+        print(f"Added {self.price} cash from CashWad to wallet.")
+        self.price = 0  # mark as spent
 
 class Wallet:
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -262,7 +265,7 @@ class CommoditiesBox(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 class CashRegister(ObjectInWorld):
-    def __init__(self,  name, toughness, item_type, size, blackmarket_value, initial_cash=0):
+    def __init__(self,  name, toughness, item_type, size, blackmarket_value, initial_cash=300):
         super().__init__(name, toughness, item_type, size, blackmarket_value)
         self.cash = initial_cash
 
@@ -274,6 +277,36 @@ class CashRegister(ObjectInWorld):
         self.cash -= actual
         return actual
 
-    def create_cashwad(self, amount):
-        taken = self.withdraw(amount)
-        return CashWad(amount=taken)
+    def create_cashwad(self):
+        taken = self.withdraw(self.cash)
+        return CashWad(taken)
+
+    # 💸 MONEY VARIABLE NAMING CONVENTION (Standardized for RPG Project)
+#
+# 🧱 CORE VARIABLES (Used throughout codebase):
+#
+# - `cash`: Physical cash held by a character (e.g., in wallet, cash register, CashWad).
+# - `bankCardCash`: Virtual or digital cash accessible via bank card. Stored in Wallet.
+#
+# 📦 OBJECT-BASED MONEY:
+#
+# - `price`: Standard monetary value of an item or object. Used for trade/barter, store pricing.
+# - `CashWad`: An object that *represents* a physical amount of `cash`. Stores value in `.price`.
+#
+# ❌ Avoid using `value` for monetary purposes — use `.price` instead.
+#    If legacy code uses `.value` for money, convert it to `.price`, or assign:
+#       `price = cashwad.value`
+#    to maintain compatibility.
+#
+# 🧠 GUIDANCE:
+# - In Wallet and other currency systems, always use `cash` and `bankCardCash`.
+# - In trade/store systems and cash objects (CashWad, items), always use `price`.
+# - If needed, alias temporarily for compatibility, but avoid mixing terms in the same scope.
+#
+# 📌 Example Usage:
+#   wallet.add_cash(cashwad.price)     ✅
+#   item.price = 250                   ✅
+#   if wallet.cash >= item.price:     ✅
+#
+# 💡 Reminder:
+# Keep it simple, searchable, and semantically clear to make the economy system easier to expand and debug.

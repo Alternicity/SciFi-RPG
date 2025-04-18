@@ -144,7 +144,7 @@ def player_character_options(all_regions, factions):
         "inventory": Inventory([Knife(owner_name="Swiz")]),
         "wallet": Wallet(bankCardCash=50),
         "preferred_actions": {"Rob": 1, "Steal": 2},
-        "initial_motivations": ["ObtainWeapon", "IncreaseStatus", "JoinGang"],
+        "initial_motivations": ["ObtainWeapon", "IncreaseStatus", "JoinGang", "steal_money", "steal_object"],
         "custom_skills": {"stealth": 12, "observation": 6}
     }
 ]
@@ -202,7 +202,7 @@ def instantiate_character(char_data, all_regions, factions):
         initial_motivations=char_data.get("initial_motivations", []),
         custom_skills=char_data.get("custom_skills")
     )
-    print(f"✅ Character {character.name} instantiated.")
+    print(f"{character.name} starts with motivations: {', '.join(character.motivation_manager.motivations.keys())}")
     game_state.player_character = character
     return character
 

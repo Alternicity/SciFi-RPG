@@ -41,12 +41,32 @@ class MotivationManager:
         self.character = character
         self.motivations = {}  # Store motivations with urgency levels
 
-    def update_motivations(self):
-        """Dynamically update motivations based on needs but without removing existing ones."""
+    def update_motivations(self, motivation=None, urgency=None):
+        """Update motivations with optional new data."""
         
-        # Ensure at least one default motivation exists
+        if motivation:
+            if motivation in self.motivations:
+                self.motivations[motivation] += urgency or 1
+            else:
+                self.motivations[motivation] = urgency or 5
+            return  # Early exit after update
+
+        # Default case: just make sure something is in motivations
         if not self.motivations:
             self.motivations["earn_money"] = 5
+
+    def refresh_from_memory(self, memories):
+        """Reinforce motivations based on memory importance or tags."""
+        for mem in memories:
+            for tag in mem.tags:
+                if tag in VALID_MOTIVATIONS:
+                    urgency_boost = mem.importance
+                    if tag in self.motivations:
+                        self.motivations[tag] += urgency_boost
+                    else:
+                        self.motivations[tag] = urgency_boost
+                        """ The NPC can now reinforce motivations like this:
+                        mm.refresh_from_memory(npc.memory_list) """
 
     def get_highest_priority_motivation(self):
         """Returns the most urgent motivation."""
@@ -65,18 +85,7 @@ class MotivationManager:
         return VALID_MOTIVATIONS.get(motivation, 5)  # Default fallback
 
 
-#This function might be useful for If you want manual motivation
-#  overrides (e.g., forcing an NPC to change behavior suddenly)
-def change_motivation(self, name, urgency=None):
-    """Manually overrides a motivation's urgency or adds a new one."""
-    if name not in VALID_MOTIVATIONS:
-        print(f"Invalid motivation: {name}")
-        return
 
-    if urgency is None:
-        urgency = VALID_MOTIVATIONS[name]  # Default urgency
-
-    self.motivation_manager.motivations[name] = urgency  # Update urgency dynamically
 
 
 

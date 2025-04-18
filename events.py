@@ -2,6 +2,7 @@ from distributions import generate_normal, generate_black_swan
 from combat import calculate_intimidation_score, calculate_resistance_score
 from characterActionTests import IntimidationTest
 from InWorldObjects import ObjectInWorld
+from visual_effects import loading_bar, RED, color_text
 
 class Event:
     def __init__(self, name, event_type, effect=None, description="", impact=None, **kwargs):
@@ -179,18 +180,24 @@ class Robbery(Event):
             )
 
         # Step 1: Attempt Intimidation
+
+        weapon = getattr(self.instigator, "primary_weapon", None)
+        weapon_name = weapon.name if weapon else "bare hands"
+        
         intimidation_test = IntimidationTest(self.instigator, self.shopkeeper, wildcard_bonus=5)
         success = intimidation_test.run(simulate=simulate, verbose=verbose)
+        
+        
 
         if success:
-            print(f"{self.instigator.name} successfully intimidates {self.shopkeeper.name}.")
+            print(f"{self.instigator.name} successfully {color_text('intimidates', RED)} {self.shopkeeper.name} with {weapon_name}.")
 
         # Step 2: Steal physical cash if available
         if hasattr(self.location, "cash_register"):
             register = self.location.cash_register
             if register.cash > 0:
-                cashwad = register.create_cashwad(register.cash)
-                self.instigator.inventory.add(cashwad)
+                cashwad = register.create_cashwad()
+                self.instigator.inventory.add_item(cashwad)
 
                 print(f"{self.instigator.name} steals ${cashwad.amount} from {self.location.name}!")
             else:
@@ -201,7 +208,7 @@ class Robbery(Event):
         if hasattr(self.location, "inventory"):
             if hasattr(self, "target_item") and self.target_item in self.location.inventory.items:
                 self.location.inventory.remove(self.target_item)
-                self.instigator.inventory.add(self.target_item)
+                self.instigator.inventory.add_item(self.target_item)
                 print(f"{self.instigator.name} steals the targeted {self.target_item.name}!")
 
             for item in self.location.inventory.items.copy():
@@ -209,7 +216,7 @@ class Robbery(Event):
                     continue  # Already taken
                 if isinstance(item, ObjectInWorld):
                     self.location.inventory.remove(item)
-                    self.instigator.inventory.add(item)
+                    self.instigator.inventory.add_item(item)
                     print(f"{self.instigator.name} also steals a {item.name}!")
                 else:
                     print(f"{self.shopkeeper.name} resists the robbery attempt!")
@@ -222,9 +229,12 @@ class Robbery(Event):
         # Step 4: Witnesses respond
         witnesses = self.location.list_characters(exclude=[self.instigator])
         for witness in witnesses:
-            witness.observe("robbery", self.instigator)
-            witness.fun = max(0, witness.fun - 1)
+            region = self.location.region if hasattr(self.location, "region") else "unknown"
+            witness.observe("robbery", self.instigator, region, self.location)
+
+            witness.fun = max(0, witness.fun - 5)
             print(f"{witness.name} witnesses the robbery and becomes distressed!")
+            #reaction and memory code
 
         # Step 5: Return Incident object
         if self.weapon_used:

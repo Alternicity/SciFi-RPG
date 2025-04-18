@@ -184,7 +184,7 @@ class Character:
         self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
         #status loss, or lack of money, or tasks failed, or baf personal events
         self.is_visibly_wounded = False
-
+        self.memory = []
         self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
             "self_actualization": 2,})  # Example defaults
         
@@ -246,17 +246,16 @@ class Character:
         """ if not self.faction:
             raise ValueError("Faction must be specified for a character.") """
         #remove 
-
-        self.weapon = None
+        self.primary_weapon = None
+        self.weapons = []
         self.health = 100 + toughness
-        
+        self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID
         from InWorldObjects import Wallet
         self.wallet = wallet if wallet else Wallet()
         #print(f"[DEBUG, from class Character] {self.name} wallet: {self.wallet.bankCardCash}")
 
         from inventory import Inventory
-        self.inventory = kwargs.get("inventory", Inventory())
-
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
 
         # Initialize loyalties as a dictionary
         self.loyalties = kwargs.get("loyalties", {})  # Default to empty dictionary if not provided
@@ -291,7 +290,7 @@ class Character:
         # Future stub: sublocation
         sublocation = getattr(self, "sublocation", None)
         if not self.region or not self.location:
-            return "Location data missing"
+            return "display_location: Location data missing"
         if sublocation:
             return f"{region_name}, {location_name}, {sublocation}"
         return f"{region_name}, {location_name}"
@@ -316,11 +315,34 @@ class Character:
         """Returns motivations in a formatted way for display."""
         return self.motivation_manager.get_motivations()
 
-    def update_motivations(self):
-        """Triggers motivation recalculation."""
-        self.motivation_manager.update_motivations()
-        #possibly deprecated for motivations.py or at least the names are confusingly the same
+    def update_motivations(self, name=None, urgency=None):
+        """Updates or adds a motivation manually or in bulk logic if no arguments are passed."""
+        if name and urgency is not None:
+            self.motivations[name] = urgency
+            return
+        # Existing automatic logic can stay here
+        if not self.motivations:
+            self.motivations["earn_money"] = 5
     
+    from observe import handle_observation  # Safe import — doesn't import Character
+
+    def observe(self, event_type, instigator, region, location):
+        #observation awareness
+        from observe import handle_observation
+        print(f"{self.name} observes a {event_type} involving {instigator.name} at {location.name}, {region}")
+
+        if hasattr(self, "memory"):
+            self.memory.append({
+                "event": event_type,
+                "instigator": instigator.name,
+                "location": getattr(instigator, "location", None),
+                "time": "now",  # Placeholder
+            })
+
+        handle_observation(self, event_type, instigator, region, location)
+
+
+
     @property
     def whereabouts(self):
         """Returns the character's full whereabouts dynamically."""
