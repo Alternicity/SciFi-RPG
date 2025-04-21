@@ -37,21 +37,16 @@ def create_object(data):
     
 def create_regions():
     from create_game_state import get_game_state  # Keep this if needed
-    global game_state  # Ensure Python uses the global game_state
-    
+    from createLocations import create_locations
+    from location import Region, Shop
+    #global game_state  
+    # Ensure Python uses the global game_state
 
-    if 'game_state' not in globals():  # Check if game_state exists in global scope
-        game_state = None  # Define it globally if missing
+    game_state = get_game_state()
 
-    if game_state is None:
-        print(f"🔴 🔵DEBUG: game_state is None in create_regions(), calling get_game_state()")
-        game_state = get_game_state()  # Ensure it's assigned before use
+    region_names = ["NorthVille", "SouthVille", "Easternhole", "Westborough", "Downtown"]
 
-    #print(f"DEBUG: game_state inside create_regions() = {game_state}")
-
-    #print("Initializing regions as objects...")
-
-    region_wealth_levels = {
+    wealth_map = {
         "NorthVille": "Normal",
         "Easternhole": "Poor",
         "Westborough": "Rich",
@@ -59,29 +54,43 @@ def create_regions():
         "Downtown": "Rich",
     }
 
-    from createLocations import create_locations
     # Store region objects
-    all_regions = []
+    all_regions = [] #used elsewhere
     
-    for region, wealth in region_wealth_levels.items():
+    for region_name in region_names:
         try:
-            #print(f"DEBUG: Creating region '{region}' with wealth level {wealth}")
-            location_list = create_locations(region, wealth) #what exactly is wealth at this point?
-
+            wealth = wealth_map.get(region_name, "Normal")
+            
+            # 🏗️ Create a region object first
             region_obj = Region(
-                name=region,
-                shops=[loc for loc in location_list if isinstance(loc, Shop)],  # Extract Shops separately
-                locations=location_list,  # Full list of Locations
+                name=region_name,
+                shops=[],
+                locations=[],
                 factions=[],
-                danger_level=None,
+                danger_level=None
             )
             all_regions.append(region_obj)
-            #print(f"📌 DEBUG: Created regions: {all_regions}") #verbose
-        except Exception as e:
-            print(f"Error creating region '{region}': {e}")
 
+        except Exception as e:
+            print(f"❌ Error creating Region object for '{region_name}': {e}")
+
+    # 🔁 Now populate each region with locations
+    for region in all_regions:
+        try:
+            location_list = create_locations(region_obj, wealth)
+
+            region.locations = location_list
+            region.shops = [loc for loc in location_list if isinstance(loc, Shop)]
+
+            # 🔗 Set the region reference on each location
+            for loc in location_list:
+                loc.region = region
+
+        except Exception as e:
+            print(f"❌ Error creating locations for region '{region.name}': {e}")
+
+    # 📦 Save to game_state
     game_state.all_regions = all_regions
-    #print(f"DEBUG: All regions added to game_state: {len(game_state.all_regions)}")
     return all_regions   
 
 def create_gang_factions(num_gangs, all_regions):
@@ -248,6 +257,9 @@ def create_HQ(region, faction_type="gang"):
     return new_hq #this var appears unused?
 
 def assign_hq(faction, region):
+    from create_game_state import get_game_state
+    game_state = get_game_state()
+
     if faction.HQ is not None:  # ✅ Prevent multiple HQ assignments
         #print(f"{faction.name} already has an HQ in {faction.HQ.region.name}.")
         return  # Exit the function early

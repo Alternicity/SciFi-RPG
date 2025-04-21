@@ -51,7 +51,6 @@ class UndevelopedRegion(Region):
 @dataclass
 class VacantLot(Location):
     name: str = "Empty Land"
-    location: str = "N/A"
     categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 0
     ambiance_level: int = 0
@@ -727,7 +726,6 @@ class Factory(Location):
 @dataclass
 class Cafe(Location):
     name: str = "Metro Cafe"
-    location: str = "North"
     upkeep: int = 10
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -764,7 +762,6 @@ class Cafe(Location):
 @dataclass
 class Park(Location):
     name: str = "Green Park"
-    location: str = "Central"
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     upkeep: int = 15
     ambiance_level: int = 1
@@ -788,7 +785,6 @@ class Park(Location):
 @dataclass
 class Museum(Location):
     name: str = "City Museum"
-    location: str = "Central"
     upkeep: int = 45
     artifact_count: int = 50
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -813,7 +809,6 @@ class Museum(Location):
 @dataclass
 class Library(Location):
     name: str = "Public Library"
-    location: str = "West"
     categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 20
     book_count: int = 10000
@@ -872,7 +867,6 @@ class ResearchLab(Location):
 @dataclass
 class Warehouse(Location):
     name: str = "Warehouse 5"
-    location: str = "wherever"
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     storage_capacity: int = 50 # will need to upgrade to a more complex data structure
@@ -898,7 +892,6 @@ class Warehouse(Location):
 @dataclass
 class ApartmentBlock(Location):
     name: str = "Mass Housing"
-    location: str = "wherever"
     upkeep: int = 35
     categories: List[str] = field(default_factory=lambda: ["residential"])
     storage_capacity: int = 50 # LOL, will need to upgrade to a more complex data structure
@@ -930,7 +923,6 @@ class ApartmentBlock(Location):
 @dataclass
 class House(Location):
     name: str = "Fam House"
-    location: str = "wherever"
     categories: List[str] = field(default_factory=lambda: ["residential"])
     upkeep: int = 5
     fun: int = 1
@@ -957,7 +949,6 @@ class House(Location):
 @dataclass
 class SportsCentre(Location):
     name: str = "The Stadium"
-    location: str = "wherever"
     upkeep: int = 30
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -986,7 +977,6 @@ class SportsCentre(Location):
 @dataclass
 class Holotheatre(Location):
     name: str = "Zodeono"
-    location: str = "wherever"
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -1063,14 +1053,14 @@ class PoliceStation(Location):
         return asdict(self)
     
     def imprison(character):
-        return idk(self)
+        pass
     
     def interogate(detective, character, targetInfo):
-        return(results)
+        pass
     
     def torture(detective, character, targetInfo):
-        return(results)
+        pass
 
     def hostInvestigation(investigation):
-        return(results)
+        pass
     #also has a CopBar

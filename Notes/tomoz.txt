@@ -2,3 +2,5 @@
 
 So Swiz needs motivation to steal a pistol, then rob the shop. He is hungry, poor, and has no gang.
 To build gameplay, dznamic menu options will have to be made available in the gameplay menu.
+
+Perhaps we could do something with region_wealth_levels when entering regions, some decriptive prints or something

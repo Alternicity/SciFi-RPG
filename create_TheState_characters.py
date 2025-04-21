@@ -5,6 +5,7 @@ from characters import VIP, Manager, Employee, RiotCop, Detective, Taxman
 from create_character_names import create_name
 from location import MunicipalBuilding, PoliceStation
 from create_game_state import get_game_state
+from motivation_presets import MotivationPresets
 
 def create_TheState_characters(faction):
     from faction import State
@@ -29,7 +30,7 @@ def create_TheState_characters(faction):
         faction=faction,
         region=faction.region,
         location=muni_building,
-        initial_motivations=["gain_elite"]
+        initial_motivations=MotivationPresets.for_class("vip")
     )
     faction.state_staff.append(vip)
     game_state.add_state_staff(vip)
@@ -37,9 +38,9 @@ def create_TheState_characters(faction):
 
     # --- Managers, Employees, Taxmen ---
     for cls, count, motivations in [
-        (Manager, random.randint(2, 3), ["influence"]),
-        (Employee, random.randint(2, 3), ["influence"]),
-        (Taxman, random.randint(2, 4), ["gain_money", "squeeze_taxes"])
+        (Manager, random.randint(2, 3), MotivationPresets.for_class("Manager")),
+        (Employee, random.randint(2, 3), MotivationPresets.for_class("Employee")),
+        (Taxman, random.randint(2, 4), MotivationPresets.for_class("Taxman"))
     ]:
         for _ in range(count):
             person = cls(
@@ -59,8 +60,8 @@ def create_TheState_characters(faction):
 
     # --- Riot Cops & Detectives ---
     for cls, count, motivations in [
-        (RiotCop, random.randint(3, 5), ["earn_money", "enforce_law"]),
-        (Detective, random.randint(1, 3), ["earn_money", "enforce_law"])
+        (RiotCop, random.randint(3, 5), MotivationPresets.for_class("RiotCop")),
+        (Detective, random.randint(1, 3), MotivationPresets.for_class("Detective"))
     ]:
         for _ in range(count):
             cop = cls(

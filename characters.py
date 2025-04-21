@@ -2,7 +2,7 @@
 import random
 from enum import Enum, auto
 from inventory import Inventory
-from status import Status
+from status import StatusLevel
 from InWorldObjects import ObjectInWorld, Wallet
 
 from base_classes import Character, Location, Faction
@@ -127,7 +127,7 @@ class Manager(Character):
          # Initialize base Character
         super().__init__(
             name, faction=faction,  region=region,
-            location=location, wallet=wallet, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            location=location, wallet=wallet, status=StatusLevel.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, **kwargs
         )
         self.position = position
@@ -191,7 +191,7 @@ class Employee(Subordinate):
         
         super().__init__(
             name, faction=faction,  region=region,
-            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, position=position, status=Status.LOW, loyalties=default_loyalties, **kwargs
+            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, race=race, position=position, status=StatusLevel.LOW, loyalties=default_loyalties, **kwargs
         )
         
     def __repr__(self):
@@ -783,7 +783,7 @@ class Taxman(Character):
         
         super().__init__(
             name,  region=region,
-            location=location, faction=faction, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            location=location, faction=faction, bankCardCash=bankCardCash, status=StatusLevel.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, preferred_actions=preferred_actions,**kwargs
         )
         self.base_preferred_actions = {
@@ -821,7 +821,7 @@ class Accountant(Character):
         
         super().__init__(
             name, faction=faction, region=region,
-            location=location, bankCardCash=bankCardCash, status=Status.HIGH, loyalties=default_loyalties, fun=fun,
+            location=location, bankCardCash=bankCardCash, status=StatusLevel.HIGH, loyalties=default_loyalties, fun=fun,
             hunger=hunger, **kwargs
         )
         self.position = position

@@ -1,9 +1,11 @@
 #city_vars.py
 #File to hold a class and object creation code to make accesible variables for other files to easily access
+#get_game_state() is not a hack in a negative sense — it’s a valid service locator pattern
 
-#game_state = None  # Declare without instantiating
 
-#Actual code
+#"Resolve core references like region inside constructors using get_game_state() — but make sure upstream code
+#  never hands it None accidentally."
+
 class GameState:
     def __init__(self):
         self.state = None

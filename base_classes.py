@@ -5,6 +5,8 @@ from typing import Callable, Dict, Optional, TYPE_CHECKING, List, Any
 from goals import Goal
 import traceback
 from enum import Enum, auto
+
+
 if TYPE_CHECKING:
     from location import Region
 DEBUG_MODE = False  # Set to True when debugging
@@ -127,6 +129,7 @@ class Character:
         location,
         wallet=None,
         initial_motivations=None,
+        motivations=None,
         preferred_actions=None,
         behaviors=None,
         partner=None,
@@ -163,9 +166,6 @@ class Character:
         if not isinstance(self.region, Region):
             raise ValueError(f"Invalid region assigned to character: {region}")
         
-
-
-        self.initial_motivations = initial_motivations or []
         self.location = location
         # Default preferred actions (subclasses can extend this)
         self.base_preferred_actions = {}
@@ -181,17 +181,44 @@ class Character:
         self.behaviors = set(behaviors) if behaviors else set_default_behaviour()
         self.behaviour_manager = BehaviourManager()
         self.posture = Posture.STANDING
-        self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
-        #status loss, or lack of money, or tasks failed, or baf personal events
+        
         self.is_visibly_wounded = False
         self.memory = []
         self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
             "self_actualization": 2,})  # Example defaults
         
+        self.initial_motivations = initial_motivations or []
         from motivation import MotivationManager
-        self.motivation_manager = MotivationManager(self)  # NEW: Handles motivation logic
-        # Update motivations on creation
-        self.motivation_manager.update_motivations()
+        self.motivation_manager = MotivationManager(self)
+
+        # If using Motivation objects directly, no need to unpack
+        for m in self.initial_motivations:
+            if isinstance(m, str):
+                #print(f"[MOTIVATION] Adding from string: {m} (urgency=1)")
+                self.motivation_manager.update_motivations(m, 1)
+            elif isinstance(m, tuple):
+                #print(f"[MOTIVATION] Adding from tuple: {m[0]} (urgency={m[1]})")
+                self.motivation_manager.update_motivations(m[0], m[1])
+            elif hasattr(m, "type") and hasattr(m, "urgency"):
+                #print(f"[MOTIVATION] Adding Motivation object: {m.type} (urgency={m.urgency})")
+                self.motivation_manager.update_motivations(m.type, m.urgency)
+            else:
+                print(f"[WARN] Unknown motivation format: {m}")
+
+                
+
+
+
+        self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
+        #status loss, or lack of money, or tasks failed, or baf personal events
+        from status import StatusLevel, CharacterStatus
+        self.status = CharacterStatus()
+        self.status = {
+            "public": {"level": StatusLevel.LOW, "title": "Unknown"},
+            "criminal": {"level": StatusLevel.MID, "title": "Street Hustler"},
+            "corporate": {"level": StatusLevel.NONE, "title": None},
+            "state": {"level": StatusLevel.NONE, "title": None}
+}
 
 
         # Tasks (individual objectives, replacing "goals")
@@ -284,17 +311,21 @@ class Character:
         """Remove a preferred action."""
         self.preferred_actions.pop(action, None)
 
-    def display_location(self):
+    def display_location(self, verbose=False):
         region_name = self.region.name if hasattr(self.region, "name") else str(self.region)
         location_name = self.location.name if hasattr(self.location, "name") else str(self.location)
-        # Future stub: sublocation
         sublocation = getattr(self, "sublocation", None)
+
         if not self.region or not self.location:
-            return "display_location: Location data missing"
-            #print(f"Deciding where to go; {character.name} is in {character.region} but no specific location")
+            if verbose:
+                print(f"Deciding where to go; {self.name} is in {self.region} but no specific location")
+            return f"{region_name}, {location_name}"
+
         if sublocation:
             return f"{region_name}, {location_name}, {sublocation}"
         return f"{region_name}, {location_name}"
+
+
 
     def default_skills(self):
         # Basic human-level skills
@@ -439,9 +470,10 @@ class Character:
 
 @dataclass
 class Location:
+    name: str = "Unnamed Location"
     region: Optional['Region'] = None
     child_location: Optional['Location'] = None  # Specific location within the location
-    name: str = "Unnamed Location"
+    
     menu_options: List[str] = field(default_factory=list)
     security: Security = field(default_factory=lambda: Security(
         level=1,

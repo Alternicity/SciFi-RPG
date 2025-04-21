@@ -4,7 +4,7 @@ import random
 from characters import CEO, Manager, CorporateSecurity, CorporateAssasin, Employee, Accountant
 from location import HQ
 from create_character_names import create_name
-
+from motivation_presets import MotivationPresets
 
 def create_corporation_characters(faction, factions):
     """
@@ -41,7 +41,7 @@ def create_corporation_characters(faction, factions):
         faction=faction,
         region=faction.region,
         location=corp_hq,
-        initial_motivations=["increase_profits"]
+        initial_motivations=MotivationPresets.for_class("CEO")
     )
     faction.add_CEO(ceo)
     characters.append(ceo)
@@ -53,7 +53,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=["earn_money", "gain_high"]
+            initial_motivations=MotivationPresets.for_class("Manager")
         )
         faction.add_manager(manager)
         characters.append(manager)
@@ -65,7 +65,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=["earn_money"]
+            initial_motivations=MotivationPresets.for_class("Employee")
         )
         faction.add_employee(employee)
         characters.append(employee)
@@ -77,7 +77,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=["patrol", "observe"]
+            initial_motivations=MotivationPresets.for_class("CorporateSecurity")
         )
         faction.add_security(guard)
         characters.append(guard)
@@ -89,13 +89,20 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=["reduce taxes", "earn_money"]
+            initial_motivations=MotivationPresets.for_class("Accountant")
         )
         faction.add_accountant(accountant)
         characters.append(accountant)
 
-    """ Add Corporate Assassins back in
-    Control gender split
-    Log character types created for debug purposes """
+    # Corporate Assassins
+    for _ in range(random.randint(0, 2)):
+        assassin = CorporateAssasin(
+            name=create_name(None, random.choice(["Male", "Female"])),
+            faction=faction,
+            region=faction.region,
+            location=corp_hq,
+            initial_motivations=MotivationPresets.for_class("CorporateAssassin")
+        )
+        characters.append(assassin)
 
     return characters

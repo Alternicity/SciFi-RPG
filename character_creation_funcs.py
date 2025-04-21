@@ -11,10 +11,9 @@ from utils import get_faction_by_name, get_location_by_name, get_region_by_name
 from createGangCharacters import create_gang_characters
 from createCorporateCharacters import create_corporation_characters
 from create_TheState_characters import create_TheState_characters
-
+from motivation_presets import MotivationPresets
 
 def create_faction_characters(faction, all_regions, factions=None):
-    # Choose a dominant race for the faction
     from faction import Gang, Corporation, State
     if isinstance(faction, Gang):
         return create_gang_characters(faction)
@@ -23,7 +22,7 @@ def create_faction_characters(faction, all_regions, factions=None):
     elif isinstance(faction, State):
         return create_TheState_characters(faction)
     elif faction.name == "Factionless":
-        # ✅ Skip creating characters for factionless
+        # Skip creating characters for factionless, its just to make code run for independent characters
         return []
     else:
         raise ValueError(f"Unknown faction type: {faction}")
@@ -31,10 +30,7 @@ def create_faction_characters(faction, all_regions, factions=None):
 def create_all_characters(factions, all_locations, all_regions):
     # TODO: Update NPC instantiation to support Wallet and Inventory objects
     print("\n" * 3)  # Line breaks for clarity
-    print("create_all_characters() is about to run")
-
-    import inspect
-    print(f"create_all_characters() called from: {inspect.stack()[1].function}")
+    #print("create_all_characters() is about to run")
 
     all_characters = []
    
@@ -53,70 +49,6 @@ def create_all_characters(factions, all_locations, all_regions):
 
     return all_characters
 
-#marked for deletion
-""" def player_character_options(all_regions, factions) -> list:
-    #duplicate to either delete or rename. Is this code used?
-    print("Checking available regions and factions...")
-    # Ensure we get a valid Corporation
-    from faction import Corporation, Gang
-
-    available_corporations = [faction for faction in factions if isinstance(faction, Corporation)]
-    if not available_corporations:
-        raise ValueError("No corporation factions available!")
-
-    available_gangs = [faction for faction in factions if isinstance(faction, Gang)]
-    if not available_gangs:
-        raise ValueError("No corporation factions available!")
-    
-    selected_faction = random.choice(available_corporations)  # Pick one at random """
-
-
-def select_character_menu():
-    """Displays character selection and returns the selected character and their region."""
-    from character_creation_funcs import player_character_options
-    from display import show_character_details
-    from create import all_regions, factions
-    from base_classes import Character
-    character_options = player_character_options(all_regions, factions)
-
-    if not character_options:
-        print("No characters available for selection.")
-        return None, None
-
-    # Display character choices
-    print("\nSelect a character:")
-    for idx, char_data in enumerate(character_options, start=1):
-        print(f"{idx}. {char_data['name']} {char_data['Class'].name}")
-
-    # Player selects a character
-    while True:
-        try:
-            choice = int(input("Enter the number of your chosen character: ")) - 1
-            if 0 <= choice < len(character_options):
-                char_data = character_options[choice]
-                selected_character = Character(
-                    name=char_data["name"],
-                    #their class name
-                )
-                selected_character.is_player = True
-                global current_character  # Declare global to use it in other modules
-                current_character = selected_character
-
-                #I had to add this line to make it be defined:
-                character = selected_character
-                print(f"🔴🔴DEBUG: {character.name} location.name = {character.location.name}")
-                break
-            else:
-                print("Invalid choice. Please select a valid number.")
-        except ValueError:
-            print("Invalid input. Please enter a number.")
-
-    # Show character details
-    show_character_details(selected_character)
-
-    return selected_character, selected_character.region
-
-
 def player_character_options(all_regions, factions):
     """Return a list of dictionaries with character DATA instead of full objects."""
     # Define character options as data dictionaries
@@ -124,6 +56,7 @@ def player_character_options(all_regions, factions):
     from weapons import Knife
     from inventory import Inventory
     from base_classes import Factionless #foes this need adding to factions and game_state
+    
     character_data = [
     {
         "class": Manager,
@@ -133,8 +66,9 @@ def player_character_options(all_regions, factions):
         "location_name": "Corporate HQ",
         "wallet": Wallet(bankCardCash=500),
         "preferred_actions": {},
-        "initial_motivations": ["ObtainWeapon", "IncreaseStatus", "JoinGang"]
+        "initial_motivations": MotivationPresets.for_class("Manager"),  # new
     },
+
     {
         "class": GangMember,
         "name": "Swiz",
@@ -144,10 +78,12 @@ def player_character_options(all_regions, factions):
         "inventory": Inventory([Knife(owner_name="Swiz")]),
         "wallet": Wallet(bankCardCash=50),
         "preferred_actions": {"Rob": 1, "Steal": 2},
-        "initial_motivations": ["ObtainWeapon", "IncreaseStatus", "JoinGang", "steal_money", "steal_object"],
+        "initial_motivations": MotivationPresets.for_class("GangMember"),
         "custom_skills": {"stealth": 12, "observation": 6}
-    }
-]
+    },
+
+
+]   
 
     return character_data
     
@@ -155,6 +91,7 @@ def instantiate_character(char_data, all_regions, factions):
     from utils import get_faction_by_name, get_region_by_name, get_location_by_name
     from create_game_state import get_game_state
     from InWorldObjects import Wallet
+    from weapons import Weapon
 
     game_state = get_game_state()    
     if game_state is None:
@@ -180,31 +117,44 @@ def instantiate_character(char_data, all_regions, factions):
     location = get_location_by_name(location_name, all_regions)
     wallet = char_data.get("wallet", Wallet())
 
-    """ if faction_name is None:
-        faction = None
-    elif faction is None:
-        print(f"❌ ERROR, from character_creation_funcs: No faction found with name '{faction_name}'")
-        return None """
-
     if region is None:
         print(f"❌ ERROR: No region found with name '{region_name}'")
 
+    motivation_objects = char_data.get("initial_motivations", [])
+
     # Create character
     character = char_data["class"](
-        name=char_data["name"],
-        faction=faction,
-        region=region,
-        location=location,
-        wallet=wallet,
-        fun=1,
-        hunger=3,
-        preferred_actions=char_data.get("preferred_actions", {}),
-        initial_motivations=char_data.get("initial_motivations", []),
-        custom_skills=char_data.get("custom_skills")
-    )
-    print(f"{character.name} starts with motivations: {', '.join(character.motivation_manager.motivations.keys())}")
-    game_state.player_character = character
-    return character
+    name=char_data["name"],
+    faction=faction,
+    region=region,
+    location=location,
+    wallet=wallet,
+    fun=1,
+    hunger=3,
+    preferred_actions=char_data.get("preferred_actions", {}),
+    initial_motivations=motivation_objects,  # pass weighted tuples
+    custom_skills=char_data.get("custom_skills")
+)
 
+# Assign inventory if provided
+    if "inventory" in char_data:
+        character.inventory = char_data["inventory"]
+        character.inventory.owner = character  # Set the owner reference
+
+        # Update each item to be aware of its new owner
+        for item in character.inventory.items.values():
+            item.owner_name = character.name
+            if isinstance(item, Weapon):
+                character.weapons.append(item)
+
+        character.inventory.update_primary_weapon()
+        print(f"Post-instantiation inventory for {character.name}:")
+        for item in character.inventory.items.values():
+            print(f"  - {item.name} x{getattr(item, 'quantity', 1)}")
+
+        print(f"{character.name} starts with motivations: {', '.join([m.type for m in character.motivation_manager.motivations])}")
+
+        game_state.player_character = character
+        return character
 
     

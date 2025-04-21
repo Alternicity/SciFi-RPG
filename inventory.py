@@ -12,11 +12,15 @@ logging.basicConfig(level=logging.INFO)
 class Inventory:
     """Manages a collection of items for characters, shops, or other entities."""
 
-    def __init__(self, max_capacity=None, owner=None):
+    def __init__(self, items=None, max_capacity=None, owner=None):
         """Initialize an inventory with optional maximum capacity."""
         self.items = {}  # key: item.name, value: item object
         self.max_capacity = max_capacity
         self.owner = owner
+        
+        if items:
+            for item in items:
+                self.add_item(item)
 
     def _validate_item(self, item): #old code
         """Validate an item before adding or updating it."""
@@ -114,6 +118,12 @@ class Inventory:
             q = getattr(item, "quantity", "N/A")
             print(f"- {item.name} (x{q})")
             
+    def get_inventory_summary(self):
+        if not self.items:
+            return "(inv Empty)"
+        return ", ".join(f"{item.name} (x{getattr(item, 'quantity', 1)})" for item in self.items.values())
+
+
     # make Inventory itself iterable:
     def __iter__(self):
         return iter(self.items.values())

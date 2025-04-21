@@ -106,3 +106,50 @@ if __name__ == "__main__":
     # Test invalid location
     test_location = get_location_by_name("Nonexistent Place", game_state.all_locations)
     print(f"DEBUG: Found location: {test_location.name if test_location else 'None'}")
+
+def audit_game_state():
+    """Audit consistency between regions and global location lists."""
+    game_state = get_game_state()
+    issues_found = False
+
+    for region in game_state.all_regions:
+        for loc in region.locations:
+            if loc not in game_state.all_locations:
+                print(f"🧪 Audit: {loc.name} is in {region.name} but missing from game_state.all_locations")
+                issues_found = True
+
+    if not issues_found:
+        print("✅ Audit passed: All region locations are synced with game_state.all_locations.")
+
+def dev_mode():
+    print("🔧 Dev Mode Activated: Auditing Game State...")
+    audit_game_state()
+
+def get_region_for_location(location, all_regions):
+    for region in all_regions:
+        if location.region == region.name or location.region == region:
+            print(f"✅ get_region_for_location: Found match - {region.name} for location {location.name}")
+            return region
+    print(f"🟣🟢 No matching region found for location: {location.name} with region = {location.region}")
+    return None
+
+def normalize_location_regions(all_locations, all_regions):
+    """
+    Ensures all Location objects reference a Region object, not a string.
+    Fixes any locations with region as a str by matching it to a Region by name.
+    """
+    from location import Region  # or wherever your Region class is
+
+    for loc in all_locations:
+        if isinstance(loc.region, str):
+            region_name = loc.region.strip().lower()
+            matched_region = next(
+                (reg for reg in all_regions if reg.name.strip().lower() == region_name),
+                None
+            )
+            if matched_region:
+                print(f"🛠️ Fixed region for location: {loc.name} (was '{loc.region}', now Region object)")
+                loc.region = matched_region
+                matched_region.add_location(loc)
+            else:
+                print(f"⚠️ Could not resolve region '{loc.region}' for location '{loc.name}'")

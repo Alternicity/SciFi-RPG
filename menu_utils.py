@@ -92,6 +92,7 @@ def show_shop_inventory_and_run_menu(character, location):
 def get_available_options(location, character):
     """Determine available menu options based on character and location."""
     from characterActions import talk_to_character, talk_to_employee, talk_to_customer, rob, steal
+    from game_logic import gameplay
     available_options = {}
 
     if location is None:
@@ -125,6 +126,10 @@ def get_available_options(location, character):
         non_employees = [char for char in location.characters_there if char not in location.employees_there]
         if non_employees:
             option_list.append(("Talk to a Customer", lambda: talk_to_customer(location, character)))
+    
+    region = character.location.region
+    option_list.append(("Exit Shop", lambda: return_to_region_menu(character)))
+    #should this unindented one space? It aligns with if hasattr(location, "characters_there") above
 
     # Character-based actions
     #print(f"Debug: {character.name} preferred actions: {character.get_preferred_actions()}")
@@ -179,6 +184,28 @@ def get_available_options(location, character):
 
     return available_options  # Now always a dictionary
 
+def return_to_region_menu(character):
+    from game_logic import gameplay
+
+    region = character.location.region  #perhaps we should experiment with alternatives to these
+    location = character.location
+
+    # Remove character from current location
+    if location and character in location.characters_there:
+        location.characters_there.remove(character)
+
+    # Optionally, reset character's location to None if you want to simulate "wandering" the region
+    character.location = None
+
+    # Add character back to region-level character list if not already present
+    if character not in region.characters_there:
+        region.characters_there.append(character)
+
+    print(f"{character.name} exits and returns to {region.name}.")
+
+    gameplay(character, region)
+
+
 def get_menu_choice_from_list(options, prompt="Choose one:"):
     #for now this is only used for buying in shops
     for i, opt in enumerate(options, 1):
@@ -197,7 +224,7 @@ def get_menu_choice_from_list(options, prompt="Choose one:"):
 def get_event_menu_options(character, location):
     active_events = [] #placeholder to avoid this being marked as undefined below
     menu_items = []
-    for event in active_events:
+    for event in active_events:# active_events should be a global or passed-in list
         if event.affects(location):
             menu_items.extend(event.get_menu_options(character))
     return menu_items
@@ -329,22 +356,32 @@ def select_character_menu():
         return None, None
 
     # Display character choices
-    print("\nSelect a character:")
+    print("\nSelectt a character:")
+
     for idx, char_data in enumerate(character_options, start=1):
+        #print(f"[DEBUG] char_data = {char_data}")
+        #print(f"{idx}. {char_data['name']} the {char_data['class'].__name__}")
         faction_name = char_data.get("faction_name") or "Factionless"
-        print(f"{idx}. {char_data['name']}, {char_data['class'].__name__}, Faction: {faction_name}")
+        char_class = char_data.get("class", type(char_data)).__name__
+        name = char_data.get("name", "Unknown")
+        print(f"{idx}. {name}, {char_class}, Faction: {faction_name}")
+    else:
+        # Fallback if somehow a string or object snuck in
+        faction_name = "Factionless"
+        char_class = type(char_data).__name__
+        name = getattr(char_data, "name", str(char_data))
+
+    #print(f"{idx}. {name}, {char_class}, Faction: {faction_name}")
 
 
 
-    #old, but works
-    """ for idx, char_data in enumerate(character_options, start=1):
-        print(f"{idx}. {char_data['name']}, {char_data['class'].__name__}") """
 
-    # Get user's choice
 
-    #tmp block
-    """ for i, option in enumerate(character_options):
-        print(f"{i + 1}: {option['name']}") """
+
+
+
+
+
 
     while True:
         try:
@@ -383,7 +420,7 @@ def location_menu(character, location):#deprecated?
         for index, (desc, _) in enumerate(available_options, start=1):
             print(f"{index}: {desc}")
 
-        choice = input("Choose an option: ").strip()
+        choice = input("location_menu> Choose an option: ").strip()
         
         try:
             choice_index = int(choice) - 1

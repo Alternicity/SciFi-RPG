@@ -1,0 +1,89 @@
+#motivation_presets.py
+from motivation import Motivation
+
+#class presets
+class MotivationPresets:
+    _presets = {
+
+        "GangMember": [
+            Motivation("join_gang", 6, target="Red Fangs"),
+            Motivation("obtain_ranged_weapon", 5),
+            Motivation("increase_status", 4, status_type="criminal"),
+            Motivation("steal_money", 4, status_type="criminal"),
+            Motivation("rob", 4, status_type="criminal"),
+        ],
+
+        "Manager": [
+                Motivation("join_corporation", 2, target="good question"),
+                Motivation("virtue_signal", 5),
+                Motivation("increase_status", 4, status_type="corporate"),
+                Motivation("have_fun", 4, status_type="good question"),
+            ],
+
+        "CorporateSecurity": [
+            Motivation("protect_location", 6),
+            Motivation("protect_allies", 5, status_type="corporate"),
+        ],
+
+        "CorporateAssassin": [
+                Motivation("obtain_contract", 6),
+                Motivation("assassinate_target", 0, status_type="corporate"),
+                Motivation("earn_money", 6),
+                Motivation("increase_status", 6),
+            ],
+
+        "Civilian": [
+                Motivation("earn_money", 3),
+                Motivation("have_fun", 6, status_type="corporate"),
+                Motivation("protect_family", 6),
+                Motivation("increase_status", 2),
+            ],       
+            
+        "Player": [
+            Motivation("explore_city", 5),
+            Motivation("earn_money", 4),
+        ],
+
+        "RiotCop": [
+            Motivation(type="enforce_law", urgency=5),
+            Motivation(type="earn_money", urgency=4)
+                ],
+        "Detective": [
+            Motivation(type="enforce_law", urgency=6),
+            Motivation(type="earn_money", urgency=3)
+        ],
+        "Taxman": [
+            Motivation(type="gain_money", urgency=5),
+            Motivation(type="squeeze_taxes", urgency=6)
+        ],
+        "Employee": [
+            Motivation(type="gain_money", urgency=4),
+            Motivation(type="gain_status", urgency=3)
+        ],
+
+        "CEO": [
+            Motivation(type="increase_profits", urgency=5),
+            Motivation(type="gain_elite", urgency=4)
+        ],
+
+        "Accountant": [
+            Motivation(type="reduce_taxes", urgency=4),
+            Motivation(type="earn_money", urgency=3)
+        ],
+
+        "Boss": [
+            Motivation(type="gain_high", urgency=5),
+            Motivation(type="recruit_members", urgency=3),
+            Motivation(type="increase_criminal_status", urgency=4)
+        ],
+
+        "Captain": [
+            Motivation(type="gain_high", urgency=4),
+            Motivation(type="execute_orders", urgency=3)
+        ],
+
+    }
+
+    @classmethod
+    def for_class(cls, class_name: str):
+        return cls._presets.get(class_name, [])

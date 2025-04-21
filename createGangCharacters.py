@@ -2,6 +2,7 @@ import random
 from characters import Boss, Captain, GangMember
 from create_character_names import create_name
 from create_game_state import get_game_state
+from motivation_presets import MotivationPresets
 
 def create_gang_characters(faction):
     """

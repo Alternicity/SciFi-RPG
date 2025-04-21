@@ -12,7 +12,7 @@ from display import (
 from motivation import MotivationManager
 
 from character_creation_funcs import create_faction_characters
-
+from utils import dev_mode
 from create_game_state import get_game_state
 
     
@@ -29,6 +29,12 @@ def gameplay(selected_character, region):
     # Update motivations before displaying
     character.motivation_manager.update_motivations()
 
+    #tmp
+    from location import Location
+    if isinstance(character.region, str):
+        print(f"[ERROR] {character.name} has region set as a string: {character.region}")
+    if isinstance(character.location, Location) and isinstance(character.location.region, str):
+        print(f"[ERROR] {character.name} has location.region set as a string: {character.location.region}")
 
 
     # Get the most urgent motivations
@@ -50,7 +56,7 @@ def gameplay(selected_character, region):
     2: ("Move to another Region", lambda: move_region(character, show_region_choices(game_state.all_regions), game_state.all_regions)),
     3: ("Display Characters Summary", lambda: display_character_Summary()),
     4: ("Display Factions", lambda: display_factions()),
-    5: ("Dev", lambda: dev_mode()),
+    5: ("Dev", lambda: dev_mode()),  # ✅ Simple call to dev_mode
     6: ("Exit Gameplay", lambda: exit_gameplay()),
 }
         dynamic_options = build_gameplay_menu(selected_character.location, selected_character)

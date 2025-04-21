@@ -3,8 +3,9 @@ from combat import calculate_intimidation_score, calculate_resistance_score
 from characterActionTests import IntimidationTest
 from InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
+from abc import ABC, abstractmethod
 
-class Event:
+class Event(ABC):
     def __init__(self, name, event_type, effect=None, description="", impact=None, **kwargs):
         self.name = name
         self.event_type = event_type  # e.g., "normal", "black_swan", "incident", etc.
@@ -12,6 +13,12 @@ class Event:
         self.description = description
         self.impact = impact or {}    # dict of actual changes to apply
         self.params = kwargs
+        #effect gives structure, impact gives raw values. I think! Maybe consolidate?
+        #Consider whether Event needs a timestamp or duration field
+
+    @abstractmethod
+    def resolve(self):
+        pass
 
     def apply(self, character):
         # Generic application of event impact (expand this later)
@@ -20,7 +27,7 @@ class Event:
                 current = getattr(character, attr)
                 setattr(character, attr, current + value)
                 print(f"{character.name}'s {attr} increased by {value} (now {getattr(character, attr)})")
-
+    
     def handle_event(event_name, character, location):
         if event_name == "Rob":
             robbery = Robbery(character, location, weapon_used=True)
@@ -28,31 +35,35 @@ class Event:
 
             if incident:
                 incident.alert_authorities()
-                trigger_event_outcome(character, "incident", location)
+                Event.trigger_event_outcome(character, "incident", location)
                 #trigger_event_outcome is marked as not defined here
             return robbery
-
-def handle_incident(character, location=None):
-    location = location or character.location  # fallback if None
-    severity = 2  # or dynamic
-    incident = Incident(name="Suspicious Activity", instigator=character, location=location, severity=severity)
-    incident.resolve()
-
-def get_character_driven_event_outcomes(character, location=None):
-    return {
-        "success": lambda: print(f"{character.name} successfully completes the action."),
-        "detected": lambda: print(f"{character.name} was spotted! Guards are alerted."),
-        "parsimony_opportunity": lambda: print(f"{character.name} notices another opportunity."),
-        "triggered_trap": lambda: print(f"{character.name} sets off a trap! Trouble ahead."),
-        "incident": lambda: handle_incident(character, location)
-        #apparently handle_incident being not defined is ok bc its a lambda
         
-    }
+    @staticmethod
+    def handle_incident(character, location=None):
+        location = location or character.location  # fallback if None
+        severity = 2  # or dynamic
+        incident = Incident(name="Suspicious Activity", instigator=character, location=location, severity=severity)
+        incident.resolve()
 
-def trigger_event_outcome(character, event_name, location=None):
-    outcomes = get_character_driven_event_outcomes(character, location)
-    #get_character_driven_event_outcomes i marked as not defined
-    outcomes.get(event_name, lambda: print(f"Unknown event outcome: {event_name}"))()
+    @staticmethod
+    def get_character_driven_event_outcomes(character, location=None):
+        return {
+            "success": lambda: print(f"{character.name} successfully completes the action."),
+            "detected": lambda: print(f"{character.name} was spotted! Guards are alerted."),
+            "parsimony_opportunity": lambda: print(f"{character.name} notices another opportunity."),
+            "triggered_trap": lambda: print(f"{character.name} sets off a trap! Trouble ahead."),
+            "incident": lambda: Event.handle_incident(character, location)
+            #handle_incident marked as not defined
+            #apparently handle_incident being not defined is ok bc its a lambda
+            
+        }
+    @staticmethod
+    def trigger_event_outcome(character, event_name, location=None):
+        outcomes = Event.get_character_driven_event_outcomes(character, location)
+
+        #get_character_driven_event_outcomes is marked as not defined
+        outcomes.get(event_name, lambda: print(f"Unknown event outcome: {event_name}"))()
 
 
 class RandomEvent(Event):
@@ -61,11 +72,13 @@ class RandomEvent(Event):
         #or affect many characters motivations
 
 class StateDrivenEvent(Event):
-    pass
+    def should_trigger(self, faction):
+        return faction.morale < 20 or faction.revenge_meter > 5
     #We're here to help
 
 class FactionDrivenEvent(Event):
-    pass
+    def should_trigger(self, faction):
+        return faction.morale < 20 or faction.revenge_meter > 5
 #A Boss or CEO decides it is time to make a big move, driven by faction AI
 
 class OutsideContextProblem(Event):
@@ -118,7 +131,10 @@ class OutsideContextProblem(Event):
             targets (dict): A dictionary of targets (e.g., economy, factions).
         """
         for event in events:
-            target = targets.get(event.effect["resource"] or event.effect["attribute"])
+            target_key = event.effect.get("resource") or event.effect.get("attribute")
+            if not target_key:
+                continue
+            target = targets.get(target_key)
             if target:
                 event.apply(target)
 
@@ -130,7 +146,7 @@ class OutsideContextProblem(Event):
         for key, value in self.impact.items():
             if key in faction.resources:
                 faction.resources[key] += value
-
+                #When apply_to_faction() adds values, do some bounds checking (e.g., morale maxing at 100)
 #combatEvent
 #combatAftermath
 
@@ -152,9 +168,26 @@ class Robbery(Event):
         self.location = location
         self.weapon_used = weapon_used
         self.shopkeeper = self._get_main_employee()
+        self.bystander_attacked = False  # This could be changed by actions
+        self.menu_options = []  # will be dynamically updated
 
+        # Also perhaps add characters_there so later witnesses code will be able to populate it
 
-        # Also characters_there so later witnesses will work
+    def affects(self, location):
+        return self.location == location
+
+    def update_menu_options(self):
+        self.menu_options.clear()
+
+        if self.location.characters_there and not self.bystander_attacked:
+            self.menu_options.append("Attack Bystander")
+        
+        # More event-driven options can be added here as needed
+
+    # Optionally: call this each tick or before menu render
+    def get_menu_options(self):
+        self.update_menu_options()
+        return self.menu_options
 
     def _get_main_employee(self):
         """
@@ -187,8 +220,6 @@ class Robbery(Event):
         intimidation_test = IntimidationTest(self.instigator, self.shopkeeper, wildcard_bonus=5)
         success = intimidation_test.run(simulate=simulate, verbose=verbose)
         
-        
-
         if success:
             print(f"{self.instigator.name} successfully {color_text('intimidates', RED)} {self.shopkeeper.name} with {weapon_name}.")
 
@@ -235,6 +266,8 @@ class Robbery(Event):
             witness.fun = max(0, witness.fun - 5)
             print(f"{witness.name} witnesses the robbery and becomes distressed!")
             #reaction and memory code
+            #if instigator sees (observe) the witness try to call the cops with their SmartPhone, add another menu option
+            #for instigator to react, maybe another intimidate() "Dont do it!" ,and attack option. robbers are cold.
 
         # Step 5: Return Incident object
         if self.weapon_used:

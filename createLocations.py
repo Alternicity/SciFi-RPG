@@ -1,72 +1,69 @@
-#create locations
-from location import MunicipalBuilding, Shop
+from location import MunicipalBuilding, Shop, Region
 from base_classes import Location
 from typing import List
 from create_game_state import get_game_state
+from utils import get_region_by_name
+from location_types_by_wealth import LocationTypes
+from InWorldObjects import SmartPhone, Size, Item
+from weapons import Pistol
 
 
-def create_locations(region_name: str, wealth: str) -> List[Location]:
-    """Creates a list of location objects for a region based on its wealth level."""
-    locations = [] 
+def create_locations(region: Region, wealth: str) -> List[Location]:
+    """Creates and returns a list of location objects for a region based on its wealth level."""
+    locations = []
     game_state = get_game_state()
 
-    # Fetch location types for this wealth level
-    from location_types_by_wealth import LocationTypes
+
+    # Get list of location classes for this wealth level
     location_types = LocationTypes.location_types_by_wealth.get(wealth, [])
 
     for location_class, count in location_types:
-        for _ in range(count):  # Create the specified number of locations
+        for _ in range(count):
             try:
                 location_obj = location_class(
-                    region=region_name,  
+                    region=region,
                     name=location_class.__name__
                 )
+                print(f"🧪 Creating {location_class.__name__} with region = {type(region)}")
+
                 locations.append(location_obj)
-
+                region.add_location(location_obj)  # 👈 Also updates game_state.all_locations
             except Exception as e:
-                print(f"Error creating location {location_class.__name__} in {region_name}: {e}")
+                print(f"⚠️ Error creating location {location_class.__name__} in {region.name}: {e}")
 
-    # ✅ Update both region and game_state with the same shop instances
-    shop_instances = [loc for loc in locations if isinstance(loc, Shop)]
-    
-    from utils import get_region_by_name
-    region_obj = get_region_by_name(region_name, game_state.all_regions)  #game_state!
-    if region_obj:
-        region_obj.locations.extend(shop_instances)  # Ensure they match!
-    for shop in shop_instances:
-        print(f"✅ DEBUG: Created {shop.name} in {shop.region} (ID: {id(shop)})")
-        from InWorldObjects import SmartPhone, Size, Item
-        from weapons import Pistol #is importing within a for loop inefficient?
-
-        # Instantiate items
-        smartphone = SmartPhone()
-        pistol = Pistol()
-
-        # Add to inventory
+    # 🔁 Handle Shops: add items
+    for shop in [loc for loc in locations if isinstance(loc, Shop)]:
         shop.inventory.add_item(SmartPhone(price=200, quantity=5))
         shop.inventory.add_item(Pistol(price=500, quantity=2))
 
+        print(f"🔍 {shop.name} initial inventory:")
+        for name, item in shop.inventory.items.items():
+            print(f"    {name}: {item.quantity} (type: {type(item)})")
 
-        if isinstance(shop, Shop):
-            print(f"🔍 {shop.name} initial inventory (object-level):")
-            for name, item in shop.inventory.items.items():
-                print(f"    {name}: {item.quantity} (type: {type(item)})")
-
-
-        print(f"🛒 DEBUG: Added items to {shop.name} inventory.")
-    # Always create a MunicipalBuilding
+    # 🏛️ Add one Municipal Building per region
     try:
         municipal_building = MunicipalBuilding(
-            region=region_name, #ALERT
-            name=f"Municipal Building in {region_name}"
+            region=region,
+            name=f"Municipal Building in {region.name}"
         )
         locations.append(municipal_building)
+        region.add_location(municipal_building)
 
-        game_state.all_locations.append(municipal_building)
-        game_state.municipal_buildings[region_name] = municipal_building  
-
+        # Game state tracking
+        game_state.municipal_buildings[region.name] = municipal_building
     except Exception as e:
-        print(f"Error creating MunicipalBuilding in {region_name}: {e}")
+        print(f"⚠️ Error creating MunicipalBuilding in {region.name}: {e}")
 
-    #print(f"📌 DEBUG: Created locations for {region_name}: {locations}") #verbose
+    # 🔍 Optional: Insert auditing hook for dev tools
+    # if DEV_MODE:
+    #     audit_game_state()  # ← Could compare region.locations vs game_state.all_locations, etc.
+
     return locations
+
+def add_location(self, location: Location):
+    location.region = self
+    self.locations.append(location)
+
+    game_state = get_game_state()
+    if hasattr(game_state, "all_locations"):
+        game_state.all_locations.append(location)

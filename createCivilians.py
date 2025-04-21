@@ -1,19 +1,24 @@
 from faction import GeneralPopulation
 import random
 from base_classes import Character
-from location import Shop
+from location import Shop, Region
 from location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
 from faction import GeneralPopulation
 from characters import Civilian
 from InWorldObjects import Wallet
+from motivation_presets import MotivationPresets
+
 general_population_faction = GeneralPopulation(name="General Population", violence_disposition="low")
 
+from utils import normalize_location_regions
 def create_civilian_population(all_locations, all_regions, num_civilians=10):
     """Generate civilians and assign them logical locations."""
     from create_character_names import create_name
-    civilians = [] # other createXYZFaction functions use local characters = [], the intention is to aggregate them in
-    #create_character_funcs.py. Dont forget to also add civilians = [] to this (and update game_state)
-    # Bias towards Terran by adding it more frequently
+    from utils import get_region_for_location
+    
+    normalize_location_regions(all_locations, all_regions)  # 🧹 Ensure valid region refs
+
+    civilians = []
     valid_races = Character.VALID_RACES
     race_pool = ["Terran"] * 5 + [race for race in valid_races if race != "Terran"]
     
@@ -21,25 +26,51 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
     homes = [loc for loc in all_locations if isinstance(loc, RESIDENTIAL)]
     public_spaces = [loc for loc in all_locations if isinstance(loc, PUBLIC_PLACES)]
     
+    # Ensure all locations have valid Region objects assigned
+    valid_locations = [loc for loc in homes + public_spaces if isinstance(loc.region, Region)]
+
+    if not valid_locations:
+        raise ValueError("No valid locations with region assignments found. Check region-location setup.")
+
+
+    if not valid_locations:
+        print("[DEBUG] Example of problematic location assignments:")
+        for loc in homes + public_spaces:
+            print(f"Location: {loc.name}, Region: {loc.region} ({type(loc.region)})")
+
+
     for _ in range(num_civilians):
         race = random.choice(race_pool)
         gender = random.choice(["male", "female"])
         name = create_name(race, gender)
         
-        home = random.choice(homes) if homes else None
-        public_place = random.choice(public_spaces) if public_spaces else None
-        location = home if home else public_place
+        location = random.choice(valid_locations)
         
-        region = next((r for r in all_regions if r.name == location.region), None) if location else None
+        #debug block
+        from create_game_state import get_game_state
+        game_state = get_game_state()
+        print("📜 All known regions:")
+        for reg in game_state.all_regions:
+            print(f" - {reg.name}")
+
+        region = get_region_for_location(location, all_regions)
 
         random_cash = random.randint(5, 500)
+
+        if region is None:
+            print(f"⚠️🟣🟣 No matching region found for location: {location.name} with region = {location.region}")
+            continue  # Skip this civilian creation if region is invalid
+        else:
+            print(f"✅🟣🟣 Region resolved: {region.name} for location {location.name}")
+
+
         civilian = Civilian(
             name=name,
             region=region,
             location=location,
             race=race,
             faction=general_population_faction,
-            initial_motivations=["earn_money", "have_fun", "find_partner"],
+            initial_motivations=MotivationPresets.for_class("Civilian"),
             wallet=Wallet(bankCardCash=random_cash),
         )
         # 80% chance this civilian is an employee

@@ -46,8 +46,7 @@ def show_character_details(character):
     """Display character details in tabulated format."""
     print("\nCharacter Details:")
    # In display.py:
-    print(character.display_location())  # for console line output
-
+    print(character.display_location(verbose=True))
 
     # First table with the first header row
     if character.faction:
@@ -69,17 +68,17 @@ def show_character_details(character):
         f"${character.wallet.bankCardCash:.2f}",
         character.display_location(),
         getattr(character, "hunger", "N/A"),
-        ", ".join(character.inventory.items.keys()) if character.inventory and character.inventory.items else "(Empty)"
+        character.inventory.get_inventory_summary() if character.inventory else "(Ch Tab Empty)"
+
     ],
 ]
         # Retrieve motivations, defaulting to an empty list if not found
     motivations = getattr(character, "motivations", [])
 
     # Find the highest urgency value
-    highest_urgency = max((urgency for _, urgency in motivations), default=0)
+    highest_urgency = max((m.urgency for m in motivations), default=0)
+    top_motivations = [m.type for m in motivations if m.urgency == highest_urgency]
 
-    # Extract motivations that match the highest urgency
-    top_motivations = [name for name, urgency in motivations if urgency == highest_urgency]
     
     from visual_effects import RESET, RED, GREEN, PURPLE, BROWN
     # Second table with the second header row
@@ -95,7 +94,7 @@ def show_character_details(character):
             getattr(character, "xxx", getattr(character, "intelligence", "N/A")),
 
             color_text(str(character.fun), RED) if character.fun < 4 else str(character.fun),
-        ", ".join(top_motivations),  # Use the precomputed motivations here
+        ", ".join(str(m) for m in top_motivations)
         ],
     ]
     # Print the first table
@@ -111,7 +110,7 @@ def show_character_details(character):
         for name, item in character.inventory.items.items():
             print(f"  {name} - Qty: {item.quantity}, Type: {type(item).__name__}, ID: {id(item)}")
     else:
-        print("  (Empty)")
+        print("  (Debug: Empty)")
 
 def display_filtered_character_summary(characters, gang_limit=3, corp_limit=3, civilian_limit=3):
     """Displays filtered character summaries with limits."""
@@ -339,7 +338,13 @@ def show_shop_inventory(character, shop):
     
 
 def display_selected_character_current_region(character, region):
-    print(f"{character.name} is in {region.name}.")
+    region = character.region
+    if isinstance(region, str):
+        print(f"Warning: character.region is a string: {region}")
+        # Optional: auto-convert using get_region_by_name(region)
+    else:
+        print(f"{character.name} is in {region.name}.")
+
 
 def list_characters(characters):
 
@@ -400,10 +405,10 @@ def compare_locations(all_locations, all_regions):
         for loc in extra_in_all_locations:
             print(f" - {loc}")
 
-    if not missing_from_all_locations and not extra_in_all_locations:
-        print("✅ All locations are correctly assigned.")
+    if not missing_from_all_locations and not extra_in_all_locations: #line 402
+        pass
+        #print("✅ All locations are correctly assigned.")
 
-    """Checks if all locations from all regions are properly included in all_locations."""
     
     missing_locations = []
     
@@ -415,4 +420,5 @@ def compare_locations(all_locations, all_regions):
     if missing_locations:
         print("\n".join(missing_locations))
     else:
-        print("✅ All locations are correctly assigned in all_locations!")
+        pass
+        #print("✅ All locations are correctly assigned in all_locations!")
