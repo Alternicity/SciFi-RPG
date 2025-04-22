@@ -15,7 +15,7 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
     """Generate civilians and assign them logical locations."""
     from create_character_names import create_name
     from utils import get_region_for_location
-    
+
     normalize_location_regions(all_locations, all_regions)  # 🧹 Ensure valid region refs
 
     civilians = []
@@ -49,10 +49,11 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
         #debug block
         from create_game_state import get_game_state
         game_state = get_game_state()
-        print("📜 All known regions:")
+        #print("📜 All known regions:")
         for reg in game_state.all_regions:
-            print(f" - {reg.name}")
-
+            #print(f" - {reg.name}")
+            pass
+        
         region = get_region_for_location(location, all_regions)
 
         random_cash = random.randint(5, 500)
@@ -61,8 +62,8 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
             print(f"⚠️🟣🟣 No matching region found for location: {location.name} with region = {location.region}")
             continue  # Skip this civilian creation if region is invalid
         else:
-            print(f"✅🟣🟣 Region resolved: {region.name} for location {location.name}")
-
+            #print(f"✅🟣🟣 Region resolved: {region.name} for location {location.name}")
+            pass
 
         civilian = Civilian(
             name=name,
@@ -84,7 +85,7 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
         game_state = get_game_state()
         game_state.civilians.append(civilian)
         game_state.all_characters.append(civilian)
-        print(f"Civilian {civilian.name} has: {civilian.wallet.bankCardCash}")
+        #print(f"Civilian {civilian.name} has: {civilian.wallet.bankCardCash}")
     return civilians
 
 def assign_workplaces(civilians, all_locations):
@@ -111,7 +112,7 @@ def assign_workplaces(civilians, all_locations):
                 correct_workplace.employees_there.append(civilian)
                 civilian.workplace = correct_workplace
                 workplace_counts[id(correct_workplace)] += 1
-                print(f"Assigned {civilian.name} to {correct_workplace.name} in {correct_workplace.region}")
+                #print(f"Assigned {civilian.name} to {correct_workplace.name} in {correct_workplace.region}")
             else:
                 print(f"⚠️ WARNING: No available workplaces for {civilian.name}")
 

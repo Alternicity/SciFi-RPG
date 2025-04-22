@@ -137,7 +137,7 @@ class Manager(Character):
         if self.faction and hasattr(self.faction, "HQ") and self.faction.HQ:
             self.HQ = self.faction.HQ
             self.location = self.HQ
-            print(f"Manager {self.name} starts at: {self.HQ.name} + has {self.wallet.bankCardCash}")
+            #print(f"Manager {self.name} starts at: {self.HQ.name} + has {self.wallet.bankCardCash}")
         else:
             print(f"⚠️ Manager {self.name} has no HQ assigned!")
         

@@ -1,0 +1,15 @@
+I would like to add an option to the gameplaz menu:
+Think.
+This will print statements based on the characters motivations, and have hooks to draw on memories and other functions, yet to be written, like psy related (if the charcter has a sufficiently high psy attribute), and nudges to the player.
+
+A secondary, in depth Character Details option that becomes a gameplay menu option (for one menu only, if it is not selected, the next time gameplay menu is shown, it will have disappeard).
+This option will Offer 
+View full Inventory
+View all motivations
+View full Character Details
+This last one will display the characters attributes in full, in tabular format.
+
+Shops shoudl be either corporate owned or family owned.
+
+display_world
+

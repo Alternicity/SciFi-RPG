@@ -12,6 +12,7 @@ from createGangCharacters import create_gang_characters
 from createCorporateCharacters import create_corporation_characters
 from create_TheState_characters import create_TheState_characters
 from motivation_presets import MotivationPresets
+from status import FactionStatus, StatusLevel
 
 def create_faction_characters(faction, all_regions, factions=None):
     from faction import Gang, Corporation, State
@@ -79,10 +80,13 @@ def player_character_options(all_regions, factions):
         "wallet": Wallet(bankCardCash=50),
         "preferred_actions": {"Rob": 1, "Steal": 2},
         "initial_motivations": MotivationPresets.for_class("GangMember"),
-        "custom_skills": {"stealth": 12, "observation": 6}
+        "custom_skills": {"stealth": 12, "observation": 6},
+        "primary_status_domain": "criminal",
+        "status_data": {
+            "public": {"level": StatusLevel.LOW, "title": "Unknown"},
+            "criminal": {"level": StatusLevel.LOW, "title": "Alone"}
     },
-
-
+},
 ]   
 
     return character_data
@@ -135,6 +139,18 @@ def instantiate_character(char_data, all_regions, factions):
     initial_motivations=motivation_objects,  # pass weighted tuples
     custom_skills=char_data.get("custom_skills")
 )
+    # ✅ Set status data if present
+    if "status_data" in char_data:
+        for domain, status_info in char_data["status_data"].items():
+            character.status.set_status(
+                domain,
+                FactionStatus(level=status_info["level"], title=status_info["title"])
+            )
+
+    # ✅ Set primary status domain
+    character.primary_status_domain = char_data.get("primary_status_domain", "public")
+    #maybe move the above block up into instantiator above it.
+
 
 # Assign inventory if provided
     if "inventory" in char_data:
@@ -148,7 +164,7 @@ def instantiate_character(char_data, all_regions, factions):
                 character.weapons.append(item)
 
         character.inventory.update_primary_weapon()
-        print(f"Post-instantiation inventory for {character.name}:")
+        #print(f"Post-instantiation inventory for {character.name}:")
         for item in character.inventory.items.values():
             print(f"  - {item.name} x{getattr(item, 'quantity', 1)}")
 

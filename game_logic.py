@@ -147,26 +147,28 @@ def view_characters(all_characters, region): #this should be moved to display
     display_filtered_character_summary(all_characters)
 
 def assign_random_civilians_to_random_shops(regions, count: int = 5):
-    print("[Debug] assign_random_civilians_to_random_shops() was called.")
+    #print("[Debug] assign_random_civilians_to_random_shops() was called.")
     from location import Shop
     from characters import Civilian
     all_civilians = []
     all_shops = []
 
     for region in regions:
-        print(f"[Debug] Checking region: {region.name}")
+        #print(f"[Debug] Checking region: {region.name}")
+        pass
         for loc in region.locations:
-            print(f"    [Debug] Found location: {loc.name} ({type(loc).__name__})")
+            #print(f"    [Debug] Found location: {loc.name} ({type(loc).__name__})")
+            pass
             if isinstance(loc, Shop):
-                print(f"        [Debug] --> This is a Shop.")
+                #print(f"        [Debug] --> This is a Shop.")
                 all_shops.append(loc)
             for char in loc.characters_there:
-                print(f"        [Debug] Has character: {char.name} ({type(char).__name__})")
+                #print(f"        [Debug] Has character: {char.name} ({type(char).__name__})")
                 if isinstance(char, Civilian):
-                    print(f"            [Debug] --> This is a Civilian.")
+                    #print(f"            [Debug] --> This is a Civilian.")
                     all_civilians.append((char, loc))  # track original location too
-    print(f"[Debug] Total Civilians found: {len(all_civilians)}")
-    print(f"[Debug] Total Shops found: {len(all_shops)}")
+    print(f"Total Civilians found: {len(all_civilians)}")
+    print(f"Total Shops found: {len(all_shops)}")
 
     if not all_civilians or not all_shops:
         print("No civilians or shops available to assign.")
@@ -186,7 +188,7 @@ def assign_random_civilians_to_random_shops(regions, count: int = 5):
         shop.characters_there.append(civilian)
         civilian.location = shop
 
-        print(f"[Test] Moved {civilian.name} to shop: {shop.name}")
+        #print(f"[Test] Moved {civilian.name} to shop: {shop.name}")
 
 
 

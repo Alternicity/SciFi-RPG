@@ -73,3 +73,10 @@ faction y : High, enemy """
 "faction_x": {"level": Status.MID, "title": "Ally"},
 "faction_y": {"level": Status.HIGH, "title": "Enemy"}
 } """
+
+def get_primary_status_display(character):
+    status_obj = character.status.get_status(character.primary_status_domain)
+    if status_obj:
+        base = f"{status_obj.title} ({status_obj.level.name})"
+        return color_text(base, GREEN) if status_obj.level == StatusLevel.HIGH else base
+    return "Unknown"

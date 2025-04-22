@@ -17,7 +17,7 @@ from visual_effects import loading_bar, color_text
 from common import get_file_path, BASE_REGION_DIR
 from typing import List, Union
 from character_creation_funcs import player_character_options
-from base_classes import Faction
+from base_classes import Faction, Location
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -81,18 +81,22 @@ def show_character_details(character):
 
     
     from visual_effects import RESET, RED, GREEN, PURPLE, BROWN
+    from status import StatusLevel, get_primary_status_display
+    # 👇 Get the character's primary status (move this above the table definition)
+    status_obj = character.status.get_status(character.primary_status_domain)
+    status_display = (
+        color_text(f"{status_obj.title} ({status_obj.level.name})", GREEN)
+        if status_obj and status_obj.level == StatusLevel.HIGH
+        else f"{status_obj.title} ({status_obj.level.name})"
+        if status_obj else "Unknown"
+    )
     # Second table with the second header row
     character_table_2 = [
         ["Race", "Status", "Intelligence", "Fun", "Motivations", ""],  # Empty fields for alignment
         [
             getattr(character, "lorem", character.race),
-
-            color_text(character.status.value.title(), GREEN)
-            if character.status and character.status.value == "HIGH"
-            else character.status.value.title() if character.status else "Unknown",
-
+            status_display,#later use get_primary_status_display(character)
             getattr(character, "xxx", getattr(character, "intelligence", "N/A")),
-
             color_text(str(character.fun), RED) if character.fun < 4 else str(character.fun),
         ", ".join(str(m) for m in top_motivations)
         ],
@@ -105,7 +109,7 @@ def show_character_details(character):
 
     # Print the second table
     print(tabulate(character_table_2, headers="firstrow", tablefmt="grid"))
-    print("\n🎒 Debugging Inventory:")
+    #print("\n🎒 Debugging Inventory:")
     if character.inventory.items:
         for name, item in character.inventory.items.items():
             print(f"  {name} - Qty: {item.quantity}, Type: {type(item).__name__}, ID: {id(item)}")

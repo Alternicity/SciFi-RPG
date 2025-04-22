@@ -76,5 +76,5 @@ def create_TheState_characters(faction):
             state_staff.append(cop)
 
     characters.extend(state_staff)
-    print(f"✅ Created {len(state_staff)} state characters for {faction.name}")
+    #print(f"✅ Created {len(state_staff)} state characters for {faction.name}")
     return characters

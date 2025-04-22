@@ -24,7 +24,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                     region=region,
                     name=location_class.__name__
                 )
-                print(f"🧪 Creating {location_class.__name__} with region = {type(region)}")
+                #print(f"🧪 Creating {location_class.__name__} with region = {type(region)}")
 
                 locations.append(location_obj)
                 region.add_location(location_obj)  # 👈 Also updates game_state.all_locations
@@ -36,10 +36,11 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         shop.inventory.add_item(SmartPhone(price=200, quantity=5))
         shop.inventory.add_item(Pistol(price=500, quantity=2))
 
-        print(f"🔍 {shop.name} initial inventory:")
+        #print(f"🔍 {shop.name} initial inventory:")
         for name, item in shop.inventory.items.items():
-            print(f"    {name}: {item.quantity} (type: {type(item)})")
-
+            #print(f"    {name}: {item.quantity} (type: {type(item)})")
+            pass
+        
     # 🏛️ Add one Municipal Building per region
     try:
         municipal_building = MunicipalBuilding(

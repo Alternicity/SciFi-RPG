@@ -34,7 +34,7 @@ class Region:
         """Adds a location to this region and updates the location's region reference."""
         location.region = self
         self.locations.append(location)
-        print(f"Added {location.name} to region {self.name}.")
+        #print(f"Added {location.name} to region {self.name}.")
 
     def trigger_event(self, event_type: str):
         print(f"Event triggered: {event_type} in {self.name}")
@@ -107,7 +107,7 @@ class Vendor(Location):
     # No need to define __init__; @dataclass handles it
     def __post_init__(self):
         super().__post_init__()
-        print(f"DEBUG: CorporateStore name = {self.name}")
+        #print(f"DEBUG: CorporateStore name = {self.name}")
 
 from inventory import Inventory
 from characters import Employee
@@ -182,7 +182,7 @@ class Shop(Vendor):
     
     def __post_init__(self):
         super().__post_init__()
-        print(f"🛒 DEBUG: Created Shop {self.name} in {self.region}")
+
 
 @dataclass
 class CorporateStore(Vendor):

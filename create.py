@@ -207,7 +207,7 @@ def create_corp_factions(num_corps, all_regions):
 def create_factions(all_regions, all_locations):
     from create_game_state import get_game_state
     game_state = get_game_state()
-    print(f"create_factions() called from {__name__}")
+    #print(f"create_factions() called from {__name__}")
 
     #print("all_regions content:", [region.name for region in all_regions])
     factions = []  # Store created factions
@@ -242,8 +242,8 @@ def create_factions(all_regions, all_locations):
 
     
     all_characters = create_all_characters(factions, all_locations, all_regions)
-    print(f"create_all_characters() called from {__name__}")
-    print(f"✅ Total characters created: {len(all_characters)}")
+    #print(f"create_all_characters() called from {__name__}")
+    #print(f"✅ Total characters created: {len(all_characters)}")
 
 
     return factions, all_characters

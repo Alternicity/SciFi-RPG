@@ -131,7 +131,7 @@ class Character:
         initial_motivations=None,
         motivations=None,
         preferred_actions=None,
-        behaviors=None,
+        behaviors=None,#possibly deprecate in favour of preferred_actions, as it overlaps
         partner=None,
         fun=1,
         hunger=1,
@@ -184,6 +184,9 @@ class Character:
         
         self.is_visibly_wounded = False
         self.memory = []
+        self.self_awareness_score = 0
+        self.self_awareness_level = SelfAwarenessLevel.ANIMAL
+
         self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
             "self_actualization": 2,})  # Example defaults
         
@@ -211,14 +214,13 @@ class Character:
 
         self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
         #status loss, or lack of money, or tasks failed, or baf personal events
-        from status import StatusLevel, CharacterStatus
+        from status import StatusLevel, CharacterStatus, FactionStatus
         self.status = CharacterStatus()
-        self.status = {
-            "public": {"level": StatusLevel.LOW, "title": "Unknown"},
-            "criminal": {"level": StatusLevel.MID, "title": "Street Hustler"},
-            "corporate": {"level": StatusLevel.NONE, "title": None},
-            "state": {"level": StatusLevel.NONE, "title": None}
-}
+        self.primary_status_domain = "public"  # default fallback
+        self.status.set_status("public", FactionStatus(StatusLevel.LOW, "Unknown"))
+        self.status.set_status("criminal", FactionStatus(StatusLevel.MID, "Midd"))
+        self.status.set_status("corporate", FactionStatus(StatusLevel.NONE, None))
+        self.status.set_status("state", FactionStatus(StatusLevel.NONE, None))
 
 
         # Tasks (individual objectives, replacing "goals")
@@ -318,7 +320,7 @@ class Character:
 
         if not self.region or not self.location:
             if verbose:
-                print(f"Deciding where to go; {self.name} is in {self.region} but no specific location")
+                print(f"Decisions.. {self.name} is in {self.region} but no specific location")
             return f"{region_name}, {location_name}"
 
         if sublocation:
@@ -419,6 +421,34 @@ class Character:
         }
         return action_behavior_map.get(action) in self.behaviors
 
+    def calculate_self_awareness(self):
+        score = 0
+        score += len(self.memory) * 0.5  # More memory, more reflective
+        score += self.psy * 0.75         # Psy sensitivity
+        if self.has_autonomous_goals():
+            score += 2
+        if self.detects_pattern_glitches():
+            score += 1.5
+        if self.reflects_on_failures():
+            score += 1
+
+        self.self_awareness_score = round(score, 2)
+        self.update_awareness_level()
+
+    def update_awareness_level(self):
+        if self.self_awareness_score < 2:
+            self.self_awareness_level = SelfAwarenessLevel.ANIMAL
+        elif self.self_awareness_score < 4:
+            self.self_awareness_level = SelfAwarenessLevel.BASIC
+        elif self.self_awareness_score < 6:
+            self.self_awareness_level = SelfAwarenessLevel.PERSONAL
+        elif self.self_awareness_score < 8:
+            self.self_awareness_level = SelfAwarenessLevel.REFLECTIVE
+        elif self.self_awareness_score < 10:
+            self.self_awareness_level = SelfAwarenessLevel.META
+        else:
+            self.self_awareness_level = SelfAwarenessLevel.TRANSCENDENT
+
     def __repr__(self):
         """ whereabouts_value = self.whereabouts  # Ensure evaluation
         print(f"🔍 Debug: whereabouts = {whereabouts_value}")  # Now prints the actual value
@@ -466,6 +496,16 @@ class Character:
     def get_current_location(self):
         """Get the current location within the region."""
         return self.location.location
+
+
+
+class SelfAwarenessLevel:
+    ANIMAL = 0        # Instinctual
+    BASIC = 1         # Recognizes self vs other
+    PERSONAL = 2      # Understands goals/memory
+    REFLECTIVE = 3    # Understands self in time
+    META = 4          # Realizes they are inside a system
+    TRANSCENDENT = 5  # Can access/change "reality" (aether etc.)
 
 
 @dataclass

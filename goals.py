@@ -14,7 +14,7 @@ class Goal:
         "fight the state",
         "increase_influence",
         "defend_assets",
-        "acquire HQ",
+        "acquire HQ", #for street gangs
     ]
 
     OBJECTIVE_MAP = {

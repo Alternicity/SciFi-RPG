@@ -1,4 +1,4 @@
-#character_memory
+#character_memory.py
 #Characters should remember what they’ve discovered (places, characters, learned skills).
 
 class Memory:

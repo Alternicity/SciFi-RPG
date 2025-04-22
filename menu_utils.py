@@ -356,7 +356,7 @@ def select_character_menu():
         return None, None
 
     # Display character choices
-    print("\nSelectt a character:")
+    print("\nSelect a character:")
 
     for idx, char_data in enumerate(character_options, start=1):
         #print(f"[DEBUG] char_data = {char_data}")

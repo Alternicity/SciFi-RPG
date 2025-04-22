@@ -1,0 +1,5 @@
+formulahendry.code-runner
+github.vscode-pull-request-github
+ms-python.debugpy
+ms-python.python
+ms-python.vscode-pylance

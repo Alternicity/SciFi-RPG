@@ -60,7 +60,7 @@ class Inventory:
         else:
             item.quantity = quantity
             self.items[item.name] = item
-            print(f"Added {item.name} to inventory with quantity {quantity}")
+            #print(f"Added {item.name} to inventory with quantity {quantity}")
 
             # Weapon logic
             if isinstance(item, Weapon) and self.owner:
