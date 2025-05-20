@@ -634,3 +634,9 @@ def get_available_actions(character):
 def call_police(self, crime_type, region, location):
     print(f"{self.name} calls the police: '{crime_type} at {location.name}, {region}!'")
     # Then trigger a new Event or dispatch responders
+
+def interact_with_partner(self):
+    if self.partner:
+        print(f"{self.name} talks to {self.partner.name} affectionately.")
+        self.adjust_self_esteem(2)
+        self.partner.adjust_self_esteem(2)

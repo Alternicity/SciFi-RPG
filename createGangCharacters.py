@@ -3,29 +3,36 @@ from characters import Boss, Captain, GangMember
 from create_character_names import create_name
 from create_game_state import get_game_state
 from motivation_presets import MotivationPresets
+from status import StatusLevel, CharacterStatus, FactionStatus
+from base_classes import Character
 
 def create_gang_characters(faction):
-    """
-    Creates characters for a gang faction.
 
-    :param faction: The gang faction to generate characters for.
-    :return: A list of character instances for this gang.
-    """
     if faction.type != "gang":
         raise ValueError(f"Faction {faction.name} is not a gang.")
 
     characters = []
 
-    faction_race = faction.race  # Use race assigned during faction creation
+    
     print(f"Creating Boss for {faction.name}...")
     #character names will need to be drawn from the race specific csv files, gangs begin racially homogenous
+    
+    status = CharacterStatus()
+    status.set_status("criminal", FactionStatus(StatusLevel.HIGH, "Boss"))
+
+    sex = random.choice(Character.VALID_SEXES)
+    name = create_name(race, sex)
+    race = faction.race  # Use race assigned during faction creation
+
     boss = Boss(
-        name=create_name(faction_race, random.choice(["Male", "Female"])),
-        race=faction_race,
+        name=name,
+        race=race,
+        sex=sex,
         faction=faction,
         region=faction.region,
         location=None,
-        initial_motivations=["gain_high"]
+        initial_motivations=["gain_high"],
+        status=status
     )
     faction.boss = boss  # <-- Store boss reference in gang
     characters.append(boss)
@@ -40,13 +47,21 @@ def create_gang_characters(faction):
 
     # Captains
     for _ in range(random.randint(2, 3)):
+        status = CharacterStatus()
+        status.set_status("criminal", FactionStatus(StatusLevel.MID, "Captain"))
+        
+        sex = random.choice(Character.VALID_SEXES)
+        name = create_name(race, sex)
+
         captain = Captain(
-            name=create_name(faction_race, random.choice(["Male", "Female"])),
-            race=faction_race,
+            name=name,
+            race=race,
+            sex=sex,
             faction=faction,
             region=faction.region,
             location=None,
-            initial_motivations=["gain_high"]
+            initial_motivations=["gain_high"],
+            status=status
         )
         characters.append(captain)
         faction.captains.append(captain)
@@ -54,13 +69,21 @@ def create_gang_characters(faction):
 
     # Gang Members
     for _ in range(random.randint(5, 10)):
+        status = CharacterStatus()
+        status.set_status("criminal", FactionStatus(StatusLevel.LOW, "Ganger"))
+        
+        sex = random.choice(Character.VALID_SEXES)
+        name = create_name(race, sex)
+        
         member = GangMember(
-        name=create_name(faction_race, random.choice(["Male", "Female"])),
-        race=faction_race,
+        name=name,
+        race=race,
+        sex=sex,
         faction=faction,
         region=faction.region,
         location=None,
-        initial_motivations=["gain_mid"]
+        initial_motivations=["gain_mid"],
+        status=status
     )
     characters.append(member)
     faction.members.append(member)

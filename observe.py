@@ -2,12 +2,8 @@
 #interpretation and reaction
 
 def handle_observation(character, event_type, instigator, region, location):
-    """Dispatch detailed observation logic based on event_type and character."""
-    if event_type == "robbery":
-        if hasattr(character, "motivation_manager"):
-            # Consider adding logging or debug prints here
-            update_escape_logic(character)
-    # Add more event types here
+    pass
+    # deprecated for now. observations handled in event objects, starting with robbery
 
 def update_escape_logic(character):
     mm = character.motivation_manager

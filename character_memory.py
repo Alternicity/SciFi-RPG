@@ -9,8 +9,20 @@ class Memory:
         self.timestamp = timestamp or "now"  # You can use actual datetime later
         self.tags = tags or []
 
+        #now you need episodic memory (what they saw before) and optionally semantic memory (learned facts)
+        #class Memory and class MemoryEntry perhaps overlap and classs memory should be more a container and handler,
+        #for both types of memory, handling decay and promotion of episodic to semantic.
+
+
     def recall(self):
         return f"Memory of {self.subject}: {self.details} (Importance: {self.importance}, Tags: {self.tags})"
+    
+class MemoryEntry:
+    def __init__(self, event_type, target, description, timestamp=None):
+        self.event_type = event_type  # "robbery", "conversation", "sighting"
+        self.target = target  # Could be a character or location
+        self.description = description
+        self.timestamp = timestamp or time.time()
 
     """ Memory Decay System
     for memory in character.memory:

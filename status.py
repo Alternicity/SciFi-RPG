@@ -1,5 +1,5 @@
 from enum import IntEnum
-
+from visual_effects import color_codes, color_text, RED
 class StatusLevel(IntEnum):
     NONE = 0
     LOW = 1
@@ -11,25 +11,25 @@ class StatusLevel(IntEnum):
 class CharacterStatus:
     def __init__(self):
         # Keys can be "public", "gang", "corp_name", etc.
-        self.status = {}
+        self.status_by_domain = {}
 
     def set_status(self, domain, status_obj):
-        self.status[domain] = status_obj
+        self.status_by_domain[domain] = status_obj
 
     def get_status(self, domain):
-        return self.status.get(domain)
+        return self.status_by_domain.get(domain)
 
     def has_status(self, domain, level):
-        return self.status.get(domain, FactionStatus()).level == level
+        return self.status_by_domain.get(domain, FactionStatus()).level == level
 
     def update_level(self, domain, new_level):
-        if domain in self.status:
-            self.status[domain].level = new_level
+        if domain in self.status_by_domain:
+            self.status_by_domain[domain].level = new_level
         else:
-            self.status[domain] = FactionStatus(new_level)
+            self.status_by_domain[domain] = FactionStatus(new_level)
 
     def __repr__(self):
-            return "\n".join([f"{domain}: {status}" for domain, status in self.status.items()])
+            return "\n".join([f"{domain}: {status}" for domain, status in self.status_by_domain.items()])
     
 class FactionStatus:
     def __init__(self, level=StatusLevel.LOW, title=""):
@@ -57,26 +57,9 @@ class CorporationStatus(FactionStatus):
             return self.name.capitalize()
 
 
-
-
-
-""" status will be more fully developed. For example, different types of status, status within a faction, public status, status within a friend group etc
-So that enum will need to be expanded eventually to at least a dictionary of Entity/Value pairs, perhaps using integers rather than strings, but with those integers mapped onto strings.
-For example
-A character has status
-public : High, respected
-faction x : Mid, ally
-faction y : High, enemy """
-
-""" character.status = {
-"public": {"level": Status.HIGH, "title": "Respected"},
-"faction_x": {"level": Status.MID, "title": "Ally"},
-"faction_y": {"level": Status.HIGH, "title": "Enemy"}
-} """
-
 def get_primary_status_display(character):
     status_obj = character.status.get_status(character.primary_status_domain)
     if status_obj:
         base = f"{status_obj.title} ({status_obj.level.name})"
-        return color_text(base, GREEN) if status_obj.level == StatusLevel.HIGH else base
+        return color_text(base, RED) if status_obj.level == StatusLevel.HIGH else base
     return "Unknown"

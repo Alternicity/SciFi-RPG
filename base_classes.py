@@ -5,7 +5,7 @@ from typing import Callable, Dict, Optional, TYPE_CHECKING, List, Any
 from goals import Goal
 import traceback
 from enum import Enum, auto
-
+from collections import deque
 
 if TYPE_CHECKING:
     from location import Region
@@ -103,6 +103,9 @@ class Faction:
         else:
             print(f"{member.name} is not a member of {self.name}.")
 
+    def get_symbolic_clues(self):
+        return ["wears red bandana", "tattoo on neck", "corp ID badge"]
+    
     def __repr__(self):
         return f"{self.name} {self.type.capitalize()}"
     
@@ -125,6 +128,8 @@ class Character:
     def __init__(
         self,
         name,
+        race,
+        sex,
         region,
         location,
         wallet=None,
@@ -145,14 +150,13 @@ class Character:
         toughness=10,
         observation=10, 
         morale=10,
-        race="Terran",
-        sex="male", # change
         status=None,
         loyalties=None,# Default is None; initializes as a dictionary later
         custom_skills=None,
         **kwargs,
         
     ):
+        print(f"[Character Init] name={name}, race={race}, sex={sex}")
         #initialization code
         self.name = name
         self.is_player = False
@@ -176,16 +180,45 @@ class Character:
 
         # Individual character preferences (overrides base)
         self.preferred_actions = preferred_actions if preferred_actions else {}
-
+        self.is_alert = False
         from behaviours import set_default_behaviour, BehaviourManager
         self.behaviors = set(behaviors) if behaviors else set_default_behaviour()
         self.behaviour_manager = BehaviourManager()
         self.posture = Posture.STANDING
         
-        self.is_visibly_wounded = False
+        
         self.memory = []
         self.self_awareness_score = 0
         self.self_awareness_level = SelfAwarenessLevel.ANIMAL
+        self.thoughts = deque()  # or maybe deque(maxlen=20) to simulate limited attention span
+        """ A deque, or double-ended queue, in Python is a data structure from the collections module 
+        that allows you to efficiently add and remove elements from both ends """
+        self.race = race
+        self.sex = sex
+        self.clothing = None
+        self.notable_features = []
+        self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID
+        self.is_visibly_wounded = False
+        self.overall_impression = None
+        # Appearance traits
+        #If you want self.appearance to always reflect the latest values of self.race, 
+        #self.sex, etc., you can make it a @property, but your current method is fine if 
+        #you're OK with updating it manually when needed.
+        self.appearance = {
+    "race": self.race,
+    "sex": self.sex,
+    "clothing": self.clothing,
+    "notable_features": self.notable_features,
+    "bloodstained": self.bloodstained,  # This can be None, a Character, or a string
+    "is_visibly_wounded": self.is_visibly_wounded,
+    "overall_impression": self.overall_impression  # To be updated by observers
+}
+
+        # Add faction clues later (safely)
+        if hasattr(self, "faction") and self.faction:
+            self.appearance["faction_semiotics"] = self.faction.get_symbolic_clues()
+        else:
+            self.appearance["faction_semiotics"] = []
 
         self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
             "self_actualization": 2,})  # Example defaults
@@ -208,32 +241,25 @@ class Character:
             else:
                 print(f"[WARN] Unknown motivation format: {m}")
 
-                
-
-
-
         self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
         #status loss, or lack of money, or tasks failed, or baf personal events
         from status import StatusLevel, CharacterStatus, FactionStatus
-        self.status = CharacterStatus()
-        self.primary_status_domain = "public"  # default fallback
+
+        # If status isn't passed, assign a new CharacterStatus instance
+        self.status = status if status is not None else CharacterStatus()
+        
+        self.primary_status_domain = kwargs.get("primary_status_domain", "public")
         self.status.set_status("public", FactionStatus(StatusLevel.LOW, "Unknown"))
         self.status.set_status("criminal", FactionStatus(StatusLevel.MID, "Midd"))
         self.status.set_status("corporate", FactionStatus(StatusLevel.NONE, None))
         self.status.set_status("state", FactionStatus(StatusLevel.NONE, None))
-
+        
 
         # Tasks (individual objectives, replacing "goals")
         self.tasks = kwargs.get("tasks", [])
-
-        # Perception-related attributes
-        self.percepts = {}  # List of things character notices (e.g., dangers, opportunities)
-                            #Key = Percept, Value = Weight of how attention grabbing it is
-                            #This should be  dynamically updating.
-                            #So does it need an @property function?
-                            
+     
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
-
+        self.attention_focus = None
         # Social connections
         self.social_connections = {
             "friends": [],
@@ -257,8 +283,6 @@ class Character:
         self.charisma = charisma
         self.toughness = toughness
         self.morale = morale
-        self.race = race
-        self.sex = sex
         self.status = status  # Add status here
         
         if sex not in self.VALID_SEXES:
@@ -278,7 +302,7 @@ class Character:
         self.primary_weapon = None
         self.weapons = []
         self.health = 100 + toughness
-        self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID
+        
         from InWorldObjects import Wallet
         self.wallet = wallet if wallet else Wallet()
         #print(f"[DEBUG, from class Character] {self.name} wallet: {self.wallet.bankCardCash}")
@@ -326,9 +350,27 @@ class Character:
         if sublocation:
             return f"{region_name}, {location_name}, {sublocation}"
         return f"{region_name}, {location_name}"
+    
+    def get_appearance_description(self):
+        parts = []
+        if self.appearance.get("bloodstained"):
+            parts.append("bloodstained")
+        if self.appearance.get("is_visibly_wounded"):
+            parts.append("wounded")
 
+        parts.append(self.race)
+        parts.append(self.sex)
 
+        clothing = self.appearance.get("clothing")
+        if clothing:
+            parts.append(f"wearing {clothing}")
 
+        features = self.appearance.get("notable_features", [])
+        if features:
+            parts.extend(features)
+
+        return " ".join(filter(None, parts))
+    
     def default_skills(self):
         # Basic human-level skills
         return {
@@ -340,7 +382,11 @@ class Character:
             "threaten": 3,
             "complain": 7,
         }
-
+    
+    def alert(self, instigator):
+        print(f"{self.name} has been alerted by {instigator.name}!")
+        self.is_alert = True
+        
     def get_skill(self, skill_name):
         return self.skills.get(skill_name, 1)  # Minimum 1
 
@@ -360,20 +406,23 @@ class Character:
     
     from observe import handle_observation  # Safe import — doesn't import Character
 
-    def observe(self, event_type, instigator, region, location):
-        #observation awareness
+    def observe(self, event, instigator, region, location):
+        """
+    Pass observation to a generic event object for processing.
+    """
         from observe import handle_observation
-        print(f"{self.name} observes a {event_type} involving {instigator.name} at {location.name}, {region}")
-
         if hasattr(self, "memory"):
             self.memory.append({
-                "event": event_type,
+                "event": event.__class__.__name__,
                 "instigator": instigator.name,
                 "location": getattr(instigator, "location", None),
                 "time": "now",  # Placeholder
             })
 
-        handle_observation(self, event_type, instigator, region, location)
+        if hasattr(event, "record_observation"):
+            event.record_observation(observer=self, instigator=instigator, region=region, location=location)
+
+
 
 
 
@@ -386,11 +435,17 @@ class Character:
         print(f"DEBUG: Accessing whereabouts -> region: {region_name}, location: {location_name}")
         return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
 
-
+# Perception-related attributes
+          # List of things character notices (e.g., dangers, opportunities)
+                            #Key = Percept, Value = Weight of how attention grabbing it is
+                            #This should be  dynamically updating.
+                            #So does it need an @property function?
 
     @property
     def percepts(self):
-        """Dynamically generates percepts with actionable hints."""
+        """Dynamically generates percepts with actionable hints. allows behavior trees or utility-based AI 
+        to “poll” the character’s perception of the world without storing stale data. It’s like their short-term
+          awareness. percepts are what the character is noticing right now."""
         #types> characters, events, utility, factions, locations, regions, chainOfActions
         updated_percepts = {}
         if self.observation > 5:

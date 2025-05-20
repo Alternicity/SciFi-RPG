@@ -5,7 +5,9 @@ There is a simple wrapper function called character_creation_funcs that does not
 
 
 
+Backstory-triggered behavior: remembering a betrayal makes Swiz act unpredictably toward a faction.
 
+Narrative memory node: moments from the past that color choices.
 
 
 

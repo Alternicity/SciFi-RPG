@@ -4,6 +4,8 @@ from characterActionTests import IntimidationTest
 from InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
+from character_memory import MemoryEntry
+from character_thought import Thought
 
 class Event(ABC):
     def __init__(self, name, event_type, effect=None, description="", impact=None, **kwargs):
@@ -39,12 +41,12 @@ class Event(ABC):
                 #trigger_event_outcome is marked as not defined here
             return robbery
         
-    @staticmethod
+    """ @staticmethod
     def handle_incident(character, location=None):
         location = location or character.location  # fallback if None
         severity = 2  # or dynamic
         incident = Incident(name="Suspicious Activity", instigator=character, location=location, severity=severity)
-        incident.resolve()
+        incident.resolve() """
 
     @staticmethod
     def get_character_driven_event_outcomes(character, location=None):
@@ -154,7 +156,7 @@ class Robbery(Event):
     def __init__(self, instigator, location, weapon_used=False):
         """
         A Robbery event. Can be armed or unarmed.
-        The event targets a Shop-like object to provide dynamic menu options and may involve intimidation.
+        The event creates a Shop-like object to provide dynamic menu options and may involve intimidation.
         """
         super().__init__(
             name="Robbery",
@@ -205,11 +207,10 @@ class Robbery(Event):
         if not self.shopkeeper:
             print("No shopkeeper present. Robbery proceeds unopposed.")
             self.success = True
-            return Incident(
+            return Burglary(
                 name="Unopposed Robbery",
                 instigator=self.instigator,
                 location=self.location,
-                severity=1
             )
 
         # Step 1: Attempt Intimidation
@@ -255,48 +256,125 @@ class Robbery(Event):
                     if hasattr(self.shopkeeper, "alert"):
                         self.shopkeeper.alert(self.instigator)
                     else:
-                        print("Shopkeeper is panicking or shouting!")
+                        print("xShopkeeper is panicking or shouting!")
 
         # Step 4: Witnesses respond
         witnesses = self.location.list_characters(exclude=[self.instigator])
+
+        seen = set()
+        reactions = []
+
         for witness in witnesses:
-            region = self.location.region if hasattr(self.location, "region") else "unknown"
-            witness.observe("robbery", self.instigator, region, self.location)
+            witness.attention_focus = self.instigator
+            if id(witness) in seen:
+                continue
+            seen.add(id(witness))
 
+            region = getattr(self.location, "region", "unknown")
+            witness.observe(self, self.instigator, region, self.location)
             witness.fun = max(0, witness.fun - 5)
-            print(f"{witness.name} witnesses the robbery and becomes distressed!")
-            #reaction and memory code
-            #if instigator sees (observe) the witness try to call the cops with their SmartPhone, add another menu option
-            #for instigator to react, maybe another intimidate() "Dont do it!" ,and attack option. robbers are cold.
 
-        # Step 5: Return Incident object
-        if self.weapon_used:
-            return Incident("Armed Robbery", self.instigator, self.location, severity=3)
-        else:
-            return Incident("Attempted Robbery", self.instigator, self.location, severity=2)
-    
-class Incident(Event):
-    def __init__(self, name, instigator, location, severity=1):
-        super().__init__(
-            name=name,
-            event_type="incident",
-            description=f"An incident occurred at {location.name} caused by {instigator.name}.",
-            effect={"impact": "modify", "attribute": "heat"},
-            impact={"heat": severity}
-        )
+            # Approximate description
+            appearance = self.instigator.get_appearance_description()
+
+            witness.memory_log.append(MemoryEntry(
+                event_type="crime_observed",
+                target=self.instigator,
+                approx_identity = self.instigator.get_appearance_description(),
+                description = f"Witnessed a {appearance} commit a robbery at {self.location.name}"
+            ))
+
+            witness.thoughts.append(Thought(
+                content=f"Saw a {appearance} rob {self.location.name}",
+                source=self.instigator,
+                weight=8,
+                tags=["crime", "alert"]
+            ))
+
+            if getattr(witness, "observation", 0) >= 6:
+                witness.alert = True
+                reactions.append((
+                    witness.name,
+                    "becomes alert and distressed!",
+                    witness.__class__.__name__
+                ))
+
+        # ✅ Print reactions once, after loop
+        from output_utils import group_reactions
+        for line in group_reactions(reactions):
+            print(line)
+
+        # ✅ Hook: handle security if present
+        if hasattr(self.location, "security") and self.location.security.guards:
+            print("[SECURITY] Guards are being alerted!")
+            for guard in self.location.security.guards:
+                # Add a placeholder call for now
+                guard.respond_to_event(self)
+                    #reaction and memory code
+                    #if instigator sees (observe) the witness try to call the cops with their SmartPhone, add another menu option
+                    #for instigator to react, maybe another intimidate() "Dont do it!" ,and attack option. robbers are cold.
+
+                # Only print once, after all observations
+                from output_utils import group_reactions
+                if hasattr(self, "observation_log"):
+                    for line in group_reactions(self.observation_log):
+                        print(line)
+
+        # Step 5: Return ArmedRobbery object
+        if getattr(self.instigator, "weapon_used", False):
+            return ArmedRobbery("Armed Robbery", self.instigator, self.location, severity=3)
+        
+        
+    def conclude(self):
+        print(f"[DEBUG] Robbery at {self.location.name} is over. Returning to normal.")
+        # This is a good hook to trigger narrative objects or AI response
+
+    def record_observation(self, observer, instigator, region, location):
+        """
+        Collect observation data during event. Later, we'll summarize it.
+        """
+        if not hasattr(self, "observation_log"):
+            self.observation_log = []
+
+        reaction = None
+        if getattr(observer, "observation", 0) >= 6:
+            reaction = "becomes alert and distressed!"
+
+        self.observation_log.append((
+            observer.name,
+            reaction,
+            observer.__class__.__name__
+        ))
+
+        # Characters still suffer a small consequence
+        observer.fun = max(0, observer.fun - 5)
+        # === Aftermath cleanup ===
+        for character in self.location.list_characters():
+            if character.alert:
+                character.alert = False  # 🔴 Reset alert after robbery ends
+
+        # Hook to notify game_logic or narrative system
+        self.conclude()
+
+# Optionally: remove this event from active memory
+# e.g., game_state.active_events.remove(self)
+
+class Burglary(Event):
+    def __init__(self, name, instigator, location, time=None, loot=None):
+        self.name = name
         self.instigator = instigator
         self.location = location
-        self.severity = severity
+        self.time = time  # optional, e.g., current tick or timestamp
+        self.loot = loot if loot else []  # list of stolen items
 
-    def resolve(self):
-        print(f"[Incident] {self.description}")
-        self.apply(self.instigator)
-        self.alert_authorities()
+    def __str__(self):
+        return f"Burglary({self.name}) by {getattr(self.instigator, 'name', 'Unknown')} at {self.location.name}"
 
-    def alert_authorities(self):
-        print(f"Authorities alerted due to severity {self.severity}!")
-        if hasattr(self.location, "call_police"):
-            self.location.call_police()
+class Riot(Event):
+    pass
+
+class ArmedRobbery(Event):
+    pass
 
 def handle_event(event_name, character, location):
     if event_name == "Rob":

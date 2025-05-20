@@ -5,6 +5,8 @@ from characters import CEO, Manager, CorporateSecurity, CorporateAssasin, Employ
 from location import HQ
 from create_character_names import create_name
 from motivation_presets import MotivationPresets
+from status import CharacterStatus, FactionStatus, StatusLevel
+from base_classes import Character
 
 def create_corporation_characters(faction, factions):
     """
@@ -36,72 +38,127 @@ def create_corporation_characters(faction, factions):
     corp_hq = corp_hqs[0] if corp_hqs else None
 
     # Create CEO
+    status = CharacterStatus()
+    status.set_status("public", FactionStatus(StatusLevel.HIGH, "CEO"))
+    
+    race = random.choice(Character.VALID_RACES)
+    sex = random.choice(Character.VALID_SEXES)
+    name = create_name(race, sex)
+
     ceo = CEO(
-        name=create_name(None, random.choice(["Male", "Female"])),
+        name=name,
+        race=race,
+        sex=sex,
         faction=faction,
         region=faction.region,
         location=corp_hq,
-        initial_motivations=MotivationPresets.for_class("CEO")
+        initial_motivations=MotivationPresets.for_class("CEO"),
+        status=status
     )
     faction.add_CEO(ceo)
     characters.append(ceo)
 
     # Managers
     for _ in range(random.randint(2, 3)):
+        status = CharacterStatus()
+        status.set_status("public", FactionStatus(StatusLevel.MID, "Manager"))
+        race = random.choice(Character.VALID_RACES)
+        sex = random.choice(Character.VALID_SEXES)
+        name = create_name(race, sex)
+
         manager = Manager(
-            name=create_name(None, random.choice(["Male", "Female"])),
+            name=name,
+            race=race,
+            sex=sex,
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("Manager")
+            initial_motivations=MotivationPresets.for_class("Manager"),
+            status=status
         )
         faction.add_manager(manager)
         characters.append(manager)
 
     # Employees
     for _ in range(random.randint(3, 6)):
+        status = CharacterStatus()
+        status.set_status("public", FactionStatus(StatusLevel.LOW, "Employee"))
+        race = random.choice(Character.VALID_RACES)
+        sex = random.choice(Character.VALID_SEXES)
+        name = create_name(race, sex)
+
         employee = Employee(
-            name=create_name(None, random.choice(["Male", "Female"])),
+            name=name,
+            race=race,
+            sex=sex,
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("Employee")
+            initial_motivations=MotivationPresets.for_class("Employee"),
+            status=status
         )
         faction.add_employee(employee)
         characters.append(employee)
 
     # Security
     for _ in range(random.randint(2, 4)):
+        status = CharacterStatus()
+        status.set_status("public", FactionStatus(StatusLevel.MID, "Guard"))
+        race = random.choice(Character.VALID_RACES)
+        sex = random.choice(Character.VALID_SEXES)
+        name = create_name(race, sex)
+
         guard = CorporateSecurity(
-            name=create_name(None, random.choice(["Male", "Female"])),
+            name=name,
+            race=race,
+            sex=sex,
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("CorporateSecurity")
+            initial_motivations=MotivationPresets.for_class("CorporateSecurity"),
+            status=status
         )
         faction.add_security(guard)
         characters.append(guard)
 
     # Accountants
     for _ in range(random.randint(1, 3)):
+        status = CharacterStatus()
+        status.set_status("public", FactionStatus(StatusLevel.MID, "Accountant"))
+        race = random.choice(Character.VALID_RACES)
+        sex = random.choice(Character.VALID_SEXES)
+        name = create_name(race, sex)
+
         accountant = Accountant(
-            name=create_name(None, random.choice(["Male", "Female"])),
+            name=name,
+            race=race,
+            sex=sex,
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("Accountant")
+            initial_motivations=MotivationPresets.for_class("Accountant"),
+            status=status
         )
         faction.add_accountant(accountant)
         characters.append(accountant)
 
     # Corporate Assassins
     for _ in range(random.randint(0, 2)):
+        status = CharacterStatus()
+        status.set_status("public", FactionStatus(StatusLevel.MID, "Unclear"))
+        race = random.choice(Character.VALID_RACES)
+        sex = random.choice(Character.VALID_SEXES)
+        name = create_name(race, sex)
+
         assassin = CorporateAssasin(
-            name=create_name(None, random.choice(["Male", "Female"])),
+            name=name,
+            race=race,
+            sex=sex,
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("CorporateAssassin")
+            initial_motivations=MotivationPresets.for_class("CorporateAssassin"),
+            status=status
         )
         characters.append(assassin)
 

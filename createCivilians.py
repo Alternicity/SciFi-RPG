@@ -7,11 +7,12 @@ from faction import GeneralPopulation
 from characters import Civilian
 from InWorldObjects import Wallet
 from motivation_presets import MotivationPresets
+from status import CharacterStatus, FactionStatus, StatusLevel
 
 general_population_faction = GeneralPopulation(name="General Population", violence_disposition="low")
 
 from utils import normalize_location_regions
-def create_civilian_population(all_locations, all_regions, num_civilians=10):
+def create_civilian_population(all_locations, all_regions, num_civilians=30):
     """Generate civilians and assign them logical locations."""
     from create_character_names import create_name
     from utils import get_region_for_location
@@ -21,7 +22,7 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
     civilians = []
     valid_races = Character.VALID_RACES
     race_pool = ["Terran"] * 5 + [race for race in valid_races if race != "Terran"]
-    
+    #Will race?pool work, as VALID?RACES is not being imported here
     # Categorize locations
     homes = [loc for loc in all_locations if isinstance(loc, RESIDENTIAL)]
     public_spaces = [loc for loc in all_locations if isinstance(loc, PUBLIC_PLACES)]
@@ -64,15 +65,19 @@ def create_civilian_population(all_locations, all_regions, num_civilians=10):
         else:
             #print(f"✅🟣🟣 Region resolved: {region.name} for location {location.name}")
             pass
-
+        
+        status = CharacterStatus()
+        status.set_status("general_population", FactionStatus(StatusLevel.LOW, "Normie"))        
         civilian = Civilian(
             name=name,
             region=region,
+            sex=gender,
             location=location,
             race=race,
             faction=general_population_faction,
             initial_motivations=MotivationPresets.for_class("Civilian"),
             wallet=Wallet(bankCardCash=random_cash),
+            status=status
         )
         # 80% chance this civilian is an employee
         civilian.is_employee = random.random() < 0.8

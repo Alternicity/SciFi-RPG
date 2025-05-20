@@ -12,7 +12,8 @@ from createGangCharacters import create_gang_characters
 from createCorporateCharacters import create_corporation_characters
 from create_TheState_characters import create_TheState_characters
 from motivation_presets import MotivationPresets
-from status import FactionStatus, StatusLevel
+from status import FactionStatus, StatusLevel, CharacterStatus
+from base_classes import Character
 
 def create_faction_characters(faction, all_regions, factions=None):
     from faction import Gang, Corporation, State
@@ -62,17 +63,25 @@ def player_character_options(all_regions, factions):
     {
         "class": Manager,
         "name": "Karen",
+        "sex": "female",
+        "race": "Terran",
         "faction_name": "Hannival",
         "region_name": "Downtown",
         "location_name": "Corporate HQ",
         "wallet": Wallet(bankCardCash=500),
         "preferred_actions": {},
         "initial_motivations": MotivationPresets.for_class("Manager"),  # new
+        "status_data": {
+            "corporate": {"level": StatusLevel.MID, "title": "Manager"},
+            "public": {"level": StatusLevel.LOW, "title": "Suit"}
+    },
     },
 
     {
         "class": GangMember,
         "name": "Swiz",
+        "sex": "male",
+        "race": "French",
         "faction_name": "Factionless",
         "region_name": "Easternhole",
         "location_name": "None",
@@ -120,15 +129,29 @@ def instantiate_character(char_data, all_regions, factions):
     region = get_region_by_name(region_name, all_regions)
     location = get_location_by_name(location_name, all_regions)
     wallet = char_data.get("wallet", Wallet())
+    race = char_data["race"]
+    sex = char_data["sex"]
 
     if region is None:
         print(f"❌ ERROR: No region found with name '{region_name}'")
 
     motivation_objects = char_data.get("initial_motivations", [])
 
+    # Build status if data is provided
+    status = None
+    if "status_data" in char_data:
+        status = CharacterStatus()
+        for domain, status_info in char_data["status_data"].items():
+            status.set_status(
+                domain,
+                FactionStatus(level=status_info["level"], title=status_info["title"])
+            )
+
     # Create character
     character = char_data["class"](
     name=char_data["name"],
+    race=race,
+    sex=sex,
     faction=faction,
     region=region,
     location=location,
@@ -137,15 +160,9 @@ def instantiate_character(char_data, all_regions, factions):
     hunger=3,
     preferred_actions=char_data.get("preferred_actions", {}),
     initial_motivations=motivation_objects,  # pass weighted tuples
-    custom_skills=char_data.get("custom_skills")
+    custom_skills=char_data.get("custom_skills"),
+    status=status
 )
-    # ✅ Set status data if present
-    if "status_data" in char_data:
-        for domain, status_info in char_data["status_data"].items():
-            character.status.set_status(
-                domain,
-                FactionStatus(level=status_info["level"], title=status_info["title"])
-            )
 
     # ✅ Set primary status domain
     character.primary_status_domain = char_data.get("primary_status_domain", "public")

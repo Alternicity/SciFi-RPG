@@ -146,7 +146,7 @@ def view_characters(all_characters, region): #this should be moved to display
         all_characters = [all_characters]  # Wrap single object in a list
     display_filtered_character_summary(all_characters)
 
-def assign_random_civilians_to_random_shops(regions, count: int = 5):
+def assign_random_civilians_to_random_shops(regions, count: int = 15):
     #print("[Debug] assign_random_civilians_to_random_shops() was called.")
     from location import Shop
     from characters import Civilian
