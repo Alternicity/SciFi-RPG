@@ -177,8 +177,7 @@ class Shop(Vendor):
             print(f"  {name} - Qty: {item.quantity} - Type: {type(item).__name__}, ID: {id(item)}")
         print("─" * 40)
         
-    def __hash__(self):
-        return hash((self.name, self.region))  # Hash based on immutable attributes
+    
     
     def __post_init__(self):
         super().__post_init__()

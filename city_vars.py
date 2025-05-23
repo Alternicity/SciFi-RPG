@@ -8,6 +8,12 @@
 
 class GameState:
     def __init__(self):
+        GAME_MODE_PLAYER = "player"
+        GAME_MODE_SIMULATION = "simulation"
+
+        # NEW: determines whether the game is in player mode or simulation mode
+        #Later: You Can Even Add a Command-Line Flag or Menu Option
+        self.game_mode = GAME_MODE_PLAYER
         self.state = None
         self.civilians = []
         self.all_employees =  {}
@@ -57,6 +63,7 @@ class GameState:
 
     def add_corporation(self, corporation):
         self.corporations.append(corporation)
+        self.factions.append(corporation)
 
     def add_state_staff(self, staff_member):
         self.state_staff.append(staff_member)

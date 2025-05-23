@@ -4,7 +4,7 @@ from enum import Enum, auto
 from inventory import Inventory
 from status import StatusLevel, CharacterStatus, FactionStatus
 from InWorldObjects import ObjectInWorld, Wallet
-
+from wallet import generate_wallet
 from base_classes import Character, Location, Faction
 
 
@@ -38,10 +38,11 @@ class Boss(Character):
         # Merge defaults with provided loyalties
         if loyalties:
             default_loyalties.update(loyalties)
-        
+
+        wallet = kwargs.pop("wallet", generate_wallet("Boss"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location,  status=status, loyalties=default_loyalties, **kwargs
+            location=location,  status=status, wallet=wallet, loyalties=default_loyalties, **kwargs
         )
         self.directives = []  # High-level orders issued to Captains/Managers
         self.primary_status_domain = "criminal"
@@ -91,11 +92,11 @@ class CEO(Character):
 
         # Extract inventory safely from kwargs
         inventory = kwargs.pop("inventory", [])
-
+        wallet = kwargs.pop("wallet", generate_wallet("CEO"))
         # Call parent constructor
         super().__init__(
             name=name, race=race, sex=sex, faction=faction, region=region,
-            location=location, status=status, loyalties=default_loyalties, **kwargs # Pass remaining keyword arguments safely
+            location=location, status=status, wallet=wallet, loyalties=default_loyalties, **kwargs # Pass remaining keyword arguments safely
         )
         self.directives = []  # List of high-level directives
         self.inventory = inventory
@@ -137,10 +138,10 @@ class Captain(Character):
         }
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
-        
+        wallet = kwargs.pop("wallet", generate_wallet("Captain"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location, status=status, loyalties=default_loyalties, **kwargs
+            location=location, status=status, wallet=wallet, loyalties=default_loyalties, **kwargs
         )
 
     def __repr__(self):
@@ -156,7 +157,7 @@ class Manager(Character):
     def __init__(self, name, race, sex, region, location, faction="None", position="Manager", loyalties=None, fun=1, hunger=1, status=None, **kwargs):
         
         random_cash = random.randint(400, 1000)
-        wallet = kwargs.pop("wallet", Wallet(bankCardCash=random_cash))
+        wallet = kwargs.pop("wallet", generate_wallet("Manager"))
 
         if status is None:
             status = CharacterStatus()
@@ -258,10 +259,11 @@ class Employee(Subordinate):
             status.set_status("public", FactionStatus(StatusLevel.LOW, "Employee"))
             status.set_status("criminal", FactionStatus(StatusLevel.NONE, None))
             status.set_status("state", FactionStatus(StatusLevel.LOW, "Registered"))
-
+            
+        wallet = kwargs.pop("wallet", generate_wallet("CorporateSecurity"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, status=status, loyalties=default_loyalties, **kwargs
+            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, status=status, wallet=wallet, loyalties=default_loyalties, **kwargs
         )
         
     def __repr__(self):
@@ -293,12 +295,12 @@ class CorporateSecurity(Subordinate):
         default_loyalties.update(loyalties or {})
 
         kwargs["primary_status_domain"] = "corporate"
-
+        wallet = kwargs.pop("wallet", generate_wallet("CorporateSecurity"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
             location=location, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
-            morale=morale, position=position, 
+            morale=morale, wallet=wallet, position=position, 
             loyalties=default_loyalties, status=status, **kwargs
         )
         
@@ -306,8 +308,9 @@ class CorporateSecurity(Subordinate):
         self.pistolCurrentAmmo = 15
         self.tazerCharge = 10
         self.targetIsInMelee = False
-        self.cash = 10
-        self.bankCardCash = 100
+
+        """ self.cash = 10
+        self.bankCardCash = 100 """
         
     def __repr__(self):
         return Character.__repr__(self) + f", Faction: {self.faction}"
@@ -342,12 +345,12 @@ class CorporateAssasin(CorporateSecurity):
         }
         # Merge defaults with provided loyalties safely
         default_loyalties.update(loyalties or {})
-
+        wallet = kwargs.pop("wallet", generate_wallet("CorporateAssasin"))
         super().__init__(
             name=name, race=race, sex=sex,  region=region,
             location=location, faction=faction, strength=strength, agility=agility, 
             intelligence=intelligence, luck=0, psy=0, toughness=toughness, 
-            morale=morale, position=position, 
+            morale=morale, wallet=wallet, position=position, 
             loyalties=default_loyalties, status=status, **kwargs
         )
         
@@ -356,8 +359,8 @@ class CorporateAssasin(CorporateSecurity):
         self.rifleCurrentAmmo = 15
 
         # Override base class financial stats
-        self.cash = 400
-        self.bankCardCash = 1000
+        """ self.cash = 400
+        self.bankCardCash = 1000 """
 
         # Adjusted health based on toughness
         self.health = 120 + toughness
@@ -402,7 +405,7 @@ class GangMember(Subordinate):
         # Always set the primary domain explicitly
         kwargs["primary_status_domain"] = "criminal"
 
-        wallet = kwargs.pop("wallet", Wallet(bankCardCash=500))
+        wallet = kwargs.pop("wallet", generate_wallet("GangMember"))
 
     # Default loyalty setup for GangMember
         default_loyalties = {}
@@ -428,8 +431,8 @@ class GangMember(Subordinate):
         self.targetIsInMelee = False
         self.isAggressive = False
 
-        self.cash = 50
-        self.bankCardCash = 20
+        """ self.cash = 50
+        self.bankCardCash = 20 """
 
     def default_skills(self):
         base = super().default_skills()
@@ -481,13 +484,13 @@ class RiotCop(Character):
         
         # Explicitly define primary domain
         kwargs["primary_status_domain"] = "state"
-
+        wallet = kwargs.pop("wallet", generate_wallet("RiotCop"))
         super().__init__(
             name=name, race=race, sex=sex, region=region,
             location=location, faction=faction,
             fun=fun, hunger=hunger, strength=15, agility=4, intelligence=5, 
             luck=0, psy=0, toughness=toughness, morale=8, 
-            loyalties=default_loyalties, status=status, position=position, **kwargs
+            loyalties=default_loyalties, wallet=wallet, status=status, position=position, **kwargs
         )
         
         # Weapon & Combat Attributes
@@ -502,8 +505,9 @@ class RiotCop(Character):
         
         self.isArmored = True
         self.armorValue = 30
-        self.cash = 50
-        self.bankCardCash = 300
+
+        """ self.cash = 50
+        self.bankCardCash = 300 """
 
           # List to store items in the character's inventory
 
@@ -552,11 +556,12 @@ class Civilian(Character):
         kwargs.setdefault("faction", Faction)  # Avoids multiple faction values issue
         # Explicitly define primary domain
         
+        wallet = kwargs.pop("wallet", generate_wallet("Civilian"))
 
         #You should not hardcode status in Civilian, because it serves multiple roles, intermediary and concrete
         super().__init__(
             name=name, race=race, sex=sex, region=region, location=location, strength=strength, agility=agility, intelligence=intelligence, 
-            luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, status=status, 
+            luck=luck, psy=psy, toughness=toughness, morale=morale, wallet=wallet, position=position, status=status, 
             **kwargs
         )
 
@@ -567,8 +572,10 @@ class Civilian(Character):
         self.location
         self.region
         self.is_employee = False
-        self.cash = 50
-        self.bankCardCash = 50
+
+        """ self.cash = 50
+        self.bankCardCash = 50 """
+
         # Inventory Initialization
         self.inventory = kwargs.get("inventory", [])
     
@@ -582,7 +589,7 @@ class Civilian(Character):
     
 class VIP(Civilian):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, bankCardCash=10000, position="VIP", loyalties=None,
+    def __init__(self, name, race, sex, region, location, position="VIP", loyalties=None,
         influence=0, strength=18, agility=10, intelligence=15, 
         luck=0, psy=0, toughness=5, morale=7, fun=0, hunger=0, status=None, **kwargs):
 
@@ -631,7 +638,7 @@ class VIP(Civilian):
             status.set_status("criminal", FactionStatus(StatusLevel.NONE, "Unassociated"))
 
         kwargs["primary_status_domain"] = "state"
-
+        wallet = kwargs.pop("wallet", generate_wallet("VIP"))
         super().__init__(
             name=name,
             race=race,
@@ -647,13 +654,16 @@ class VIP(Civilian):
             location=location,
             position=position,
             status=status,
+            wallet=wallet,
             **kwargs # faction is already in kwargs
         )
         
         self.influence = influence
         self.targetIsInMelee = False
-        self.cash = 500
-        self.bankCardCash = bankCardCash  # Redundant but ensures it's explicitly set for VIP
+
+        """ self.cash = 500
+        self.bankCardCash = bankCardCash  # Redundant but ensures it's explicitly set for VIP """
+
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
@@ -701,7 +711,8 @@ class Child(Civilian):
         }
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
-        
+
+        wallet = kwargs.pop("wallet", generate_wallet("Child"))
         super().__init__(
             name=name,
             race=race,
@@ -720,7 +731,7 @@ class Child(Civilian):
             toughness=toughness,
             morale=morale,
             loyalties=default_loyalties,
-            bankCardCash=bankCardCash,
+            wallet=wallet,
             status=status,
             **kwargs
         )
@@ -728,8 +739,10 @@ class Child(Civilian):
         self.parent = parent if isinstance(parent, Character) and parent.race == race else None
         self.influence = influence
         self.targetIsInMelee = False
-        self.cash = 500
-        self.bankCardCash = bankCardCash  
+
+        """ self.cash = 500
+        self.bankCardCash = bankCardCash """ 
+
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
@@ -760,7 +773,7 @@ class Child(Civilian):
 
 class Influencer(Civilian):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="None", bankCardCash=1000, position="Grifter", loyalties=None,
+    def __init__(self, name, race, sex, region, location, faction="None", position="Grifter", loyalties=None,
         influence=8, strength=10, agility=10, intelligence=15, 
         luck=0, psy=0, toughness=5, morale=2, fun=2, hunger=0, status=None, **kwargs):
         
@@ -792,7 +805,8 @@ class Influencer(Civilian):
         }
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
-        
+
+        wallet = kwargs.pop("wallet", generate_wallet("Influencer"))
         super().__init__(
             name=name,
             race=race,
@@ -811,7 +825,7 @@ class Influencer(Civilian):
             toughness=toughness,
             morale=morale,
             loyalties=default_loyalties,
-            bankCardCash=bankCardCash,
+            wallet=wallet,
             status=status,
             **kwargs
         )
@@ -821,8 +835,10 @@ class Influencer(Civilian):
         self.pistolCurrentAmmo = 0
         self.targetIsInMelee = False
         self.tazerCharge = 0
-        self.cash = 1000
-        self.bankCardCash = bankCardCash  
+
+        """ self.cash = 1000
+        self.bankCardCash = bankCardCash """  
+
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
@@ -837,7 +853,7 @@ class Influencer(Civilian):
 
 class Babe(Civilian):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="None", partner=None, bankCardCash=1000, position="Variously Attached", loyalties=None,
+    def __init__(self, name, race, sex, region, location, faction="None", partner=None, position="Variously Attached", loyalties=None,
         influence=7, strength=7, agility=10, intelligence=10, 
         luck=0, psy=0, charisma=14, toughness=4, morale=0, fun=2, hunger=2, status=None, preferred_actions=None, **kwargs):
         
@@ -869,7 +885,7 @@ class Babe(Civilian):
         }
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
-        
+        wallet = kwargs.pop("wallet", generate_wallet("Babe"))
         super().__init__(
             name=name,
             race=race,
@@ -891,7 +907,7 @@ class Babe(Civilian):
             toughness=toughness,
             morale=morale,
             loyalties=default_loyalties,
-            bankCardCash=bankCardCash,
+            wallet=wallet,
             status=status,
             **kwargs
         )
@@ -901,8 +917,10 @@ class Babe(Civilian):
         self.pistolCurrentAmmo = 0
         self.targetIsInMelee = False
         self.tazerCharge = 0
-        self.cash = 1000
-        self.bankCardCash = bankCardCash  
+
+        """ self.cash = 1000
+        self.bankCardCash = bankCardCash  """
+
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         self.position = position
@@ -942,7 +960,7 @@ class Babe(Civilian):
 
 class Detective(Character): #Subordinate? Of the state?
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="The State", bankCardCash=800, position="Cop", toughness=13, loyalties=None, fun=0, hunger=0, status=None, **kwargs):
+    def __init__(self, name, race, sex, region, location, faction="The State", position="Cop", toughness=13, loyalties=None, fun=0, hunger=0, status=None, **kwargs):
 
         if status is None:
             status = CharacterStatus()
@@ -975,6 +993,7 @@ class Detective(Character): #Subordinate? Of the state?
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
 
+        wallet = kwargs.pop("wallet", generate_wallet("dealer"))
         super().__init__(
             name=name,
             race=race,
@@ -991,6 +1010,7 @@ class Detective(Character): #Subordinate? Of the state?
             psy=0,
             toughness=toughness,
             morale=8,
+            wallet=wallet,
             loyalties=default_loyalties,
             status=status,
             **kwargs
@@ -1008,8 +1028,9 @@ class Detective(Character): #Subordinate? Of the state?
         
         self.isArmored = True
         self.armorValue = 30
-        self.cash = 50
-        self.bankCardCash = 300
+
+        """ self.cash = 50
+        self.bankCardCash = 300 """
 
           # List to store items in the character's inventory
 
@@ -1027,7 +1048,7 @@ class Detective(Character): #Subordinate? Of the state?
         
 class Taxman(Character):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="State", bankCardCash=1000, position="Tax Official", preferred_actions=None, loyalties=None, fun=-1, hunger=0, status=None, **kwargs):
+    def __init__(self, name, race, sex, region, location, faction="State", position="Tax Official", preferred_actions=None, loyalties=None, fun=-1, hunger=0, status=None, **kwargs):
         
         if status is None:
             status = CharacterStatus()
@@ -1057,10 +1078,10 @@ class Taxman(Character):
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
         
-        
+        wallet = kwargs.pop("wallet", generate_wallet("dealer"))
         super().__init__(
             name=name, race=race, sex=sex, region=region,
-            location=location, faction=faction, bankCardCash=bankCardCash, loyalties=default_loyalties, fun=fun,
+            location=location, faction=faction, wallet=wallet, loyalties=default_loyalties, fun=fun,
             hunger=hunger, preferred_actions=preferred_actions, status=status, **kwargs
         )
         self.base_preferred_actions = {
@@ -1068,7 +1089,9 @@ class Taxman(Character):
         }
 
         self.position = position
-        self.bankCardCash = bankCardCash
+
+        # self.bankCardCash = bankCardCash
+
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
     
     # figure out how specific charcters store their specific actions, here or in that file or both
@@ -1086,7 +1109,7 @@ class Taxman(Character):
 
 class Accountant(Character):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="None", bankCardCash=1000, position="Accountant", loyalties=None, fun=0, hunger=0, status=None, **kwargs):
+    def __init__(self, name, race, sex, region, location, faction="None", position="Accountant", loyalties=None, fun=0, hunger=0, status=None, **kwargs):
         
         if status is None:
             status = CharacterStatus()
@@ -1116,14 +1139,14 @@ class Accountant(Character):
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
         
-        
+        wallet = kwargs.pop("wallet", generate_wallet("dealer"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction, region=region,
-            location=location, bankCardCash=bankCardCash, loyalties=default_loyalties, fun=fun,
+            location=location, wallet=wallet, loyalties=default_loyalties, fun=fun,
             hunger=hunger, status=status, **kwargs
         )
         self.position = position
-        self.bankCardCash = bankCardCash
+
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
     
 

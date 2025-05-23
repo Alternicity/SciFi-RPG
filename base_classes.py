@@ -6,6 +6,7 @@ from goals import Goal
 import traceback
 from enum import Enum, auto
 from collections import deque
+from tasks import TaskManager
 
 if TYPE_CHECKING:
     from location import Region
@@ -110,14 +111,15 @@ class Faction:
         return f"{self.name} {self.type.capitalize()}"
     
 class Factionless(Faction):
-    def __init__(self, name):
-        super().__init__(name="Factionless", type="neutral")
-        self.name = name
-        self.type = type
+    def __init__(self, name="Factionless", violence_disposition="Low"):
+        super().__init__(name=name, type="neutral")
+        self.violence_disposition = violence_disposition
+        self.HQ = None
         self.goals = []
         self.current_goal = None
         self.resources = {}
         self.region = None
+        self.members = []
 
 class Character:
 
@@ -188,9 +190,19 @@ class Character:
         
         
         self.memory = []
+        self.task_manager = TaskManager(self)
+        
+
+        """ Should Tasks Be Stored in Memory?
+        Yes, that makes a lot of sense — but with separation of concerns:
+
+        Memory stores past and ongoing tasks for recall, journaling, or planning.
+
+        tasks[] list should still exist for actively assigned or planned tasks (like a task queue). """
+
         self.self_awareness_score = 0
         self.self_awareness_level = SelfAwarenessLevel.ANIMAL
-        self.thoughts = deque()  # or maybe deque(maxlen=20) to simulate limited attention span
+        self.thoughts = deque(maxlen=10)
         """ A deque, or double-ended queue, in Python is a data structure from the collections module 
         that allows you to efficiently add and remove elements from both ends """
         self.race = race
@@ -255,8 +267,8 @@ class Character:
         self.status.set_status("state", FactionStatus(StatusLevel.NONE, None))
         
 
-        # Tasks (individual objectives, replacing "goals")
-        self.tasks = kwargs.get("tasks", [])
+
+        
      
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
         self.attention_focus = None
@@ -337,6 +349,18 @@ class Character:
         """Remove a preferred action."""
         self.preferred_actions.pop(action, None)
 
+    def remember_task(self, task): #Remember your TOP task
+        self.memory.append({
+            "type": "task",
+            "name": task.name,
+            "time": "now",  # or use game clock
+            "status": task.status,
+        })
+
+    def receive_task(self, task):
+        self.tasks.append(task)
+        print(f"{self.name} is now handling task: '{task}'.")
+
     def display_location(self, verbose=False):
         region_name = self.region.name if hasattr(self.region, "name") else str(self.region)
         location_name = self.location.name if hasattr(self.location, "name") else str(self.location)
@@ -390,6 +414,12 @@ class Character:
     def get_skill(self, skill_name):
         return self.skills.get(skill_name, 1)  # Minimum 1
 
+    """ Motivations are inputs or drives
+
+    Utility AI is the decision engine
+
+    Tasks are outputs or choices selected by that engine """
+
     @property
     def motivations(self):
         """Returns motivations in a formatted way for display."""
@@ -404,13 +434,11 @@ class Character:
         if not self.motivations:
             self.motivations["earn_money"] = 5
     
-    from observe import handle_observation  # Safe import — doesn't import Character
 
     def observe(self, event, instigator, region, location):
         """
-    Pass observation to a generic event object for processing.
+    Pass observation to percepts probably through @percepts.setter.
     """
-        from observe import handle_observation
         if hasattr(self, "memory"):
             self.memory.append({
                 "event": event.__class__.__name__,
@@ -422,25 +450,8 @@ class Character:
         if hasattr(event, "record_observation"):
             event.record_observation(observer=self, instigator=instigator, region=region, location=location)
 
-
-
-
-
-    @property
-    def whereabouts(self):
-        """Returns the character's full whereabouts dynamically."""
-        region_name = self.region.name if hasattr(self.region, "name") else self.region
-        location_name = self.location.name if hasattr(self.location, "name") else self.location
-        sublocation = getattr(self, "_sublocation", None)
-        print(f"DEBUG: Accessing whereabouts -> region: {region_name}, location: {location_name}")
-        return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
-
-# Perception-related attributes
-          # List of things character notices (e.g., dangers, opportunities)
-                            #Key = Percept, Value = Weight of how attention grabbing it is
-                            #This should be  dynamically updating.
-                            #So does it need an @property function?
-
+        # List of things character notices (e.g., dangers, opportunities)
+        #Key = Percept, Value = Weight of how attention grabbing it is
     @property
     def percepts(self):
         """Dynamically generates percepts with actionable hints. allows behavior trees or utility-based AI 
@@ -448,6 +459,8 @@ class Character:
           awareness. percepts are what the character is noticing right now."""
         #types> characters, events, utility, factions, locations, regions, chainOfActions
         updated_percepts = {}
+        #should the following code be moved elsewhere out of class Character, it looks like placeholder code that
+        #would need to grow very long.
         if self.observation > 5:
             updated_percepts["Nearby Friend"] = {"weight": 8, "suggested_actions": ["Talk", "Trade"]}
             updated_percepts["Loud Noise"] = {"weight": 6, "suggested_actions": ["Investigate"]}
@@ -463,6 +476,16 @@ class Character:
             self._percepts = new_percepts
         else:
             raise ValueError("Percepts must be a dictionary of {percept: weight}.")
+        #Something here needs to convert percepts into think() creating Thought object and memories, in self.memory = [] and self.thoughts = deque(maxlen=10) 
+
+    @property
+    def whereabouts(self):
+        """Returns the character's full whereabouts dynamically."""
+        region_name = self.region.name if hasattr(self.region, "name") else self.region
+        location_name = self.location.name if hasattr(self.location, "name") else self.location
+        sublocation = getattr(self, "_sublocation", None)
+        print(f"DEBUG: Accessing whereabouts -> region: {region_name}, location: {location_name}")
+        return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
 
     def adjust_self_esteem(self, amount):
         self.self_esteem = max(0, min(100, self.self_esteem + amount))
@@ -504,12 +527,26 @@ class Character:
         else:
             self.self_awareness_level = SelfAwarenessLevel.TRANSCENDENT
 
+    @property
+    def bankCardCash(self):
+        return self.wallet.bankCardCash
+
+    @property
+    def cash(self):
+        return self.wallet.cash
+
     def __repr__(self):
         """ whereabouts_value = self.whereabouts  # Ensure evaluation
         print(f"🔍 Debug: whereabouts = {whereabouts_value}")  # Now prints the actual value
     """     
         
-        return f"{self.name} (Faction: {self.faction}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
+        return (
+            f"{self.name} "
+            f"(Faction: {self.faction.name if self.faction else 'None'}, "
+            f"Cash: {self.wallet.cash}, "
+            f"BankCard: {self.wallet.bankCardCash}, "
+            f"Fun: {self.fun}, Hunger: {self.hunger})"
+        )
     
     def get_loyalty(self, group):
         """
@@ -580,6 +617,7 @@ class Location:
     from InWorldObjects import ObjectInWorld #check for circular import 
     objects_present: list[ObjectInWorld] = field(default_factory=list)
     robbable: bool = False
+    is_open: bool = True
     condition: str = "Unknown Condition"
     fun: int = 0
     is_concrete: bool = False

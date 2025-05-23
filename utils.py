@@ -153,3 +153,9 @@ def normalize_location_regions(all_locations, all_regions):
                 matched_region.add_location(loc)
             else:
                 print(f"⚠️ Could not resolve region '{loc.region}' for location '{loc.name}'")
+
+                
+#For displaying or logging wallet values:
+""" from economy import get_wallet_values
+cash, card = get_wallet_values(self.wallet)
+print(f"Cash: {cash}, Card: {card}") """

@@ -30,9 +30,10 @@ def create_faction_characters(faction, all_regions, factions=None):
         raise ValueError(f"Unknown faction type: {faction}")
 
 def create_all_characters(factions, all_locations, all_regions):
-    # TODO: Update NPC instantiation to support Wallet and Inventory objects
+    # TODO: Update NPC instantiation to support Inventory objects
     print("\n" * 3)  # Line breaks for clarity
-    #print("create_all_characters() is about to run")
+    print("Creating characters for factions...")
+    print(f"Received {len(factions)} factions")
 
     all_characters = []
    
@@ -48,7 +49,8 @@ def create_all_characters(factions, all_locations, all_regions):
     
     from game_logic import assign_random_civilians_to_random_shops
     assign_random_civilians_to_random_shops(all_regions)  # Now regions are ready
-
+    
+    print(f"Total characters created: {len(all_characters)}")
     return all_characters
 
 def player_character_options(all_regions, factions):
@@ -67,7 +69,7 @@ def player_character_options(all_regions, factions):
         "race": "Terran",
         "faction_name": "Hannival",
         "region_name": "Downtown",
-        "location_name": "Corporate HQ",
+        "location_name": "Hannival HQ",
         "wallet": Wallet(bankCardCash=500),
         "preferred_actions": {},
         "initial_motivations": MotivationPresets.for_class("Manager"),  # new
@@ -106,14 +108,19 @@ def instantiate_character(char_data, all_regions, factions):
     from InWorldObjects import Wallet
     from weapons import Weapon
 
+    print(f"\n[DEBUG] Instantiating character: {char_data.get('name')}")
+
     game_state = get_game_state()    
     if game_state is None:
-        print("ERROR: game_state is not initialized!")
+        print("❌ ERROR: game_state is not initialized!")
+        return None
 
     # Extract names from data
     faction_name = char_data.get("faction_name")
     region_name = char_data.get("region_name")
     location_name = char_data.get("location_name")
+
+    print(f"[DEBUG] faction_name: {faction_name}, region_name: {region_name}, location_name: {location_name}")
 
     # Lookups
     if faction_name is None or faction_name == "Factionless":
@@ -125,9 +132,28 @@ def instantiate_character(char_data, all_regions, factions):
         if faction is None and faction_name != "Factionless":
             print(f"[Warning] No faction found with name: {faction_name}")
             return None
-    
+
+        if faction is None:
+            print(f"❌ ERROR: Faction '{faction_name}' not found in factions list!")
+        else:
+            print(f"[DEBUG] Faction found: {faction.name}")
+
     region = get_region_by_name(region_name, all_regions)
+    #tmp block below
+    if region is None:
+        print(f"❌ ERROR: Region '{region_name}' not found!")
+    else:
+        print(f"[DEBUG] Region found: {region.name}")
+
+
     location = get_location_by_name(location_name, all_regions)
+    #tmp block below
+    if location is None:
+        print(f"❌ ERROR: Location '{location_name}' not found!")
+    else:
+        print(f"[DEBUG] Location found: {location.name}")
+
+
     wallet = char_data.get("wallet", Wallet())
     race = char_data["race"]
     sex = char_data["sex"]
@@ -188,6 +214,7 @@ def instantiate_character(char_data, all_regions, factions):
         print(f"{character.name} starts with motivations: {', '.join([m.type for m in character.motivation_manager.motivations])}")
 
         game_state.player_character = character
-        return character
+        print(f"[SUCCESS] Character '{character.name}' instantiated successfully.")
+    return character
 
     

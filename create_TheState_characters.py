@@ -74,7 +74,10 @@ def create_TheState_characters(faction):
             )
             faction.state_staff.append(person)
             game_state.add_state_staff(person)
+
             state_staff.append(person)
+            faction.members.append(person)
+            #Wen adding new state characters, always append to both state_staff and faction.members
 
     # --- Police Station ---
     police_stations = [loc for loc in faction.region.locations if isinstance(loc, PoliceStation)]

@@ -1,8 +1,10 @@
 import logging
+from collections import deque
+
 logging.basicConfig(level=logging.INFO)
 
 class Task:
-    """Represents a task in the simulation."""
+    """Small unit of accomplishment for npcs using utility AI."""
 
     VALID_DIFFICULTIES = ("easy", "medium", "hard")
     VALID_STATUSES = ("pending", "completed")
@@ -39,7 +41,31 @@ class Task:
         self.status = "completed"
         logging.info(f"Task '{self.name}' is completed.")
 
-    #from class subordinate 
-    def receive_task(self, task):
-        self.tasks.append(task)
-        print(f"{self.name} is now handling task: '{task}'.")
+    def __repr__(self):
+        return f"<Task: {self.name} ({self.difficulty}, {self.status})>"
+    
+# This will be used per character
+class TaskManager:
+    def __init__(self, owner):
+        self.owner = owner  # Reference to the Character
+        self.queue = deque()
+        self.current_task = None
+        self.completed_tasks = []
+
+    def add_task(self, task):
+        self.queue.append(task)
+
+    def get_next_task(self):
+        if not self.current_task and self.queue:
+            self.current_task = self.queue.popleft()
+        return self.current_task
+
+    def complete_current_task(self):
+        if self.current_task:
+            self.completed_tasks.append(self.current_task)
+            self.current_task = None
+
+    def interrupt_current_task(self): #Has the characters self.attention_focus = None been hijacked?
+        if self.current_task:
+            self.queue.appendleft(self.current_task)
+            self.current_task = None

@@ -1,57 +1,42 @@
-import json
+# simulate_day.py
+import random
+from location import Shop
+from create_game_state import get_game_state
+from ai_utility import UtilityAI
+from events import Robbery
 
-def simulate_day(characters, all_locations):
-    """
-    Simulates a day in the game.
-    """
-    # Day shift
-    for char in characters:
-        if char.shift == 'day':
-            if char.is_working:
-                print(f"{char.name} is working at {char.current_location.name}.")
-            else:
-                char.current_location = find_leisure_location(char, all_locations)
-                print(f"{char.name} is relaxing at {char.current_location.name}.")
+ai_system = UtilityAI()
 
-    # Update fun and hunger
-    for char in characters:
-        if char.is_working:
-            char.fun -= 1  # Working reduces fun
-        else:
-            char.fun += 1  # Leisure increases fun
-        char.hunger += 1  # Hunger always increases
+def simulate_days(num_days=1):
+    game_state = get_game_state()
+    all_regions = game_state.all_regions
 
-    # Night shift
-    for char in characters:
-        if char.shift == 'night':
-            if char.is_working:
-                print(f"{char.name} is working at {char.current_location.name}.")
-            else:
-                char.current_location = find_leisure_location(char, locations)
-                print(f"{char.name} is relaxing at {char.current_location.name}.")
+    for _ in range(num_days): #use generator here?
+        for region in all_regions:
+            for npc in region.characters_there:
+                if npc.is_player:
+                    continue  # Skip player; they act via menu
 
-def save_simulation_data(characters, all_locations, day):
-    data = {
-        "day": day,
-        "characters": [
-            {
-                "name": char.name,
-                "role": char.role,
-                "location": char.current_location.name if char.current_location else None,
-                "fun": char.fun,
-                "hunger": char.hunger,
-                "is_working": char.is_working
-            }
-            for char in characters
-        ],
-        "locations": [
-            {
-                "name": loc.name,
-                "type": loc.type,
-                "workers": [worker.name for worker in loc.current_workers]
-            }
-            for loc in all_locations
-        ]
-    }
-    with open(f"simulation_day_{day}.json", "w") as file:
-        json.dump(data, file, indent=4)
+                # 1. Passive perception (AI motivation inputs)
+                npc.observe(None, None, region, npc.location)
+
+                #1.5 Observe() needs to go through percepts
+
+                # 2. Decide what to do
+                action = ai_system.choose_action(npc, region)
+
+                # 3. Take that action
+                if action == "Rob":
+                    targets = ai_system.get_viable_robbery_targets(npc, region)
+                    if targets:
+                        target = random.choice(targets)
+                    if target: #indentation?
+                        robbery = Robbery(robber=npc, location=target)
+                        robbery.execute()
+
+        # 🔄 OPTIONAL: Add future game state updates here
+        # update_world_state(game_state)
+        # handle_daily_events(game_state)
+            # Add more actions like "Buy", "Recruit", "Report", etc.
+
+

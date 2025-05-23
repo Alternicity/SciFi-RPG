@@ -5,6 +5,8 @@ from create_game_state import get_game_state
 from motivation_presets import MotivationPresets
 from status import StatusLevel, CharacterStatus, FactionStatus
 from base_classes import Character
+from weapons import Knife
+from inventory import Inventory
 
 def create_gang_characters(faction):
 
@@ -21,7 +23,7 @@ def create_gang_characters(faction):
     status.set_status("criminal", FactionStatus(StatusLevel.HIGH, "Boss"))
 
     sex = random.choice(Character.VALID_SEXES)
-    name = create_name(race, sex)
+    name = create_name(faction.race, sex)
     race = faction.race  # Use race assigned during faction creation
 
     boss = Boss(
@@ -36,14 +38,20 @@ def create_gang_characters(faction):
     )
     faction.boss = boss  # <-- Store boss reference in gang
     characters.append(boss)
+    if faction.HQ:
+        faction.boss.location = faction.HQ
+        faction.boss.region = faction.HQ.region
+    else:
+        faction.boss.location = None
+        faction.boss.region = faction.region  # fallback, still in region
 
-    # Assign boss to the correct gang in GameState
+    # Assign boss to the correct gang in GameState PAUSED/FAILS
+    from create_game_state import get_game_state
     game_state = get_game_state()
     for gang in game_state.gangs:
         if gang.name == faction.name:
             gang.add_boss(boss)
             break
-    print(f"Boss Created: {boss.name} (Faction: {faction.name})")
 
     # Captains
     for _ in range(random.randint(2, 3)):
@@ -82,11 +90,49 @@ def create_gang_characters(faction):
         faction=faction,
         region=faction.region,
         location=None,
-        initial_motivations=["gain_mid"],
+        initial_motivations=["earn_money"],
+        inventory=Inventory([Knife(owner_name=name)]),
         status=status
     )
     characters.append(member)
     faction.members.append(member)
+
+    # Diagnostics
+    msg = f"Boss {boss.name} created for faction '{faction.name}'"
+
+    # Check 1: Assigned to gang object in game_state
+    assigned = False
+    hq_present = False
+    located_correctly = False
+
+    from create_game_state import get_game_state
+    game_state = get_game_state()
+
+    for gang in game_state.gangs:
+        if gang.name == faction.name:
+            assigned = gang.boss == boss
+            hq_present = gang.HQ is not None  # Use correct `.HQ` attribute
+            located_correctly = boss.location == gang.HQ if gang.HQ else False
+
+            # Assign boss location if not already set and HQ exists
+            if gang.HQ and boss.location is None:
+                boss.location = gang.HQ
+                boss.region = gang.HQ.region
+
+            msg = f"Boss {boss.name} created for faction '{faction.name}'"
+            msg += f"; Assigned to game_state.gang: {'Yes' if assigned else 'No'}"
+
+            if hq_present:
+                msg += f"; Gang HQ exists: Yes; Boss located in HQ: {'Yes' if located_correctly else 'No'}"
+            else:
+                if gang.is_street_gang:
+                    msg += "; Gang HQ exists: No, they are a street gang, looking for an HQ."
+                else:
+                    msg += "; Gang HQ exists: No."
+
+            print(msg)
+            break
+
 
     """ # TODO: Add optional gender split logic
     # TODO: Add Gang Assassins if needed later

@@ -1,15 +1,14 @@
-from faction import GeneralPopulation
+
 import random
-from base_classes import Character
+from base_classes import Character, Factionless
 from location import Shop, Region
 from location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
-from faction import GeneralPopulation
 from characters import Civilian
 from InWorldObjects import Wallet
 from motivation_presets import MotivationPresets
 from status import CharacterStatus, FactionStatus, StatusLevel
 
-general_population_faction = GeneralPopulation(name="General Population", violence_disposition="low")
+general_population_faction = Factionless(name="General Population", violence_disposition="low")
 
 from utils import normalize_location_regions
 def create_civilian_population(all_locations, all_regions, num_civilians=30):
@@ -50,10 +49,6 @@ def create_civilian_population(all_locations, all_regions, num_civilians=30):
         #debug block
         from create_game_state import get_game_state
         game_state = get_game_state()
-        #print("📜 All known regions:")
-        for reg in game_state.all_regions:
-            #print(f" - {reg.name}")
-            pass
         
         region = get_region_for_location(location, all_regions)
 
@@ -79,6 +74,8 @@ def create_civilian_population(all_locations, all_regions, num_civilians=30):
             wallet=Wallet(bankCardCash=random_cash),
             status=status
         )
+        print(f"Created Civilian: {civilian.name}, Faction: {civilian.faction.name}, Disposition: {civilian.faction.violence_disposition}")
+
         # 80% chance this civilian is an employee
         civilian.is_employee = random.random() < 0.8
         

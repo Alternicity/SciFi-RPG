@@ -1,5 +1,6 @@
 #character_memory.py
 #Characters should remember what they’ve discovered (places, characters, learned skills).
+import time
 
 class Memory:
     def __init__(self, subject, details, importance=5, timestamp=None, tags=None):
@@ -8,6 +9,7 @@ class Memory:
         self.importance = importance  # How significant is it?
         self.timestamp = timestamp or "now"  # You can use actual datetime later
         self.tags = tags or []
+        self.approx_identity = None #CHECK this one
 
         #now you need episodic memory (what they saw before) and optionally semantic memory (learned facts)
         #class Memory and class MemoryEntry perhaps overlap and classs memory should be more a container and handler,
@@ -18,7 +20,7 @@ class Memory:
         return f"Memory of {self.subject}: {self.details} (Importance: {self.importance}, Tags: {self.tags})"
     
 class MemoryEntry:
-    def __init__(self, event_type, target, description, timestamp=None):
+    def __init__(self, event_type, target, description, timestamp=None, **kwargs):
         self.event_type = event_type  # "robbery", "conversation", "sighting"
         self.target = target  # Could be a character or location
         self.description = description

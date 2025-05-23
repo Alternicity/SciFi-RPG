@@ -69,16 +69,18 @@ class State(Faction):
         self.state_staff = []
         self.members = []
 
+     
+
     def update_laws(self, new_law):
         self.laws.append(new_law)
         print(f"New law added: {new_law}")
 
 
 
-class GeneralPopulation(Faction):
+""" class GeneralPopulation(Faction):
     def __init__(self, name, violence_disposition):
         super().__init__(name, type="general population")
         self.violence_disposition = violence_disposition
         self.HQ = None
-        self.members
+        self.members """
 #made so that Employee can be instantiated with a faction

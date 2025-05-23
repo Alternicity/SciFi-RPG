@@ -1,4 +1,4 @@
-# gameplay.py
+
 from region_utils import get_all_regions
 #remove all object creation from this file and dont let it back in
 import random
@@ -14,7 +14,7 @@ from motivation import MotivationManager
 from character_creation_funcs import create_faction_characters
 from utils import dev_mode
 from create_game_state import get_game_state
-
+from simulate_day import simulate_days
     
 def gameplay(selected_character, region):
     from create_game_state import get_game_state
@@ -47,7 +47,7 @@ def gameplay(selected_character, region):
             print(f"You feel the urge to: {motivation_list}.")
         else:
             print(f"{character.name} feels the urge to: {motivation_list}.")
-    
+
     while True:
         print("\n=== Gameplay Menu ===")
         
@@ -56,8 +56,10 @@ def gameplay(selected_character, region):
     2: ("Move to another Region", lambda: move_region(character, show_region_choices(game_state.all_regions), game_state.all_regions)),
     3: ("Display Characters Summary", lambda: display_character_Summary()),
     4: ("Display Factions", lambda: display_factions()),
-    5: ("Dev", lambda: dev_mode()),  # ✅ Simple call to dev_mode
-    6: ("Exit Gameplay", lambda: exit_gameplay()),
+    5: ("Dev", lambda: dev_mode()),
+    6: ("Pass 1 Time", lambda: simulate_days(1)),
+    7: ("Pass 3 Time", lambda: simulate_days(3)),
+    8: ("Exit Gameplay", exit_gameplay),
 }
         dynamic_options = build_gameplay_menu(selected_character.location, selected_character)
 
@@ -189,7 +191,7 @@ def assign_random_civilians_to_random_shops(regions, count: int = 15):
         civilian.location = shop
 
         #print(f"[Test] Moved {civilian.name} to shop: {shop.name}")
-
+        
 
 
 def display_factions():

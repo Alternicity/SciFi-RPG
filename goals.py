@@ -4,9 +4,12 @@ from tasks import Task
 
 logging.basicConfig(level=logging.INFO)
 
-class Goal:
-    """Represents a high-level goal for a faction."""
+#Deprecate objectives, Pause goals, Focus on tasks.py for npcs using utility
 
+class Goal:
+    """Represents a high-level goal for a faction. Although NPCs will generallz use Utility AI, I plan on eventually
+    using GOAP for Gang Bosses, CEOs or corporations, and state VIPS"""
+    
     VALID_GOALS = [
         "expand_territory",
         "maximise_profits",
@@ -34,6 +37,8 @@ class Goal:
         self.status = status  # "pending", "in_progress", "completed", "failed"
         self.objectives = []
         self.generate_objectives()
+        self.preconditions = []
+        self.effects = []
 
     def add_precondition(self, condition):
         """Define when this goal should be selected in a GOAP system."""
@@ -56,8 +61,8 @@ class Goal:
         #assign any credit or prestige
         return self.status == "completed"
 
-    def goal_type():
-        pass
+    """ def goal_type():
+        pass """
 
     def generate_objectives(self):
         """Generate specific objectives based on the goal_type."""

@@ -277,7 +277,9 @@ class Robbery(Event):
             # Approximate description
             appearance = self.instigator.get_appearance_description()
 
-            witness.memory_log.append(MemoryEntry(
+        #Shoule the below witness memory and thought go through the percept setter?
+
+            witness.memory.append(MemoryEntry(
                 event_type="crime_observed",
                 target=self.instigator,
                 approx_identity = self.instigator.get_appearance_description(),
@@ -286,6 +288,7 @@ class Robbery(Event):
 
             witness.thoughts.append(Thought(
                 content=f"Saw a {appearance} rob {self.location.name}",
+                origin=self,
                 source=self.instigator,
                 weight=8,
                 tags=["crime", "alert"]

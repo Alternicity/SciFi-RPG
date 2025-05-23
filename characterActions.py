@@ -594,6 +594,9 @@ def rob(character, location, target_item=None):
 def sowDissent(Character, rivals):
     print(f"I sent them a message, I want no more hostilities")
 
+def examine_item(item):
+    return getattr(item, "human_readable_id", item.name)
+
 def shakeDown(character, location, targetResource):
     print(f"Your regular protection payment is due")
 

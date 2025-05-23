@@ -342,7 +342,7 @@ from display import show_character_details
 #from main import get_all_regions, get_factions
 def select_character_menu():
     """Displays the character selection menu, instantiates the chosen character, and returns it."""
-
+    
     # Get character options
     from create_game_state import get_game_state
     game_state = get_game_state()
@@ -350,12 +350,12 @@ def select_character_menu():
     all_regions = game_state.all_regions
     factions = game_state.factions
     character_options = player_character_options(all_regions, factions)
+    print("Factions available:", [f.name for f in factions])
 
     if not character_options:
         print("No characters available for selection.")
         return None, None
 
-    # Display character choices
     print("\nSelect a character:")
 
     for idx, char_data in enumerate(character_options, start=1):
@@ -373,16 +373,6 @@ def select_character_menu():
 
     #print(f"{idx}. {name}, {char_class}, Faction: {faction_name}")
 
-
-
-
-
-
-
-
-
-
-
     while True:
         try:
             choice = int(input("Enter the number of your chosen character: ")) - 1
@@ -394,6 +384,9 @@ def select_character_menu():
                 print("Invalid choice. Please select a valid number.")
         except ValueError:
             print("Invalid input. Please enter a number.")
+
+    print(f"[DEBUG] Selected character: {selected_character}")
+    print(f"[DEBUG] Selected character type: {type(selected_character)}")
 
     # Show selected character details
     show_character_details(selected_character)

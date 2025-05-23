@@ -2,6 +2,8 @@ import json
 import os
 import logging
 from location import Shop
+import random
+from InWorldObjects import Wallet
 
 logging.basicConfig(level=logging.INFO)
 
@@ -66,12 +68,4 @@ class EconomyManager:
                 raise ValueError("The item must have a 'legality' attribute.")
             return item.value if item.legality == True else item.blackmarket_value
 
-    def print_wallet(self):
-        """Print the wallet's current balance (for debugging purposes)."""
-        print(f"Cash in wallet: {self.wallet.cash}")
-        print(f"Bank card balance: {self.wallet.bankCardCash}")
 
-        #possibly deprecated function, pasted here
-    def get_total_money(self):
-        """Return the total money available (cash + bank card)."""
-        return self.wallet.total_balance()

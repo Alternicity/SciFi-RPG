@@ -19,20 +19,13 @@ import os
 from character_creation_funcs import create_all_characters
 import random
 
-
-from characters import (Boss, Captain, Employee, VIP, RiotCop,
-                         CorporateAssasin, Employee, GangMember,
-                           CEO, Manager, CorporateSecurity, Civilian)
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s:%(message)s"
 )
 DEBUG_MODE = False  # Set to True when debugging
 
- 
-
 def create_object(data):
-
     pass
     
 def create_regions():
@@ -54,14 +47,12 @@ def create_regions():
         "Downtown": "Rich",
     }
 
-    # Store region objects
-    all_regions = [] #used elsewhere
+    all_regions = []
     
     for region_name in region_names:
         try:
             wealth = wealth_map.get(region_name, "Normal")
             
-            # 🏗️ Create a region object first
             region_obj = Region(
                 name=region_name,
                 shops=[],
@@ -72,7 +63,7 @@ def create_regions():
             all_regions.append(region_obj)
 
         except Exception as e:
-            print(f"❌ Error creating Region object for '{region_name}': {e}")
+            print(f"Error creating Region object for '{region_name}': {e}")
 
     # 🔁 Now populate each region with locations
     for region in all_regions:
@@ -204,6 +195,21 @@ def create_corp_factions(num_corps, all_regions):
         
     return corporations
 
+
+#tmpPrint
+def print_sample_characters_wallets(factions):
+    print("\n=== Sample Characters and Wallets ===")
+    for faction in factions:
+        print(f"\nFaction: {faction.name}")
+        seen_classes = set()
+
+        for character in faction.members:
+            class_name = character.__class__.__name__
+            if class_name not in seen_classes:
+                seen_classes.add(class_name)
+                print(f" - {character.name} ({class_name}): Cash = {character.wallet.cash}, BankCard = {character.wallet.bankCardCash}")
+
+
 def create_factions(all_regions, all_locations):
     from create_game_state import get_game_state
     game_state = get_game_state()
@@ -227,23 +233,31 @@ def create_factions(all_regions, all_locations):
     state.region = downtown_region #I added this spontaneously, while on an epic coffee crash
     game_state.set_state(state)
     factions.append(state)
+    print(f"[DEBUG] Added faction: {state.name} with region {state.region.name}")
 
     # Debugging: Check what create_gang_factions() returns before extending factions
-    gang_factions = create_gang_factions(10, all_regions) #gang_faction greyed, not accesssed
-    for faction in factions:
+    gang_factions = create_gang_factions(10, all_regions)
+    factions.extend(gang_factions)
+
+    for faction in gang_factions:
         if faction.type == "Gang":
             print(f"- {faction.name} (Region: {faction.region}) ({faction.type}) ({faction.resources})")
+            factions.extend(gang_factions) #keep?
 
     from base_classes import Faction
     factionless = Faction("Factionless", "independent")
-    factions.append(factionless)
+    factions.append(factionless) #factionless characters not present in new output print
 
-    factions.extend(create_corp_factions(10, all_regions))
+    corp_factions = create_corp_factions(10, all_regions)
+    factions.extend(corp_factions)
 
-    
     all_characters = create_all_characters(factions, all_locations, all_regions)
     #print(f"create_all_characters() called from {__name__}")
     #print(f"✅ Total characters created: {len(all_characters)}")
+
+
+    
+    print_sample_characters_wallets(factions)
 
 
     return factions, all_characters
@@ -292,8 +306,6 @@ def assign_hq(faction, region):
         region.region_street_gangs.append(faction)
         game_state.all_street_gangs.append(faction)
 
-        
-
         if not any(goal.goal_type == "acquire HQ" for goal in faction.goals):
             faction.set_goal(Goal(description="Acquire an HQ", goal_type="acquire HQ"))
         
@@ -308,6 +320,7 @@ def assign_hq(faction, region):
                 region.trigger_event("turf_war")
                 region.turf_war_triggered = True
                 
+
 
 
 

@@ -99,9 +99,8 @@ class Wallet:
         self.cash = cash  # Cash for normal purchases (or black market)
         self.bankCardCash = bankCardCash  # Cash available via bank card
 
-    def total_balance(self):
-        """Return the total money in the wallet (cash + bank card balance)."""
-        return self.cash + self.bankCardCash
+    def get_values(self):
+        return self.cash, self.bankCardCash
 
     def add_cash(self, amount):
         """Add cash to the wallet."""
