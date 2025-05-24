@@ -16,9 +16,8 @@ def create_gang_characters(faction):
     characters = []
 
     
-    print(f"Creating Boss for {faction.name}...")
-    #character names will need to be drawn from the race specific csv files, gangs begin racially homogenous
-    
+    #print(f"Creating Boss for {faction.name}...")
+
     status = CharacterStatus()
     status.set_status("criminal", FactionStatus(StatusLevel.HIGH, "Boss"))
 
@@ -97,10 +96,8 @@ def create_gang_characters(faction):
     characters.append(member)
     faction.members.append(member)
 
-    # Diagnostics
-    msg = f"Boss {boss.name} created for faction '{faction.name}'"
-
-    # Check 1: Assigned to gang object in game_state
+    # Gang HQ and Boss Diagnostics
+    """ msg = f"Boss {boss.name} created for faction '{faction.name}'"
     assigned = False
     hq_present = False
     located_correctly = False
@@ -111,10 +108,9 @@ def create_gang_characters(faction):
     for gang in game_state.gangs:
         if gang.name == faction.name:
             assigned = gang.boss == boss
-            hq_present = gang.HQ is not None  # Use correct `.HQ` attribute
+            hq_present = gang.HQ is not None
             located_correctly = boss.location == gang.HQ if gang.HQ else False
 
-            # Assign boss location if not already set and HQ exists
             if gang.HQ and boss.location is None:
                 boss.location = gang.HQ
                 boss.region = gang.HQ.region
@@ -129,9 +125,8 @@ def create_gang_characters(faction):
                     msg += "; Gang HQ exists: No, they are a street gang, looking for an HQ."
                 else:
                     msg += "; Gang HQ exists: No."
-
             print(msg)
-            break
+            break """
 
 
     """ # TODO: Add optional gender split logic

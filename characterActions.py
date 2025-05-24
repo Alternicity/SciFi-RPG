@@ -14,55 +14,7 @@ from weapons import Weapon
 #from stealth_actions import stealth_actions
 
 
-def attribute_test(attribute_value, difficulty=10, modifiers=0, verbose=False):
-    """
-    Simple attribute test: pass if attribute + mods > random threshold.
-    """
-    roll = random.randint(1, 20)
-    total = attribute_value + modifiers
-    if verbose:
-        print(f"Attribute Test → Roll: {roll}, Attribute+Mods: {total}, Difficulty: {difficulty}")
 
-        # Swiz tries to pick a lock with Dexterity 12
-        #success = attribute_test(attribute_value=12, difficulty=14, modifiers=1, verbose=True)
-
-    return total >= difficulty
-
-
-def adversarial_attribute_test(
-    attempt_value,
-    resistance_value,
-    attempt_mod=0,
-    resistance_mod=0,
-    wildcard_mod=0,
-    simulate=False,
-    verbose=False
-):
-    """
-    General-purpose adversarial attribute test.
-    Compares an attempt (e.g., intimidation, stealth) against a resistance (e.g., loyalty, intercept).
-    Optional modifiers and wildcard allow contextual bonuses.
-    Parameters:
-    - simulate (bool): If True, skip random elements for AI decision planning.
-    - verbose (bool): Print breakdown of the score if debugging.
-    Returns:
-    - bool: True if the attempt succeeds, False otherwise.
-    """
-    base_attempt = attempt_value + attempt_mod + wildcard_mod
-    base_resist = resistance_value + resistance_mod
-
-    if not simulate:
-        attempt_roll = random.randint(0, 10)
-        resist_roll = random.randint(0, 10)
-        base_attempt += attempt_roll
-        base_resist += resist_roll
-        if verbose:
-            print(f"[Verbose] Random roll → Attempt +{attempt_roll}, Resistance +{resist_roll}")
-
-    if verbose:
-        print(f"[Verbose] Final Attempt score: {base_attempt} vs Resistance score: {base_resist}")
-
-    return base_attempt > base_resist
 
 def handle_actions(character):
 
@@ -336,22 +288,60 @@ def enjoy(character, location, object, otherCharacter):
     #might also raise their health and maybe morale
 
 def steal(character, location, target_item=None, simulate=False, verbose=True):
-    """Attempt to steal an item from the location inventory."""
+    print(f"\n>>> {character.name} is attempting to steal at {location.name} <<<")
+    
     if not hasattr(location, 'inventory') or not location.inventory.items:
-        if verbose:
-            print(f"[Verbose] {location.name} has no items to steal.")
         print(f"{location.name} has no items to steal.")
         return
 
-    # If no target item is specified, take the first available item
     if not target_item:
         target_item = next(iter(location.inventory.items.values()))
+        print(f"No target item specified. {character.name} will attempt to steal {target_item.name}.")
 
-    # Defensive check
     if target_item.name not in location.inventory.items:
-        if verbose:
-            print(f"[Verbose] {target_item.name} not found in {location.name}'s inventory.")
+        print(f"{target_item.name} not found in {location.name}'s inventory.")
         return
+
+    print(f"{character.name} is attempting to steal {target_item.name} from {location.name}.")
+
+    stealth = character.skills.get("stealth", 0)
+    employees = getattr(location, 'employees_there', [])
+    observation = max([e.skills.get("observation", 0) for e in employees]) if employees else 0
+
+    resistance_mod = getattr(location, "security_level", 0)
+    attempt_mod = getattr(character, "criminal_modifier", 0)
+
+    print(f"Skills - Stealth: {stealth}, Max Observation: {observation}")
+    print(f"Modifiers - Attempt: {attempt_mod}, Resistance: {resistance_mod}")
+
+    from attribute_tests import adversarial_attribute_test
+    success = adversarial_attribute_test(
+        attempt_value=stealth,
+        resistance_value=observation,
+        attempt_mod=attempt_mod,
+        resistance_mod=resistance_mod,
+        wildcard_mod=0,
+        simulate=simulate,
+        verbose=verbose
+    )
+
+    if success:
+        stolen_item = copy.deepcopy(target_item)
+        location.inventory.remove_item(target_item.name)
+        print(f"{character.name} SUCCESSFULLY steals {stolen_item.name} from {location.name}.")
+        character.inventory.add_item(stolen_item)
+
+        if isinstance(stolen_item, Weapon):
+            character.inventory.update_primary_weapon()
+        
+        character.update_motivations()
+
+        if hasattr(stolen_item, "intimidate"):
+            character.skill["intimidation"] = character.skill.get("intimidation", 0) + stolen_item.intimidate
+            print(f"{character.name}'s intimidation increased by {stolen_item.intimidate} due to the {stolen_item.name}.")
+        loading_bar()
+    else:
+        print(f"{character.name} FAILED to steal the {target_item.name} from {location.name}.")
 
     # -- STEP 1: Prepare for adversarial test --
 
@@ -377,7 +367,7 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
     if verbose:
         print(f"[Verbose] Stealth: {stealth} | Observation: {observation}")
         print(f"[Verbose] Modifiers - Attempt: {attempt_mod}, Resistance: {resistance_mod}")
-
+    from attribute_tests import adversarial_attribute_test
     success = adversarial_attribute_test(
         attempt_value=stealth,
         resistance_value=observation,
@@ -570,23 +560,28 @@ def offerFauxTruce(Boss, rivals):
     #think(Until I know which one of you organized the hit, and then...)
 
 def rob(character, location, target_item=None):
-    print(f"{character.name} attempts to rob {location.name}")
+    print(f"\n>>> {character.name} is attempting to ROB {location.name} <<<")
     from events import Robbery
     from InWorldObjects import CashWad
+
     robbery_event = Robbery(instigator=character, location=location, weapon_used=True)
     robbery_event.target_item = target_item
 
-    #if character attempts robbery sans weapon, handle it
+    print(f"{character.name} is using a weapon: {robbery_event.weapon_used}")
+    print(f"Robbery Target: {target_item.name if target_item else 'Unknown item'}")
+
     outcome = robbery_event.resolve()
 
-    # This will depend on your Robbery.resolve() implementation
     if outcome == "success":
+        print(f"Robbery SUCCESSFUL! {character.name} acquires the item or cash.")
         character.update_motivations()
 
     elif outcome == "resisted":
-        print(f"The robbery was resisted! Civilians may call guards.")
+        print(f"The robbery FAILED! The target resisted.")
+        print("Civilians may call guards...")
+
     elif outcome == "detected":
-        print(f"Authorities have been alerted to the robbery at {location.name}!")
+        print(f"ALERT: Authorities are now aware of the robbery at {location.name}!")
 
     return robbery_event
 

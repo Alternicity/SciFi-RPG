@@ -8,6 +8,8 @@ from character_memory import MemoryEntry
 from character_thought import Thought
 
 class Event(ABC):
+    """ Do not make Event perceptible.
+    Instead, Events cause percepts via the observe() system. """
     def __init__(self, name, event_type, effect=None, description="", impact=None, **kwargs):
         self.name = name
         self.event_type = event_type  # e.g., "normal", "black_swan", "incident", etc.
@@ -170,21 +172,18 @@ class Robbery(Event):
         self.location = location
         self.weapon_used = weapon_used
         self.shopkeeper = self._get_main_employee()
-        self.bystander_attacked = False  # This could be changed by actions
-        self.menu_options = []  # will be dynamically updated
-
-        # Also perhaps add characters_there so later witnesses code will be able to populate it
+        self.bystander_attacked = False
+        self.menu_options = []
 
     def affects(self, location):
         return self.location == location
 
-    def update_menu_options(self):
+    def update_menu_options(self): #player centric
         self.menu_options.clear()
 
         if self.location.characters_there and not self.bystander_attacked:
-            self.menu_options.append("Attack Bystander")
+            self.menu_options.append("Attack Bystander") # might later be made possible to npc
         
-        # More event-driven options can be added here as needed
 
     # Optionally: call this each tick or before menu render
     def get_menu_options(self):
@@ -192,10 +191,7 @@ class Robbery(Event):
         return self.menu_options
 
     def _get_main_employee(self):
-        """
-        Returns the first employee present at the location, if any.
-        Later we might choose based on role or status.
-        """
+
         if hasattr(self.location, "employees_there") and self.location.employees_there:
             return self.location.employees_there[0]
         return None
@@ -271,13 +267,35 @@ class Robbery(Event):
             seen.add(id(witness))
 
             region = getattr(self.location, "region", "unknown")
-            witness.observe(self, self.instigator, region, self.location)
+
+            # Build a single percept dict describing the robbery, an active, event‐driven injection
+            robbery_percept = {
+                "description": f"Robbery at {self.location.name}",
+                "origin": self,
+                "tags": ["crime", "robbery"],
+                "salience": 18,
+                "location": self.location.name,
+                "region": region,
+                "weapon": {
+                "name": weapon.name if weapon else None,
+                "type": weapon.item_type if weapon else "none",
+                "intimidation": getattr(weapon, "intimidation", 0) if weapon else 0,
+                # ...any other fields...
+            },
+        }
+
+        # Optional enhancement: add the class name of the weapon as a lowercase tag
+        if weapon:
+            robbery_percept["tags"].append(weapon.__class__.__name__.lower())
+
+            witness.perceive_event(robbery_percept)
+
             witness.fun = max(0, witness.fun - 5)
 
             # Approximate description
             appearance = self.instigator.get_appearance_description()
 
-        #Shoule the below witness memory and thought go through the percept setter?
+        #Should the below witness memory and thought go through the percept setter?
 
             witness.memory.append(MemoryEntry(
                 event_type="crime_observed",
@@ -286,15 +304,20 @@ class Robbery(Event):
                 description = f"Witnessed a {appearance} commit a robbery at {self.location.name}"
             ))
 
-            witness.thoughts.append(Thought(
+            """ witness.thoughts.append(Thought(
                 content=f"Saw a {appearance} rob {self.location.name}",
                 origin=self,
                 source=self.instigator,
                 weight=8,
                 tags=["crime", "alert"]
-            ))
+            )) """
 
-            if getattr(witness, "observation", 0) >= 6:
+            """ thoughts might be better triggered via the characters perception pipeline,
+            where a percept (like the robbery percept you already inject) is evaluated based
+            on traits, motivations, etc. Thats where cognition and reactions like panic or
+            curiosity can emerge more cleanly and flexibly. """
+
+            if getattr(witness, "observation", 0) >= 2:
                 witness.alert = True
                 reactions.append((
                     witness.name,
@@ -302,7 +325,7 @@ class Robbery(Event):
                     witness.__class__.__name__
                 ))
 
-        # ✅ Print reactions once, after loop
+        #  Print reactions once, after loop
         from output_utils import group_reactions
         for line in group_reactions(reactions):
             print(line)
@@ -313,9 +336,7 @@ class Robbery(Event):
             for guard in self.location.security.guards:
                 # Add a placeholder call for now
                 guard.respond_to_event(self)
-                    #reaction and memory code
-                    #if instigator sees (observe) the witness try to call the cops with their SmartPhone, add another menu option
-                    #for instigator to react, maybe another intimidate() "Dont do it!" ,and attack option. robbers are cold.
+
 
                 # Only print once, after all observations
                 from output_utils import group_reactions

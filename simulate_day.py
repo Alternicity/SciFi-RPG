@@ -5,7 +5,8 @@ from create_game_state import get_game_state
 from ai_utility import UtilityAI
 from events import Robbery
 
-ai_system = UtilityAI()
+#ai_system = UtilityAI()
+#now that each npc has their own utility AI object, does this need to be here as well?
 
 def simulate_days(num_days=1):
     game_state = get_game_state()

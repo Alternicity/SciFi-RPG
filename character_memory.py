@@ -25,12 +25,15 @@ class MemoryEntry:
         self.target = target  # Could be a character or location
         self.description = description
         self.timestamp = timestamp or time.time()
-
+        self.further_realizations = [] # when character think() about this memory, they might unlock an insight here
+        self.similarMemories = [] #for pattern spotting. "Shes done this before..."
     """ Memory Decay System
     for memory in character.memory:
     memory.importance -= 1
     character.memory = [m for m in character.memory if m.importance > 0] """
 
 class FactionRelatedMemory(Memory):
+    """ Knowledge of how the world works, and how this relates to the faction. Entries known by 
+    all cahracter in a factions self.members """
     def __init__(self, subject, details, importance=5):
         self.it_worked_there_before = {} # location/actions or action list

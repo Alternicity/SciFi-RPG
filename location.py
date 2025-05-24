@@ -47,6 +47,8 @@ class UndevelopedRegion(Region):
     name: str
     locations: List[str] = field(default_factory=list)
     factions: List[str] = field(default_factory=list)
+#OUT OF PLACE
+
 
 @dataclass
 class VacantLot(Location):
@@ -59,6 +61,13 @@ class VacantLot(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
+    def get_percept_data(self):
+        return {
+            "type": "VacantLot",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
 @dataclass
 class HQ(Location):
@@ -82,6 +91,10 @@ class HQ(Location):
         alarm_system=False
     ))
 
+
+    def get_percept_data(self):
+        return {"type": "HQ", "security": self.security_level}
+
     def to_dict(self):
         # Use asdict to convert all dataclass attributes to a dictionary
         return asdict(self)
@@ -94,6 +107,13 @@ class Vendor(Location):
     secret_entrance: bool = True
     cash: int = 0
     bankCardCash: int = 0
+
+    def get_percept_data(self):
+        return {
+            "type": "Vendor",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def show_inventory(self):
         """Display available items in the shop."""
@@ -145,6 +165,15 @@ class Shop(Vendor):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"Shop: {self.name}",
+            "robbable": True,
+            "is_open": self.is_open,
+            "has_security": self.has_security(),
+            "salience": 12 if observer and observer.faction == "Gang" else 2
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -208,6 +237,13 @@ class CorporateStore(Vendor):
     inventory: dict = field(default_factory=dict)
     legality: str = "Legal"
 
+    def get_percept_data(self):
+        return {
+            "type": "CorporateStore",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def __repr__(self):
         return f"{self.name}"  # Just return the name, avoid redundant class name
 
@@ -233,6 +269,13 @@ class RepairWorkshop(Location, ABC):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
+    def get_percept_data(self):
+        return {
+            "type": "RepairWorkshop",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -263,6 +306,13 @@ class MechanicalRepairWorkshop(RepairWorkshop):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "MechanicalRepairWorkshop",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def to_dict(self):
         return asdict(self)
 
@@ -292,6 +342,12 @@ class ElectricalRepairWorkshop(RepairWorkshop):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "ElectricalRepairWorkshop",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -323,6 +379,13 @@ class Stash(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "Stash",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -360,6 +423,12 @@ class Factory(Location):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "Factory",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -392,6 +461,13 @@ class Nightclub(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "Nightclub",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -432,6 +508,13 @@ class Mine(Location):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "Mine",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def to_dict(self):
         return asdict(self)
 
@@ -457,6 +540,13 @@ class Powerplant(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "Powerplant",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -517,6 +607,13 @@ class Airport(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "Airport",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -610,6 +707,13 @@ class Port(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "Port",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -706,6 +810,13 @@ class Factory(Location):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "Factory",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def to_dict(self):
         return asdict(self)
 
@@ -741,6 +852,13 @@ class Cafe(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "Cafe",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -778,6 +896,13 @@ class Park(Location):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "Park",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def to_dict(self):
         return asdict(self)
 
@@ -801,6 +926,13 @@ class Museum(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "Museum",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -826,9 +958,16 @@ class Library(Location):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "Library",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def to_dict(self):
         return asdict(self)
-
+    
 @dataclass
 class ResearchLab(Location):
     name: str = "OmniLab"
@@ -850,6 +989,12 @@ class ResearchLab(Location):
         alarm_system=True
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "ResearchLab",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -883,6 +1028,13 @@ class Warehouse(Location):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "Warehouse",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+    
     def to_dict(self):
         return asdict(self)
 
@@ -907,6 +1059,13 @@ class ApartmentBlock(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "ApartmentBlock",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -939,8 +1098,15 @@ class House(Location):
     def to_dict(self):
         return asdict(self)
 
-    def spawn_character(self):
-            return create_character(self)
+    def get_percept_data(self):
+        return {
+            "type": "House",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
+    """ def spawn_character(self):
+            return create_character(self) """
     #A stable environment, house+family MIGHT produce a useful character
 
     
@@ -964,6 +1130,13 @@ class SportsCentre(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "SportsCentre",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         return asdict(self)
@@ -993,6 +1166,13 @@ class Holotheatre(Location):
         alarm_system=False
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "Holotheatre",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def to_dict(self):
         return asdict(self)
 
@@ -1021,6 +1201,13 @@ class MunicipalBuilding(Location):
         alarm_system=True
     ))
 
+    def get_percept_data(self):
+        return {
+            "type": "MunicipalBuilding",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
+
     def to_dict(self):
         # Use asdict to convert all dataclass attributes to a dictionary
         return asdict(self)
@@ -1046,6 +1233,13 @@ class PoliceStation(Location):
         surveillance=False,
         alarm_system=False
     ))
+
+    def get_percept_data(self):
+        return {
+            "type": "PoliceStation",
+            "name": self.name,
+            "region": self.region.name if self.region else None
+        }
 
     def to_dict(self):
         # Use asdict to convert all dataclass attributes to a dictionary

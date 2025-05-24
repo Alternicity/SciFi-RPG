@@ -74,7 +74,9 @@ def create_civilian_population(all_locations, all_regions, num_civilians=30):
             wallet=Wallet(bankCardCash=random_cash),
             status=status
         )
-        print(f"Created Civilian: {civilian.name}, Faction: {civilian.faction.name}, Disposition: {civilian.faction.violence_disposition}")
+
+        #print(f"Created Civilian: {civilian.name}, Faction: {civilian.faction.name}, Disposition: {civilian.faction.violence_disposition}")
+        #verbose
 
         # 80% chance this civilian is an employee
         civilian.is_employee = random.random() < 0.8

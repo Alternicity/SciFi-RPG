@@ -72,6 +72,27 @@ class Pistol(RangedWeapon):
         self.owner_name = None
         self.human_readable_id = "Unowned Pistol"
 
+    def get_percept_data(self, observer=None):
+        tags = ["weapon", "pistol"]
+        base_salience = 5  # general background level
+
+        if hasattr(observer, "motivations"):
+            if "robbery" in observer.motivations:
+                tags.append("robbable")
+                base_salience += 10
+            if "buy_tech" in observer.motivations:
+                base_salience += 2  # less relevant than a smartphone
+
+        return {
+            "description": self.human_readable_id or "Pistol",
+            "origin": self,
+            "urgency": 1,
+            "tags": tags,
+            "salience": base_salience
+        }
+#You can abstract this into a helper method later, but this is a good explicit start.
+#This allows the object to generate percepts from the perspective of the observer.
+
 class SMG(RangedWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -91,6 +112,16 @@ class SMG(RangedWeapon):
         self.blackmarket_value = 500  # Set blackmarket_value directly in SMG
         self.item_type = "weapon"
 
+
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"{self.name}",
+            "item_type": self.item_type,
+            "value": self.price,
+            "danger": self.intimidation,
+            "salience": 8  # You can tweak this per use case
+        }
+    
 class Rifle(RangedWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self, value=200, legality=True):
@@ -109,6 +140,15 @@ class Rifle(RangedWeapon):
         self.value = value
         self.legality = legality
         self.item_type = "weapon"
+
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"{self.name}",
+            "item_type": self.item_type,
+            "value": self.price,
+            "danger": self.intimidation,
+            "salience": 8  # You can tweak this per use case
+        }
 
 class Shotgun(RangedWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -129,6 +169,15 @@ class Shotgun(RangedWeapon):
         self.legality = legality
         self.item_type = "weapon"
 
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"{self.name}",
+            "item_type": self.item_type,
+            "value": self.price,
+            "danger": self.intimidation,
+            "salience": 8  # You can tweak this per use case
+        }
+
 class Sword(MeleeWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self, value=150, legality=True):
@@ -145,6 +194,15 @@ class Sword(MeleeWeapon):
         self.value = value
         self.legality = legality
         self.item_type = "weapon"
+
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"{self.name}",
+            "item_type": self.item_type,
+            "value": self.price,
+            "danger": self.intimidation,
+            "salience": 8  # You can tweak this per use case
+        }
 
 class Knife(MeleeWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -165,6 +223,15 @@ class Knife(MeleeWeapon):
         self.legality = legality
         self.item_type = "weapon"
         self.human_readable_id = f"{owner_name}'s Knife" if owner_name else "Unowned Knife"
+    
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"Knife ({self.human_readable_id})",
+            "value": self.price,
+            "danger": self.intimidation,
+            "item_type": self.item_type,
+            "salience": 8 if observer and observer.faction == "Gang" else 1
+        }
 
 class Club(MeleeWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -182,6 +249,16 @@ class Club(MeleeWeapon):
         self.legality = legality
         self.item_type = "weapon"
 
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"{self.name}",
+            "item_type": self.item_type,
+            "value": self.price,
+            "danger": self.intimidation,
+            "salience": 8  # You can tweak this per use case
+        }
+
+
 class Electrobaton(MeleeWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self, value=70, legality=True):
@@ -198,3 +275,12 @@ class Electrobaton(MeleeWeapon):
         self.value = value
         self.legality = legality
         self.item_type = "weapon"
+
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"{self.name}",
+            "item_type": self.item_type,
+            "value": self.price,
+            "danger": self.intimidation,
+            "salience": 10  # You can tweak this per use case
+        }

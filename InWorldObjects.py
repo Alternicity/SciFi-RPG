@@ -1,4 +1,5 @@
 from enum import Enum
+from perceptibility import PerceptibleMixin
 
 #all references to "value" must be replaced with "value"
 # Enums for toughness and size
@@ -33,7 +34,7 @@ valid_items = [
 ] 
 
 # Base class for all objects in the world
-class ObjectInWorld:
+class ObjectInWorld(PerceptibleMixin):
     is_concrete = False  # An abstract class
     def __init__(self, name, toughness, item_type, size, blackmarket_value, price=0, damage_points=None, legality=True,  owner_name=None):
         self.name = name
@@ -68,7 +69,7 @@ class Item:
 
 
 class CashWad(ObjectInWorld): #REMOVE ALL VALUE
-    is_concrete = True  # An concrete class will create objects and have more attributes
+    is_concrete = True
     def __init__(self, amount):
         super().__init__(
             name="Cash Wad",
@@ -81,6 +82,14 @@ class CashWad(ObjectInWorld): #REMOVE ALL VALUE
             size="Pocket Sized"
         )
         self.amount = amount  # optional but helpful
+
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
 
     def get_value(self):
         """Return the value of the CashWad.
@@ -98,6 +107,14 @@ class Wallet:
     def __init__(self, cash=0, bankCardCash=0):
         self.cash = cash  # Cash for normal purchases (or black market)
         self.bankCardCash = bankCardCash  # Cash available via bank card
+
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
 
     def get_values(self):
         return self.cash, self.bankCardCash
@@ -139,6 +156,13 @@ class HardDrive(ObjectInWorld):
         )
         self.sensitivity = sensitivity
 
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
 
 class Medkit(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -154,6 +178,13 @@ class Medkit(ObjectInWorld):
         self.blackmarket_value=50,
         self.size=Size.POCKET_SIZED,
         
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
 
 class FoodCrate(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -168,6 +199,14 @@ class FoodCrate(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
 class Laptop(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self, sensitivity):
@@ -182,6 +221,14 @@ class Laptop(ObjectInWorld):
         )
         self.sensitivity = sensitivity
 
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
 class MechanicalToolkit(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -195,6 +242,14 @@ class MechanicalToolkit(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
 class ElectricalToolkit(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -208,6 +263,14 @@ class ElectricalToolkit(ObjectInWorld):
             size=Size.POCKET_SIZED,
         )
 
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
 class PowerGenerator(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -220,7 +283,14 @@ class PowerGenerator(ObjectInWorld):
             blackmarket_value=300,
             size=Size.TWO_HANDED,
         )
-
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
 class WaterPurifier(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -233,7 +303,14 @@ class WaterPurifier(ObjectInWorld):
             blackmarket_value=150,
             size=Size.TWO_HANDED,
         )
-
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
 class SmartPhone(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self, price=200, quantity=1,):
@@ -250,7 +327,14 @@ class SmartPhone(ObjectInWorld):
         self.quantity = quantity
         self.owner_name = None
         self.human_readable_id = "Unowned SmartPhone"
-
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
 class CommoditiesBox(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -263,11 +347,28 @@ class CommoditiesBox(ObjectInWorld):
             blackmarket_value=200,
             size=Size.TWO_HANDED,
         )
+
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+
 class CashRegister(ObjectInWorld):
     def __init__(self,  name, toughness, item_type, size, blackmarket_value, initial_cash=300):
         super().__init__(name, toughness, item_type, size, blackmarket_value)
         self.cash = initial_cash
 
+    def get_percept_data(self):
+        return {
+            "type": type(self).__name__,
+            "name": self.name,
+            "item_type": self.item_type,
+            "owner": self.owner_name,
+        }
+    
     def deposit(self, amount):
         self.cash += amount
 

@@ -350,7 +350,7 @@ def select_character_menu():
     all_regions = game_state.all_regions
     factions = game_state.factions
     character_options = player_character_options(all_regions, factions)
-    print("Factions available:", [f.name for f in factions])
+    #print("Factions available:", [f.name for f in factions])
 
     if not character_options:
         print("No characters available for selection.")

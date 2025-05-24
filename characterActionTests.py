@@ -1,4 +1,4 @@
-from characterActions import adversarial_attribute_test
+from attribute_tests import adversarial_attribute_test
 
 class IntimidationTest:
     """
@@ -17,6 +17,7 @@ class IntimidationTest:
 
         attempt_value = calculate_intimidation_score(self.robber)
         resistance_value = calculate_resistance_score(self.target)
+        
 
         return adversarial_attribute_test(
             attempt_value=attempt_value,

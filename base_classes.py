@@ -7,6 +7,9 @@ import traceback
 from enum import Enum, auto
 from collections import deque
 from tasks import TaskManager
+from perceptibility import PerceptibleMixin
+from character_thought import Thought
+from ai_utility import UtilityAI
 
 if TYPE_CHECKING:
     from location import Region
@@ -121,7 +124,7 @@ class Factionless(Faction):
         self.region = None
         self.members = []
 
-class Character:
+class Character(PerceptibleMixin):
 
     VALID_SEXES = ("male", "female")  # Class-level constant
     VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "Irish", "French", "Chinese", "German", "BlackAmerican", "Indian", "IndoAryan", "IranianPersian", "Japanese", "WhiteAryanNordic")  # Class-level constant
@@ -134,6 +137,8 @@ class Character:
         sex,
         region,
         location,
+        is_player=False,
+        ai=None,
         wallet=None,
         initial_motivations=None,
         motivations=None,
@@ -148,7 +153,7 @@ class Character:
         intelligence=10,
         luck=10,
         psy=10,
-        charisma=10,
+        charisma=10, #1-20
         toughness=10,
         observation=10, 
         morale=10,
@@ -158,10 +163,17 @@ class Character:
         **kwargs,
         
     ):
-        print(f"[Character Init] name={name}, race={race}, sex={sex}")
+        #print(f"[Character Init] name={name}, race={race}, sex={sex}")
+        #verbose, prints all characters
+
         #initialization code
         self.name = name
         self.is_player = False
+        if not self.is_player:
+            self.ai = ai or UtilityAI()
+        else:
+            self.ai = None
+
         from utils import get_region_by_name #line 150
         from create_game_state import get_game_state
         game_state = get_game_state()
@@ -177,8 +189,8 @@ class Character:
         self.base_preferred_actions = {}
 
         self.skills = self.default_skills()
-        if custom_skills:
-            self.skills.update(custom_skills)
+        """ if custom_skills:
+            self.skills.update(custom_skills) """
 
         # Individual character preferences (overrides base)
         self.preferred_actions = preferred_actions if preferred_actions else {}
@@ -202,29 +214,33 @@ class Character:
 
         self.self_awareness_score = 0
         self.self_awareness_level = SelfAwarenessLevel.ANIMAL
-        self.thoughts = deque(maxlen=10)
+        self.intelligence = intelligence
+        self.thoughts = deque(maxlen=self.intelligence)
         """ A deque, or double-ended queue, in Python is a data structure from the collections module 
         that allows you to efficiently add and remove elements from both ends """
+
+        self._percepts = {}  # {percept_hash_or_id: {'data': ..., 'salience': int, 'timestamp': t}}
         self.race = race
         self.sex = sex
         self.clothing = None
         self.notable_features = []
         self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID
         self.is_visibly_wounded = False
-        self.overall_impression = None
+        
         # Appearance traits
         #If you want self.appearance to always reflect the latest values of self.race, 
         #self.sex, etc., you can make it a @property, but your current method is fine if 
         #you're OK with updating it manually when needed.
+        self.overall_impression = None
         self.appearance = {
-    "race": self.race,
-    "sex": self.sex,
-    "clothing": self.clothing,
-    "notable_features": self.notable_features,
-    "bloodstained": self.bloodstained,  # This can be None, a Character, or a string
-    "is_visibly_wounded": self.is_visibly_wounded,
-    "overall_impression": self.overall_impression  # To be updated by observers
-}
+        "race": self.race,
+        "sex": self.sex,
+        "clothing": self.clothing,
+        "notable_features": self.notable_features,
+        "bloodstained": self.bloodstained,  # This can be None, a Character, or a string
+        "is_visibly_wounded": self.is_visibly_wounded,
+        "overall_impression": self.overall_impression  # To be updated by observers
+    }
 
         # Add faction clues later (safely)
         if hasattr(self, "faction") and self.faction:
@@ -232,8 +248,8 @@ class Character:
         else:
             self.appearance["faction_semiotics"] = []
 
-        self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
-            "self_actualization": 2,})  # Example defaults
+        """ self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
+            "self_actualization": 2,})  # Example defaults """
         
         self.initial_motivations = initial_motivations or []
         from motivation import MotivationManager
@@ -266,10 +282,6 @@ class Character:
         self.status.set_status("corporate", FactionStatus(StatusLevel.NONE, None))
         self.status.set_status("state", FactionStatus(StatusLevel.NONE, None))
         
-
-
-        
-     
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
         self.attention_focus = None
         # Social connections
@@ -289,7 +301,7 @@ class Character:
         self.hunger = kwargs.get("hunger", hunger)
         self.strength = strength
         self.agility = agility
-        self.intelligence = intelligence
+        
         self.luck = luck
         self.psy = psy
         self.charisma = charisma
@@ -434,24 +446,59 @@ class Character:
         if not self.motivations:
             self.motivations["earn_money"] = 5
     
+    def get_percept_data(self, observer=None):
+        #You can abstract this into a helper method later
 
-    def observe(self, event, instigator, region, location):
+        tags = ["human"]
+        salience = 1  # baseline
+
+        if self.bloodstained:
+            tags.append("bloodstained")
+            salience += 5
+        if self.is_visibly_wounded:
+            tags.append("wounded")
+            salience += 10
+
+        if observer and "violence" in getattr(observer, "motivations", []):
+            salience += 2  # violence-oriented characters notice more
+
+        return {
+            "description": f"{self.name} (Character)",
+            "origin": self,
+            "urgency": 2,
+            "tags": tags,
+            "source": None,
+            "salience": salience
+        }
+
+    def observe(self, nearby_objects: list):
         """
-    Pass observation to percepts probably through @percepts.setter.
-    """
-        if hasattr(self, "memory"):
-            self.memory.append({
-                "event": event.__class__.__name__,
-                "instigator": instigator.name,
-                "location": getattr(instigator, "location", None),
-                "time": "now",  # Placeholder
-            })
+        Observe surroundings and update percepts. Instead, encode all of that inside the
+          percept data itself. observe() should accept only nearby_objects (a list of objects
+            to be considered for perception)
+        """
+        self._percepts.clear()
+        if nearby_objects is None:
+            nearby_objects = self.get_nearby_objects()
 
-        if hasattr(event, "record_observation"):
-            event.record_observation(observer=self, instigator=instigator, region=region, location=location)
+        # Observe world objects, passive perception: I look around at the world and build my percept list.
 
-        # List of things character notices (e.g., dangers, opportunities)
-        #Key = Percept, Value = Weight of how attention grabbing it is
+        for obj in nearby_objects:
+            if isinstance(obj, PerceptibleMixin):
+                percept = obj.get_percept_data(observer=self)
+                if percept:
+                    key = percept["description"]  # Could also be an ID
+                    self._percepts[key] = percept
+
+        # Optional: Add self-perception
+        self_percept = self.get_percept_data(observer=self)
+        if self_percept:
+            self._percepts["self"] = self_percept
+
+            # Controlled merging:
+            self.update_percepts(self._percepts)
+            #possible candidate to wrap in print functions to analyse
+
     @property
     def percepts(self):
         """Dynamically generates percepts with actionable hints. allows behavior trees or utility-based AI 
@@ -466,8 +513,25 @@ class Character:
             updated_percepts["Loud Noise"] = {"weight": 6, "suggested_actions": ["Investigate"]}
         if self.observation > 8:
             updated_percepts["Hidden Enemy"] = {"weight": 4, "suggested_actions": ["Ambush", "Avoid"]}
-        return updated_percepts
+        return self._percepts
+    
+    """     Example percept dict:
+        {
+    "description": "There is a riot in Sector 3",
+    "origin": riot_event_object,
+    "urgency": 5,
+    "tags": ["violence", "threat"],
+    "source": None,
+    "salience": 17
+    } """
 
+    def perceive_event(self, percept: dict):
+        """
+        Called when some external event (like a robbery) forces a perception.
+        """
+        key = percept.get("description", f"event_{id(percept)}")
+        # Merge it in, respecting salience, etc.
+        self.update_percepts([percept])
 
     @percepts.setter
     def percepts(self, new_percepts):
@@ -475,8 +539,57 @@ class Character:
         if isinstance(new_percepts, dict):
             self._percepts = new_percepts
         else:
-            raise ValueError("Percepts must be a dictionary of {percept: weight}.")
+            raise ValueError("Percepts must be a dict..")
         #Something here needs to convert percepts into think() creating Thought object and memories, in self.memory = [] and self.thoughts = deque(maxlen=10) 
+
+    def update_percepts(self, new_percepts: list[dict]):
+        """
+        Merge or update percepts based on salience and replace logic.
+        """
+        for p in new_percepts:
+            key = p.get("id") or str(p)  # or hashable unique representation
+            salience = p.get("salience", 1)
+
+            if key in self._percepts:
+                # Keep the more salient percept
+                if salience > self._percepts[key]['salience']:
+                    self._percepts[key] = {'data': p, 'salience': salience}
+            else:
+                self._percepts[key] = {'data': p, 'salience': salience}
+
+        # Optionally prune to observation capacity
+        if len(self._percepts) > self.observation:
+            # Keep top-N salience only
+            sorted_items = sorted(self._percepts.items(), key=lambda kv: kv[1]['salience'], reverse=True)
+            self._percepts = dict(sorted_items[:self.observation])
+
+    def think(self):
+        """
+        Convert high-salience percepts into thoughts.
+        """
+        important = sorted(self._percepts.values(), key=lambda p: p['salience'], reverse=True)
+        """ key=lambda p: p['salience'] tells Python:
+        “Use the value of p['salience'] to sort each percept p.” 
+        reverse=True means sort from highest salience to lowest (not the default ascending order).
+        This line creates a list called important, sorted so that the most attention-grabbing percepts come first.
+        Salience is the property by which some thing stands out. """
+
+        for percept in important[:self.intelligence]:
+            """important[:self.intelligence] is Python slice notation.
+            important[:5] means: the first 5 items from the list.
+            self.intelligence is assumed to be an integer (like 10), so this line says:
+            “For each of the most important 10 percepts…”"""
+
+            thought = Thought(
+                content=percept.get("description", "Unknown"),
+                origin=percept.get("origin", None),
+                urgency=percept.get("urgency", 1),
+                tags=percept.get("tags", []),
+                source=percept.get("source", None),
+                weight=percept.get("salience", 0)
+        )
+            self.thoughts.append(thought)
+            self.memory.append(thought)
 
     @property
     def whereabouts(self):
@@ -601,7 +714,7 @@ class SelfAwarenessLevel:
 
 
 @dataclass
-class Location:
+class Location(PerceptibleMixin):
     name: str = "Unnamed Location"
     region: Optional['Region'] = None
     child_location: Optional['Location'] = None  # Specific location within the location

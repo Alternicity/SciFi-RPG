@@ -197,7 +197,7 @@ def create_corp_factions(num_corps, all_regions):
 
 
 #tmpPrint
-def print_sample_characters_wallets(factions):
+""" def print_sample_characters_wallets(factions):
     print("\n=== Sample Characters and Wallets ===")
     for faction in factions:
         print(f"\nFaction: {faction.name}")
@@ -208,7 +208,7 @@ def print_sample_characters_wallets(factions):
             if class_name not in seen_classes:
                 seen_classes.add(class_name)
                 print(f" - {character.name} ({class_name}): Cash = {character.wallet.cash}, BankCard = {character.wallet.bankCardCash}")
-
+ """
 
 def create_factions(all_regions, all_locations):
     from create_game_state import get_game_state
@@ -233,7 +233,7 @@ def create_factions(all_regions, all_locations):
     state.region = downtown_region #I added this spontaneously, while on an epic coffee crash
     game_state.set_state(state)
     factions.append(state)
-    print(f"[DEBUG] Added faction: {state.name} with region {state.region.name}")
+    #print(f"[DEBUG] Added faction: {state.name} with region {state.region.name}")
 
     # Debugging: Check what create_gang_factions() returns before extending factions
     gang_factions = create_gang_factions(10, all_regions)
@@ -257,7 +257,8 @@ def create_factions(all_regions, all_locations):
 
 
     
-    print_sample_characters_wallets(factions)
+    #print_sample_characters_wallets(factions)
+    #verbose output
 
 
     return factions, all_characters

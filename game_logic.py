@@ -10,7 +10,7 @@ from display import (
     display_filtered_character_summary, display_character_Summary, display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
 )
 from motivation import MotivationManager
-
+from base_classes import Character
 from character_creation_funcs import create_faction_characters
 from utils import dev_mode
 from create_game_state import get_game_state
@@ -28,6 +28,9 @@ def gameplay(selected_character, region):
 
     # Update motivations before displaying
     character.motivation_manager.update_motivations()
+
+    
+
 
     #tmp
     from location import Location
@@ -76,7 +79,15 @@ def gameplay(selected_character, region):
         if not choice:
             continue  # Skip invalid input
         
-    
+def test_ai_assignment():
+        npc = Character(name="NPC1", is_player=False)
+        player = Character(name="Player1", is_player=True)
+
+        assert npc.ai is not None, "NPC should have an AI assigned"
+        assert player.ai is None, "Player character should not have AI assigned"
+
+        print("AI assignment test passed.")
+
 def move_region(character, selected_region, all_regions):
     #all_regions is missing here, try using get_all_regions
     """Handles moving a character to another region."""
