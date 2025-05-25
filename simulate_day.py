@@ -4,36 +4,25 @@ from location import Shop
 from create_game_state import get_game_state
 from ai_utility import UtilityAI
 from events import Robbery
-
-#ai_system = UtilityAI()
-#now that each npc has their own utility AI object, does this need to be here as well?
+from characterActions import execute_action
+DEBUG_NPC_NAME = "None"
 
 def simulate_days(num_days=1):
     game_state = get_game_state()
     all_regions = game_state.all_regions
 
-    for _ in range(num_days): #use generator here?
+    for _ in range(num_days):
         for region in all_regions:
             for npc in region.characters_there:
                 if npc.is_player:
-                    continue  # Skip player; they act via menu
+                    continue
 
-                # 1. Passive perception (AI motivation inputs)
                 npc.observe(None, None, region, npc.location)
 
-                #1.5 Observe() needs to go through percepts
+                action = npc.ai.choose_action(npc, region)
+                if action:
+                    execute_action(npc, action, region)
 
-                # 2. Decide what to do
-                action = ai_system.choose_action(npc, region)
-
-                # 3. Take that action
-                if action == "Rob":
-                    targets = ai_system.get_viable_robbery_targets(npc, region)
-                    if targets:
-                        target = random.choice(targets)
-                    if target: #indentation?
-                        robbery = Robbery(robber=npc, location=target)
-                        robbery.execute()
 
         # 🔄 OPTIONAL: Add future game state updates here
         # update_world_state(game_state)

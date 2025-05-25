@@ -54,7 +54,7 @@ def show_character_details(character):
             faction_type = character.faction.type.capitalize()
     else:
         faction_name = "None"
-        faction_type = "Independent"
+        faction_type = "Indy"
         #f"{character.faction.name} {character.faction.type.capitalize()}",
         faction_name = character.faction.name if character.faction else "None"
         faction_type = character.faction.type.capitalize() if character.faction else "Unaffiliated"

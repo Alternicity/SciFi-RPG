@@ -36,11 +36,9 @@ class Motivation:
             source=data.get("source"),
         )
 
-
-#see also def gameplay for some motivation code, when making AI
 VALID_MOTIVATIONS = {
         "earn_money": 5,
-        "eat": 0,  # Starts at 0, increases with hunger
+        "eat": 0,
         "sleep": 0,  # Increases with fatigue
         "shelter": 3,
         "have_fun": 2,

@@ -1,6 +1,9 @@
-from abc import ABC, abstractmethod
+class BaseAI:
+    def __init__(self, npc):
+        self.npc = npc
 
-class BaseAI(ABC):
-    @abstractmethod
-    def choose_action(self, character, region):
-        pass
+    def choose_action(self, region):
+        raise NotImplementedError("AI must implement choose_action")
+
+    def execute_action(self, action, region):
+        raise NotImplementedError("AI must implement execute_action")

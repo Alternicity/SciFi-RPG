@@ -6,6 +6,7 @@ from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
 from character_memory import MemoryEntry
 from character_thought import Thought
+from output_utils import group_reactions
 
 class Event(ABC):
     """ Do not make Event perceptible.
@@ -32,16 +33,6 @@ class Event(ABC):
                 setattr(character, attr, current + value)
                 print(f"{character.name}'s {attr} increased by {value} (now {getattr(character, attr)})")
     
-    def handle_event(event_name, character, location):
-        if event_name == "Rob":
-            robbery = Robbery(character, location, weapon_used=True)
-            incident = robbery.resolve()
-
-            if incident:
-                incident.alert_authorities()
-                Event.trigger_event_outcome(character, "incident", location)
-                #trigger_event_outcome is marked as not defined here
-            return robbery
         
     """ @staticmethod
     def handle_incident(character, location=None):
@@ -69,6 +60,59 @@ class Event(ABC):
         #get_character_driven_event_outcomes is marked as not defined
         outcomes.get(event_name, lambda: print(f"Unknown event outcome: {event_name}"))()
 
+class TemplateEvent(Event):
+    def __init__(self, instigator, location, **kwargs):
+        super().__init__(
+            name="Template Event",
+            event_type="incident",  # e.g. "incident", "normal", etc.
+            description="A template event. Customize this description.",
+            impact={"fun": -1},  # Replace or remove as needed
+            **kwargs
+        )
+        self.instigator = instigator
+        self.location = location
+
+    def resolve(self, simulate=False, verbose=True):
+        if verbose:
+            print(f"[Event]: {self.description}")
+
+        # Apply the generic impact
+        self.apply(self.instigator)
+
+        # Create and distribute perceptual events if needed
+        self.generate_percepts()
+
+        # Optional: trigger outcome logic — useful if you decide to use it
+        if hasattr(Event, "trigger_event_outcome"):
+            Event.trigger_event_outcome(self.instigator, "incident", self.location)
+
+        return self
+
+    def generate_percepts(self):
+        # Isolate percept logic from resolve()
+        percept = {
+            "description": f"{self.name} at {self.location.name}",
+            "origin": self,
+            "tags": ["template", "event"],
+            "salience": 10,
+            "location": self.location.name,
+            "region": getattr(self.location, "region", "unknown"),
+        }
+
+        observers = getattr(self.location, "list_characters", lambda exclude=None: [])(exclude=[self.instigator])
+        for observer in observers:
+            observer.perceive_event(percept)
+            if hasattr(observer, "memory"):
+                observer.memory.append(MemoryEntry(
+                    event_type="template_event_observed",
+                    target=self.instigator,
+                    approx_identity=self.instigator.get_appearance_description(),
+                    description=f"Witnessed {self.instigator.name} perform an action."
+                ))
+
+    def conclude(self):
+        print(f"[DEBUG] {self.name} at {self.location.name} has concluded.")
+        # Optional cleanup or progression logic here
 
 class RandomEvent(Event):
     pass
@@ -286,47 +330,34 @@ class Robbery(Event):
 
         # Optional enhancement: add the class name of the weapon as a lowercase tag
         if weapon:
-            robbery_percept["tags"].append(weapon.__class__.__name__.lower())
+            robbery_percept["tags"].append("armed" if weapon else "unarmed")
 
-            witness.perceive_event(robbery_percept)
+        witness.perceive_event(robbery_percept)
 
-            witness.fun = max(0, witness.fun - 5)
+        witness.fun = max(0, witness.fun - 5)
 
-            # Approximate description
-            appearance = self.instigator.get_appearance_description()
+        # Approximate description
+        appearance = self.instigator.get_appearance_description()
 
         #Should the below witness memory and thought go through the percept setter?
 
-            witness.memory.append(MemoryEntry(
-                event_type="crime_observed",
-                target=self.instigator,
-                approx_identity = self.instigator.get_appearance_description(),
-                description = f"Witnessed a {appearance} commit a robbery at {self.location.name}"
+        witness.memory.append(MemoryEntry(
+            event_type="crime_observed",
+            target=self.instigator,
+            approx_identity = self.instigator.get_appearance_description(),
+            description = f"Witnessed a {appearance} commit a robbery at {self.location.name}"
+        ))
+
+        if getattr(witness, "observation", 0) >= 2: #DOES THIS BLOCK WORK, IS INDENTED BELOW for witness in witnesses:
+            witness.alert = True
+            reactions.append((
+                witness.name,
+                "becomes alert and distressed!",
+                witness.__class__.__name__
             ))
 
-            """ witness.thoughts.append(Thought(
-                content=f"Saw a {appearance} rob {self.location.name}",
-                origin=self,
-                source=self.instigator,
-                weight=8,
-                tags=["crime", "alert"]
-            )) """
-
-            """ thoughts might be better triggered via the characters perception pipeline,
-            where a percept (like the robbery percept you already inject) is evaluated based
-            on traits, motivations, etc. Thats where cognition and reactions like panic or
-            curiosity can emerge more cleanly and flexibly. """
-
-            if getattr(witness, "observation", 0) >= 2:
-                witness.alert = True
-                reactions.append((
-                    witness.name,
-                    "becomes alert and distressed!",
-                    witness.__class__.__name__
-                ))
-
         #  Print reactions once, after loop
-        from output_utils import group_reactions
+
         for line in group_reactions(reactions):
             print(line)
 
@@ -339,15 +370,15 @@ class Robbery(Event):
 
 
                 # Only print once, after all observations
-                from output_utils import group_reactions
+                #from output_utils import group_reactions
                 if hasattr(self, "observation_log"):
                     for line in group_reactions(self.observation_log):
                         print(line)
 
         # Step 5: Return ArmedRobbery object
-        if getattr(self.instigator, "weapon_used", False):
-            return ArmedRobbery("Armed Robbery", self.instigator, self.location, severity=3)
-        
+        if self.weapon_used:
+            return ArmedRobbery(self, self.instigator, self.location, weapon)
+
         
     def conclude(self):
         print(f"[DEBUG] Robbery at {self.location.name} is over. Returning to normal.")
@@ -398,7 +429,31 @@ class Riot(Event):
     pass
 
 class ArmedRobbery(Event):
-    pass
+    def __init__(self, instigator, location, weapon=None):
+        super().__init__()
+        self.instigator = instigator
+        self.location = location
+        self.weapon = weapon
+
+    def get_percept(self):
+        """Return a basic percept for the robbery event."""
+        return {
+            "description": f"Armed robbery by {self.instigator.name} at {self.location.name}",
+            "tags": ["crime", "robbery", "armed"],
+            "salience": 18,
+            "location": self.location.name,
+            "weapon": {
+                "name": self.weapon.name if self.weapon else None,
+                "type": self.weapon.item_type if self.weapon else "none",
+                "intimidation": getattr(self.weapon, "intimidation", 0) if self.weapon else 0,
+            }
+        }
+    
+    def resolve(self):
+        #needed to satisify ABC upstream
+        # This could return a result or just log that it's a resolved object.
+        print(f"[INFO] ArmedRobbery at {self.location.name} already resolved.")
+        return "resolved"
 
 def handle_event(event_name, character, location):
     if event_name == "Rob":

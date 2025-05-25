@@ -13,8 +13,19 @@ from weapons import Weapon
 #from combat_actions import combat_actions placeholders
 #from stealth_actions import stealth_actions
 
+#needed for execute_actions
+from events import Robbery
+from worldQueries import get_viable_robbery_targets
 
-
+def execute_action(npc, action, region):
+    if action == "Rob":
+        targets = get_viable_robbery_targets(npc, region)
+        if targets:
+            target = random.choice(targets)
+            robbery = Robbery(robber=npc, location=target)
+            robbery.execute()
+    elif action == "Visit":
+        pass
 
 def handle_actions(character):
 
@@ -398,7 +409,13 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
         print(f"{character.name} failed to steal the {target_item.name} from {location.name}.")
         # Optional: consequences or alerts go here (e.g., witnesses, reputation drop, security alert)
 
-
+def issue_task(issuer, recipient, task):
+    """Assign a task from one character to another."""
+    if recipient.task_manager:
+        recipient.task_manager.add_task(task)
+        print(f"{issuer.name} issued task '{task.name}' to {recipient.name}")
+    else:
+        print(f"{recipient.name} has no task manager.")
 
 def influence(actor, target):
     print(f"{actor.name} influences {target.name}.")
@@ -564,15 +581,22 @@ def rob(character, location, target_item=None):
     from events import Robbery
     from InWorldObjects import CashWad
 
-    robbery_event = Robbery(instigator=character, location=location, weapon_used=True)
+    has_weapon = hasattr(character, "primary_weapon") and character.primary_weapon is not None
+
+
+    robbery_event = Robbery(
+        instigator=character,
+        location=location,
+        weapon_used=has_weapon
+    )
+
     robbery_event.target_item = target_item
 
     print(f"{character.name} is using a weapon: {robbery_event.weapon_used}")
     print(f"Robbery Target: {target_item.name if target_item else 'Unknown item'}")
 
-    outcome = robbery_event.resolve()
-
-    if outcome == "success":
+    #outcome = robbery_event.resolve()
+    """ if outcome == "success":
         print(f"Robbery SUCCESSFUL! {character.name} acquires the item or cash.")
         character.update_motivations()
 
@@ -581,9 +605,9 @@ def rob(character, location, target_item=None):
         print("Civilians may call guards...")
 
     elif outcome == "detected":
-        print(f"ALERT: Authorities are now aware of the robbery at {location.name}!")
+        print(f"ALERT: Authorities are now aware of the robbery at {location.name}!") """
 
-    return robbery_event
+    return robbery_event.resolve()
 
 
 def sowDissent(Character, rivals):

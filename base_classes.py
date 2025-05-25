@@ -170,7 +170,9 @@ class Character(PerceptibleMixin):
         self.name = name
         self.is_player = False
         if not self.is_player:
-            self.ai = ai or UtilityAI()
+            
+            self.ai = ai or UtilityAI(self)
+            #This way, every NPC character gets their own AI instance, with a reference to themselves
         else:
             self.ai = None
 

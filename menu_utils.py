@@ -8,7 +8,7 @@ from InWorldObjects import ObjectInWorld
 game_state = get_game_state()
     
 
-def main_menu(all_locations):
+def main_menu(all_locations, all_characters):
     global game_state
     game_state = get_game_state()
 
@@ -17,6 +17,7 @@ def main_menu(all_locations):
         print("\n=== Main Menu ===")
         print("1: Play/Test Game")
         print("2: Show world")
+        print("3: Run Simulation")
         print("6: Exit")
 
         choice = get_user_choice(6)
@@ -29,6 +30,10 @@ def main_menu(all_locations):
         elif choice == 1:  # User chose "Show World"
             from create import all_regions
             display_world(all_regions)
+        elif choice == 2:  # Simulation mode
+            from simulation import run_simulation
+            run_simulation(all_characters, num_days=int(input("How many days to simulate? ")))
+
         elif choice == 5:  # User chose "Exit"
             print("Exiting game...")
             break  # Exit the loop and end the program
