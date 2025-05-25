@@ -18,14 +18,14 @@ from events import Robbery
 from worldQueries import get_viable_robbery_targets
 
 def execute_action(npc, action, region):
-    if action == "Rob":
-        targets = get_viable_robbery_targets(npc, region)
-        if targets:
-            target = random.choice(targets)
-            robbery = Robbery(robber=npc, location=target)
-            robbery.execute()
-    elif action == "Visit":
-        pass
+    if hasattr(npc, 'ai') and hasattr(npc.ai, 'execute_action'):
+        return npc.ai.execute_action(action, region)
+
+    # fallback basic behaviors
+    if action == "Visit":
+        print(f"{npc.name} is wandering around.")
+    elif action == "Idle":
+        print(f"{npc.name} is standing idle.")
 
 def handle_actions(character):
 
@@ -416,6 +416,17 @@ def issue_task(issuer, recipient, task):
         print(f"{issuer.name} issued task '{task.name}' to {recipient.name}")
     else:
         print(f"{recipient.name} has no task manager.")
+
+
+def obtain_ranged_weapon(npc, region):
+    weapons = [p["origin"] for p in npc.percepts if "weapon" in p.get("tags", [])]
+    if weapons:
+        weapon = weapons[0]
+        print(f"[AI] {npc.name} attempts to obtain a ranged weapon: {weapon.name}")
+        steal(npc, weapon.location, target_item=weapon)
+    else:
+        print(f"[AI] {npc.name} found no weapons to steal.")
+
 
 def influence(actor, target):
     print(f"{actor.name} influences {target.name}.")

@@ -13,7 +13,7 @@ def create_name(race, gender):
 
     # If no race is provided, choose one randomly from valid races
     if race is None:
-        race = random.choice(valid_races)
+        raise ValueError("create_name() called with race=None. This is not allowed for gangs.")
     if race not in valid_races:
         raise ValueError(f"Invalid race '{race}'. Must be one of: {valid_races}")
     

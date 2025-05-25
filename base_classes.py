@@ -10,7 +10,8 @@ from tasks import TaskManager
 from perceptibility import PerceptibleMixin
 from character_thought import Thought
 from ai_utility import UtilityAI
-
+from character_memory import MemoryEntry, Memory, FactionRelatedMemory
+import time
 if TYPE_CHECKING:
     from location import Region
 DEBUG_MODE = False  # Set to True when debugging
@@ -203,7 +204,8 @@ class Character(PerceptibleMixin):
         self.posture = Posture.STANDING
         
         
-        self.memory = []
+        self.memory = Memory()  # Handles both episodic and semantic memory now
+
         self.task_manager = TaskManager(self)
         
 
@@ -217,9 +219,12 @@ class Character(PerceptibleMixin):
         self.self_awareness_score = 0
         self.self_awareness_level = SelfAwarenessLevel.ANIMAL
         self.intelligence = intelligence
-        self.thoughts = deque(maxlen=self.intelligence)
+        self.thoughts = deque(maxlen=self.intelligence) #Efficient O(1) appends and pops from either end.
         """ A deque, or double-ended queue, in Python is a data structure from the collections module 
         that allows you to efficiently add and remove elements from both ends """
+
+        """Random access.. Deque is not optimized for it — if you’ll often iterate and pick based on conditions (e.g., urgency),
+            a list or priority queue might be better """
 
         self._percepts = {}  # {percept_hash_or_id: {'data': ..., 'salience': int, 'timestamp': t}}
         self.race = race
@@ -479,6 +484,9 @@ class Character(PerceptibleMixin):
           percept data itself. observe() should accept only nearby_objects (a list of objects
             to be considered for perception)
         """
+
+    #percepts, must include actual object references for the "origin" field
+
         self._percepts.clear()
         if nearby_objects is None:
             nearby_objects = self.get_nearby_objects()
@@ -507,6 +515,8 @@ class Character(PerceptibleMixin):
         to “poll” the character’s perception of the world without storing stale data. It’s like their short-term
           awareness. percepts are what the character is noticing right now."""
         #types> characters, events, utility, factions, locations, regions, chainOfActions
+        #percepts, must include actual object references for the "origin" field
+
         updated_percepts = {}
         #should the following code be moved elsewhere out of class Character, it looks like placeholder code that
         #would need to grow very long.
@@ -567,7 +577,7 @@ class Character(PerceptibleMixin):
 
     def think(self):
         """
-        Convert high-salience percepts into thoughts.
+        Convert high-salience percepts or memories into thoughts.
         """
         important = sorted(self._percepts.values(), key=lambda p: p['salience'], reverse=True)
         """ key=lambda p: p['salience'] tells Python:
@@ -592,6 +602,14 @@ class Character(PerceptibleMixin):
         )
             self.thoughts.append(thought)
             self.memory.append(thought)
+
+            self.memory.append(MemoryEntry(
+                description=percept.get("description", "Unknown"),
+                tags=percept.get("tags", []),
+                details=percept.get("location_name", ""),  # or percept["origin"].name
+                source=percept.get("origin"),
+                timestamp=time.time()
+            ))
 
     @property
     def whereabouts(self):

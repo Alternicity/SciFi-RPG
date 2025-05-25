@@ -7,6 +7,7 @@ from status import StatusLevel, CharacterStatus, FactionStatus
 from base_classes import Character
 from weapons import Knife
 from inventory import Inventory
+from character_memory import MemoryEntry
 
 def create_gang_characters(faction):
 
@@ -27,7 +28,7 @@ def create_gang_characters(faction):
 
     boss = Boss(
         name=name,
-        race=race,
+        race=faction.race,#we already set this above?
         sex=sex,
         faction=faction,
         region=faction.region,
@@ -58,11 +59,12 @@ def create_gang_characters(faction):
         status.set_status("criminal", FactionStatus(StatusLevel.MID, "Captain"))
         
         sex = random.choice(Character.VALID_SEXES)
+        assert race == faction.race, f"Race mismatch when creating gang characters: {race} vs {faction.race}"
         name = create_name(race, sex)
 
         captain = Captain(
             name=name,
-            race=race,
+            race=faction.race,
             sex=sex,
             faction=faction,
             region=faction.region,
@@ -84,17 +86,27 @@ def create_gang_characters(faction):
         
         member = GangMember(
         name=name,
-        race=race,
+        race=faction.race,
         sex=sex,
         faction=faction,
         region=faction.region,
         location=None,
-        initial_motivations=["earn_money"],
+        initial_motivations=["idle"],
         inventory=Inventory([Knife(owner_name=name)]),
         status=status
     )
     characters.append(member)
-    faction.members.append(member)
+    
+    for char in characters:
+        if hasattr(char, "memory"):
+            char.memory.add_entry(MemoryEntry(
+                subject="weapons_location",
+                details="Shops usually have weapons",
+                importance=6,
+                tags=["weapon", "shop"]
+            ), type="semantic")  # Explicitly marking this as a semantic memory
+    if char.race != faction.race:
+        print(f"[WARNING] {char.name} has race {char.race} but gang {faction.name} is {faction.race}")
 
     # Gang HQ and Boss Diagnostics
     """ msg = f"Boss {boss.name} created for faction '{faction.name}'"

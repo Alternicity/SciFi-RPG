@@ -112,7 +112,6 @@ class SMG(RangedWeapon):
         self.blackmarket_value = 500  # Set blackmarket_value directly in SMG
         self.item_type = "weapon"
 
-
     def get_percept_data(self, observer=None):
         return {
             "description": f"{self.name}",
@@ -142,6 +141,7 @@ class Rifle(RangedWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
+        tags = ["weapon", "rifle"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,
@@ -170,6 +170,7 @@ class Shotgun(RangedWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
+        tags = ["weapon", "shotgun"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,
@@ -196,6 +197,7 @@ class Sword(MeleeWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
+        tags = ["weapon", "sword"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,
@@ -225,6 +227,7 @@ class Knife(MeleeWeapon):
         self.human_readable_id = f"{owner_name}'s Knife" if owner_name else "Unowned Knife"
     
     def get_percept_data(self, observer=None):
+        tags = ["weapon", "knife"]
         return {
             "description": f"Knife ({self.human_readable_id})",
             "value": self.price,
@@ -250,6 +253,7 @@ class Club(MeleeWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
+        tags = ["weapon", "club"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,
@@ -277,6 +281,7 @@ class Electrobaton(MeleeWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
+        tags = ["weapon", "electrobaton"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,

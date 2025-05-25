@@ -1,3 +1,5 @@
+#character_thought.py
+
 class Thought:
     def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0):
         self.content = content              # Description of the thought (str or object)
@@ -8,4 +10,5 @@ class Thought:
         self.weight = weight                # How impactful (can be salience or derived)
     
     def __repr__(self):
-        return f"<Thought: {self.content} (urgency={self.urgency}, weight={self.weight})>"
+        return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "
+                f"source='{getattr(self.source, 'name', self.source)}', urgency={self.urgency}, tags={self.tags}>")

@@ -60,8 +60,8 @@ def gameplay(selected_character, region):
     3: ("Display Characters Summary", lambda: display_character_Summary()),
     4: ("Display Factions", lambda: display_factions()),
     5: ("Dev", lambda: dev_mode()),
-    6: ("Pass 1 Time", lambda: simulate_days(1)),
-    7: ("Pass 3 Time", lambda: simulate_days(3)),
+    6: ("Pass 1 Time", lambda: simulate_days(all_characters, 1)),
+    7: ("Pass 3 Time", lambda: simulate_days(all_characters, 3)),
     8: ("Exit Gameplay", exit_gameplay),
 }
         dynamic_options = build_gameplay_menu(selected_character.location, selected_character)
