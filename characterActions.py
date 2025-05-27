@@ -1,12 +1,13 @@
 # characterActions.py
 
-from location import Shop, CorporateStore
-from base_classes import Location
+#DONT import Shop here, use lazy import
+#DONT IMPORT from menu_utils HERE, USE LAZY
+
 import copy
 import random
 from visual_effects import loading_bar, RED, color_text
 from conversation import Conversation
-from menu_utils import get_menu_choice
+
 from typing import Dict, Tuple, Any
 from weapons import Weapon
 # In characterActions.py
@@ -28,7 +29,7 @@ def execute_action(npc, action, region):
         print(f"{npc.name} is standing idle.")
 
 def handle_actions(character):
-
+    from menu_utils import get_menu_choice
     """Handle character actions dynamically based on location and character behavior."""
 
     if character.location is None:
@@ -175,6 +176,7 @@ def select_item_to_buy(shop):
     return choice
 
 def buy(character, shop, item):
+    from location import Shop
     location = character.location
     if not isinstance(shop, Shop):
         print("You can't buy things here!")

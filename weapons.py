@@ -78,7 +78,7 @@ class Pistol(RangedWeapon):
 
         if hasattr(observer, "motivations"):
             if "robbery" in observer.motivations:
-                tags.append("robbable")
+                tags.append("robbable", "rob")
                 base_salience += 10
             if "buy_tech" in observer.motivations:
                 base_salience += 2  # less relevant than a smartphone

@@ -5,10 +5,8 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 logger = logging.getLogger(__name__)
 
 from menu_utils import main_menu
-from display import show_locations_in_region, show_character_details, show_shop_inventory
 from game import game
 from create_game_state import get_game_state
-
 
 # Only define these globals once
 game_state = None

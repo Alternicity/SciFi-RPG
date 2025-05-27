@@ -6,7 +6,7 @@ from status import StatusLevel, CharacterStatus, FactionStatus
 from InWorldObjects import ObjectInWorld, Wallet
 from wallet import generate_wallet
 from base_classes import Character, Location, Faction
-
+from ai_gang import GangMemberAI
 
 #Method overriding is used sparingly (e.g., issue_directive in 
 # Boss and CEO). Consider leveraging polymorphism more to reduce 
@@ -220,7 +220,7 @@ class Manager(Character):
     
 class Subordinate(Character):
     is_concrete = False
-    def __init__(self, name, race, sex, faction, strength, agility, intelligence, luck, psy, toughness, morale, position="Subordinate", loyalties=None, status=None, **kwargs):
+    def __init__(self, name, race, sex, faction, strength, agility, intelligence, luck, psy, toughness, morale, position="Subordinate", loyalties=None, status=None, ai=None, **kwargs):
         """ if race is None:
             race = "Terran" """
         if status is None:
@@ -235,7 +235,7 @@ class Subordinate(Character):
         default_loyalties.update(loyalties or {})
 
         super().__init__(name, race=race, sex=sex, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale,  loyalties=loyalties, position=position,
-                         status=status, **kwargs)
+                         status=status, ai=ai, **kwargs)
         self.tasks = []# Explicitly initialize task list
         
 
@@ -414,13 +414,13 @@ class GangMember(Subordinate):
         default_loyalties["Law"] = 0
         # Merge defaults with provided loyalties
         default_loyalties.update(loyalties or {})
-        
+        ai = GangMemberAI(self)
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
             location=location, wallet=wallet, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
             morale=morale, position=position, 
-            loyalties=default_loyalties, status=status, **kwargs
+            loyalties=default_loyalties, status=status, ai=ai, **kwargs
         )
         
         # Enforce the primary domain (in case Character didn't get it from kwargs)
@@ -430,6 +430,8 @@ class GangMember(Subordinate):
         self.tazerCharge = 0
         self.targetIsInMelee = False
         self.isAggressive = False
+        #self.ai = GangMemberAI(self)
+        #deprecated?
 
         """ self.cash = 50
         self.bankCardCash = 20 """

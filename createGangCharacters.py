@@ -8,7 +8,7 @@ from base_classes import Character
 from weapons import Knife
 from inventory import Inventory
 from character_memory import MemoryEntry
-
+#no ai import here
 def create_gang_characters(faction):
 
     if faction.type != "gang":

@@ -22,6 +22,9 @@ class Inventory:
             for item in items:
                 self.add_item(item)
 
+    def is_empty(self):
+        return not bool(self.items)
+
     def _validate_item(self, item): #old code
         """Validate an item before adding or updating it."""
         if item is None:

@@ -1,14 +1,25 @@
 #character_thought.py
+import time
 
 class Thought:
-    def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0):
+    def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None):
         self.content = content              # Description of the thought (str or object)
         self.origin = origin                # What caused it (e.g., percept source)
         self.urgency = urgency              # How pressing it is
         self.tags = tags or []              # Useful for filtering (e.g., ["crime", "money"])
         self.source = source                # Who/what told them (e.g., another character)
         self.weight = weight                # How impactful (can be salience or derived)
-    
+        self.timestamp = timestamp or time.time()
+
     def __repr__(self):
         return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "
-                f"source='{getattr(self.source, 'name', self.source)}', urgency={self.urgency}, tags={self.tags}>")
+                f"source='{getattr(self.source, 'name', self.source)}', urgency={self.urgency}, "
+                f"tags={self.tags}, time={int(self.timestamp)}>")
+    
+    """ Minor optional tweaks for clarity or future-proofing:
+
+Add timestamp if needed later (you’ve used it before in the namedtuple)
+
+Add a .to_dict() or .summarize() method for UI/debug/logging, if needed
+
+Add __eq__ or __hash__ methods if you'll compare or de-duplicate thoughts """

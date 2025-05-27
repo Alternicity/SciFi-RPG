@@ -5,7 +5,7 @@ class Motivation:
     def __init__(self, type, urgency, target=None, status_type=None, source=None):
         self.type = type  #  "join_gang"
         self.urgency = urgency  # integer
-        self.target = target  #  "Red Fangs"
+        self.target = target  #  "e.g. Red Fangs"
         self.status_type = status_type  #  "criminal"
         self.source = source  #  memory, event, etc.
 
