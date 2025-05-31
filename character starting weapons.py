@@ -1,7 +1,7 @@
 #deprecated code from charaters.py
 
 Corporate Assasin basic weapons
-        self.weapons = {
+        self.weapons = { #update to inventory, weapons no longer stored in character
             "rifle": {"isArmed": True, "ammo": 30},
             "pistol": {"isArmed": True, "ammo": 30},
             "dagger": {"isArmedWithDagger": True, "isBlooded": False},

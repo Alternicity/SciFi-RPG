@@ -16,6 +16,11 @@ def create_civilian_population(all_locations, all_regions, num_civilians=30):
     from create_character_names import create_name
     from utils import get_region_for_location
 
+    """ print("DEBUG: Number of locations passed in:", len(all_locations))
+    print("DEBUG: Regions passed in:", [r.name for r in all_regions])
+    print("DEBUG: Sample location:", all_locations[0] if all_locations else "No locations")
+    print("DEBUG: Sample location region:", all_locations[0].region if all_locations else "N/A") """
+
     normalize_location_regions(all_locations, all_regions)  # 🧹 Ensure valid region refs
 
     civilians = []
@@ -70,7 +75,7 @@ def create_civilian_population(all_locations, all_regions, num_civilians=30):
             location=location,
             race=race,
             faction=general_population_faction,
-            initial_motivations=MotivationPresets.for_class("Civilian"),
+            motivations=MotivationPresets.for_class("Civilian"),
             wallet=Wallet(bankCardCash=random_cash),
             status=status
         )

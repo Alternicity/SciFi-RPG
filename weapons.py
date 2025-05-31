@@ -76,12 +76,15 @@ class Pistol(RangedWeapon):
         tags = ["weapon", "pistol"]
         base_salience = 5  # general background level
 
-        if hasattr(observer, "motivations"):
-            if "robbery" in observer.motivations:
-                tags.append("robbable", "rob")
+        if hasattr(observer, "motivation_manager"):
+            motivation_types = {m.type for m in observer.motivation_manager.get_motivations()}
+
+            if "robbery" in motivation_types:
+                tags.extend(["robbable", "rob"])
                 base_salience += 10
-            if "buy_tech" in observer.motivations:
-                base_salience += 2  # less relevant than a smartphone
+
+            if "buy_tech" in motivation_types:
+                base_salience += 2
 
         return {
             "description": self.human_readable_id or "Pistol",

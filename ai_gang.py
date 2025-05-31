@@ -1,10 +1,11 @@
 import time
 from ai_utility import UtilityAI
 from worldQueries import get_viable_robbery_targets
-from characterActions import steal, rob
+from characterActions import steal, rob, idle
 from character_thought import Thought
 from worldQueries import get_viable_robbery_targets
 from motivation import Motivation
+from summary_utils import summarize_percepts
 
 class GangCaptainAI(UtilityAI):
     def choose_action(self, region):
@@ -37,12 +38,14 @@ class GangMemberAI(UtilityAI):
         npc = self.npc
 
         # Motivation check — what's urgent?
-        motivations = npc.mind.motivations.sorted_by_urgency()
-
+        motivations = npc.motivation_manager.sorted_by_urgency()
+        #motivations is not yet accessed here
+        
         # Step 1: Do we want to rob?
-        if npc.has_motivation("rob"):
+        if npc.motivation_manager.has_motivation("rob"):
             # Step 2: Do we have a high-salience weapon?
-            if not npc.has_ranged_weapon():
+            if not npc.inventory.has_ranged_weapon():
+
                 # Step 3: Can we remember where to get one?
                 for memory in npc.mind.semantic:
                     if "weapon" in memory.tags and "shop" in memory.tags:
@@ -53,7 +56,7 @@ class GangMemberAI(UtilityAI):
             if npc.location and npc.location.has_item("pistol"):
                 return {"name": "steal", "params": {"item": "pistol"}}
 
-            if npc.has_ranged_weapon():
+            if npc.inventory.has_ranged_weapon():
                 return {"name": "rob", "params": {"target": npc.location or "shop"}}
 
         # If we’re not sure what to do — idle
@@ -117,13 +120,25 @@ class GangMemberAI(UtilityAI):
                 print(f"[AI] {npc.name} found no robbery targets.")
 
         elif action == "Idle":
-            print(f"[AI] {npc.name} is idling.")
+            idle(npc, region)
 
-        print(f"[MIND DUMP] from end of GangMemberAI execute_action {npc.name} current thoughts: {[str(t) for t in npc.mind]}")
+        if self.npc.is_test_npc:
+            print(f"[MIND DUMP] from end of GangMemberAI execute_action {npc.name} current thoughts: {[str(t) for t in npc.mind]}")
 
-    def think(self, region): #should this be renamed GangMemberThink for clarity?
+    def think(self, region):
+        self.npc.observe(region=region, location=self.npc.location)
         print(f"\n--- from GangMemberAI, {self.npc.name} is about to think ---")
-        print(f"GangMember think> Percepts before thinking: {self.npc._percepts}")
+        print("\n" * 1)
+
+        """ print("\n[DEBUG] Inspecting self.npc before summarize_percepts:")
+        print(f"Type: {type(self.npc)}")
+        print(f"Attributes: {dir(self.npc)}")
+        print(f"Name: {getattr(self.npc, 'name', 'N/A')}")
+        print(f"Motivation Manager: {getattr(self.npc, 'motivation_manager', 'MISSING')}") """
+        
+        print(f"[Percepts Before Thinking] {self.npc.name}:\n{summarize_percepts(self.npc)}")
+
+        print("\n" * 1)
 
         self.npc.mind.thoughts.clear()
 
@@ -149,8 +164,8 @@ class GangMemberAI(UtilityAI):
                         source=memory
                     )
                 )
-
-        print(f"[MIND DUMP] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind]}")
+        if self.npc.is_test_npc:
+            print(f"[MIND DUMP] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind]}")
         print(f"[DEBUG] from def think in GangMemberAI {self.npc.name} thinking with {len(self.npc.memory.episodic)} episodic memories")
 
         # Use the shared logic
@@ -160,9 +175,9 @@ class GangMemberAI(UtilityAI):
         """ for thought in npc.mind:
             print(f" - {thought}") """
 
-        print(f"{self.npc.name}'s thoughts after thinking:")
+        """ print(f"{self.npc.name}'s thoughts after thinking:")
         for t in self.npc.mind:
-            print(f" - {t}")
+            print(f" - {t}") """
         print(f"From GangMember Attention focus: {self.npc.attention_focus}")
 
     def custom_action_logic(self, region):
@@ -173,12 +188,13 @@ class GangMemberAI(UtilityAI):
 
             print(f"[Percept] Found percept: {percept.get('description')} with tags: {tags}")
 
-            if "weapon" in tags and any(m.type == "obtain_ranged_weapon" for m in npc.motivations):
+            if "weapon" in tags and any(m.type == "obtain_ranged_weapon" for m in npc.motivation_manager.get_motivations()):
+
                 if not npc.has_weapon():
                     print(f"[Decision] {npc.name} decides to obtain a ranged weapon.")
                     return "obtain_ranged_weapon"
 
-            if "shop" in tags and any(m.type == "rob" for m in npc.motivations):
+            if "shop" in tags and any(m.type == "rob" for m in npc.motivation_manager.get_motivations()):
                 if npc.has_weapon():
                     print(f"[Decision] {npc.name} decides to Rob.")
                     return "Rob"

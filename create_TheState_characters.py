@@ -44,7 +44,7 @@ def create_TheState_characters(faction):
             faction=faction,
             region=faction.region,
             location=building,
-            initial_motivations=MotivationPresets.for_class("vip"),
+            motivations=MotivationPresets.for_class("VIP"),
             status=status
                 )
         faction.state_staff.append(vip)
@@ -69,7 +69,7 @@ def create_TheState_characters(faction):
                 faction=faction,
                 region=faction.region,
                 location=building,
-                initial_motivations=motivations,
+                motivations=motivations,
                 status=status
             )
             faction.state_staff.append(person)
@@ -100,7 +100,7 @@ def create_TheState_characters(faction):
                 faction=faction,
                 region=faction.region,
                 location=copshop,
-                initial_motivations=motivations,
+                motivations=motivations,
                 status=status
             )
             faction.state_staff.append(cop)

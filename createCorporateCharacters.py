@@ -27,7 +27,7 @@ def create_corporation_characters(faction, factions):
     if factions is None:
         raise ValueError("Factions list is required for corporation character generation.")
 
-    from faction import Corporation
+    from faction import Corporation #not accessed
     characters = []
 
     # Locate HQ belonging to this faction
@@ -52,7 +52,7 @@ def create_corporation_characters(faction, factions):
         faction=faction,
         region=faction.region,
         location=corp_hq,
-        initial_motivations=MotivationPresets.for_class("CEO"),
+        motivations=MotivationPresets.for_class("CEO"),
         status=status
     )
     faction.add_CEO(ceo)
@@ -73,7 +73,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("Manager"),
+            motivations=MotivationPresets.for_class("Manager"),
             status=status
         )
         faction.add_manager(manager)
@@ -94,7 +94,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("Employee"),
+            motivations=MotivationPresets.for_class("Employee"),
             status=status
         )
         faction.add_employee(employee)
@@ -115,7 +115,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("CorporateSecurity"),
+            motivations=MotivationPresets.for_class("CorporateSecurity"),
             status=status
         )
         faction.add_security(guard)
@@ -136,7 +136,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("Accountant"),
+            motivations=MotivationPresets.for_class("Accountant"),
             status=status
         )
         faction.add_accountant(accountant)
@@ -157,7 +157,7 @@ def create_corporation_characters(faction, factions):
             faction=faction,
             region=faction.region,
             location=corp_hq,
-            initial_motivations=MotivationPresets.for_class("CorporateAssassin"),
+            motivations=MotivationPresets.for_class("CorporateAssassin"),
             status=status
         )
         characters.append(assassin)

@@ -33,7 +33,8 @@ def create_gang_characters(faction):
         faction=faction,
         region=faction.region,
         location=None,
-        initial_motivations=["gain_high"],
+        motivations=MotivationPresets.for_class("Boss"),
+
         status=status
     )
     faction.boss = boss  # <-- Store boss reference in gang
@@ -69,7 +70,8 @@ def create_gang_characters(faction):
             faction=faction,
             region=faction.region,
             location=None,
-            initial_motivations=["gain_high"],
+            motivations=MotivationPresets.for_class("Captain"),
+
             status=status
         )
         characters.append(captain)
@@ -91,7 +93,7 @@ def create_gang_characters(faction):
         faction=faction,
         region=faction.region,
         location=None,
-        initial_motivations=["idle"],
+        motivations=[("idle", 1)],
         inventory=Inventory([Knife(owner_name=name)]),
         status=status
     )

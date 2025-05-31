@@ -100,14 +100,10 @@ def create_gang_factions(num_gangs, all_regions):
                ["Poignards", "Pépites", "Dégringolades", "Bouquiners", "Farouches", "TractionsAvant", "BriseDeMer", "Zenvolasca", "Bonnot"]),
     "German": (["Aryan", "Gepanzert", "Jung", "Basierend", "Astfalon", "Fervir", "Stein", "Eisen", "Fortgeschritten", "Grundlegend", "Kaltherzig", "Wiederauflebend", "Fünfte", "Gotisch", "Fervir", "Zusammengebaut"], 
                ["Waffe", "Äxte", "Hämmer", "Ambrones", "Zweihanders", "Lehrer", "Nehmer", "Söhne", "Luftreiniger"]),
-
     "Indian": (["Republican", "Weeping", "War", "Whiter", "Mass", "Clean", "Lustful", "Plentiful", "Unrepentant"],
                ["Chakras", "Engineers", "GaleeShitars", "Lingams", "Operators", "Tigers", "Lookers", "GrahBans", "Hashishim"]),
-    
     "IndoAryan": (["Sundaro", "Partisan", "Flowing", "Sundaro", "War", "Xen", "Sundaro", "Pure", "Intense", "Clean", "Observant", "Forgotten", "Unrepentant", "Striking", "Intense", "Avenging"],
                 ["Swarm", "Hunters", "Chakr", "Injeeniyar", "Lingam", "Tigers", "Lookers", "GrahBans", "GrahBans"]),
-    
-    
     "IranianPersian": (["hezbi", "ravan", "jang", "Scaly", "shodid", "pak", "nazer", "faramush shodeh", "vafadar"], 
                        ["mobarzan", "manpandsan", "pasaran", "bebrehya", "garecbannpana", "nizemanteoja"]),
     "Irish": (["Dead", "TuathaDe", "XandG", "Wild", "Cruthin", "Erainn", "Loígis", "Sharp", "Misty", "Celtic", "Silver", "Based"], 
@@ -117,9 +113,7 @@ def create_gang_factions(num_gangs, all_regions):
     "Japanese": (["Crimson", "Shadow", "Eternal", "Inagawa", "muzukashii", "atsui", "warui", "atarashii", "kireina"], 
                  ["Bosozoku", "Tekiya", "Bakuto", "Yankii", "Umibozo", "Gokudō", "Lotus", "Brotherhood", "Fists"]),
     "Martian": (["Promethei", "Sabaea", "Xanthe", "Promethei", "Sabaea", "Tyrrhena", "Margaritifer", "Eudoxus", "Byalax"], 
-                ["Aurigans", "Synths", "FreeBreathers", "DeCrux", "Draconians", "Hydrans", "Corvids", "Zodians", "Machines"]),
-    "German": (["Aryan", "Armoured", "Blau", "Promethei", "Sabaea", "Tyrrhena", "Margaritifer", "Eudoxus", "Byalax"], 
-                ["Aurigans", "Synths", "FreeBreathers", "DeCrux", "Draconians", "Hydrans", "Corvids", "Zodians", "Machines"]),
+                ["Aurigans", "Synths", "FreeBreathers", "DeCrux", "Draconians", "Hydrans", "Corvids", "Zodians", "Machines"]),   
     "Portuguese": (["Mau", "Amargo", "Azul", "Proxima", "Cheio", "Vermelho", "Educado", "Velho", "Feral", "Grosso", "Doce"], 
                    ["Braços", "Gente", "Pessoas", "Dentes", "Caralhos", "Cervejas", "Tomarenses", "Problemas", "Misericordias", "Templarios", "Cabeças", "Punhals", "Bêbados"]),
     "WhiteAryanNordic": (["Aryan", "Armed", "Eternal", "Golden", "Winged", "Fanged", "Plastic", "Lysergic", "Swooping", "Lofty", "Sly", "Avenging"], 

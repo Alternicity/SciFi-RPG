@@ -10,6 +10,8 @@ from display import (
     display_filtered_character_summary, display_character_Summary, display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
 )
 from motivation import MotivationManager
+#MotivationManager not accessed here
+
 from base_classes import Character
 from character_creation_funcs import create_faction_characters
 from utils import dev_mode

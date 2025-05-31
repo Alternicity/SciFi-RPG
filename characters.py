@@ -13,8 +13,16 @@ from ai_gang import GangMemberAI
 # role-specific conditionals.
 class Boss(Character):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction, position="A Boss", loyalties=None, status=None, **kwargs):
+    default_motivations = [
+        ("influence", 4),
+        ("gain_elite", 6),
+        ("decrease_hostilities", 4),
+        ("sow_dissent", 4)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction, position="A Boss", loyalties=None, status=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
         
@@ -42,7 +50,7 @@ class Boss(Character):
         wallet = kwargs.pop("wallet", generate_wallet("Boss"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location,  status=status, wallet=wallet, loyalties=default_loyalties, **kwargs
+            location=location,  status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs
         )
         self.directives = []  # High-level orders issued to Captains/Managers
         self.primary_status_domain = "criminal"
@@ -63,8 +71,16 @@ class Boss(Character):
         self.directives = []  # List of high-level directives
 
 class CEO(Character):
-    def __init__(self, name, race, sex, region, location, faction, position="A CEO", loyalties=None, status=None, **kwargs):
+    default_motivations = [
+        ("earn_money", 5),
+        ("gain_elite", 6),
+        ("influence", 4),
+        ("decrease_hostilities", 3)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction, position="A CEO", loyalties=None, status=None, motivations=None, **kwargs):
         
+
         # Default loyalty setup for CEO
         default_loyalties = {
             faction: 100,  # Full loyalty to their own faction
@@ -96,7 +112,7 @@ class CEO(Character):
         # Call parent constructor
         super().__init__(
             name=name, race=race, sex=sex, faction=faction, region=region,
-            location=location, status=status, wallet=wallet, loyalties=default_loyalties, **kwargs # Pass remaining keyword arguments safely
+            location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs # Pass remaining keyword arguments safely
         )
         self.directives = []  # List of high-level directives
         self.inventory = inventory
@@ -115,7 +131,16 @@ class CEO(Character):
     
 class Captain(Character):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction, position="Captain", loyalties=None, status=None, **kwargs):
+    default_motivations = [
+        ("follow_orders", 2),
+        ("patrol", 3),
+        ("gain_mid", 4),
+        ("find_safety", 3)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction, position="Captain", loyalties=None, status=None, motivations=None, **kwargs):
+        
+        
         if status is None:
             status = CharacterStatus()
 
@@ -141,7 +166,7 @@ class Captain(Character):
         wallet = kwargs.pop("wallet", generate_wallet("Captain"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location, status=status, wallet=wallet, loyalties=default_loyalties, **kwargs
+            location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs
         )
 
     def __repr__(self):
@@ -154,8 +179,15 @@ class Captain(Character):
 
 class Manager(Character):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="None", position="Manager", loyalties=None, fun=1, hunger=1, status=None, **kwargs):
+    default_motivations = [
+        ("earn_money", 5),
+        ("gain_mid", 4),
+        ("virtue_signal", 1)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction="None", position="Manager", loyalties=None, fun=1, hunger=1, status=None, motivations=None, **kwargs):
         
+
         random_cash = random.randint(400, 1000)
         wallet = kwargs.pop("wallet", generate_wallet("Manager"))
 
@@ -183,7 +215,7 @@ class Manager(Character):
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
             location=location, wallet=wallet, status=status, loyalties=default_loyalties, fun=fun,
-            hunger=hunger, **kwargs
+            hunger=hunger, motivations=motivations or self.default_motivations, **kwargs
         )
         self.position = position
         
@@ -220,7 +252,10 @@ class Manager(Character):
     
 class Subordinate(Character):
     is_concrete = False
-    def __init__(self, name, race, sex, faction, strength, agility, intelligence, luck, psy, toughness, morale, position="Subordinate", loyalties=None, status=None, ai=None, **kwargs):
+    default_motivations = [("earn_money", 2)]
+    def __init__(self, name, race, sex, faction, strength, agility, intelligence, luck, psy, toughness, morale, position="Subordinate", loyalties=None, status=None, ai=None, motivations=None, **kwargs):
+        
+        
         """ if race is None:
             race = "Terran" """
         if status is None:
@@ -235,14 +270,17 @@ class Subordinate(Character):
         default_loyalties.update(loyalties or {})
 
         super().__init__(name, race=race, sex=sex, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale,  loyalties=loyalties, position=position,
-                         status=status, ai=ai, **kwargs)
+                         status=status, ai=ai, motivations=motivations or self.default_motivations, **kwargs)
         self.tasks = []# Explicitly initialize task list
         
 
 class Employee(Subordinate):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, position="An employee", loyalties=None, status=None, **kwargs):
+    default_motivations = [("earn_money", 5)]
+
+    def __init__(self, name, race, sex, region, location, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, position="An employee", loyalties=None, motivations=None, status=None, **kwargs):
         
+
         # Default loyalty setup for Employee
         default_loyalties = {
             faction: 15 if faction else 0,  # Avoid issues if faction is None
@@ -263,7 +301,7 @@ class Employee(Subordinate):
         wallet = kwargs.pop("wallet", generate_wallet("CorporateSecurity"))
         super().__init__(
             name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, status=status, wallet=wallet, loyalties=default_loyalties, **kwargs
+            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs
         )
         
     def __repr__(self):
@@ -277,8 +315,15 @@ class Employee(Subordinate):
     
 class CorporateSecurity(Subordinate):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, toughness=13, morale=11, position="Security Guard", loyalties=None, status=None, **kwargs):
+    default_motivations = [
+        ("protect_vip", 4),
+        ("patrol", 3),
+        ("gain_mid", 4),
+        ("find_safety", 3)
+    ]
+    def __init__(self, name, race, sex, region, location, faction, strength=12, agility =10, intelligence=8, luck=9, psy=1, toughness=13, morale=11, position="Security Guard", loyalties=None, status=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
             status.set_status("corporate", FactionStatus(StatusLevel.MID, position))
@@ -301,12 +346,11 @@ class CorporateSecurity(Subordinate):
             location=location, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
             morale=morale, wallet=wallet, position=position, 
-            loyalties=default_loyalties, status=status, **kwargs
+            loyalties=default_loyalties, status=status, motivations=motivations or self.default_motivations, **kwargs
         )
         
-        self.pistolIsLoaded = True
-        self.pistolCurrentAmmo = 15
-        self.tazerCharge = 10
+        
+        
         self.targetIsInMelee = False
 
         """ self.cash = 10
@@ -322,8 +366,16 @@ class CorporateSecurity(Subordinate):
     
 class CorporateAssasin(CorporateSecurity):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction,  strength=12, agility=15, intelligence=15, toughness=13, morale=13, position="Unknown", loyalties=None, status=None, **kwargs):
+    default_motivations = [
+        ("steal_object", 3),
+        ("steal_money", 3),
+        ("gain_high", 5),
+        ("find_safety", 4),
+        ("escape_danger", 6)
+    ]
+    def __init__(self, name, race, sex, region, location, faction,  strength=12, agility=15, intelligence=15, toughness=13, morale=13, position="Unknown", loyalties=None, status=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
             # Internal factions and corp value
@@ -351,7 +403,7 @@ class CorporateAssasin(CorporateSecurity):
             location=location, faction=faction, strength=strength, agility=agility, 
             intelligence=intelligence, luck=0, psy=0, toughness=toughness, 
             morale=morale, wallet=wallet, position=position, 
-            loyalties=default_loyalties, status=status, **kwargs
+            loyalties=default_loyalties, status=status, motivations=motivations or self.default_motivations, **kwargs
         )
         
         # Assassin-specific weapon attributes
@@ -387,9 +439,13 @@ class CorporateAssasin(CorporateSecurity):
     
 class GangMember(Subordinate):
     is_concrete = True
+    default_motivations = [("idle", 1)]
+
     def __init__(self, name, race, sex, region, location, faction, strength=12, agility=11, intelligence=7, 
                 luck=9, psy=2, toughness=14, morale=12,
-                position="Gangster", loyalties=None, status=None, **kwargs):
+                position="Gangster", loyalties=None, status=None, motivations=None, **kwargs):
+        
+
          # Ensure status has a "criminal" domain, regardless of what Subordinate set
         if status is None:
             status = CharacterStatus()
@@ -420,14 +476,13 @@ class GangMember(Subordinate):
             location=location, wallet=wallet, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
             morale=morale, position=position, 
-            loyalties=default_loyalties, status=status, ai=ai, **kwargs
+            loyalties=default_loyalties, status=status, ai=ai, motivations=motivations or self.default_motivations, **kwargs
         )
         
         # Enforce the primary domain (in case Character didn't get it from kwargs)
         self.primary_status_domain = "criminal"
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
-        self.tazerCharge = 0
+        
+        
         self.targetIsInMelee = False
         self.isAggressive = False
         #self.ai = GangMemberAI(self)
@@ -457,9 +512,15 @@ class GangMember(Subordinate):
     
 class RiotCop(Character):
     is_concrete = True
+    default_motivations = [
+        ("patrol", 4),
+        ("gain_mid", 4),
+        ("virtue_signal", 2),
+        ("find_safety", 3)
+    ]
     def __init__(self, name, race, sex, region, location,  faction="The State", 
-                 position="Pig", toughness=14, loyalties=None, fun=0, hunger=0, status=None, **kwargs):
-
+                 position="Pig", toughness=14, loyalties=None, fun=0, hunger=0, status=None, motivations=None, **kwargs):
+        
 
     # Default loyalty setup for RiotCop
         default_loyalties = {
@@ -492,13 +553,13 @@ class RiotCop(Character):
             location=location, faction=faction,
             fun=fun, hunger=hunger, strength=15, agility=4, intelligence=5, 
             luck=0, psy=0, toughness=toughness, morale=8, 
-            loyalties=default_loyalties, wallet=wallet, status=status, position=position, **kwargs
+            loyalties=default_loyalties, wallet=wallet, status=status, position=position, motivations=motivations or self.default_motivations, **kwargs
         )
         
         # Weapon & Combat Attributes
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
-        self.tazerCharge = 0
+        
+        
+        
         self.targetIsInMelee = False
         self.isAggressive = True
         self.targetIsInMelee = False
@@ -522,10 +583,13 @@ class RiotCop(Character):
         return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
 class Civilian(Character):
+    default_motivations = [("have_fun", 2), ("earn_money", 4)]
     is_concrete = True # but it is also an intermediarz class for VIP
-    def __init__(self, name, race, sex, region, location, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, position="Normie", loyalties=None, status=None, **kwargs):
-        #print(f"Civilian created: {name}, Region: {region}, Location: {location}")
 
+    def __init__(self, name, race, sex, region, location, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, position="Normie", loyalties=None, status=None, motivations=None, **kwargs):
+        #print(f"Civilian created: {name}, Region: {region}, Location: {location}")
+        
+        
         if status is None:
             status = CharacterStatus()
 
@@ -563,13 +627,13 @@ class Civilian(Character):
         #You should not hardcode status in Civilian, because it serves multiple roles, intermediary and concrete
         super().__init__(
             name=name, race=race, sex=sex, region=region, location=location, strength=strength, agility=agility, intelligence=intelligence, 
-            luck=luck, psy=psy, toughness=toughness, morale=morale, wallet=wallet, position=position, status=status, 
+            luck=luck, psy=psy, toughness=toughness, morale=morale, wallet=wallet, position=position, status=status, motivations=motivations or self.default_motivations,
             **kwargs
         )
 
         # Weapon & Combat Attributes
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
+        
+        
         self.targetIsInMelee = False
         self.location
         self.region
@@ -591,9 +655,18 @@ class Civilian(Character):
     
 class VIP(Civilian):
     is_concrete = True
+
+    default_motivations = [
+        ("gain_high", 6),
+        ("have_fun", 3),
+        ("influence", 3),
+        ("virtue_signal", 1)
+    ]
+
     def __init__(self, name, race, sex, region, location, position="VIP", loyalties=None,
         influence=0, strength=18, agility=10, intelligence=15, 
-        luck=0, psy=0, toughness=5, morale=7, fun=0, hunger=0, status=None, **kwargs):
+        luck=0, psy=0, toughness=5, morale=7, fun=0, hunger=0, status=None, motivations=None, **kwargs):
+        
 
         if region is None:
             raise ValueError(f"Error: VIP {name} is being created with region=None! Check faction.region!")
@@ -657,6 +730,7 @@ class VIP(Civilian):
             position=position,
             status=status,
             wallet=wallet,
+            motivations=motivations or self.default_motivations,
             **kwargs # faction is already in kwargs
         )
         
@@ -683,10 +757,14 @@ class VIP(Civilian):
     
 class Child(Civilian):
     is_concrete = True
+
+    default_motivations = [("have_fun", 4), ("find_safety", 3)]
+
     def __init__(self, name, race, sex, region, location, faction="None", parent=None, bankCardCash=0, position="Minor", loyalties=None,
         influence=0, strength=3, agility=10, intelligence=5, 
-        luck=0, psy=0, toughness=5, morale=1, fun=2, hunger=2, status=None, **kwargs):
+        luck=0, psy=0, toughness=5, morale=1, fun=2, hunger=2, status=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
 
@@ -735,6 +813,7 @@ class Child(Civilian):
             loyalties=default_loyalties,
             wallet=wallet,
             status=status,
+            motivations=motivations or self.default_motivations,
             **kwargs
         )
         
@@ -775,10 +854,20 @@ class Child(Civilian):
 
 class Influencer(Civilian):
     is_concrete = True
+
+    default_motivations = [
+        ("increase_popularity", 4),
+        ("virtue_signal", 3),
+        ("gain_mid", 3),
+        ("influence", 3),
+        ("have_fun", 2)
+    ]
+
     def __init__(self, name, race, sex, region, location, faction="None", position="Grifter", loyalties=None,
         influence=8, strength=10, agility=10, intelligence=15, 
-        luck=0, psy=0, toughness=5, morale=2, fun=2, hunger=0, status=None, **kwargs):
+        luck=0, psy=0, toughness=5, morale=2, fun=2, hunger=0, status=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
 
@@ -829,14 +918,15 @@ class Influencer(Civilian):
             loyalties=default_loyalties,
             wallet=wallet,
             status=status,
+            motivations=motivations or self.default_motivations,
             **kwargs
         )
         
         self.influence = influence
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
+        
+        
         self.targetIsInMelee = False
-        self.tazerCharge = 0
+        
 
         """ self.cash = 1000
         self.bankCardCash = bankCardCash """  
@@ -855,10 +945,20 @@ class Influencer(Civilian):
 
 class Babe(Civilian):
     is_concrete = True
+
+    default_motivations = [
+        ("find_partner", 3),
+        ("switch_partner", 3),
+        ("gain_mid", 2),
+        ("have_fun", 3),
+        ("earn_money", 2)
+    ]
+
     def __init__(self, name, race, sex, region, location, faction="None", partner=None, position="Variously Attached", loyalties=None,
         influence=7, strength=7, agility=10, intelligence=10, 
-        luck=0, psy=0, charisma=14, toughness=4, morale=0, fun=2, hunger=2, status=None, preferred_actions=None, **kwargs):
+        luck=0, psy=0, charisma=14, toughness=4, morale=0, fun=2, hunger=2, status=None, preferred_actions=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
 
@@ -911,14 +1011,15 @@ class Babe(Civilian):
             loyalties=default_loyalties,
             wallet=wallet,
             status=status,
+            motivations=motivations or self.default_motivations,
             **kwargs
         )
         
         self.influence = influence
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
+        
+        
         self.targetIsInMelee = False
-        self.tazerCharge = 0
+        
 
         """ self.cash = 1000
         self.bankCardCash = bankCardCash  """
@@ -962,7 +1063,17 @@ class Babe(Civilian):
 
 class Detective(Character): #Subordinate? Of the state?
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="The State", position="Cop", toughness=13, loyalties=None, fun=0, hunger=0, status=None, **kwargs):
+
+    default_motivations = [
+        ("patrol", 4),
+        ("investigate_crime", 5),  # add support in your FSM or GOAP
+        ("decrease_hostilities", 3),
+        ("snitch", 2),
+        ("find_safety", 4)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction="The State", position="Cop", toughness=13, loyalties=None, fun=0, hunger=0, status=None, motivations=None, **kwargs):
+        
 
         if status is None:
             status = CharacterStatus()
@@ -1015,13 +1126,14 @@ class Detective(Character): #Subordinate? Of the state?
             wallet=wallet,
             loyalties=default_loyalties,
             status=status,
+            motivations=motivations or self.default_motivations,
             **kwargs
         )
         
         # Weapon & Combat Attributes
-        self.pistolIsLoaded = False
-        self.pistolCurrentAmmo = 0
-        self.tazerCharge = 0
+        
+        
+        
         self.targetIsInMelee = False
         self.isAggressive = True
         self.targetIsInMelee = False
@@ -1049,9 +1161,19 @@ class Detective(Character): #Subordinate? Of the state?
         return Character.__repr__(self) + f", Faction: {self.faction}"
         
 class Taxman(Character):
+
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="State", position="Tax Official", preferred_actions=None, loyalties=None, fun=-1, hunger=0, status=None, **kwargs):
+
+    default_motivations = [
+        ("earn_money", 3),
+        ("virtue_signal", 2),
+        ("influence", 2),
+        ("find_safety", 3)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction="State", position="Tax Official", preferred_actions=None, loyalties=None, fun=-1, hunger=0, status=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
 
@@ -1084,7 +1206,7 @@ class Taxman(Character):
         super().__init__(
             name=name, race=race, sex=sex, region=region,
             location=location, faction=faction, wallet=wallet, loyalties=default_loyalties, fun=fun,
-            hunger=hunger, preferred_actions=preferred_actions, status=status, **kwargs
+            hunger=hunger, preferred_actions=preferred_actions, status=status, motivations=motivations or self.default_motivations, **kwargs
         )
         self.base_preferred_actions = {
             self.squeeze_taxes: "corporation"
@@ -1111,8 +1233,16 @@ class Taxman(Character):
 
 class Accountant(Character):
     is_concrete = True
-    def __init__(self, name, race, sex, region, location, faction="None", position="Accountant", loyalties=None, fun=0, hunger=0, status=None, **kwargs):
+
+    default_motivations = [
+        ("earn_money", 4),
+        ("find_safety", 3),
+        ("influence", 2)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction="None", position="Accountant", loyalties=None, fun=0, hunger=0, status=None, motivations=None, **kwargs):
         
+
         if status is None:
             status = CharacterStatus()
 
@@ -1145,7 +1275,7 @@ class Accountant(Character):
         super().__init__(
             name=name, race=race, sex=sex, faction=faction, region=region,
             location=location, wallet=wallet, loyalties=default_loyalties, fun=fun,
-            hunger=hunger, status=status, **kwargs
+            hunger=hunger, status=status, motivations=motivations or self.default_motivations, **kwargs
         )
         self.position = position
 

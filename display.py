@@ -73,7 +73,7 @@ def show_character_details(character):
     ],
 ]
         # Retrieve motivations, defaulting to an empty list if not found
-    motivations = getattr(character, "motivations", [])
+    motivations = character.motivation_manager.get_motivations()
 
     # Find the highest urgency value
     highest_urgency = max((m.urgency for m in motivations), default=0)
@@ -263,7 +263,7 @@ def display_state(state):
             character.name,
             class_name,
             character.location.name if character.location else "Unknown", #ALERT
-            ", ".join(character.initial_motivations)
+            ", ".join(m.type for m in character.motivation_manager.get_motivations())
         ])
 
     # Display tables
@@ -426,3 +426,5 @@ def compare_locations(all_locations, all_regions):
     else:
         pass
         #print("✅ All locations are correctly assigned in all_locations!")
+
+

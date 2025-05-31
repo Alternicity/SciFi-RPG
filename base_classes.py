@@ -12,6 +12,8 @@ from character_mind import Mind
 from character_thought import Thought
 from ai_utility import UtilityAI
 from character_memory import MemoryEntry, Memory, FactionRelatedMemory
+import uuid
+
 import time
 if TYPE_CHECKING:
     from location import Region
@@ -142,10 +144,9 @@ class Character(PerceptibleMixin):
         is_player=False,
         ai=None,
         wallet=None,
-        initial_motivations=None,
         motivations=None,
         preferred_actions=None,
-        behaviors=None,#possibly deprecate in favour of preferred_actions, as it overlaps
+        behaviors=None, #possibly deprecate in favour of preferred_actions, as it overlaps
         partner=None,
         fun=1,
         hunger=1,
@@ -171,6 +172,7 @@ class Character(PerceptibleMixin):
         #initialization code
         self.name = name
         self.is_player = False
+        self.is_test_npc = False  # Default to False
         if not self.is_player:
             
             self.ai = ai or UtilityAI(self)
@@ -203,7 +205,6 @@ class Character(PerceptibleMixin):
         self.behaviour_manager = BehaviourManager()
         self.posture = Posture.STANDING
         
-        
         self.memory = Memory()  # Handles both episodic and semantic memory now
 
         self.task_manager = TaskManager(self)
@@ -223,7 +224,7 @@ class Character(PerceptibleMixin):
         #self.mind = Mind(maxlen=self.intelligence)
         self.mind = Mind(owner=self, capacity=self.intelligence)
 
-        self._percepts = {}  # {percept_hash_or_id: {'data': ..., 'salience': int, 'timestamp': t}}
+        self._percepts = {}
         self.percepts_updated = False
 
         self.race = race
@@ -254,27 +255,19 @@ class Character(PerceptibleMixin):
         else:
             self.appearance["faction_semiotics"] = []
 
-        """ self.needs = kwargs.get("needs", {"physiological": 10, "safety": 8, "love_belonging": 7, "esteem": 5,
-            "self_actualization": 2,})  # Example defaults """
-        
-        self.initial_motivations = initial_motivations or []
-        from motivation import MotivationManager
-        self.motivation_manager = MotivationManager(self)
 
-        #deprecated?
-        # If using Motivation objects directly, no need to unpack
-        for m in self.initial_motivations:
-            if isinstance(m, str):
-                #print(f"[MOTIVATION] Adding from string: {m} (urgency=1)")
-                self.motivation_manager.update_motivations(m, 1)
-            elif isinstance(m, tuple):
-                #print(f"[MOTIVATION] Adding from tuple: {m[0]} (urgency={m[1]})")
-                self.motivation_manager.update_motivations(m[0], m[1])
-            elif hasattr(m, "type") and hasattr(m, "urgency"):
-                #print(f"[MOTIVATION] Adding Motivation object: {m.type} (urgency={m.urgency})")
-                self.motivation_manager.update_motivations(m.type, m.urgency)
-            else:
-                print(f"[WARN] Unknown motivation format: {m}")
+        from motivation import MotivationManager, Motivation
+
+        self.motivation_manager = MotivationManager(self)
+        if motivations:
+            for m in motivations:
+                if isinstance(m, Motivation):
+                    self.motivation_manager.motivations.append(m)
+                else:
+                    # assume tuple (type, urgency)
+                    self.motivation_manager.update_motivations(m[0], m[1])
+
+        
 
         self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
         #status loss, or lack of money, or tasks failed, or baf personal events
@@ -316,6 +309,12 @@ class Character(PerceptibleMixin):
         self.morale = morale
         self.status = status  # Add status here
         
+        # Check for accidental shadowing of the motivations property
+        if "motivations" in self.__dict__:
+            print(f"[WARNING] motivations instance attribute exists on {self.name}. Full traceback:")
+            print("\n" + "="*30 + f"\n[WARNING] motivations shadowed on {self.name}\n" + "="*30)
+            traceback.print_stack()
+
         if sex not in self.VALID_SEXES:
             raise ValueError(
                 f"Invalid sex: {sex}. Valid options are {self.VALID_SEXES}"
@@ -330,8 +329,7 @@ class Character(PerceptibleMixin):
         """ if not self.faction:
             raise ValueError("Faction must be specified for a character.") """
         #remove 
-        self.primary_weapon = None
-        self.weapons = []
+        
         self.health = 100 + toughness
         
         from InWorldObjects import Wallet
@@ -357,6 +355,14 @@ class Character(PerceptibleMixin):
         combined.update(self.preferred_actions)  # Individual prefs override base
         return combined
     
+    @property
+    def motivations(self):
+        return self.motivation_manager.get_motivations()
+
+    @motivations.setter
+    def motivations(self, value):
+        raise AttributeError("Use 'motivation_manager.update_motivations()' instead of setting motivations directly.")
+
     def get_attribute(self, name):
         return getattr(self, name, 0)  # default to 0 if not found
 
@@ -375,6 +381,14 @@ class Character(PerceptibleMixin):
             "time": "now",  # or use game clock
             "status": task.status,
         })
+
+    """ def convert_legacy_motivations(motivations):
+        if isinstance(motivations, dict):
+            print(f"[INFO] Legacy initial_motivations format used.")
+            print("[TRACE] Where legacy format was passed:")
+            traceback.print_stack(limit=5)
+            return list(motivations.items())
+        return motivations """
 
     def receive_task(self, task):
         self.tasks.append(task)
@@ -404,13 +418,17 @@ class Character(PerceptibleMixin):
         parts.append(self.race)
         parts.append(self.sex)
 
-        clothing = self.appearance.get("clothing")
+        clothing = self.appearance.get("clothing", "indistinct clothing")
         if clothing:
             parts.append(f"wearing {clothing}")
 
         features = self.appearance.get("notable_features", [])
         if features:
             parts.extend(features)
+
+        faction_clues = self.appearance.get("faction_semiotics", [])
+        if faction_clues:
+            parts.append(f"faction symbols: {', '.join(faction_clues)}")
 
         return " ".join(filter(None, parts))
     
@@ -443,15 +461,6 @@ class Character(PerceptibleMixin):
     def motivations(self):
         """Returns motivations in a formatted way for display."""
         return self.motivation_manager.get_motivations()
-
-    def update_motivations(self, name=None, urgency=None):
-        """Updates or adds a motivation manually or in bulk logic if no arguments are passed."""
-        if name and urgency is not None:
-            self.motivations[name] = urgency
-            return
-        # Existing automatic logic can stay here
-        if not self.motivations:
-            self.motivations["earn_money"] = 5
     
     def get_percept_data(self, observer=None):
         #You can abstract this into a helper method later
@@ -478,35 +487,49 @@ class Character(PerceptibleMixin):
             "salience": salience
         }
 
-    def observe(self, nearby_objects: list):
+    def observe(self, nearby_objects=None, target=None, region=None, location=None):
+        print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
+
         if nearby_objects is None:
-            nearby_objects = self.get_nearby_objects()
+            from worldQueries import get_nearby_objects
+            nearby_objects = get_nearby_objects(self, region, location)
 
         new_percepts = {}
+
+        # Clear existing percepts or comment out if you want to accumulate
+        # self._percepts.clear()
+
         for obj in nearby_objects:
             if isinstance(obj, PerceptibleMixin):
                 percept = obj.get_percept_data(observer=self)
                 if percept:
-                    key = percept["description"]
-                    new_percepts[key] = {'data': percept, 'salience': percept["salience"]}
+                    # Use obj.id as dictionary key (string, hashable)
+                    new_percepts[obj.id] = percept
 
-        # Self-perception
+                    print(f"[Observe] Found perceptible: {obj} → {percept['description']}")
+                    print(f"[Observe] {self.name} perceived: {percept['description']} with salience {percept['salience']}")
+
+        # Self-perception - store under special key 'self'
         self_percept = self.get_percept_data(observer=self)
         if self_percept:
             new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
 
+        # Replace old percepts with the new dict keyed by IDs
         self._percepts = new_percepts
+
         self.percepts_updated = True
-            
+        print(f"[Observe, last line] {self.name} now has {len(self._percepts)} percepts.")
+
+
     @property
     def percepts(self):
         """Dynamically generates percepts with actionable hints. allows behavior trees or utility-based AI 
-        to “poll” the characters perception of the world without storing stale data. It’s like their short-term
+        to “poll” the characters perception of the world without storing stale data. Its like their short-term
           awareness. percepts are what the character is noticing right now."""
         #types> characters, events, utility, factions, locations, regions, chainOfActions
         #percepts, must include actual object references for the "origin" field
 
-        updated_percepts = {}
+        updated_percepts = {} #not accessed, deprecated?
 
         #should the following code be moved elsewhere out of class Character, it looks like placeholder code that
         #would need to grow very long.
@@ -538,7 +561,7 @@ class Character(PerceptibleMixin):
     def percepts(self, new_percepts):
         """Allows setting percepts."""
         if isinstance(new_percepts, dict):
-            self._percepts = new_percepts
+            self._percepts = new_percepts ##Try Without
         else:
             raise ValueError("Percepts must be a dict..")
         #Something here needs to convert percepts into think() creating Thought object and memories
@@ -564,6 +587,16 @@ class Character(PerceptibleMixin):
             sorted_items = sorted(self._percepts.items(), key=lambda kv: kv[1]['salience'], reverse=True)
             self._percepts = dict(sorted_items[:self.observation])
 
+    def get_percepts(self, sort_by_salience=True) -> list[dict]:
+        """
+        Returns a list of percept dictionaries, optionally sorted by salience (descending).
+        """
+        percepts = list(self._percepts.values())
+
+        if sort_by_salience:
+            percepts = sorted(percepts, key=lambda p: p.get('salience', 0), reverse=True)
+
+        return percepts
     
 
     @property
@@ -677,7 +710,15 @@ class Character(PerceptibleMixin):
         """Get the current location within the region."""
         return self.location.location
 
+        #About the Underscore _
+        """ Yes — the leading underscore isn't magical, but it's a common convention meaning “internal use only”. It helps:
+        Avoid name clashes with properties (self._motivations vs self.motivations)
+        Signal “dont touch this unless you know what youre doing”
+        Work nicely with @property decorators """
 
+
+
+        
 
 class SelfAwarenessLevel:
     ANIMAL = 0        # Instinctual
@@ -691,6 +732,7 @@ class SelfAwarenessLevel:
 @dataclass
 class Location(PerceptibleMixin):
     name: str = "Unnamed Location"
+    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional['Region'] = None
     child_location: Optional['Location'] = None  # Specific location within the location
     
@@ -718,6 +760,31 @@ class Location(PerceptibleMixin):
     employees_there: list = field(default_factory=list)
     # Instance-specific categories field
     categories: List[str] = field(default_factory=list) #ALERT
+
+    def has_security(self):
+        return False
+
+    @property
+    def security_level(self):
+        return 0
+
+
+    def get_percept_data(self, observer=None):
+        tags = ["location"]
+        salience = 1
+
+        if self.security and self.security.level > 1:
+            tags.append("secure")
+
+        return {
+            "description": f"{self.name} (Location)",
+            "origin": self,
+            "urgency": 1,
+            "tags": tags,
+            "source": None,
+            "salience": salience
+        }
+
 
     def get_menu_options(self, character):
         """Returns only the static menu options defined in a location."""
@@ -751,10 +818,13 @@ class Location(PerceptibleMixin):
         self.entrance.extend(entrance)
         print(f"entrance added to {self.name}: {', '.join(entrance)}")
 
+    def has_item(self, item_name: str) -> bool:
+        return any(obj.name.lower() == item_name.lower() for obj in self.objects_present)
+
     def to_dict(self):
         return {"name": self.name, "region": self.region.name if self.region else "None"}
 
 
     def __repr__(self):
-        return self.name  # Just return the name directly
+        return f"{self.name}"  # Just return the name directly
 

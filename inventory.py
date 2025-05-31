@@ -17,7 +17,9 @@ class Inventory:
         self.items = {}  # key: item.name, value: item object
         self.max_capacity = max_capacity
         self.owner = owner
-        
+        self.primary_weapon = None
+        self.weapons = []
+
         if items:
             for item in items:
                 self.add_item(item)
@@ -57,7 +59,7 @@ class Inventory:
 
             # Weapon logic
             if isinstance(item, Weapon) and self.owner:
-                self.owner.weapons.append(item)
+                self.weapons.append(item)
                 self.update_primary_weapon()
 
         else:
@@ -67,7 +69,7 @@ class Inventory:
 
             # Weapon logic
             if isinstance(item, Weapon) and self.owner:
-                self.owner.weapons.append(item)
+                self.weapons.append(item)
                 self.update_primary_weapon()
 
         return True
@@ -110,8 +112,7 @@ class Inventory:
                     print(f"{self.owner.name} now has no primary weapon.")
 
         return True
-
-        
+ 
     def display_inventory(self):
         if not self.items:
             print("Inventory is empty.")
@@ -126,20 +127,22 @@ class Inventory:
             return "(inv Empty)"
         return ", ".join(f"{item.name} (x{getattr(item, 'quantity', 1)})" for item in self.items.values())
 
-
     # make Inventory itself iterable:
     def __iter__(self):
         return iter(self.items.values())
 
     def update_primary_weapon(self):
-        if not self.owner or not self.owner.weapons:
+        if not self.owner or not self.weapons:
             return
 
-        best_weapon = max(self.owner.weapons, key=lambda w: getattr(w, "damage", 0))
-        if self.owner.primary_weapon != best_weapon:
-            self.owner.primary_weapon = best_weapon
+        best_weapon = max(self.weapons, key=lambda w: getattr(w, "damage", 0))
+        if self.primary_weapon != best_weapon:
+            self.primary_weapon = best_weapon
             print(f"{self.owner.name}'s primary weapon is now {best_weapon.name}.")
-
+            
+    def has_ranged_weapon(self):
+        from weapons import RangedWeapon
+        return isinstance(self.primary_weapon, RangedWeapon)
 
 # Example Usage
 if __name__ == "__main__":

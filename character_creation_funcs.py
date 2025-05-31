@@ -72,7 +72,7 @@ def player_character_options(all_regions, factions):
         "location_name": "Hannival HQ",
         "wallet": Wallet(bankCardCash=500),
         "preferred_actions": {},
-        "initial_motivations": MotivationPresets.for_class("Manager"),  # new
+        "motivations": MotivationPresets.for_class("Manager"),  # new
         "status_data": {
             "corporate": {"level": StatusLevel.MID, "title": "Manager"},
             "public": {"level": StatusLevel.LOW, "title": "Suit"}
@@ -90,7 +90,7 @@ def player_character_options(all_regions, factions):
         "inventory": Inventory([Knife(owner_name="Swiz")]),
         "wallet": Wallet(bankCardCash=50),
         "preferred_actions": {"Rob": 1, "Steal": 2},
-        "initial_motivations": MotivationPresets.for_class("GangMember"),
+        "motivations": MotivationPresets.for_class("GangMember"),
         "custom_skills": {"stealth": 12, "observation": 6},
         "primary_status_domain": "criminal",
         "status_data": {
@@ -161,7 +161,7 @@ def instantiate_character(char_data, all_regions, factions):
     if region is None:
         print(f"❌ ERROR: No region found with name '{region_name}'")
 
-    motivation_objects = char_data.get("initial_motivations", [])
+    motivation_objects = char_data.get("motivations", [])
 
     # Build status if data is provided
     status = None
@@ -185,7 +185,7 @@ def instantiate_character(char_data, all_regions, factions):
     fun=1,
     hunger=3,
     preferred_actions=char_data.get("preferred_actions", {}),
-    initial_motivations=motivation_objects,  # pass weighted tuples
+    motivations=motivation_objects,
     custom_skills=char_data.get("custom_skills"),
     status=status
 )
@@ -204,7 +204,7 @@ def instantiate_character(char_data, all_regions, factions):
         for item in character.inventory.items.values():
             item.owner_name = character.name
             if isinstance(item, Weapon):
-                character.weapons.append(item)
+                character.inventory.weapons.append(item)
 
         character.inventory.update_primary_weapon()
         #print(f"Post-instantiation inventory for {character.name}:")

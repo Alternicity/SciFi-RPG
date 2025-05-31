@@ -104,14 +104,22 @@ class MotivationManager:
     def get_urgent_motivations(self, threshold=7):
         return [m for m in self.motivations if m.urgency >= threshold]
 
+    def sorted_by_urgency(self, descending=True):
+        """Returns motivations sorted by urgency."""
+        return sorted(self.motivations, key=lambda m: m.urgency, reverse=descending)
 
+    def has(self, motivation_type):
+        return any(m.type == motivation_type for m in self.motivations)
 
+    def resolve_motivation(self, type_name: str):
+        self.motivations = [m for m in self.motivations if m.type != type_name]
 
+    def reduce_urgency(self, type_name: str, amount=1):
+        for m in self.motivations:
+            if m.type == type_name:
+                m.urgency = max(0, m.urgency - amount)
 
-
-
-
-
-    
+    def has_motivation(self, motivation_type):
+        return any(m.type == motivation_type for m in self.get_motivations())
 
     

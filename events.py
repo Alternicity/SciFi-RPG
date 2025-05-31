@@ -1,3 +1,5 @@
+from dataclasses import field
+import uuid
 from distributions import generate_normal, generate_black_swan
 from combat import calculate_intimidation_score, calculate_resistance_score
 from characterActionTests import IntimidationTest
@@ -341,14 +343,20 @@ class Robbery(Event):
 
         #Should the below witness memory and thought go through the percept setter?
 
-        witness.memory.append(MemoryEntry(
+        witness.memory.add_entry(MemoryEntry(
+            subject=self.instigator,
+            details="Robbery witnessed",
+            importance=3,
             event_type="crime_observed",
             target=self.instigator,
-            approx_identity = self.instigator.get_appearance_description(),
-            description = f"Witnessed a {appearance} commit a robbery at {self.location.name}"
+            approx_identity=self.instigator.get_appearance_description(),
+            description=f"Witnessed a {appearance} commit a robbery at {self.location.name}"
         ))
 
-        if getattr(witness, "observation", 0) >= 2: #DOES THIS BLOCK WORK, IS INDENTED BELOW for witness in witnesses:
+        print(f"[MEMORY] {witness.name} will remember this episode involving {self.instigator.name} at {self.location.name}.")
+        #todo, do they know his name though?
+
+        if getattr(witness, "observation", 0) >= 2:
             witness.alert = True
             reactions.append((
                 witness.name,

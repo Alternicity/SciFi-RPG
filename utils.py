@@ -138,8 +138,9 @@ def normalize_location_regions(all_locations, all_regions):
     Ensures all Location objects reference a Region object, not a string.
     Fixes any locations with region as a str by matching it to a Region by name.
     """
-    from location import Region  # or wherever your Region class is
+    from location import Region  # Ensure you're importing the right Region class
 
+    # First pass: fix string -> Region
     for loc in all_locations:
         if isinstance(loc.region, str):
             region_name = loc.region.strip().lower()
@@ -153,6 +154,21 @@ def normalize_location_regions(all_locations, all_regions):
                 matched_region.add_location(loc)
             else:
                 print(f"⚠️ Could not resolve region '{loc.region}' for location '{loc.name}'")
+
+    # 🩹 Fallback fix in case some regions are still not Region objects
+    for loc in all_locations:
+        if not isinstance(loc.region, Region):
+            region_name = str(loc.region).strip().lower()
+            matched_region = next(
+                (r for r in all_regions if r.name.strip().lower() == region_name),
+                None
+            )
+            if matched_region:
+                print(f"🔧 Fallback assigning Region object to {loc.name} (was '{loc.region}')")
+                loc.region = matched_region
+                matched_region.add_location(loc)
+
+            
 
                 
 #For displaying or logging wallet values:

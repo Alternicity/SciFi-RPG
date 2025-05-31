@@ -19,7 +19,7 @@ class Memory:
 
     def promote_to_semantic(self, entry):
         if entry in self.episodic:
-            self.episodic.remove(entry)
+            print(f"[MEMORY] Promoted to semantic: '{entry.description}' about {getattr(entry.target, 'name', entry.target)}. Tags: {entry.tags}. Importance: {entry.importance}.")
         self.semantic.append(entry)
 
     def recent(self, count=5):
@@ -36,7 +36,7 @@ class Memory:
         return f"Memory of {self.subject}: {self.details} (Importance: {self.importance}, Tags: {self.tags})" """
     
 class MemoryEntry:
-    def __init__(self, subject, details, importance=1, timestamp=None, tags=None, event_type=None, target=None, description=None):
+    def __init__(self, subject, details, importance=1, timestamp=None, tags=None, event_type=None, target=None, description=None, approx_identity=None):
         self.subject = subject
         self.details = details
         self.importance = importance
@@ -46,6 +46,7 @@ class MemoryEntry:
         self.target = target #target can be a string or an object with a .name attribute.
         self.description = description or details
         self.approx_identity = None  # Optional fuzzy match value
+        self.approx_identity = approx_identity
         self.further_realizations = [] # when character think() about this memory, they might unlock an insight here
         self.similarMemories = [] #for pattern spotting. "Shes done this before..."
     """ Memory Decay System

@@ -2,7 +2,7 @@ from __future__ import annotations
 import random
 import string
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field, field, field, asdict
+from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional, Any, Union
 import logging
 from faction import Faction
@@ -10,17 +10,14 @@ from faction import Faction
 from base_classes import Character, Location, Faction
 from location_security import Security
 from InWorldObjects import CashRegister
-import uuid
-from dataclasses import dataclass, field, field, field
 
 logging.basicConfig(level=logging.INFO)
 
 from common import DangerLevel #this was commented out once, probs for a circular imprt problem..
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class Region:
     name: str
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     wealth: str = "Normal"
     shops: List[str] = field(default_factory=list)
     locations: List[Location] = field(default_factory=list)
@@ -50,11 +47,6 @@ class Region:
     
 @dataclass
 class UndevelopedRegion(Region):
-
-    def has_security(self):
-        return False
-    is_open: bool = True
-    security_level: int = 0
     name: str
     locations: List[str] = field(default_factory=list)
     factions: List[str] = field(default_factory=list)
@@ -63,13 +55,6 @@ class UndevelopedRegion(Region):
 
 @dataclass
 class VacantLot(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
-
-    def has_security(self):
-        return False
-    
-    is_open: bool = True
-    security_level: int = 0
     name: str = "Empty Land"
     categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 0
@@ -95,11 +80,6 @@ class VacantLot(Location):
 
 @dataclass
 class HQ(Location):
-
-    def has_security(self):
-        return False
-    
-    is_open: bool = True
     name: str = "Base"
     faction: Optional[Faction] = field(default=None)
     items_available: List[str] = field(default_factory=list) 
@@ -140,13 +120,6 @@ class HQ(Location):
 
 @dataclass
 class Vendor(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
-
-    def has_security(self):
-        return False
-    
-    is_open: bool = True
-    security_level: int = 0
     items_available: list = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = False
@@ -180,9 +153,7 @@ from inventory import Inventory
 from characters import Employee
 @dataclass
 class Shop(Vendor):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "QQ Store"
-    
     legality: bool = True
     employees_there: List['Employee'] = field(default_factory=list)
     characters_there: List['Character'] = field(default_factory=list)
@@ -214,6 +185,7 @@ class Shop(Vendor):
         surveillance=False,
         alarm_system=False
     ))
+
     def get_percept_data(self, observer=None):
         return {
             "description": f"Shop: {self.name}",
@@ -268,9 +240,7 @@ class Shop(Vendor):
 
 @dataclass
 class CorporateStore(Vendor):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Stores"
-    
     corporation: str = "Default"  # Default value is now valid
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[str] = field(default_factory=list)
@@ -287,6 +257,7 @@ class CorporateStore(Vendor):
         surveillance=False,
         alarm_system=False
     ))
+
     cash: int = 1000
     bankCardCash: int = 0
     inventory: dict = field(default_factory=dict)
@@ -327,12 +298,48 @@ class CorporateStore(Vendor):
         else:
             print(f"{character.name} does not have sufficient status to buy {item}")
 
+@dataclass
+class RepairWorkshop(Location, ABC):
+    materials_required: List[str] = field(default_factory=list)
+    items_available: List[Any] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
+    is_concrete: bool = False
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
 
-@dataclass(unsafe_hash=True)
-class MechanicalRepairWorkshop(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
+    def get_percept_data(self, observer=None): #intermediary
+        return {
+            "type": "RepairWorkshop",
+            "name": self.name,
+            "region": self.region.name if self.region else None,
+            "description": f"RepairWorkshop: {self.name}",
+            "robbable": True,
+            "origin": self,
+            "urgency": 1,
+            "tags": ["location", "tools"],
+            "source": None,
+            "salience": 2,
+            "security": self.security_level,
+            "is_open": self.is_open,
+            "has_security": self.has_security(),
+            "salience": 12
+        }
+
+    def to_dict(self):
+        return asdict(self)
+
+    @abstractmethod
+    def repair_item(self, item):
+        """Repair the given item (to be implemented in subclasses)."""
+        pass
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
+
+@dataclass
+class MechanicalRepairWorkshop(RepairWorkshop):
     name: str = "Greasehands"
-    
     items_available: list = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     # Inherit materials_required from the parent class (RepairWorkshop)
@@ -342,6 +349,7 @@ class MechanicalRepairWorkshop(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -380,11 +388,9 @@ class MechanicalRepairWorkshop(Location):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
 
-@dataclass(unsafe_hash=True)
-class ElectricalRepairWorkshop(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
+@dataclass
+class ElectricalRepairWorkshop(RepairWorkshop):
     name: str = "Sparks"
-    
     materials_required: List[str] = field(default_factory=list)  # An empty list
     items_available: List[Any] = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -394,6 +400,7 @@ class ElectricalRepairWorkshop(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -435,9 +442,7 @@ class ElectricalRepairWorkshop(Location):
 
 @dataclass
 class Stash(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Secret Stash 1"
-    
     legality: bool = False
     items_available: List[Any] = field(default_factory=list)
     stored_items: List[str] = field(default_factory=list)
@@ -457,6 +462,7 @@ class Stash(Location):
         surveillance=False,
         alarm_system=False
     ))
+
     def get_percept_data(self, observer=None):
         return {
             "type": "Stash",
@@ -496,9 +502,7 @@ class Stash(Location):
 
 @dataclass
 class Factory(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "The Old Factory"
-    
     goods_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
     items_available: List[Any] = field(default_factory=list)
@@ -508,6 +512,7 @@ class Factory(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -553,9 +558,7 @@ class Factory(Location):
 
 @dataclass
 class Nightclub(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Music and Slappers"
-    
     fun: int = 1
     items_available: List[Any] = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -564,6 +567,7 @@ class Nightclub(Location):
     secret_entrance: bool = True
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -613,9 +617,7 @@ class Nightclub(Location):
 
 @dataclass
 class Mine(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Typical Mine"
-    
     fun: int = 0
     items_available: List[Any] = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -624,6 +626,7 @@ class Mine(Location):
     secret_entrance: bool = True
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -667,9 +670,7 @@ class Mine(Location):
 
 @dataclass
 class Powerplant(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Le PowerPlant 1"
-    
     energy_output: int = 1000
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[Any] = field(default_factory=list)
@@ -680,6 +681,7 @@ class Powerplant(Location):
     fun: int = -1
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -749,9 +751,7 @@ class Powerplant(Location):
 
 @dataclass
 class Airport(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Air Port 1"
-    
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
@@ -763,6 +763,7 @@ class Airport(Location):
     fun: int = 0
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -865,9 +866,7 @@ class Airport(Location):
 
 @dataclass
 class Port(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Edge Port"
-    
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
@@ -879,6 +878,7 @@ class Port(Location):
     fun: int = 0
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -982,9 +982,7 @@ class Port(Location):
 
 @dataclass
 class Factory(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Default Factory Name"
-    
     raw_materials_needed: int = 100
     output_rate: int = 100
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -998,6 +996,7 @@ class Factory(Location):
     fun: int = -1
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1046,9 +1045,7 @@ class Factory(Location):
 
 @dataclass
 class Cafe(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Metro Cafe"
-    
     upkeep: int = 10
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -1057,6 +1054,7 @@ class Cafe(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1104,9 +1102,7 @@ def __repr__(self):
 
 @dataclass
 class Park(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Green Park"
-    
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     upkeep: int = 15
     ambiance_level: int = 1
@@ -1115,6 +1111,7 @@ class Park(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1151,9 +1148,7 @@ class Park(Location):
 
 @dataclass
 class Museum(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "City Museum"
-    
     upkeep: int = 45
     artifact_count: int = 50
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -1163,6 +1158,7 @@ class Museum(Location):
     secret_entrance: bool = True
     is_powered: bool = True
     energy_cost: int = 100
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1198,9 +1194,7 @@ class Museum(Location):
 
 @dataclass
 class Library(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Public Library"
-    
     categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 20
     book_count: int = 10000
@@ -1210,6 +1204,7 @@ class Library(Location):
     secret_entrance: bool = False
     is_powered: bool = True
     energy_cost: int = 50
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1245,9 +1240,7 @@ class Library(Location):
 
 @dataclass
 class ResearchLab(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "OmniLab"
-    
     prototypes_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
     equipment_list: List[str] = field(default_factory=list) #An empty list but lab must have something here
@@ -1257,6 +1250,7 @@ class ResearchLab(Location):
     secret_entrance: bool = True
     is_powered: bool = False
     energy_cost: int = 50
+
     security: Security = field(default_factory=lambda: Security(
         level=3,
         guards=[],
@@ -1302,9 +1296,7 @@ class ResearchLab(Location):
 
 @dataclass
 class Warehouse(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Warehouse 5"
-    
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     storage_capacity: int = 50 # will need to upgrade to a more complex data structure
@@ -1313,6 +1305,7 @@ class Warehouse(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 10
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1348,9 +1341,7 @@ class Warehouse(Location):
 
 @dataclass
 class ApartmentBlock(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Mass Housing"
-    
     upkeep: int = 35
     categories: List[str] = field(default_factory=lambda: ["residential"])
     storage_capacity: int = 50 # LOL, will need to upgrade to a more complex data structure
@@ -1359,6 +1350,7 @@ class ApartmentBlock(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 30
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1400,9 +1392,7 @@ class ApartmentBlock(Location):
 
 @dataclass
 class House(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Fam House"
-    
     categories: List[str] = field(default_factory=lambda: ["residential"])
     upkeep: int = 5
     fun: int = 1
@@ -1419,6 +1409,7 @@ class House(Location):
     ))
     def to_dict(self):
         return asdict(self)
+
     def get_percept_data(self, observer=None):
         return {
             "type": "House",
@@ -1449,9 +1440,7 @@ class House(Location):
 
 @dataclass
 class SportsCentre(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "The Stadium"
-    
     upkeep: int = 30
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -1460,6 +1449,7 @@ class SportsCentre(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1501,9 +1491,7 @@ class SportsCentre(Location):
 
 @dataclass
 class Holotheatre(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Zodeono"
-    
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -1512,6 +1500,7 @@ class Holotheatre(Location):
     secret_entrance: bool = False
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1553,9 +1542,7 @@ class Holotheatre(Location):
 
 @dataclass
 class MunicipalBuilding(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
-    name: str = "City Hall"
-    
+    name: str = "City Hall" 
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
@@ -1565,6 +1552,7 @@ class MunicipalBuilding(Location):
     secret_entrance: bool = True
     is_powered: bool = True
     energy_cost: int = 100
+
     security: Security = field(default_factory=lambda: Security(
         level=2,
         guards=[],
@@ -1601,9 +1589,7 @@ class MunicipalBuilding(Location):
 
 @dataclass
 class PoliceStation(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "The Yard"
-    
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)
@@ -1614,6 +1600,7 @@ class PoliceStation(Location):
     secret_entrance: bool = True
     is_powered: bool = False
     energy_cost: int = 0
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],

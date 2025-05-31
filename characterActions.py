@@ -9,7 +9,7 @@ from visual_effects import loading_bar, RED, color_text
 from conversation import Conversation
 
 from typing import Dict, Tuple, Any
-from weapons import Weapon
+from weapons import Weapon, RangedWeapon
 # In characterActions.py
 #from combat_actions import combat_actions placeholders
 #from stealth_actions import stealth_actions
@@ -88,48 +88,47 @@ def visit_location(character, location=None):
         if not location:  # If no valid location is selected, return early
             print("Error: No location was chosen! Returning to main menu.")
             return
-    #is the following code now deprecated? choose_location(region) has already been called..
-    choice = display_menu(locations)
-    if not choice:
-        print("Returning to the main menu.")
-        return
-    location = locations[choice][1]()  # Retrieve the selected location object
+        
+    if character.is_player: #new
+
+        #is the following code now deprecated? choose_location(region) has already been called..
+        choice = display_menu(locations)
+        if not choice:
+            print("Returning to the main menu.")
+            return
+        location = locations[choice][1]()  # Retrieve the selected location object
+        
+        #the following code is essential
+        character.location = location
+        location.characters_there.append(character)
+        print(f"{character.name} enters {location.name} in {character.region}.")
+
+        if not location:  # If no valid location is selected, exit
+            print("Error: No location was chosen!")
+
+            return
     
-    #the following code is essential
-    character.location = location
-    location.characters_there.append(character)
-    print(f"{character.name} enters {location.name} in {character.region}.")
-
-    """ if isinstance(location, Shop):
-        print(f"🧾 {location.name} shows you their current stock:")
-        location.debug_print_inventory() """
-
-    if not location:  # If no valid location is selected, exit
-        print("Error: No location was chosen!")
-
-        return
-    
 
 
-    # This code relates to dynamic menu options, does it belong in visit_location?
-    options = get_available_options(location, character)  # Ensures options is a dict
-    if not options:  # Prevent passing an empty list or dict
-        print(f"There is nothing to do at {location.name}.")
-        return
-    
-    print(f"Debug: from visit_location() - options type before display_menu() call: {type(options)}, value: {options}")
-    while True:#This keeps the player in the location menu until they choose to leave
-        choice = display_menu(options)  # Ensure display_menu gets a dict
-    
-        if choice and choice in options:
-            _, action_func = options[choice]
-            action_func()
+        # This code relates to dynamic menu options, does it belong in visit_location?
+        options = get_available_options(location, character)  # Ensures options is a dict
+        if not options:  # Prevent passing an empty list or dict
+            print(f"There is nothing to do at {location.name}.")
+            return
+        
+        print(f"Debug: from visit_location() - options type before display_menu() call: {type(options)}, value: {options}")
+        while True:#This keeps the player in the location menu until they choose to leave
+            choice = display_menu(options)  # Ensure display_menu gets a dict
+        
+            if choice and choice in options:
+                _, action_func = options[choice]
+                action_func()
 
-        # Optionally, allow the player to return to location selection
-            leave_option = next((key for key, (desc, _) in options.items() if "leave" in desc.lower()), None)
-            if choice == leave_option:
-                print(f"{character.name} leaves {location.name}.")
-                return
+            # Optionally, allow the player to return to location selection
+                leave_option = next((key for key, (desc, _) in options.items() if "leave" in desc.lower()), None)
+                if choice == leave_option:
+                    print(f"{character.name} leaves {location.name}.")
+                    return
         
 def choose_location(character, region):
     """Displays available locations and allows player to select one."""
@@ -174,6 +173,9 @@ def select_item_to_buy(shop):
 
     choice = get_menu_choice_from_list(item_names, "Select an item to buy:")
     return choice
+
+def idle(npc, region, **kwargs):
+    pass
 
 def buy(character, shop, item):
     from location import Shop
@@ -344,10 +346,10 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
         print(f"{character.name} SUCCESSFULLY steals {stolen_item.name} from {location.name}.")
         character.inventory.add_item(stolen_item)
 
-        if isinstance(stolen_item, Weapon):
+        if isinstance(stolen_item, RangedWeapon):
             character.inventory.update_primary_weapon()
         
-        character.update_motivations()
+        character.motivation_manager.resolve_motivation("steal_object")
 
         if hasattr(stolen_item, "intimidate"):
             character.skill["intimidation"] = character.skill.get("intimidation", 0) + stolen_item.intimidate
@@ -399,7 +401,7 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
         
         if isinstance(stolen_item, Weapon):
             character.inventory.update_primary_weapon()
-        character.update_motivations()
+        character.motivation_manager.resolve_motivation("obtain_ranged_weapon")
 
         # Update intimidation if item has intimidate attribute
         if hasattr(stolen_item, "intimidate"):
