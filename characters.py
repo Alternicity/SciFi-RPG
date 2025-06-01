@@ -59,7 +59,8 @@ class Boss(Character):
         
     
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -118,7 +119,8 @@ class CEO(Character):
         self.inventory = inventory
         
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     def issue_directive(self, directive):
         print(f"{self.name} (CEO) issues directive: {directive}")
@@ -170,7 +172,8 @@ class Captain(Character):
         )
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -247,8 +250,8 @@ class Manager(Character):
         return base
 
     def __repr__(self):
-        return f"{self.name} (Faxction: {self.faction.name if self.faction else 'None'}, Cash: {self.bankCardCash}, Fun: {self.fun}, Hunger: {self.hunger})"
-
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
     
 class Subordinate(Character):
     is_concrete = False
@@ -305,7 +308,8 @@ class Employee(Subordinate):
         )
         
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -357,7 +361,8 @@ class CorporateSecurity(Subordinate):
         self.bankCardCash = 100 """
         
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -430,7 +435,8 @@ class CorporateAssasin(CorporateSecurity):
             return base
         
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
     
     @property
     def whereabouts(self):
@@ -503,7 +509,8 @@ class GangMember(Subordinate):
         return base
         
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
     
     @property
     def whereabouts(self):
@@ -575,7 +582,8 @@ class RiotCop(Character):
           # List to store items in the character's inventory
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -646,7 +654,8 @@ class Civilian(Character):
         self.inventory = kwargs.get("inventory", [])
     
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -752,7 +761,8 @@ class VIP(Civilian):
         return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     
 class Child(Civilian):
@@ -829,7 +839,8 @@ class Child(Civilian):
         self.position = position
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -936,7 +947,8 @@ class Influencer(Civilian):
         self.position = position
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     @property
     def whereabouts(self):
@@ -1034,7 +1046,8 @@ class Babe(Civilian):
         }
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
     
     @property
     def whereabouts(self):
@@ -1158,7 +1171,8 @@ class Detective(Character): #Subordinate? Of the state?
                                                     #  (region, location, sublocation).
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
         
 class Taxman(Character):
 
@@ -1223,7 +1237,8 @@ class Taxman(Character):
         print(f"{self.name} squeezes taxes from {target}!")
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
     
 
     @property
@@ -1283,7 +1298,8 @@ class Accountant(Character):
     
 
     def __repr__(self):
-        return Character.__repr__(self) + f", Faction: {self.faction}"
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
 
     
     @property

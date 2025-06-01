@@ -12,13 +12,14 @@ from location_security import Security
 from InWorldObjects import CashRegister
 import uuid
 from dataclasses import dataclass, field, field, field
+from perceptibility import PerceptibleMixin
 
 logging.basicConfig(level=logging.INFO)
 
 from common import DangerLevel #this was commented out once, probs for a circular imprt problem..
 
 @dataclass
-class Region:
+class Region(PerceptibleMixin):
     name: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     wealth: str = "Normal"
@@ -31,6 +32,18 @@ class Region:
     turf_war_triggered: bool = False
     characters_there: List = field(default_factory=list)
     region_corps: List = field(default_factory=list)
+
+    def __post_init__(self):
+        PerceptibleMixin.__init__(self)
+
+    def get_percept_data(self, observer=None):
+        return {
+            "description": f"Region: {self.name}, Wealth: {self.wealth}",
+            "origin": self,
+            "salience": self.compute_salience(observer),
+            "danger_level": str(self.danger_level) if self.danger_level else "Unknown"
+        }
+
 
 #Each region will contain a list of Shop and other Location objects
     def add_location(self, location: Location):
@@ -63,7 +76,6 @@ class UndevelopedRegion(Region):
 
 @dataclass
 class VacantLot(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
 
     def has_security(self):
         return False
@@ -127,8 +139,9 @@ class HQ(Location):
             "urgency": 1,
             "tags": ["location", "unused"],
             "source": None,
-            "salience": 2,
-            "security": self.security_level
+            "salience": self.compute_salience(observer),
+            "security": self.security_level,
+            "faction": self.faction.name if self.faction else None
         }
 
     def to_dict(self):
@@ -140,7 +153,6 @@ class HQ(Location):
 
 @dataclass
 class Vendor(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
 
     def has_security(self):
         return False
@@ -154,11 +166,21 @@ class Vendor(Location):
     cash: int = 0
     bankCardCash: int = 0
 
+
+
     def get_percept_data(self, observer=None):
+        tags = ["vendor", "shop", "human"]
+        salience = self.compute_salience(observer)
+
+        if hasattr(self, "faction"):
+            tags.append(f"faction:{self.faction.name}")
+
         return {
-            "type": "Vendor",
-            "name": self.name,
-            "region": self.region.name if self.region else None
+            "description": f"{self.name} (Vendor)",
+            "origin": self,
+            "urgency": 2,
+            "tags": tags,
+            "source": None,
         }
 
     def show_inventory(self):
@@ -180,7 +202,7 @@ from inventory import Inventory
 from characters import Employee
 @dataclass
 class Shop(Vendor):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
+
     name: str = "QQ Store"
     
     legality: bool = True
@@ -225,7 +247,7 @@ class Shop(Vendor):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12 if observer and observer.faction == "Gang" else 2
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -268,7 +290,6 @@ class Shop(Vendor):
 
 @dataclass
 class CorporateStore(Vendor):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Stores"
     
     corporation: str = "Default"  # Default value is now valid
@@ -307,7 +328,8 @@ class CorporateStore(Vendor):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "faction": self.faction.name if self.faction else None,
+            "salience": self.compute_salience(observer)
         }
     
     def __repr__(self):
@@ -330,7 +352,6 @@ class CorporateStore(Vendor):
 
 @dataclass(unsafe_hash=True)
 class MechanicalRepairWorkshop(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Greasehands"
     
     items_available: list = field(default_factory=list)
@@ -365,7 +386,7 @@ class MechanicalRepairWorkshop(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -382,7 +403,6 @@ class MechanicalRepairWorkshop(Location):
 
 @dataclass(unsafe_hash=True)
 class ElectricalRepairWorkshop(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Sparks"
     
     materials_required: List[str] = field(default_factory=list)  # An empty list
@@ -417,7 +437,7 @@ class ElectricalRepairWorkshop(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
 
@@ -435,7 +455,6 @@ class ElectricalRepairWorkshop(Location):
 
 @dataclass
 class Stash(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Secret Stash 1"
     
     legality: bool = False
@@ -472,7 +491,7 @@ class Stash(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -496,7 +515,6 @@ class Stash(Location):
 
 @dataclass
 class Factory(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "The Old Factory"
     
     goods_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
@@ -531,7 +549,7 @@ class Factory(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
 
@@ -553,7 +571,6 @@ class Factory(Location):
 
 @dataclass
 class Nightclub(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Music and Slappers"
     
     fun: int = 1
@@ -587,7 +604,7 @@ class Nightclub(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -613,7 +630,6 @@ class Nightclub(Location):
 
 @dataclass
 class Mine(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Typical Mine"
     
     fun: int = 0
@@ -636,14 +652,6 @@ class Mine(Location):
         return {
             "type": "Mine",
             "name": self.name,
-            "region": self.region.name if self.region else None
-        }
-
-
-    def get_percept_data(self, observer=None):
-        return {
-            "type": "Mine",
-            "name": self.name,
             "region": self.region.name if self.region else None,
             "description": f"Mine: {self.name}",
             "robbable": True,
@@ -655,7 +663,7 @@ class Mine(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -667,7 +675,6 @@ class Mine(Location):
 
 @dataclass
 class Powerplant(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Le PowerPlant 1"
     
     energy_output: int = 1000
@@ -703,7 +710,7 @@ class Powerplant(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -749,7 +756,6 @@ class Powerplant(Location):
 
 @dataclass
 class Airport(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Air Port 1"
     
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
@@ -786,7 +792,7 @@ class Airport(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -865,7 +871,6 @@ class Airport(Location):
 
 @dataclass
 class Port(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Edge Port"
     
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
@@ -902,7 +907,7 @@ class Port(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
 
@@ -982,7 +987,6 @@ class Port(Location):
 
 @dataclass
 class Factory(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Default Factory Name"
     
     raw_materials_needed: int = 100
@@ -1021,7 +1025,7 @@ class Factory(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
     def to_dict(self):
@@ -1046,7 +1050,6 @@ class Factory(Location):
 
 @dataclass
 class Cafe(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Metro Cafe"
     
     upkeep: int = 10
@@ -1080,7 +1083,7 @@ class Cafe(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -1104,7 +1107,6 @@ def __repr__(self):
 
 @dataclass
 class Park(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Green Park"
     
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
@@ -1138,7 +1140,7 @@ class Park(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
 
@@ -1151,7 +1153,6 @@ class Park(Location):
 
 @dataclass
 class Museum(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "City Museum"
     
     upkeep: int = 45
@@ -1182,7 +1183,7 @@ class Museum(Location):
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
-            "salience": 2,
+            "salience": self.compute_salience(observer),
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
@@ -1198,7 +1199,6 @@ class Museum(Location):
 
 @dataclass
 class Library(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Public Library"
     
     categories: List[str] = field(default_factory=lambda: ["public"])
@@ -1229,7 +1229,7 @@ class Library(Location):
             "urgency": 1,
             "tags": ["location", "books"],
             "source": None,
-            "salience": 2,
+            "salience": self.compute_salience(observer),
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
@@ -1245,7 +1245,6 @@ class Library(Location):
 
 @dataclass
 class ResearchLab(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "OmniLab"
     
     prototypes_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
@@ -1276,7 +1275,7 @@ class ResearchLab(Location):
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
-            "salience": 2,
+            "salience": self.compute_salience(observer),
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
@@ -1302,7 +1301,6 @@ class ResearchLab(Location):
 
 @dataclass
 class Warehouse(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Warehouse 5"
     
     upkeep: int = 15
@@ -1336,7 +1334,7 @@ class Warehouse(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
     def to_dict(self):
@@ -1348,7 +1346,6 @@ class Warehouse(Location):
 
 @dataclass
 class ApartmentBlock(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Mass Housing"
     
     upkeep: int = 35
@@ -1382,7 +1379,7 @@ class ApartmentBlock(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             #"has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
     def to_dict(self):
@@ -1400,7 +1397,6 @@ class ApartmentBlock(Location):
 
 @dataclass
 class House(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Fam House"
     
     categories: List[str] = field(default_factory=lambda: ["residential"])
@@ -1430,7 +1426,7 @@ class House(Location):
             "urgency": 1,
             "tags": ["location"],
             "source": None,
-            "salience": 2,
+            "salience": self.compute_salience(observer),
             #"security": self.security_level,
             "is_open": self.is_open,
             #"has_security": self.has_security(),
@@ -1449,7 +1445,6 @@ class House(Location):
 
 @dataclass
 class SportsCentre(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "The Stadium"
     
     upkeep: int = 30
@@ -1483,7 +1478,7 @@ class SportsCentre(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
 
     
@@ -1501,7 +1496,6 @@ class SportsCentre(Location):
 
 @dataclass
 class Holotheatre(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "Zodeono"
     
     upkeep: int = 15
@@ -1535,7 +1529,7 @@ class Holotheatre(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
     
@@ -1553,7 +1547,6 @@ class Holotheatre(Location):
 
 @dataclass
 class MunicipalBuilding(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "City Hall"
     
     items_available: List[str] = field(default_factory=list) 
@@ -1588,7 +1581,7 @@ class MunicipalBuilding(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
+            "salience": self.compute_salience(observer)
         }
     
     def to_dict(self):
@@ -1601,7 +1594,6 @@ class MunicipalBuilding(Location):
 
 @dataclass
 class PoliceStation(Location):
-    id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     name: str = "The Yard"
     
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -1624,12 +1616,13 @@ class PoliceStation(Location):
 
     def get_percept_data(self, observer=None):
         return {
+            "name": self.name,
             "description": f"{self.name} (PoliceStation)",
             "origin": self,
             #"urgency": 1,
             #"tags": ["location", "police", "weapons"],
             #"source": None,
-            "salience": 2,
+            "salience": self.compute_salience(observer),
             #"robbable": True,
             #"security": self.security_level,
             #"is_open": self.is_open,

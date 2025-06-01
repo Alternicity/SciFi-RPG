@@ -11,6 +11,10 @@ def get_viable_robbery_targets(region):
     ]
 
 def get_nearby_objects(npc, region=None, location=None):
+    if location is None:
+        print(f"[DEBUG] {npc.name} has no valid location. No objects to observe.")
+        return []
+
     nearby = []
 
     if location:
@@ -18,8 +22,8 @@ def get_nearby_objects(npc, region=None, location=None):
         nearby.extend([c for c in location.characters_there if c is not npc])
 
         # Objects at location
-        if hasattr(location, "inventory"):
-            nearby.extend(location.inventory.items)
+        if hasattr(location, "objects_present"):
+            nearby.extend(location.objects_present)
 
         # Static structures like cash register, shop structure
         if hasattr(location, "cash_register"):

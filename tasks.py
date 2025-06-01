@@ -69,3 +69,4 @@ class TaskManager:
         if self.current_task:
             self.queue.appendleft(self.current_task)
             self.current_task = None
+            #use @attention_focus.setter

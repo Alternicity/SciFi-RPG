@@ -13,7 +13,9 @@ def run_simulation(all_characters, num_days=10):
 
     # Set test NPC to Easternhole if needed
     easternhole_region = next((r for r in game_state.all_regions if r.name == "Easternhole"), None)
-    #set debug_gang_npc.region to Easternhole here
+    debug_gang_npc.region = easternhole_region
+
+    #no locationn is being set here
 
     """ if easternhole_region:
         # Use a first location in Easternhole
@@ -23,6 +25,9 @@ def run_simulation(all_characters, num_days=10):
         print(f"[Simulation] Moved {debug_gang_npc.name} to {test_location}")
     else:
         print("[Simulation] WARNING: Easternhole region not found.") """
+
+    # the above block comment needs to change to put the test_npc in Easternhole, but not set a location.
+
 
     from weapons import Pistol
     from InWorldObjects import CashWad
@@ -41,7 +46,10 @@ def run_simulation(all_characters, num_days=10):
     if debug_gang_npc:
         print(f"[Simulation] Selected DEBUG NPC: {debug_gang_npc.name}")
         print(f"[Simulation] Their location: {debug_gang_npc.location}")
-        print(f"[Simulation] Their region: {getattr(debug_gang_npc.location, 'region', 'Unknown')}")
+
+        print(f"[Simulation] Their region: {debug_gang_npc.region}")
+
+        #print(f"[Simulation] Their region: {getattr(debug_gang_npc.location, 'region', 'Unknown')}")
 
         debug_gang_npc.is_test_npc = True
         debug_gang_npc.debug = True  # Optional: add a `.debug` flag for visibility
@@ -59,6 +67,16 @@ def run_simulation(all_characters, num_days=10):
         debug_gang_npc.memory.add_entry(entry)  # Adds to episodic by default
         #If this memory is later proven useful:
         #debug_gang_npc.memory.promote_to_semantic(entry)
+
+        #Inject a semanitc memory here, test_npc should remember that region Easternhole has a shop location
+        #class shop has
+        """ class Region:
+            name: str
+            id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
+            shops: List[str] = field(default_factory=list)
+            locations: List[Location] = field(default_factory=list) """
+        
+        #so they could access their self.region.shops maybe, and write teh memory
 
 
 

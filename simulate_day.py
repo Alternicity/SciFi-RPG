@@ -18,7 +18,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 if npc.is_player:
                     continue
 
-                # OBSERVE + THINK
+                # OBSERVE
                 print(f"In simulate_days, {npc.name} attempting to observe.")
                 npc.observe(None, None, region, npc.location)
 
@@ -36,6 +36,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 if npc.is_test_npc:
                     print(f"[DEBUG] {npc.name} percepts after observe: {[v.get('description', v['type']) for v in npc._percepts.values()]}")
 
+                #THINK
                 if hasattr(npc, 'ai') and npc.ai:
                     npc.ai.think(region)
                     npc.ai.promote_thoughts()
@@ -51,6 +52,20 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
         # STEP 2: Choose and Execute Action
         for npc in all_characters:
             if hasattr(npc, 'ai') and npc.ai:
+
+                # NEW: Let AI process thoughts
+                npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
+                npc.ai.think(npc.location)    # << Pre-action planning / sense-making
+                npc.ai.promote_thoughts()     # << Optional: Push important thoughts into action-focus
+
+                # DEBUG: Thought Check
+                if debug_character and npc.name == debug_character.name:
+                    print(f"\n[DEBUG] {npc.name} Thoughts:")
+                    for t in npc.mind.thoughts:
+                        print(f" - {t}")
+                    print(f"[DEBUG] Attention focus: {npc.attention_focus}")
+                    #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
+
                 region = npc.location.region if hasattr(npc.location, 'region') else None
                 action = npc.ai.choose_action(npc.location)
                 if action:

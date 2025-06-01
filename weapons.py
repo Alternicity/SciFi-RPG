@@ -73,7 +73,7 @@ class Pistol(RangedWeapon):
         self.human_readable_id = "Unowned Pistol"
 
     def get_percept_data(self, observer=None):
-        tags = ["weapon", "pistol"]
+        tags = ["weapon", "pistol", "ranged"]
         base_salience = 5  # general background level
 
         if hasattr(observer, "motivation_manager"):
@@ -91,7 +91,8 @@ class Pistol(RangedWeapon):
             "origin": self,
             "urgency": 1,
             "tags": tags,
-            "salience": base_salience
+            "salience": self.compute_salience(observer),
+            "size": self.size.value if hasattr(self, "size") else None
         }
 #You can abstract this into a helper method later, but this is a good explicit start.
 #This allows the object to generate percepts from the perspective of the observer.
@@ -116,12 +117,15 @@ class SMG(RangedWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
+        tags = ["weapon", "SMG", "ranged"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,
             "value": self.price,
+            "tags": tags,
             "danger": self.intimidation,
-            "salience": 8  # You can tweak this per use case
+            "salience": self.compute_salience(observer),
+            "size": self.size.value if hasattr(self, "size") else None
         }
     
 class Rifle(RangedWeapon):
@@ -144,13 +148,15 @@ class Rifle(RangedWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
-        tags = ["weapon", "rifle"]
+        tags = ["weapon", "rifle", "ranged"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,
             "value": self.price,
+            "tags": tags,
             "danger": self.intimidation,
-            "salience": 8  # You can tweak this per use case
+            "salience": self.compute_salience(observer),  # You can tweak this per use case
+            "size": self.size.value if hasattr(self, "size") else None
         }
 
 class Shotgun(RangedWeapon):
@@ -173,13 +179,15 @@ class Shotgun(RangedWeapon):
         self.item_type = "weapon"
 
     def get_percept_data(self, observer=None):
-        tags = ["weapon", "shotgun"]
+        tags = ["weapon", "shotgun", "ranged"]
         return {
             "description": f"{self.name}",
             "item_type": self.item_type,
             "value": self.price,
+            tags: tags,
             "danger": self.intimidation,
-            "salience": 8  # You can tweak this per use case
+            "salience": self.compute_salience(observer),  # You can tweak this per use case
+            "size": self.size.value if hasattr(self, "size") else None
         }
 
 class Sword(MeleeWeapon):
@@ -206,7 +214,8 @@ class Sword(MeleeWeapon):
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
-            "salience": 8  # You can tweak this per use case
+            "salience": self.compute_salience(observer),  # You can tweak this per use case
+            "size": self.size.value if hasattr(self, "size") else None
         }
 
 class Knife(MeleeWeapon):
@@ -236,7 +245,8 @@ class Knife(MeleeWeapon):
             "value": self.price,
             "danger": self.intimidation,
             "item_type": self.item_type,
-            "salience": 8 if observer and observer.faction == "Gang" else 1
+            "salience": self.compute_salience(observer),
+            "size": self.size.value if hasattr(self, "size") else None
         }
 
 class Club(MeleeWeapon):
@@ -262,7 +272,8 @@ class Club(MeleeWeapon):
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
-            "salience": 8  # You can tweak this per use case
+            "salience": self.compute_salience(observer),  # You can tweak this per use case
+            "size": self.size.value if hasattr(self, "size") else None
         }
 
 
@@ -290,5 +301,6 @@ class Electrobaton(MeleeWeapon):
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
-            "salience": 10  # You can tweak this per use case
+            "salience": self.compute_salience(observer),  # You can tweak this per use case
+            "size": self.size.value if hasattr(self, "size") else None
         }

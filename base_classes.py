@@ -166,6 +166,9 @@ class Character(PerceptibleMixin):
         **kwargs,
         
     ):
+        PerceptibleMixin.__init__(self)  # Explicit call instead of super()
+
+
         #print(f"[Character Init] name={name}, race={race}, sex={sex}")
         #verbose, prints all characters
 
@@ -221,7 +224,7 @@ class Character(PerceptibleMixin):
         self.self_awareness_level = SelfAwarenessLevel.ANIMAL
         self.intelligence = intelligence
 
-        #self.mind = Mind(maxlen=self.intelligence)
+        
         self.mind = Mind(owner=self, capacity=self.intelligence)
 
         self._percepts = {}
@@ -363,6 +366,15 @@ class Character(PerceptibleMixin):
     def motivations(self, value):
         raise AttributeError("Use 'motivation_manager.update_motivations()' instead of setting motivations directly.")
 
+    @property
+    def attention_focus(self):
+        return self._attention_focus
+
+    @attention_focus.setter
+    def attention_focus(self, value):
+        # Optional: type-check or log here
+        self._attention_focus = value
+
     def get_attribute(self, name):
         return getattr(self, name, 0)  # default to 0 if not found
 
@@ -488,37 +500,65 @@ class Character(PerceptibleMixin):
         }
 
     def observe(self, nearby_objects=None, target=None, region=None, location=None):
+        # Use fallback values from self if parameters aren't passed
+        region = region or self.region
+        location = location or self.location
+
         print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
 
+        # Handle case where location is None safely
+        if location is None:
+            print("[DEBUG] observe() was called with a None location.")
+            return  # Early exit — nothing to observe
+
+        # Debug objects present at the location
+        print(f"[DEBUG] Objects at {getattr(location, 'name', 'Unnamed Location')}:")
+        for obj in getattr(location, 'objects_present', []):
+            obj_name = getattr(obj, 'name', 'Unnamed object')
+            obj_type = type(obj).__name__
+
+            # Check if obj has a valid location
+            if getattr(obj, 'location', None) is None:
+                print(f"    - {obj_name} ({obj_type}) [No location set]")
+            else:
+                print(f"    - {obj_name} ({obj_type})")
+
+        # Handle location inventory check safely
+        if hasattr(location, 'inventory') and location.inventory:
+            print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
+        else:
+            print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
+
+        # Determine nearby objects
         if nearby_objects is None:
             from worldQueries import get_nearby_objects
             nearby_objects = get_nearby_objects(self, region, location)
 
         new_percepts = {}
 
-        # Clear existing percepts or comment out if you want to accumulate
-        # self._percepts.clear()
-
         for obj in nearby_objects:
             if isinstance(obj, PerceptibleMixin):
                 percept = obj.get_percept_data(observer=self)
                 if percept:
-                    # Use obj.id as dictionary key (string, hashable)
                     new_percepts[obj.id] = percept
-
                     print(f"[Observe] Found perceptible: {obj} → {percept['description']}")
                     print(f"[Observe] {self.name} perceived: {percept['description']} with salience {percept['salience']}")
 
-        # Self-perception - store under special key 'self'
+        # Self-perception
         self_percept = self.get_percept_data(observer=self)
         if self_percept:
             new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
 
-        # Replace old percepts with the new dict keyed by IDs
-        self._percepts = new_percepts
+        # Accumulate percepts over time, updating existing ones
+        if not hasattr(self, '_percepts') or self._percepts is None:
+            self._percepts = {}
+
+        self._percepts.update(new_percepts)
+
 
         self.percepts_updated = True
         print(f"[Observe, last line] {self.name} now has {len(self._percepts)} percepts.")
+
 
 
     @property
@@ -656,18 +696,18 @@ class Character(PerceptibleMixin):
     def cash(self):
         return self.wallet.cash
 
-    def __repr__(self):
-        """ whereabouts_value = self.whereabouts  # Ensure evaluation
-        print(f"🔍 Debug: whereabouts = {whereabouts_value}")  # Now prints the actual value
-    """     
-        
-        return (
+        """def __repr__(self):
+         return (
             f"{self.name} "
             f"(Faction: {self.faction.name if self.faction else 'None'}, "
             f"Cash: {self.wallet.cash}, "
             f"BankCard: {self.wallet.bankCardCash}, "
             f"Fun: {self.fun}, Hunger: {self.hunger})"
-        )
+        ) """
+
+    def __repr__(self):
+        return f"<Character: {self.name}, Location: {getattr(self, 'location', 'Unknown')}>"
+    
     
     def get_loyalty(self, group):
         """
@@ -760,6 +800,9 @@ class Location(PerceptibleMixin):
     employees_there: list = field(default_factory=list)
     # Instance-specific categories field
     categories: List[str] = field(default_factory=list) #ALERT
+
+    def __post_init__(self):
+        PerceptibleMixin.__init__(self)  # Ensure mixin init is called
 
     def has_security(self):
         return False

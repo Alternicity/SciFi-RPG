@@ -2,7 +2,7 @@
 import time
 
 class Thought:
-    def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None):
+    def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False):
         self.content = content              # Description of the thought (str or object)
         self.origin = origin                # What caused it (e.g., percept source)
         self.urgency = urgency              # How pressing it is
@@ -10,6 +10,10 @@ class Thought:
         self.source = source                # Who/what told them (e.g., another character)
         self.weight = weight                # How impactful (can be salience or derived)
         self.timestamp = timestamp or time.time()
+        self.resolved = resolved
+
+    def mark_resolved(self):
+        self.resolved = True
 
     def __repr__(self):
         return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "

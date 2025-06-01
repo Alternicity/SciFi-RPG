@@ -1,3 +1,4 @@
+#ai_gang.py
 import time
 from ai_utility import UtilityAI
 from worldQueries import get_viable_robbery_targets
@@ -6,7 +7,7 @@ from character_thought import Thought
 from worldQueries import get_viable_robbery_targets
 from motivation import Motivation
 from summary_utils import summarize_percepts
-
+from location import Shop, Vendor
 class GangCaptainAI(UtilityAI):
     def choose_action(self, region):
         # Step 1: Check if subordinates are idle, need tasks
@@ -34,83 +35,45 @@ class GangCaptainAI(UtilityAI):
 
 class GangMemberAI(UtilityAI):
 
+    """ Here’s where “gang logic” lives.
+Custom salience tuning, override functions in UtilityAI
+Let UtilityAI produce options, and GangMemberAI choose from them based on gang-specific rules"""
+
     def choose_action(self, region):
         npc = self.npc
 
         # Motivation check — what's urgent?
         motivations = npc.motivation_manager.sorted_by_urgency()
-        #motivations is not yet accessed here
+
         
-        # Step 1: Do we want to rob?
         if npc.motivation_manager.has_motivation("rob"):
-            # Step 2: Do we have a high-salience weapon?
             if not npc.inventory.has_ranged_weapon():
+                return self.resolve_obtain_weapon_target(region)
 
-                # Step 3: Can we remember where to get one?
-                for memory in npc.mind.semantic:
-                    if "weapon" in memory.tags and "shop" in memory.tags:
-                        location = memory.source or "shop"
-                        return {"name": "visit_location", "params": {"location": location}}
-
-            # Step 4: If we’re already at the right shop with a pistol
             if npc.location and npc.location.has_item("pistol"):
                 return {"name": "steal", "params": {"item": "pistol"}}
-
+            #Should this function just be altering the salience of things sent to UtilityAI now?
             if npc.inventory.has_ranged_weapon():
                 return {"name": "rob", "params": {"target": npc.location or "shop"}}
 
-        # If we’re not sure what to do — idle
         return {"name": "idle", "params": {}}
+
+    def compute_salience(self, obj):
+        base = super().compute_salience(obj)
+        if isinstance(obj, Vendor) and "weapon" in obj.inventory.tags: #try both Vendor and Shop
+            base += 5
+        return base
 
     def execute_action(self, action, region):
         npc = self.npc #should this just be npc = self  ?
 
-        if action == "obtain_ranged_weapon":
-            weapons = [p["origin"] for p in npc.percepts if "weapon" in p.get("tags", [])]
-            if weapons:
-                weapon = weapons[0]
-                print(f"[AI] {npc.name} trying to steal {weapon.name}")
-                steal(npc, weapon.location, target_item=weapon)
-            else:
-                # Search memory for weapon info
-                known_weapon_locations = [
-                    m for m in npc.memory
-                    if "weapon" in getattr(m, "tags", []) and "shop" in getattr(m, "tags", [])
-                ]
-                print(f"[DEBUG] From GangMemberAI, def execute_action before if known_weapon_locations condition {npc.name} memory: {[m.tags for m in npc.memory]}")
+        
 
-                print(f"[DEBUG] {npc.name} has memory: {[m.tags for m in npc.memory]}")
-                print(f"[DEBUG] BEFORE if known_weapon_locations: {known_weapon_locations}")
-
-                if known_weapon_locations:
-                    print(f"[MEMORY] {npc.name} remembers shops with weapons.")
-                    print(f"[DEBUG] AFTER if known_weapon_locations: {known_weapon_locations}")
-
-                    new_thought = (Thought(
-                        content="Maybe I should rob a shop to get a weapon.",
-                        origin="General knowledge?",
-                        urgency=7,
-                        tags=["rob", "shop", "weapon"],
-                        timestamp=time.time(),
-                        source="Other Characters",
-                        weight=7
-                    ))
-                    npc.mind.add(new_thought)
-
-                # TEMP: Convert memory entries to thoughts(debug_gang_npc)
-                    """ print(f"\n[DEBUG] Generating thoughts from memory for {npc.name}...")
-                    for mem in npc.memory.episodic + npc.memory.semantic:
-                        thought = f"Recall: {mem.details} (tags: {', '.join(mem.tags)})"
-                        npc.mind.add(thought)# ⚠️ this is a plain string, wrap these strings into Thought(content=...)
-                        print(f" - Generated thought: {thought}") """
-
-                    print(f"[ADD THOUGHT] {npc.name} has new thought: {new_thought}")
-
-                    #print(f"[THOUGHT] {npc.name} thinks about robbing a shop.")
-                else:
-                    print(f"[AI] {npc.name} doesn't know where to find a weapon. Idling.")
-
-        elif action == "Rob": #deprecated I think in favour of passing a rob token to dispatcher in UtilityAI
+        #print(f"[THOUGHT] {npc.name} thinks about robbing a shop.")
+                
+        if action["name"] == "obtain_ranged_weapon":
+            #deprecated I think in favour of passing a rob token to dispatcher in UtilityAI
+            
             targets = get_viable_robbery_targets(region)
             if targets:
                 target = targets[0]
@@ -140,17 +103,29 @@ class GangMemberAI(UtilityAI):
 
         print("\n" * 1)
 
-        self.npc.mind.thoughts.clear()
+        #self.npc.mind.thoughts.clear()
+         #why clear thoughts here?
 
         for memory in self.npc.mind.semantic:
             if "weapon" in memory.tags or "weapons" in memory.description.lower():
-                thought = f"I could rob a shop because: {memory.description}"
+                #this needs to detect the salience of shops for robbery
+
+                #this needs to detect the semantic memory 
+                #<MemoryEntry: event_type='observation', target='None', description='Shops usually have weapons', tags=['weapon', 'shop'
+
+                thought = f"I could rob a shop because: {memory.description}" #and because of the salience of shop for robbery, and them having weapons available
                 self.npc.mind.thoughts.append(thought)
 
         if not self.npc.mind.thoughts:
-            self.npc.mind.thoughts.append(
-                Thought(content="I don't know what to do.", urgency=1, tags=["confusion"])
-    )
+
+            idk_thought = Thought(
+                content="I don't know what to do.",
+                origin="GangMemberAI.think",
+                urgency=1,
+                tags=["confusion"]
+            )
+
+            self.npc.mind.thoughts.append(idk_thought)
 
         for memory in self.npc.mind.semantic:
             if "weapon" in memory.tags:
@@ -202,13 +177,24 @@ class GangMemberAI(UtilityAI):
         return "Idle"
 
     def promote_thoughts(self):
+        super().promote_thoughts()  # Get default generic promotions from UtilityAI
+
         npc = self.npc
-        for thought in list(npc.mind.thoughts):
-            if isinstance(thought, Thought):
-                if "rob" in thought.content and thought.urgency >= 5:
-                    m = Motivation("rob", urgency=thought.urgency, target=thought.source, source=thought)
-                    npc.motivation_manager.update_motivations(m.type, m.urgency, target=m.target, source=m.source)
-                    print(f"[GANG-AI] {npc.name} promotes robbery: {m}")
-            else:
-                print(f"[GANG-AI] Skipping invalid thought: {thought}")
+        thoughts = npc.mind.thoughts
+
+        for thought in list(thoughts):
+            if not isinstance(thought, Thought):
+                continue
+
+            content_lower = thought.content.lower()
+
+            if "rob" in content_lower and thought.urgency >= 5:
+                motivation = Motivation("rob", urgency=thought.urgency, target=thought.source, source=thought)
+                npc.motivation_manager.update_motivations(motivation.type, motivation.urgency, target=motivation.target, source=thought)
+                print(f"[GANG] {npc.name} promotes robbery: {motivation}")
+
+            elif "steal" in content_lower and thought.urgency >= 4:
+                motivation = Motivation("steal", urgency=thought.urgency, target=thought.source, source=thought)
+                npc.motivation_manager.update_motivations(motivation.type, motivation.urgency, target=motivation.target, source=thought)
+                print(f"[GANG] {npc.name} promotes theft: {motivation}")
 

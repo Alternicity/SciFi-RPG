@@ -38,7 +38,9 @@ valid_items = [
 # Base class for all objects in the world
 class ObjectInWorld(PerceptibleMixin):
     is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, item_type, size, blackmarket_value, price=0, damage_points=None, legality=True,  owner_name=None):
+    def __init__(self, name, toughness, item_type, size, blackmarket_value, price=0, damage_points=None, legality=True,  owner_name=None, **kwargs):
+        PerceptibleMixin.__init__(self)
+
         self.name = name
         self.toughness = toughness
         self.item_type = item_type  # 'weapon', 'armor', etc.
@@ -85,12 +87,14 @@ class CashWad(ObjectInWorld): #REMOVE ALL VALUE
         )
         self.amount = amount  # optional but helpful
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
 
     def get_value(self):
@@ -110,12 +114,15 @@ class Wallet:
         self.cash = cash  # Cash for normal purchases (or black market)
         self.bankCardCash = bankCardCash  # Cash available via bank card
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
+            #"salience": 20 if observer and self.owner == observer else 3
         }
 
     def get_values(self):
@@ -158,12 +165,14 @@ class HardDrive(ObjectInWorld):
         )
         self.sensitivity = sensitivity
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
 
 class Medkit(ObjectInWorld):
@@ -180,12 +189,14 @@ class Medkit(ObjectInWorld):
         self.blackmarket_value=50,
         self.size=Size.POCKET_SIZED,
         
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
 
 class FoodCrate(ObjectInWorld):
@@ -201,12 +212,14 @@ class FoodCrate(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
 class Laptop(ObjectInWorld):
@@ -223,12 +236,14 @@ class Laptop(ObjectInWorld):
         )
         self.sensitivity = sensitivity
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
 class MechanicalToolkit(ObjectInWorld):
@@ -244,12 +259,14 @@ class MechanicalToolkit(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
 class ElectricalToolkit(ObjectInWorld):
@@ -265,12 +282,14 @@ class ElectricalToolkit(ObjectInWorld):
             size=Size.POCKET_SIZED,
         )
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
 class PowerGenerator(ObjectInWorld):
@@ -285,12 +304,14 @@ class PowerGenerator(ObjectInWorld):
             blackmarket_value=300,
             size=Size.TWO_HANDED,
         )
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
 class WaterPurifier(ObjectInWorld):
@@ -305,12 +326,14 @@ class WaterPurifier(ObjectInWorld):
             blackmarket_value=150,
             size=Size.TWO_HANDED,
         )
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
 class SmartPhone(ObjectInWorld):
@@ -329,12 +352,15 @@ class SmartPhone(ObjectInWorld):
         self.quantity = quantity
         self.owner_name = None
         self.human_readable_id = "Unowned SmartPhone"
-    def get_percept_data(self):
+
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
 class CommoditiesBox(ObjectInWorld):
@@ -350,12 +376,14 @@ class CommoditiesBox(ObjectInWorld):
             size=Size.TWO_HANDED,
         )
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
 
 class CashRegister(ObjectInWorld):
@@ -363,12 +391,14 @@ class CashRegister(ObjectInWorld):
         super().__init__(name, toughness, item_type, size, blackmarket_value)
         self.cash = initial_cash
 
-    def get_percept_data(self):
+    def get_percept_data(self, observer=None):
         return {
             "type": type(self).__name__,
             "name": self.name,
             "item_type": self.item_type,
             "owner": self.owner_name,
+            "size": self.size.value if hasattr(self, "size") else None,
+            "salience": self.compute_salience(observer)
         }
     
     def deposit(self, amount):
