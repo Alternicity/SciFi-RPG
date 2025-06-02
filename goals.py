@@ -18,6 +18,7 @@ class Goal:
         "increase_influence",
         "defend_assets",
         "acquire HQ", #for street gangs
+        "monitor_streetgang_migration"
     ]
 
     OBJECTIVE_MAP = {

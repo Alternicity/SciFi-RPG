@@ -25,7 +25,7 @@ class Posture(Enum):
     LYING = auto()
 
 class Faction:
-    def __init__(self, name, type):
+    def __init__(self, name, type, violence_disposition="1"):
         self.name = name
         self.type = type  # "gang" or "corporation"
         self.members = []
@@ -34,6 +34,8 @@ class Faction:
         self.current_goal = None
         self.resources = {"money": 1000, "weapons": 10}  # Example default resources
         self.region = None
+        self.violence_disposition = violence_disposition
+        self.enemies = {}  # Key: Faction name or object, Value: hostility level 1-10
 
     def add_member(self, member, rank="low", wage=100, perceived_loyalty=1.0):
         if not hasattr(member, "name"):
@@ -59,6 +61,9 @@ class Faction:
             print(f"{member_name} has left {self.name} ({removal_type}).")
         else:
             print(f"{member_name} is not a member of {self.name}.")
+
+    def add_enemy(self, other_faction, hostility=5):
+        self.enemies[other_faction.name] = hostility
 
     def set_goal(self, goal):
         """
@@ -114,11 +119,24 @@ class Faction:
     def get_symbolic_clues(self):
         return ["wears red bandana", "tattoo on neck", "corp ID badge"]
     
+    def increase_violence(self, amount=1):
+        self.violence_disposition = min(10, self.violence_disposition + amount)
+
+    def decrease_violence(self, amount=1):
+        self.violence_disposition = max(0, self.violence_disposition - amount)
+
+    def violence_level_description(self):
+        if self.violence_disposition >= 7:
+            return "High"
+        elif self.violence_disposition >= 4:
+            return "Medium"
+        return "Low"
+
     def __repr__(self):
         return f"{self.name} {self.type.capitalize()}"
     
 class Factionless(Faction):
-    def __init__(self, name="Factionless", violence_disposition="Low"):
+    def __init__(self, name="Factionless", violence_disposition="1"):
         super().__init__(name=name, type="neutral")
         self.violence_disposition = violence_disposition
         self.HQ = None
@@ -499,7 +517,7 @@ class Character(PerceptibleMixin):
             "salience": salience
         }
 
-    def observe(self, nearby_objects=None, target=None, region=None, location=None):
+    def observe(self, nearby_objects=None, target=None, region=None, location=None, include_memory_check=True):
         # Use fallback values from self if parameters aren't passed
         region = region or self.region
         location = location or self.location
@@ -523,18 +541,81 @@ class Character(PerceptibleMixin):
             else:
                 print(f"    - {obj_name} ({obj_type})")
 
-        # Handle location inventory check safely
-        if hasattr(location, 'inventory') and location.inventory:
-            print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
-        else:
-            print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
+        if region:
+        # Observe locations
+            for loc in region.locations:
+                self.observe(loc)
 
-        # Determine nearby objects
-        if nearby_objects is None:
-            from worldQueries import get_nearby_objects
-            nearby_objects = get_nearby_objects(self, region, location)
+            # Optionally observe characters
+            for char in region.characters_there:
+                if char is not self:
+                    self._perceive(char)
 
-        new_percepts = {}
+            # Remember any gang affiliations in this region
+            #generalize to enemy factions, not just gangs
+            if include_memory_check and hasattr(self, "faction"):
+                for gang in region.region_gangs:
+                    self.memory.semantic.append(gang)
+
+                    # Form thought if hostile
+                    if gang.name != self.faction.name: #figure out enemy lists
+                        hostile_thought = Thought(
+                            content=f"Enemy gang {gang.name} is here...",
+                            origin=region.name,
+                            urgency=5,
+                            tags=["gang", "hostile"],
+                            source="ThreatDetection",
+                            timestamp=time.time()
+                        )
+                        self.mind.add(hostile_thought)
+                        self.is_alert = True
+                        # 🔁 Let UtilityAI interpret and possibly expand on this thought
+                        self.utility_ai.evaluate_thought_for_threats(hostile_thought)
+
+            # Optional: remember region
+            #add events there, 
+            self.memory.semantic.append(region)
+
+            for gang in region.region_street_gangs:
+                if gang.name != self.faction.name:
+                    hostile_thought = Thought(
+                        content=f"Enemy gang {gang.name} is here...",
+                        origin=region.name,
+                        urgency=5,
+                        tags=["gang", "hostile"],
+                        source="ThreatDetection",
+                        timestamp=time.time()
+                    )
+                    self.mind.add(hostile_thought)
+                    self.is_alert = True
+
+                    # 🔁 Conditional: let AI process this thought if this character has a UtilityAI
+                    if hasattr(self, 'utility_ai'):
+                        self.utility_ai.evaluate_thought_for_threats(hostile_thought)
+
+            # 🔁 Hook for subclass to respond to observations
+            #class Character doesn’t know or care how characters handle observations
+            #it just delegates to each subclass (if it has a handle_observation() method).
+            if hasattr(self, "handle_observation"):
+                self.handle_observation(region)
+
+            
+
+        if location:
+            self._perceive(location)
+
+            # Handle location inventory check safely
+            if hasattr(location, 'inventory') and location.inventory:
+                print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
+            else:
+                print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
+
+            # Determine nearby objects
+            if nearby_objects is None:
+                from worldQueries import get_nearby_objects
+                nearby_objects = get_nearby_objects(self, region, location)
+
+            new_percepts = {}
 
         for obj in nearby_objects:
             if isinstance(obj, PerceptibleMixin):

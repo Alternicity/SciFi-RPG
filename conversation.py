@@ -26,6 +26,9 @@ class Conversation(Event):
         else:
             print("You end the conversation.")
 
+class ShareKnowledge(Conversation):
+    pass
+
 class Gossip(Conversation):
     pass
 

@@ -51,8 +51,7 @@ class Event(ABC):
             "parsimony_opportunity": lambda: print(f"{character.name} notices another opportunity."),
             "triggered_trap": lambda: print(f"{character.name} sets off a trap! Trouble ahead."),
             "incident": lambda: Event.handle_incident(character, location)
-            #handle_incident marked as not defined
-            #apparently handle_incident being not defined is ok bc its a lambda
+ 
             
         }
     @staticmethod

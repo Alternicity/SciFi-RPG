@@ -76,6 +76,29 @@ class State(Faction):
         print(f"New law added: {new_law}")
 
 
+class FactionRelationship: #update class Faction to have a container for the object, and game_state
+    def __init__(self, other_faction, hostility=0, trust=5, is_public=True, is_frenemy=False):
+        self.other_faction = other_faction  # Could be object or name
+        self.hostility = hostility  # 0-10 scale
+        self.trust = trust          # 0-10 scale
+        self.is_public = is_public
+        self.is_frenemy = is_frenemy
+
+    def adjust_trust(self, amount):
+        self.trust = max(0, min(10, self.trust + amount))
+
+    def adjust_hostility(self, amount):
+        self.hostility = max(0, min(10, self.hostility + amount))
+
+    def summary(self):
+        status = "Ally" if self.trust > 7 else "Neutral"
+        if self.hostility > 6:
+            status = "Enemy"
+        if self.is_frenemy:
+            status = "Frenemy"
+        return f"{self.other_faction.name}: {status} (Trust {self.trust}, Hostility {self.hostility})"
+
+
 
 """ class GeneralPopulation(Faction):
     def __init__(self, name, violence_disposition):

@@ -103,45 +103,11 @@ class UtilityAI(BaseAI):
             npc.attention_focus = None
 
     def think(self, region):
-        npc = self.npc
-        self.npc.observe(region=region, location=self.npc.location)
-        print(f"UtilitAI Percepts after  observe called from think(): {self.npc._percepts}")
-
-        for obj in self.npc._percepts:
-            salience = compute_salience(obj, self.npc)
-            # sort, pick top N, update attention model etc.
-
-        print(f"\n--- {self.npc.name} is thinking ---")
-
-        if npc.percepts_updated:
-            if self.npc.is_test_npc:
-                print(f"[OBSERVE] B4 generate_thoughts_from_percepts {self.npc.name} perceived: {[v.get('description', v['type']) for v in self.npc._percepts.values()]}")
-            self.generate_thoughts_from_percepts()
-            npc.percepts_updated = False
-            #new thoughts are only generated when percepts have changed — decoupling perception and cognition
-
-        print(f"UtilitAI Percepts after generate_thoughts_from_percepts: {self.npc._percepts}")
-
-        print(f"[DEBUG] from UtilityAI think() {self.npc.name} thinking with {len(self.npc.memory.episodic)} episodic memories")
-
-        # Promote urgent thoughts to motivations
-        for thought in list(npc.mind):
-            if thought.urgency >= 5:
-                if "rob" in thought.content:
-                    m = Motivation("rob", strength=thought.urgency, tags=["money", "weapon"]) #weapon seems a bit GangMember specific, posibly legacy here
-                    npc.motivation_manager.update_motivations(m.type, m.urgency)
-
-                    print(f"[THINK] {npc.name} promotes thought to motivation: {m}")
-                    #npc.mind.remove(thought)
-
-                # Optionally update attention focus to most urgent thought
-                if npc.mind:
-                    npc.attention_focus = max(npc.mind, key=lambda t: t.urgency)
-                else:
-                    npc.attention_focus = None
-                    #@attention_focus.setter
-
-        return "Idle"
+        self.npc.observe(region, location=self.npc.location)
+        self.compute_salience_for_percepts()
+        self.generate_thoughts_from_percepts()
+        self.promote_thoughts()
+        #does this need to return decision
     
     def generate_thoughts_from_percepts(self):
         npc = self.npc  # shortcut
@@ -206,7 +172,7 @@ class UtilityAI(BaseAI):
             weight=7
         )
         npc.mind.add(new_thought)
-        npc.motivation_manager.increase("rob", 1.0)
+        npc.motivation_manager.increase("rob", 3)
         print(f"[THOUGHT] {npc.name} had a new thought: {new_thought.content}")
 
         return {"name": "idle", "params": {}}
@@ -224,3 +190,40 @@ class UtilityAI(BaseAI):
                 print(f"[THOUGHT EVAL] {self.npc.name} is influenced by thought: {thought.content}")
                 self.npc.motivation_manager.increase("rob", thought.weight)
                 thought.resolved = True  # Only apply once for now
+
+    def evaluate_memory_for_threats(self, memory):
+        npc = self.npc
+        # Check if any enemy gangs are in the memory
+        if hasattr(memory, "tags") and "region" in memory.tags:
+            region_gangs = getattr(memory, "region_gangs", [])
+            for gang in region_gangs:
+                if gang != npc.faction and gang in npc.faction.enemies:
+                    thought = Thought(
+                        content=f"{gang} controls this region. They are enemies!",
+                        origin=memory.name,
+                        urgency=8,
+                        tags=["enemy", "threat", "gang", "region"],
+                        timestamp=time.time(),
+                        source="SemanticMemory",
+                        weight=7
+                    )
+                    npc.mind.add(thought)
+                    npc.is_alert = True
+                    print(f"[THREAT] {npc.name} became alert due to memory: {memory.name}")
+
+    def evaluate_thought_for_threats(self, thought):
+        npc = self.npc
+
+        if "hostile" in thought.tags and "gang" in thought.tags:
+            inferred = Thought(
+                content=f"{npc.name} infers immediate danger from enemy gangs.",
+                origin=thought.origin,
+                urgency=7,
+                tags=["alert", "retreat", "priority"],
+                source="UtilityAI.Inference",
+                timestamp=time.time(),
+                weight=8
+            )
+            npc.mind.add(inferred)
+            npc.is_alert = True
+            print(f"[INFERENCE] {npc.name} escalated alertness based on: {thought.content}")

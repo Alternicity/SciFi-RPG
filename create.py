@@ -132,7 +132,7 @@ def create_gang_factions(num_gangs, all_regions):
         first_part, second_part = race_specific_names
         assigned_region = random.choice(all_regions)
         gang_name = f"{random.choice(first_part)} {random.choice(second_part)}"
-        gang = Gang(name=gang_name, violence_disposition="High", race=race)
+        gang = Gang(name=gang_name, violence_disposition="5", race=race)
         gang.region = assigned_region  # Assign region before adding to list
         gangs.append(gang)
         game_state.add_gang(gang)  # Add to global GameState
@@ -160,7 +160,7 @@ def create_corp_factions(num_corps, all_regions):
         first_parts, second_parts = ["Default"], ["Corporation"]
 
     hannival_region = random.choice(all_regions)
-    hannival_corp = Corporation(name="Hannival", violence_disposition="Medium")
+    hannival_corp = Corporation(name="Hannival", violence_disposition="2")
     hannival_corp.region = hannival_region
     assign_hq(hannival_corp, hannival_region)
     corporations.append(hannival_corp)
@@ -172,7 +172,7 @@ def create_corp_factions(num_corps, all_regions):
         corp_name = f"{random.choice(first_parts).replace(',', '')} {random.choice(second_parts).replace(',', '')}"
         assigned_region = random.choice(all_regions)
 
-        corporation = Corporation(name=corp_name, violence_disposition="Low")
+        corporation = Corporation(name=corp_name, violence_disposition="2")
         corporation.region = assigned_region
 
         # **Check if it already has an HQ before assigning**

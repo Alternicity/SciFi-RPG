@@ -2,7 +2,7 @@
 import time
 
 class Thought:
-    def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False):
+    def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False, corollary=None):
         self.content = content              # Description of the thought (str or object)
         self.origin = origin                # What caused it (e.g., percept source)
         self.urgency = urgency              # How pressing it is
@@ -11,9 +11,29 @@ class Thought:
         self.weight = weight                # How impactful (can be salience or derived)
         self.timestamp = timestamp or time.time()
         self.resolved = resolved
+        self.corollary = corollary or []  # list of strings or callables, Functions or object
 
     def mark_resolved(self):
         self.resolved = True
+
+    def spawn_corollary_thoughts(self, character):
+        #Later you can replace .corollary with a LinkedCorollary object.
+        thoughts = []
+        if not self.corollary:
+            return thoughts
+        
+        # simple rule-based system
+        for i, cor in enumerate(self.corollary):
+            if character.intelligence > (13 + i * 2):  # 13, 15, 17...
+                new_thought = Thought(
+                    content=f"Corollary goal: {cor.replace('_', ' ').title()}",
+                    origin="CorollaryEngine",
+                    urgency=self.urgency - 1,
+                    tags=["corollary", "goal"],
+                    source="CorollaryThought",
+                )
+                thoughts.append(new_thought)
+        return thoughts
 
     def __repr__(self):
         return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "

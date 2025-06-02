@@ -7,8 +7,22 @@ from character_thought import Thought
 from worldQueries import get_viable_robbery_targets
 from motivation import Motivation
 from summary_utils import summarize_percepts
-from location import Shop, Vendor
+import random
+from city_vars import GameState
+from create_game_state import get_game_state
+
+class BossAI(UtilityAI):
+    def think(self, region):
+        evaluate_turf_war_status(self, self.memory.semantic)
+        self.promote_thoughts()
+
+
+
 class GangCaptainAI(UtilityAI):
+    def think(self, region):
+        evaluate_turf_war_status(self.npc, self.memory.semantic)
+        self.promote_thoughts()
+
     def choose_action(self, region):
         # Step 1: Check if subordinates are idle, need tasks
         if self.should_assign_tasks():
@@ -35,39 +49,34 @@ class GangCaptainAI(UtilityAI):
 
 class GangMemberAI(UtilityAI):
 
-    """ Here’s where “gang logic” lives.
-Custom salience tuning, override functions in UtilityAI
+    """Custom salience tuning, override functions in UtilityAI
 Let UtilityAI produce options, and GangMemberAI choose from them based on gang-specific rules"""
 
     def choose_action(self, region):
-        npc = self.npc
+        self.utility_ai.think(region)
 
-        # Motivation check — what's urgent?
-        motivations = npc.motivation_manager.sorted_by_urgency()
+        top_motivation = self.npc.motivation_manager.get_top_motivation()
+        if top_motivation == "rob":
+            return self.resolve_robbery_action(region)
 
-        
-        if npc.motivation_manager.has_motivation("rob"):
-            if not npc.inventory.has_ranged_weapon():
-                return self.resolve_obtain_weapon_target(region)
+        if top_motivation == "steal":
+            return self.resolve_steal_action(region)
 
-            if npc.location and npc.location.has_item("pistol"):
-                return {"name": "steal", "params": {"item": "pistol"}}
-            #Should this function just be altering the salience of things sent to UtilityAI now?
-            if npc.inventory.has_ranged_weapon():
-                return {"name": "rob", "params": {"target": npc.location or "shop"}}
+        if top_motivation == "placeholder":
+            return self.resolve_explore_action(region) #hmmm, decision to visit_location doesnt come directly from a motivation
+            #Starting confition of most urgent motivation is rob=8
 
-        return {"name": "idle", "params": {}}
+        return {"name": "Idle"}
 
     def compute_salience(self, obj):
+        from location import Shop, CorporateStore
         base = super().compute_salience(obj)
-        if isinstance(obj, Vendor) and "weapon" in obj.inventory.tags: #try both Vendor and Shop
+        if isinstance(obj, Shop, CorporateStore) and "weapon" in obj.inventory.tags:
             base += 5
         return base
 
     def execute_action(self, action, region):
         npc = self.npc #should this just be npc = self  ?
-
-        
 
         #print(f"[THOUGHT] {npc.name} thinks about robbing a shop.")
                 
@@ -92,19 +101,14 @@ Let UtilityAI produce options, and GangMemberAI choose from them based on gang-s
         self.npc.observe(region=region, location=self.npc.location)
         print(f"\n--- from GangMemberAI, {self.npc.name} is about to think ---")
         print("\n" * 1)
-
-        """ print("\n[DEBUG] Inspecting self.npc before summarize_percepts:")
-        print(f"Type: {type(self.npc)}")
-        print(f"Attributes: {dir(self.npc)}")
-        print(f"Name: {getattr(self.npc, 'name', 'N/A')}")
-        print(f"Motivation Manager: {getattr(self.npc, 'motivation_manager', 'MISSING')}") """
         
         print(f"[Percepts Before Thinking] {self.npc.name}:\n{summarize_percepts(self.npc)}")
-
         print("\n" * 1)
 
-        #self.npc.mind.thoughts.clear()
-         #why clear thoughts here?
+
+        if self.npc.faction.is_street_gang == True:
+            evaluate_turf_war_status(self, self.memory.semantic)
+
 
         for memory in self.npc.mind.semantic:
             if "weapon" in memory.tags or "weapons" in memory.description.lower():
@@ -125,16 +129,15 @@ Let UtilityAI produce options, and GangMemberAI choose from them based on gang-s
                 tags=["confusion"]
             )
 
-            self.npc.mind.thoughts.append(idk_thought)
+            self.npc.mind.add_thought(idk_thought)
 
         for memory in self.npc.mind.semantic:
             if "weapon" in memory.tags:
-                score = 0.8  # temporary hardcoded salience
-                self.npc.mind.thoughts.append(
+                self.npc.mind.add(
                     Thought(
                         content=f"Scored memory: {memory.description}",
                         origin="semantic_memory",
-                        urgency=int(score * 10),
+                        urgency=8,
                         tags=memory.tags,
                         source=memory
                     )
@@ -198,3 +201,121 @@ Let UtilityAI produce options, and GangMemberAI choose from them based on gang-s
                 npc.motivation_manager.update_motivations(motivation.type, motivation.urgency, target=motivation.target, source=thought)
                 print(f"[GANG] {npc.name} promotes theft: {motivation}")
 
+    def resolve_robbery_action(self, region):
+        target = self.utility_ai.resolve_obtain_weapon_target(region)
+        if target:
+            return target  # May be 'steal' or 'visit_location'
+        else:
+            print("Idling from resolve_robbery_action: target not found")
+            return {"name": "Idle"}
+    
+    def resolve_steal_action(self, region):
+            target = self.utility_ai.resolve_obtain_weapon_target(region)
+            if target:
+
+                return {
+                    "name": "Steal",
+                    "target": target
+                }
+            return {"name": "Idle"}
+        
+    def resolve_explore_action(self, region): #decide to visit shop to rob, in current use
+        # case, but also, decide to visit_location in general
+            from location import Shop
+            target = self.utility_ai.resolve_robbery_target(region)
+            if target:
+                self.npc.attention_focus = target
+                self.npc.mind.add(Thought(
+            content=f"Target spotted for robbery: {target.name}",
+            origin="resolve_explore_action",
+            urgency=5,
+            tags=["robbery", "target"],
+            timestamp=time.time()
+        ))
+                return {
+                    "name": "Rob",
+                    "target": target
+                }
+            
+            if target == Shop:
+                thought = Thought(
+                    content=f"Perhaps I should check out {target.name}.",
+                    origin="Memory",
+                    tags=["explore", "shop"],
+                    urgency=2,
+                    timestamp=time.time()
+                )
+                self.npc.mind.add(thought)
+
+
+#maybe explore a random location..emergent exploration:
+
+                locations = [loc for loc in region.locations if isinstance(loc, Shop)]
+                if locations:
+                    loc = random.choice(region.locations)
+                    self.npc.attention_focus = loc
+                    return {
+                        "name": "Visit",
+                        "params": {"location": loc.name}
+                    }
+
+            return {"name": "Idle"}
+
+
+#utilty functions, called from within gang cahracter classes
+def evaluate_turf_war_status(npc, region_knowledge):
+    game_state = get_game_state()
+    my_faction = npc.faction
+
+    if not my_faction.is_street_gang:
+        if hasattr(region_knowledge, "region_gangs"):
+            thought = Thought(
+                content=f"Turf war active in region: {region_knowledge.name}. The homeless street gangs are desperate.",
+                origin="Faction Intel",
+                urgency=5,
+                tags=["turf_war", "gang_conflict", "intel"],
+                source="SemanticMemory",
+                timestamp=time.time(),
+                corollary=["monitor_streetgang_migration"]
+            )
+            npc.mind.add_thought(thought)
+        return
+
+    # Handle street gang logic
+    if npc.region.turf_war_triggered:
+        for gang in region_knowledge.region_gangs:
+            if gang in my_faction.enemies:
+                npc.faction.increase_violence(1)  # Optional: have cooldown or limit per cycle
+
+                thought = Thought(
+                    content=f"Turf war active in {region_knowledge.name}. Our enemies ({gang.name}) are involved.",
+                    origin=gang.name,
+                    urgency=7,
+                    tags=["turf_war", "gang_conflict", "enemies"],
+                    source="SemanticMemory",
+                    timestamp=time.time(),
+                    corollary=["monitor_streetgang_migration"]
+                )
+                npc.mind.add_thought(thought)
+                npc.is_alert = True
+
+                # ShareKnowledge up chain
+                if npc.role == "GangMember":
+                    npc.share_knowledge_with_faction_rank("Captain", tags=["turf_war"])
+                elif npc.role == "Captain":
+                    npc.share_knowledge_with_faction_rank("Boss", tags=["turf_war"])
+
+
+def gang_observation_logic(npc, region): #ATTN needs refactoring, its not turf war code
+    if region.turf_war_triggered and npc.faction.name in region.region_street_gangs:
+        war_thought = Thought(
+            content="Turf war is active in this area!",
+            origin=region.name,
+            urgency=8,
+            tags=["turf_war", "danger", "gang"],
+            source="Observation",
+            timestamp=time.time()
+        )
+        npc.mind.add(war_thought)
+        if hasattr(npc, 'utility_ai'):
+            npc.utility_ai.evaluate_thought_for_threats(war_thought)

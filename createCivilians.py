@@ -8,7 +8,7 @@ from InWorldObjects import Wallet
 from motivation_presets import MotivationPresets
 from status import CharacterStatus, FactionStatus, StatusLevel
 
-general_population_faction = Factionless(name="General Population", violence_disposition="low")
+general_population_faction = Factionless(name="General Population", violence_disposition="1")
 
 from utils import normalize_location_regions
 def create_civilian_population(all_locations, all_regions, num_civilians=30):

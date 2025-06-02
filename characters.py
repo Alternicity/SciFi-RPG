@@ -6,7 +6,7 @@ from status import StatusLevel, CharacterStatus, FactionStatus
 from InWorldObjects import ObjectInWorld, Wallet
 from wallet import generate_wallet
 from base_classes import Character, Location, Faction
-from ai_gang import GangMemberAI
+from ai_gang import GangMemberAI, GangCaptainAI, BossAI, gang_observation_logic
 
 #Method overriding is used sparingly (e.g., issue_directive in 
 # Boss and CEO). Consider leveraging polymorphism more to reduce 
@@ -56,7 +56,8 @@ class Boss(Character):
         self.primary_status_domain = "criminal"
         self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
         
-        
+    def handle_observation(self, region):
+        gang_observation_logic(self, region)
     
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
@@ -170,6 +171,9 @@ class Captain(Character):
             name=name, race=race, sex=sex, faction=faction,  region=region,
             location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs
         )
+
+    def handle_observation(self, region):
+        gang_observation_logic(self, region)
 
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
@@ -496,6 +500,9 @@ class GangMember(Subordinate):
 
         """ self.cash = 50
         self.bankCardCash = 20 """
+
+    def handle_observation(self, region):
+        gang_observation_logic(self, region)
 
     def default_skills(self):
         base = super().default_skills()
