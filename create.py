@@ -224,9 +224,10 @@ def create_factions(all_regions, all_locations):
             print(f"- {faction.name} (Region: {faction.region}) ({faction.type}) ({faction.resources})")
             factions.extend(gang_factions) #keep?
 
-    from base_classes import Faction
-    factionless = Faction("Factionless", "independent")
-    factions.append(factionless) #factionless characters not present in new output print
+    from base_classes import Faction, Factionless
+    factionless = Factionless(name="Factionless", violence_disposition="1")
+    factionless.region = downtown_region
+    factions.append(factionless)
 
     corp_factions = create_corp_factions(10, all_regions)
     factions.extend(corp_factions)

@@ -83,6 +83,16 @@ class MotivationPresets:
             Motivation(type="execute_orders", urgency=3)
         ],
 
+        "SpecialChild": [
+                Motivation("explore_math", 10),
+                Motivation("have_fun", 2),
+                Motivation("use_advanced_python_features", 10),
+                Motivation("stimulate_program", 2), #stimulate irl AI, and help me learn
+                Motivation("eat", 2),
+                Motivation("sleep", 2),
+                Motivation("shelter", 2),
+            ],
+
     }
 
     @classmethod

@@ -18,7 +18,7 @@ from base_classes import Character
 def create_faction_characters(faction, all_regions, factions=None):
     from faction import Gang, Corporation, State
     if isinstance(faction, Gang):
-        return create_gang_characters(faction)
+        return create_gang_characters(faction, all_regions)
     elif isinstance(faction, Corporation):
         return create_corporation_characters(faction, factions)
     elif isinstance(faction, State):
@@ -43,7 +43,8 @@ def create_all_characters(factions, all_locations, all_regions):
 
     from createCivilians import create_civilian_population, assign_workplaces
 
-    civilians = create_civilian_population(all_locations, all_regions)
+    factionless = next(f for f in factions if f.name == "Factionless")
+    civilians = create_civilian_population(all_locations, all_regions, factionless)
     assign_workplaces(civilians, all_locations)
     all_characters.extend(civilians)
     

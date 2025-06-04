@@ -1,17 +1,15 @@
-
+#createCivilians.py
 import random
 from base_classes import Character, Factionless
 from location import Shop, Region
 from location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
-from characters import Civilian
+from characters import Civilian, SpecialChild
 from InWorldObjects import Wallet
 from motivation_presets import MotivationPresets
 from status import CharacterStatus, FactionStatus, StatusLevel
 
-general_population_faction = Factionless(name="General Population", violence_disposition="1")
-
 from utils import normalize_location_regions
-def create_civilian_population(all_locations, all_regions, num_civilians=30):
+def create_civilian_population(all_locations, all_regions, factionless, num_civilians=30):
     """Generate civilians and assign them logical locations."""
     from create_character_names import create_name
     from utils import get_region_for_location
@@ -74,7 +72,7 @@ def create_civilian_population(all_locations, all_regions, num_civilians=30):
             sex=gender,
             location=location,
             race=race,
-            faction=general_population_faction,
+            faction=factionless,
             motivations=MotivationPresets.for_class("Civilian"),
             wallet=Wallet(bankCardCash=random_cash),
             status=status
@@ -95,6 +93,55 @@ def create_civilian_population(all_locations, all_regions, num_civilians=30):
         game_state.civilians.append(civilian)
         game_state.all_characters.append(civilian)
         #print(f"Civilian {civilian.name} has: {civilian.wallet.bankCardCash}")
+
+    # Create Luna
+        status = CharacterStatus()
+        status.set_status("public", FactionStatus(StatusLevel.LOW, "Orphan"))
+        name = "Luna"
+        sex = "female"
+        race = "French"
+        faction = factionless
+        location = get_playground_location(all_locations)  # implement this helper
+
+        motivations=MotivationPresets.for_class("SpecialChild"), 
+
+        Luna = SpecialChild(
+            name="Luna",
+            race="French",
+            sex="female",
+            faction=factionless,
+            region=factionless.region,
+            location=location,
+            motivations=motivations,
+            status=status,
+            intelligence=20,  # Override default
+            strength=2,
+            agility=5,
+            fun=4,
+            hunger=1,
+            position="Orphan AI Prototype",
+            notable_features=["silver eyes", "calm demeanor"],
+            appearance={"clothing": "plain but clean"},
+            self_esteem=7,
+                )
+        Luna.skills.update({
+            "explore_math": 16,
+            "use_advanced_python_features": 20,
+            "persuasion": 15,
+        })
+
+        faction.members.append(Luna)
+        game_state.civilians.append(Luna)
+        game_state.all_characters #add her here, there is no setter
+        game_state.orphans.append(Luna)
+
+        # For AI targeting/utility control
+        Luna.is_test_npc = False  
+        Luna.is_peaceful_npc = True #is it better to have this, to avoid her trying to do GangMember stuff?
+        Luna.has_plot_armour = True
+
+
+
     return civilians
 
 def assign_workplaces(civilians, all_locations):
@@ -126,3 +173,12 @@ def assign_workplaces(civilians, all_locations):
                 print(f"⚠️ WARNING: No available workplaces for {civilian.name}")
 
     return civilians
+
+def get_playground_location(all_locations):
+    for loc in all_locations:
+        if loc.name == "Park":
+            if loc.sublocations:
+                for sub in loc.sublocations:
+                    if "playground" in sub.name.lower():
+                        return sub
+    return None

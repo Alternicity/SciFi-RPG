@@ -17,6 +17,9 @@ class Memory:
         else:
             self.episodic.append(entry)
 
+    def add_semantic_entry(self, entry, type="semantic"):
+            self.semantic.append(entry)
+
     def promote_to_semantic(self, entry):
         if entry in self.episodic:
             print(f"[MEMORY] Promoted to semantic: '{entry.description}' about {getattr(entry.target, 'name', entry.target)}. Tags: {entry.tags}. Importance: {entry.importance}.")

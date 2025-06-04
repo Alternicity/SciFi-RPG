@@ -6,7 +6,7 @@ from npc_actions import steal_auto, rob_auto, idle_auto, visit_location_auto
 from character_thought import Thought
 from worldQueries import get_viable_robbery_targets
 from motivation import Motivation
-from summary_utils import summarize_percepts
+from summary_utils import summarize_motivations_and_percepts
 import random
 from city_vars import GameState
 from create_game_state import get_game_state
@@ -108,11 +108,12 @@ class GangMemberAI(UtilityAI):
 
     def think(self, region):
         self.npc.observe(region=region, location=self.npc.location)
-        print(f"\n--- from GangMemberAI, {self.npc.name} is about to think ---")
-        print("\n" * 1)
-        
-        print(f"[Percepts Before Thinking] {self.npc.name}:\n{summarize_percepts(self.npc)}")
-        print("\n" * 1)
+
+        if self.npc.isTestNPC:
+            print(f"\n--- from GangMemberAI, {self.npc.name} is about to think ---")
+            #print("\n" * 1)     
+            print(f"[Percepts Before Thinking] {self.npc.name}:\n{summarize_motivations_and_percepts(self.npc)}")
+            print("\n" * 1)
 
 
         if self.npc.faction.is_street_gang == True:
@@ -167,6 +168,7 @@ class GangMemberAI(UtilityAI):
         if self.npc.is_test_npc:
             print(f"[MIND DUMP] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind]}")
         print(f"[DEBUG] from def think in GangMemberAI {self.npc.name} thinking with {len(self.npc.memory.episodic)} episodic memories")
+        print(f"From GangMember Attention focus: {self.npc.attention_focus}")
 
         # Use the shared logic
         self.promote_thoughts()
@@ -178,7 +180,7 @@ class GangMemberAI(UtilityAI):
         """ print(f"{self.npc.name}'s thoughts after thinking:")
         for t in self.npc.mind:
             print(f" - {t}") """
-        print(f"From GangMember Attention focus: {self.npc.attention_focus}")
+        
 
     """ def custom_action_logic(self, region):
         npc = self.npc
@@ -304,7 +306,7 @@ class GangMemberAI(UtilityAI):
 
 game_state = get_game_state()
 
-#utilty functions, called from within gang cahracter classes
+#utilty functions, called from within gang character classes
 def evaluate_turf_war_status(npc, region_knowledge):
     
     my_faction = npc.faction

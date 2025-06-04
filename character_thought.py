@@ -46,6 +46,19 @@ class Thought:
             return self.memory.origin.compute_salience(observer)
         return 0
 
+    def summary(self, include_source=False, include_time=False):
+        parts = [
+            f"'{self.content}'",
+            f"origin='{getattr(self.origin, 'name', self.origin)}'",
+            f"urgency={self.urgency}",
+            f"tags={self.tags}"
+        ]
+        if include_source:
+            parts.append(f"source='{getattr(self.source, 'name', self.source)}'")
+        if include_time:
+            parts.append(f"time={int(self.timestamp)}")
+        return f"<Thought: {', '.join(parts)}>"
+
     def __repr__(self):
         return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "
                 f"source='{getattr(self.source, 'name', self.source)}', urgency={self.urgency}, "

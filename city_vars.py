@@ -29,7 +29,7 @@ class GameState:
         self.state_staff = []
         corp_hqs = []
         self.player_character = None
-
+        self.orphans = []
         self.downtown_gangs = []
         self.northville_gangs = []
         self.easternhole_gangs = []

@@ -13,12 +13,16 @@ class UtilityAI(BaseAI):
         self.npc = npc
 
     """ Filtering episodic memories and tagging/promoting important ones into thoughts.
-        Salience/motivation scoring.
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
 
     def choose_action(self, region):
         npc = self.npc
+
+        #prevent herding
+        if not getattr(npc, "isTestNPC", False):
+            return {"name": "idle"}
+
         motivations = npc.motivation_manager.get_motivations()
         if not motivations:
             return {"name": "idle"}
@@ -200,7 +204,9 @@ class UtilityAI(BaseAI):
         # Set attention focus to most urgent thought
         if thoughts:
             npc.attention_focus = max(thoughts, key=lambda t: t.urgency)
-            print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus}")
+            print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary()}")
+            #for mmore info uncomment the following line
+            #print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary(include_source=True, include_time=True)}")
         else:
             npc.attention_focus = None
 

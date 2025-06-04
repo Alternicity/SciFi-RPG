@@ -195,6 +195,9 @@ class Character(PerceptibleMixin):
         self.name = name
         self.is_player = False
         self.is_test_npc = False  # Default to False
+        self.is_peaceful_npc = False
+        self.has_plot_armour = False
+
         if not self.is_player:
             
             self.ai = ai or UtilityAI(self)
@@ -523,7 +526,6 @@ class Character(PerceptibleMixin):
         # Main perception logic for a character NPC.
         region = region or self.region
         location = location or self.location
-
 
         if region and not hasattr(region, "locations"):
             print(f"[WARN] {self.name}'s 'region' is not a valid Region object: {region}")
@@ -857,7 +859,9 @@ class Location(PerceptibleMixin):
     name: str = "Unnamed Location"
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional['Region'] = None
-    child_location: Optional['Location'] = None  # Specific location within the location
+
+    sublocations: Optional[List['Location']] = None  # Specific location within the location
+
     tags: list[str] = field(default_factory=list)
     menu_options: List[str] = field(default_factory=list)
     security: Security = field(default_factory=lambda: Security(
@@ -910,7 +914,6 @@ class Location(PerceptibleMixin):
             "source": None,
             "salience": salience
         }
-
 
     def get_menu_options(self, character):
         """Returns only the static menu options defined in a location."""

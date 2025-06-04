@@ -9,6 +9,7 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                            CEO, Manager, CorporateSecurity, Civilian)
 #🟢 ⚪🔴 🔵 🟡 🟠 🟣 ⚫  🟤
 from create_game_state import get_game_state  # Ensure we get the latest game state
+from typing import Optional
 
 def get_region_by_name(name, all_regions): #these get functions get the object from a "string"
     """Finds and returns the region object by name."""
@@ -168,7 +169,13 @@ def normalize_location_regions(all_locations, all_regions):
                 loc.region = matched_region
                 matched_region.add_location(loc)
 
-            
+from location import Location
+def find_sublocation(location: Location, name: str) -> Optional[Location]:
+        if location.sublocations:
+            for sub in location.sublocations:
+                if name.lower() in sub.name.lower():
+                    return sub
+        return None
 
                 
 #For displaying or logging wallet values:

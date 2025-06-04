@@ -41,12 +41,12 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     npc.ai.think(npc.location.region)
                     npc.ai.promote_thoughts()
 
-                # DEBUG: Thought Check
+                # DEBUG: Thought Check 1
                 if debug_character and npc.name == debug_character.name:
-                    print(f"\n[DEBUG] {npc.name} Thoughts:")
+                    print(f"\n[DEBUG] From simulate_days Thought Check 1 {npc.name} Thoughts:")
                     for t in npc.mind:
                         print(f" - {t}")
-                    print(f"[DEBUG] Attention focus: {npc.attention_focus}")
+                    print(f"[DEBUG] simulate_days Thought Check 1, debug_character attention focus is {npc.attention_focus}")
                     #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
 
         # STEP 2: Choose and Execute Action
@@ -58,12 +58,15 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 if npc.location and npc.location.region:
                     npc.ai.think(npc.location.region)
                 else:
-                    print(f"[Warning] {npc.name} has no location or region.")
+                    is_street = getattr(npc.faction, "is_street_gang", False)
+                    print(f"[Warning] {npc.name} ({npc.__class__.__name__}) has no location or region. Street Gang: {is_street}")
+
+
                 npc.ai.promote_thoughts()     # << Optional: Push important thoughts into action-focus
 
-                # DEBUG: Thought Check
+                # DEBUG: Thought Check 2
                 if debug_character and npc.name == debug_character.name:
-                    print(f"\n[DEBUG] {npc.name} Thoughts:")
+                    print(f"\n[DEBUG] from simulate_days Thought Check 2{npc.name} Thoughts:")
                     for t in npc.mind.thoughts:
                         print(f" - {t}")
                     print(f"[DEBUG] Attention focus: {npc.attention_focus}")

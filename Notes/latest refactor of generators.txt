@@ -26,7 +26,7 @@ Shop(Vendor) concrete, common
 CorporateStore(Vendor) concrete, 1-2 per corp
 RepairWorkshop(Location) concrete
 MechanicalRepairWorkshop(RepairWorkshop) concrete
-ElectricalRepairWorkshop(RepairWorkshop) concrete
+ElectricalWorkshop(RepairWorkshop) concrete
 Stash(Location) hidden, associated with a gang, concrete
 Factory(Location) concrete
 Nightclub(Location) concrete

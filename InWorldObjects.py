@@ -413,6 +413,30 @@ class CashRegister(ObjectInWorld):
         taken = self.withdraw(self.cash)
         return CashWad(taken)
 
+class Container:
+    def __init__(self):
+        self.inventory = []
+
+    def add(self, item):
+        self.inventory.append(item)
+
+    def remove(self, item):
+        if item in self.inventory:
+            self.inventory.remove(item)
+
+    def list_items(self):
+        return self.inventory
+
+
+class ToyBox(Container):
+    def __repr__(self):
+        return f"ToyBox({len(self.inventory)} bricks)"
+
+
+class MarbleBag(Container):
+    def __repr__(self):
+        return f"MarbleBag({len(self.inventory)} marbles)"
+
     # 💸 MONEY VARIABLE NAMING CONVENTION (Standardized for RPG Project)
 #
 # 🧱 CORE VARIABLES (Used throughout codebase):

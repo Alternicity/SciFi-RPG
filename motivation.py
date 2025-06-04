@@ -68,6 +68,9 @@ VALID_MOTIVATIONS = {
         "sow_dissent": 4, #sowDissent(Character, rivals) #weaken a rival or enemy factions loyalities
         "patrol": 3, #patrol(character, region, targetObjects) A key FSM action for low level faction members
         "snitch": 2, #snitch(character, target, location) If a character sees a crime, or feels threatened by faction behaviour
+        "explore_math": 8,
+        "use_advanced_python_features": 8,
+        "stimulate_programmer": 8,
     }
 
 class MotivationManager:

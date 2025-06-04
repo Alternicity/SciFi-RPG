@@ -50,6 +50,7 @@ class Gang(Faction):
         self.captains = []
         self.members = []
         self.is_street_gang = False
+        self.street_gang_start_location = None
 
     def add_boss(self, boss):
         if boss.race == self.race:  # Ensure race matches

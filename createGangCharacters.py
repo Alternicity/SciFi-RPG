@@ -1,3 +1,4 @@
+#createGangCharacter.py
 import random
 from characters import Boss, Captain, GangMember
 from create_character_names import create_name
@@ -9,14 +10,29 @@ from weapons import Knife
 from inventory import Inventory
 from character_memory import MemoryEntry
 #no ai import here
-def create_gang_characters(faction):
+def create_gang_characters(faction, all_regions):
 
     if faction.type != "gang":
         raise ValueError(f"Faction {faction.name} is not a gang.")
 
     characters = []
 
+    if faction.is_street_gang:
+        region = faction.region
+        region_locations = region.get_all_locations()
+        preferred_types = ["Park", "VacantLot", "ApartmentBlock", "PoliceStation"]
+        preferred = [loc for loc in region_locations if loc.__class__.__name__ in preferred_types]
+
+        start_location = random.choice(preferred if preferred else region_locations)
+        faction.street_gang_start_location = start_location
+
+        # Optional dramatic print
+        print(f"[INIT] Members of street gang '{faction.name}' will start at '{start_location.name}' in region '{region.name}'")
     
+        # Add to region's street gang list
+        if faction not in region.region_street_gangs:
+            region.region_street_gangs.append(faction)
+
     #print(f"Creating Boss for {faction.name}...")
 
     status = CharacterStatus()
@@ -24,29 +40,42 @@ def create_gang_characters(faction):
 
     sex = random.choice(Character.VALID_SEXES)
     name = create_name(faction.race, sex)
-    race = faction.race  # Use race assigned during faction creation
+    race = faction.race  
+
 
     boss = Boss(
         name=name,
-        race=faction.race,#we already set this above?
+        race=faction.race,
         sex=sex,
         faction=faction,
         region=faction.region,
         location=None,
         motivations=MotivationPresets.for_class("Boss"),
-
         status=status
     )
+    if faction.is_street_gang and faction.street_gang_start_location:
+        boss.location = faction.street_gang_start_location
+    elif faction.HQ:
+        boss.location = faction.HQ
+    else:
+        print(f"[ERROR] {faction.name} has no HQ and no valid start location.")
+
     faction.boss = boss  # <-- Store boss reference in gang
     characters.append(boss)
-    if faction.HQ:
-        faction.boss.location = faction.HQ
+    faction.region.characters_there.append(boss)
+
+    """ if faction.HQ:
+        faction.boss.location = faction.HQ #it seems this works for Bosses
         faction.boss.region = faction.HQ.region
     else:
-        faction.boss.location = None
-        faction.boss.region = faction.region  # fallback, still in region
+        if faction.is_street_gang and faction.street_gang_start_location:
+            faction.boss.location = faction.street_gang_start_location
+            faction.boss.region = faction.region
+        else:
+            print(f"[ERROR] {faction.name} has no HQ and no street_gang_start_location. Boss location is undefined.")
+            faction.boss.location = None
+            faction.boss.region = faction.region """
 
-    # Assign boss to the correct gang in GameState PAUSED/FAILS
     from create_game_state import get_game_state
     game_state = get_game_state()
     for gang in game_state.gangs:
@@ -74,9 +103,16 @@ def create_gang_characters(faction):
 
             status=status
         )
-        characters.append(captain)
+        
         faction.captains.append(captain)
         faction.members.append(captain)
+
+        if faction.is_street_gang and faction.street_gang_start_location:
+            captain.location = faction.street_gang_start_location
+        elif faction.HQ:
+            captain.location = faction.HQ
+        characters.append(captain)
+        faction.region.characters_there.append(captain)
 
     # Gang Members
     for _ in range(random.randint(5, 10)):
@@ -97,7 +133,15 @@ def create_gang_characters(faction):
         inventory=Inventory([Knife(owner_name=name)]),
         status=status
     )
-    characters.append(member)
+
+        faction.members.append(member)
+        
+        if faction.is_street_gang and faction.street_gang_start_location:
+            member.location = faction.street_gang_start_location
+        elif faction.HQ:
+            member.location = faction.HQ
+        characters.append(member)
+        faction.region.characters_there.append(member)
     
     for char in characters:
         if hasattr(char, "memory"):
@@ -110,40 +154,17 @@ def create_gang_characters(faction):
     if char.race != faction.race:
         print(f"[WARNING] {char.name} has race {char.race} but gang {faction.name} is {faction.race}")
 
-    # Gang HQ and Boss Diagnostics
-    """ msg = f"Boss {boss.name} created for faction '{faction.name}'"
-    assigned = False
-    hq_present = False
-    located_correctly = False
+    already_logged = set()
 
-    from create_game_state import get_game_state
-    game_state = get_game_state()
+    for region in all_regions:
+        for gang in region.region_street_gangs:
+            loc = getattr(gang, "street_gang_start_location", None)
+            if loc:
+                key = (gang.name, region.name)
+                if key not in already_logged:
+                    count = sum(1 for c in region.characters_there if getattr(c, "faction", None) == gang)
+                    if count > 0:
+                        print(f"[DENSITY] {count} members of street gang '{gang.name}' are starting at '{loc}' in region '{region.name}'")
+                        already_logged.add(key)
 
-    for gang in game_state.gangs:
-        if gang.name == faction.name:
-            assigned = gang.boss == boss
-            hq_present = gang.HQ is not None
-            located_correctly = boss.location == gang.HQ if gang.HQ else False
-
-            if gang.HQ and boss.location is None:
-                boss.location = gang.HQ
-                boss.region = gang.HQ.region
-
-            msg = f"Boss {boss.name} created for faction '{faction.name}'"
-            msg += f"; Assigned to game_state.gang: {'Yes' if assigned else 'No'}"
-
-            if hq_present:
-                msg += f"; Gang HQ exists: Yes; Boss located in HQ: {'Yes' if located_correctly else 'No'}"
-            else:
-                if gang.is_street_gang:
-                    msg += "; Gang HQ exists: No, they are a street gang, looking for an HQ."
-                else:
-                    msg += "; Gang HQ exists: No."
-            print(msg)
-            break """
-
-
-    """ # TODO: Add optional gender split logic
-    # TODO: Add Gang Assassins if needed later
-    # TODO: Log each type created (e.g., # of captains, members) """
-    return characters
+        return characters

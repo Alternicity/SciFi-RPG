@@ -44,7 +44,9 @@ class Region(PerceptibleMixin):
             "danger_level": str(self.danger_level) if self.danger_level else "Unknown"
         }
 
-
+    def get_all_locations(self):
+        return self.locations
+        
 #Each region will contain a list of Shop and other Location objects
     def add_location(self, location: Location):
         """Adds a location to this region and updates the location's region reference."""
@@ -403,7 +405,7 @@ class MechanicalRepairWorkshop(Location):
 
 
 @dataclass(unsafe_hash=True)
-class ElectricalRepairWorkshop(Location):
+class ElectricalWorkshop(Location):
     name: str = "Sparks"
     tags: list[str] = field(default_factory=lambda: ["electrical", "repair"])
     materials_required: List[str] = field(default_factory=list)  # An empty list
@@ -425,10 +427,10 @@ class ElectricalRepairWorkshop(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "ElectricalRepairWorkshop",
+            "type": "ElectricalWorkshop",
             "name": self.name,
             "region": self.region.name if self.region else None,
-            "description": f"ElectricalRepairWorkshop: {self.name}",
+            "description": f"ElectricalWorkshop: {self.name}",
             "robbable": True,
             "origin": self,
             "urgency": 1,

@@ -11,6 +11,8 @@ def run_simulation(all_characters, num_days=10):
     print(f"\nRunning simulation for {num_days} days...\n")
     debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)
 
+    #mark test npc
+    debug_gang_npc.isTestNPC = True
 
     # Set test NPC to Easternhole if needed
     easternhole_region = next((r for r in game_state.all_regions if r.name == "Easternhole"), None)
@@ -37,10 +39,7 @@ def run_simulation(all_characters, num_days=10):
         print(f"[Simulation] Moved {debug_gang_npc.name} to {test_location}")
     else:
         print("[Simulation] WARNING: Easternhole region not found.") """
-
-    # the above block comment needs to change to put the test_npc in Easternhole, but not set a location.
-
-
+    
     from weapons import Pistol
     from InWorldObjects import CashWad
 
@@ -76,7 +75,7 @@ def run_simulation(all_characters, num_days=10):
             importance=3,
             tags=["shop", "weapons"]
         )
-        debug_gang_npc.memory.add_entry(entry)  # Adds to episodic by default
+        debug_gang_npc.memory.add_semantic_entry(entry)  # Adds to episodic by default
         #If this memory is later proven useful:
         #debug_gang_npc.memory.promote_to_semantic(entry)
 

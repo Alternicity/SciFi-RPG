@@ -494,7 +494,7 @@ class GangMember(Subordinate):
         # Enforce the primary domain (in case Character didn't get it from kwargs)
         self.primary_status_domain = "criminal"
         
-        
+        self.isTestNPC = False
         self.targetIsInMelee = False
         self.isAggressive = False
         #self.ai = GangMemberAI(self)
@@ -1322,3 +1322,95 @@ class Accountant(Character):
     def whereabouts(self):
         
         return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
+
+class SpecialChild(Child):
+    is_concrete = True
+    default_motivations = [("have_fun", 4), ("find_safety", 3)]
+
+    def __init__(self, name, race, sex, region, location, faction="None", parent=None, bankCardCash=0, position="Minor", loyalties=None,
+        influence=0, strength=3, agility=10, intelligence=5, 
+        luck=0, psy=0, toughness=5, morale=1, fun=2, hunger=2, status=None, motivations=None, **kwargs):
+        
+
+        if status is None:
+            status = CharacterStatus()
+
+        # Public: children are known or noticed
+        if "public" not in status.status_by_domain:
+            status.set_status("public", FactionStatus(StatusLevel.LOW, position))
+
+        # State: tracked by civil systems (schooling, orphanages, etc.)
+        if "state" not in status.status_by_domain:
+            status.set_status("state", FactionStatus(StatusLevel.LOW, "Registered Minor"))
+
+        # Placeholders
+        if "corporate" not in status.status_by_domain:
+            status.set_status("corporate", FactionStatus(StatusLevel.NONE, "None"))
+        if "criminal" not in status.status_by_domain:
+            status.set_status("criminal", FactionStatus(StatusLevel.NONE, "None"))
+
+        kwargs["primary_status_domain"] = "public"
+
+        # Default loyalty setup for Child
+        default_loyalties = {
+            parent: 90,  # loyalty to their own faction
+            "Law": 30,  # Don't steal!
+        }
+        # Merge defaults with provided loyalties
+        default_loyalties.update(loyalties or {})
+
+        wallet = kwargs.pop("wallet", generate_wallet("Child"))
+        super().__init__(
+            name=name,
+            race=race,
+            sex=sex,
+            faction=faction,
+            region=region,
+            location=location,
+            fun=fun,
+            hunger=hunger,
+            position=position,  # Ensure position is passed correctly
+            strength=strength,
+            agility=agility,
+            intelligence=intelligence,
+            luck=luck,
+            psy=psy,
+            toughness=toughness,
+            morale=morale,
+            loyalties=default_loyalties,
+            wallet=wallet,
+            status=status,
+            motivations=motivations or self.default_motivations,
+            **kwargs
+        )
+        
+        self.parent = parent if isinstance(parent, Character) and parent.race == race else None
+        self.influence = influence
+        self.targetIsInMelee = False 
+        self.health = 15 + toughness
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+        self.position = position
+
+    def __repr__(self):
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
+
+    @property
+    def whereabouts(self):
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
+    
+    def update_parent(self, new_parent):
+        """
+        Updates the parent attribute.
+
+        :param new_parent: A new parent (Character object) or None.
+        """
+        if new_parent is None or (isinstance(new_parent, Character) and new_parent.race == self.race):
+            self.parent = new_parent
+        else:
+            raise ValueError("New parent must be a Character of the same race or None.")
+
+    def orphan(self):
+        """Sets the parent attribute to 'Orphan'."""
+        self.parent = "Orphan"
