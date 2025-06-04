@@ -463,19 +463,54 @@ class ArmedRobbery(Event):
         print(f"[INFO] ArmedRobbery at {self.location.name} already resolved.")
         return "resolved"
 
-def handle_event(event_name, character, location):
-    if event_name == "Rob":
-        robbery = Robbery(character, location, weapon_used=True)
-        incident = robbery.resolve()
-        if incident:
-            incident.resolve()
-        return robbery
-    else:
-        print(f"Unhandled event type: {event_name}")
+    def handle_event(event_name, character, location):
+        if event_name == "Rob":
+            robbery = Robbery(character, location, weapon_used=True)
+            incident = robbery.resolve()
+            if incident:
+                incident.resolve()
+            return robbery
+        else:
+            print(f"Unhandled event type: {event_name}")
 
 
-def simulate_events(events, targets):
-    for event in events:
-        target = targets.get(event.effect.get("resource") or event.effect.get("attribute"))
-        if target:
-            event.apply(target)
+    def simulate_events(events, targets):
+        for event in events:
+            target = targets.get(event.effect.get("resource") or event.effect.get("attribute"))
+            if target:
+                event.apply(target)
+
+class TurfWar(Event):
+
+    #Set region.turf_war_triggered = True HERE, not evaluate
+
+    def __init__(self, region, **kwargs):
+        super().__init__(
+            name="Turf War",
+            event_type="incident",  # e.g. "incident", "normal", etc.
+            description="Too many street gangs lloking for a home.",
+            impact={"fun": -1},  # Replace or remove as needed
+            **kwargs
+        )
+        self.region = region
+
+    def raid():
+        #increase steet_gang aggression vs other street_gangs, gangs, and raid buildings
+
+        pass
+
+    def generate_percepts(self):
+
+        percept = {
+            "description": f"{self.name} at {self.location.name}",
+            "origin": self,
+            "tags": ["template", "event"],
+            "salience": 10,
+            "location": self.location.name,
+            "region": getattr(self.location, "region", "unknown"),
+        }
+
+    def conclude(self):
+        #when there is <3 street gangs in a region,  conclude
+        print(f"[DEBUG] {self.name} at {self.location.name} has concluded.")
+        # Optional cleanup or progression logic here

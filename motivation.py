@@ -59,7 +59,9 @@ VALID_MOTIVATIONS = {
         "escape_danger": 8,  # Very urgent in dangerous situations
         "virtue_signal": 1,
         "find_partner": 3,
-        "switch_partner": 2, #hypergamy exists here, see switchPartner(actor, target, currentPartner): Must be a perceived upgrade
+        "switch_partner": 2,#hypergamy exists here, see switchPartner(actor, target, currentPartner): Must be a perceived upgrade
+        "seek_attention": 2,
+        "seek_validation": 2,
         "influence": 4, #influence(actor, target): Change some other characters variables. See Charm() and create_psyop() and influece()
         "increase_popularity": 3, #see charm(actor, target):
         "decrease_hostilities": 4, #see reassureRivals(Boss, rivals): and offerTruce(Boss, rivals): but also offerFauxTruce(Boss, rivals):
@@ -119,7 +121,10 @@ class MotivationManager:
             if m.type == type_name:
                 m.urgency = max(0, m.urgency - amount)
 
-    def has_motivation(self, motivation_type):
-        return any(m.type == motivation_type for m in self.get_motivations())
+    def get_urgency(self, motivation_type):
+        for m in self.motivations:
+            if m.type == motivation_type:
+                return m.urgency
+        return 0  # or a sensible fallback
 
     

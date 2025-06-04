@@ -67,7 +67,8 @@ def action_is_available(character, action_name):
 
 
 def visit_location(character, location=None):
-    """Presents a menu to visit a location within the region."""
+    """Presents a menu to visit a location within the region.
+    This function was developed for player/menu use"""
     from menu_utils import display_menu, get_available_options
     from location_utils import get_visitable_locations
     from characterActions import choose_location
@@ -89,7 +90,7 @@ def visit_location(character, location=None):
             print("Error: No location was chosen! Returning to main menu.")
             return
         
-    if character.is_player: #new
+    if character.is_player: #NPC logic needs removing from this function, as we now have 
 
         #is the following code now deprecated? choose_location(region) has already been called..
         choice = display_menu(locations)

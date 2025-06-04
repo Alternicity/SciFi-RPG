@@ -20,7 +20,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
                 # OBSERVE
                 print(f"In simulate_days, {npc.name} attempting to observe.")
-                npc.observe(None, None, region, npc.location)
+                npc.observe(region=region, location=npc.location)
 
 
                 if debug_character and npc.name == debug_character.name:
@@ -38,7 +38,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
                 #THINK
                 if hasattr(npc, 'ai') and npc.ai:
-                    npc.ai.think(region)
+                    npc.ai.think(npc.location.region)
                     npc.ai.promote_thoughts()
 
                 # DEBUG: Thought Check
@@ -55,7 +55,10 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
                 # NEW: Let AI process thoughts
                 npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
-                npc.ai.think(npc.location)    # << Pre-action planning / sense-making
+                if npc.location and npc.location.region:
+                    npc.ai.think(npc.location.region)
+                else:
+                    print(f"[Warning] {npc.name} has no location or region.")
                 npc.ai.promote_thoughts()     # << Optional: Push important thoughts into action-focus
 
                 # DEBUG: Thought Check
@@ -76,12 +79,13 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
             if npc is not debug_character:
                 continue
             print(f"=== DEBUG: {npc.name} ===")
-            print(f"MIND: {[str(thought) for thought in npc.mind]}")
+            #print(f"MIND: {[str(thought) for thought in npc.mind]}")
 
             """ print("MOTIVATIONS:")
             for m in npc.motivation_manager.get_motivations():
                 print(f" - {m}") """
-            print("MEMORY (Episodic):")
+            
+            #print("MEMORY (Episodic):")
 
             for mem in npc.memory.episodic:
                 print(f" - {mem}")
@@ -90,8 +94,9 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 print(f" - {mem}")
             #print("THOUGHTS:")
             for thought in npc.mind:
-                print(f" - {thought}")
-            print(f"ATTENTION: {npc.attention_focus}")
+                pass
+                """ print(f" - {thought}")
+            print(f"ATTENTION: {npc.attention_focus}") """
 
     # STEP 4: Sanity Check on Character List
     for c in all_characters:

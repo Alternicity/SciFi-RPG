@@ -45,7 +45,8 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     try:
         municipal_building = MunicipalBuilding(
             region=region,
-            name=f"Municipal Building in {region.name}"
+            name=f"Municipal Building in {region.name}",
+            tags=["government", "law", "tax"]
         )
         locations.append(municipal_building)
         region.add_location(municipal_building)

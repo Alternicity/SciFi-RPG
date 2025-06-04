@@ -79,7 +79,7 @@ class VacantLot(Location):
 
     def has_security(self):
         return False
-    
+    tags: list[str] = field(default_factory=lambda: ["vacant", "empty"])
     is_open: bool = True
     security_level: int = 0
     name: str = "Empty Land"
@@ -110,7 +110,7 @@ class HQ(Location):
 
     def has_security(self):
         return False
-    
+    tags: list[str] = field(default_factory=lambda: ["hq", "faction"])
     is_open: bool = True
     name: str = "Base"
     faction: Optional[Faction] = field(default=None)
@@ -204,7 +204,7 @@ from characters import Employee
 class Shop(Vendor):
 
     name: str = "QQ Store"
-    
+    tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial"])
     legality: bool = True
     employees_there: List['Employee'] = field(default_factory=list)
     characters_there: List['Character'] = field(default_factory=list)
@@ -291,7 +291,8 @@ class Shop(Vendor):
 @dataclass
 class CorporateStore(Vendor):
     name: str = "Stores"
-    
+    faction: Optional[Faction] = field(default=None)
+    tags: list[str] = field(default_factory=lambda: ["corporate"])
     corporation: str = "Default"  # Default value is now valid
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[str] = field(default_factory=list)
@@ -353,7 +354,7 @@ class CorporateStore(Vendor):
 @dataclass(unsafe_hash=True)
 class MechanicalRepairWorkshop(Location):
     name: str = "Greasehands"
-    
+    tags: list[str] = field(default_factory=lambda: ["garage", "repair", "mechanical"])
     items_available: list = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     # Inherit materials_required from the parent class (RepairWorkshop)
@@ -404,7 +405,7 @@ class MechanicalRepairWorkshop(Location):
 @dataclass(unsafe_hash=True)
 class ElectricalRepairWorkshop(Location):
     name: str = "Sparks"
-    
+    tags: list[str] = field(default_factory=lambda: ["electrical", "repair"])
     materials_required: List[str] = field(default_factory=list)  # An empty list
     items_available: List[Any] = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -456,7 +457,7 @@ class ElectricalRepairWorkshop(Location):
 @dataclass
 class Stash(Location):
     name: str = "Secret Stash 1"
-    
+    tags: list[str] = field(default_factory=lambda: ["secret", "gang"])
     legality: bool = False
     items_available: List[Any] = field(default_factory=list)
     stored_items: List[str] = field(default_factory=list)
@@ -516,7 +517,7 @@ class Stash(Location):
 @dataclass
 class Factory(Location):
     name: str = "The Old Factory"
-    
+    tags: list[str] = field(default_factory=lambda: ["corporate", "factory"])
     goods_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
     items_available: List[Any] = field(default_factory=list)
@@ -572,7 +573,7 @@ class Factory(Location):
 @dataclass
 class Nightclub(Location):
     name: str = "Music and Slappers"
-    
+    tags: list[str] = field(default_factory=lambda: ["fun", "social"])
     fun: int = 1
     items_available: List[Any] = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -631,7 +632,7 @@ class Nightclub(Location):
 @dataclass
 class Mine(Location):
     name: str = "Typical Mine"
-    
+    tags: list[str] = field(default_factory=lambda: ["corporate", "grim"])
     fun: int = 0
     items_available: List[Any] = field(default_factory=list)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -676,7 +677,7 @@ class Mine(Location):
 @dataclass
 class Powerplant(Location):
     name: str = "Le PowerPlant 1"
-    
+    tags: list[str] = field(default_factory=lambda: ["power", "grim"])
     energy_output: int = 1000
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[Any] = field(default_factory=list)
@@ -757,7 +758,7 @@ class Powerplant(Location):
 @dataclass
 class Airport(Location):
     name: str = "Air Port 1"
-    
+    tags: list[str] = field(default_factory=lambda: ["airport", "corporate", "export", "import"])
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
@@ -872,7 +873,7 @@ class Airport(Location):
 @dataclass
 class Port(Location):
     name: str = "Edge Port"
-    
+    tags: list[str] = field(default_factory=lambda: ["port", "import", "export"])
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
@@ -988,7 +989,7 @@ class Port(Location):
 @dataclass
 class Factory(Location):
     name: str = "Default Factory Name"
-    
+    tags: list[str] = field(default_factory=lambda: ["corporate", "manufacture", "grim"])
     raw_materials_needed: int = 100
     output_rate: int = 100
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -1051,7 +1052,7 @@ class Factory(Location):
 @dataclass
 class Cafe(Location):
     name: str = "Metro Cafe"
-    
+    tags: list[str] = field(default_factory=lambda: ["fun", "food", "social"])
     upkeep: int = 10
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -1108,7 +1109,7 @@ def __repr__(self):
 @dataclass
 class Park(Location):
     name: str = "Green Park"
-    
+    tags: list[str] = field(default_factory=lambda: ["fun", "social"])
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     upkeep: int = 15
     ambiance_level: int = 1
@@ -1154,7 +1155,7 @@ class Park(Location):
 @dataclass
 class Museum(Location):
     name: str = "City Museum"
-    
+    tags: list[str] = field(default_factory=lambda: ["fun", "culture", "history"])
     upkeep: int = 45
     artifact_count: int = 50
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -1200,7 +1201,7 @@ class Museum(Location):
 @dataclass
 class Library(Location):
     name: str = "Public Library"
-    
+    tags: list[str] = field(default_factory=lambda: ["books", "social"])
     categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 20
     book_count: int = 10000
@@ -1246,7 +1247,7 @@ class Library(Location):
 @dataclass
 class ResearchLab(Location):
     name: str = "OmniLab"
-    
+    tags: list[str] = field(default_factory=lambda: ["science", "tech"])
     prototypes_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
     equipment_list: List[str] = field(default_factory=list) #An empty list but lab must have something here
@@ -1302,7 +1303,7 @@ class ResearchLab(Location):
 @dataclass
 class Warehouse(Location):
     name: str = "Warehouse 5"
-    
+    tags: list[str] = field(default_factory=lambda: ["storage", "faction"])
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     storage_capacity: int = 50 # will need to upgrade to a more complex data structure
@@ -1347,7 +1348,7 @@ class Warehouse(Location):
 @dataclass
 class ApartmentBlock(Location):
     name: str = "Mass Housing"
-    
+    tags: list[str] = field(default_factory=lambda: ["homes", "grim"])
     upkeep: int = 35
     categories: List[str] = field(default_factory=lambda: ["residential"])
     storage_capacity: int = 50 # LOL, will need to upgrade to a more complex data structure
@@ -1398,7 +1399,7 @@ class ApartmentBlock(Location):
 @dataclass
 class House(Location):
     name: str = "Fam House"
-    
+    tags: list[str] = field(default_factory=lambda: ["home", "family"])
     categories: List[str] = field(default_factory=lambda: ["residential"])
     upkeep: int = 5
     fun: int = 1
@@ -1446,7 +1447,7 @@ class House(Location):
 @dataclass
 class SportsCentre(Location):
     name: str = "The Stadium"
-    
+    tags: list[str] = field(default_factory=lambda: ["fun", "social"])
     upkeep: int = 30
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -1481,8 +1482,6 @@ class SportsCentre(Location):
             "salience": self.compute_salience(observer)
         }
 
-    
-
     def to_dict(self):
         return asdict(self)
 
@@ -1497,7 +1496,7 @@ class SportsCentre(Location):
 @dataclass
 class Holotheatre(Location):
     name: str = "Zodeono"
-    
+    tags: list[str] = field(default_factory=lambda: ["fun", "social"])
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
@@ -1532,8 +1531,6 @@ class Holotheatre(Location):
             "salience": self.compute_salience(observer)
         }
     
-    
-
     def to_dict(self):
         return asdict(self)
 
@@ -1548,7 +1545,7 @@ class Holotheatre(Location):
 @dataclass
 class MunicipalBuilding(Location):
     name: str = "City Hall"
-    
+    tags: list[str] = field(default_factory=lambda: ["law", "state"])
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
@@ -1595,7 +1592,7 @@ class MunicipalBuilding(Location):
 @dataclass
 class PoliceStation(Location):
     name: str = "The Yard"
-    
+    tags: list[str] = field(default_factory=lambda: ["law", "grim"])
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[str] = field(default_factory=list) 
     resource_storage: Dict[str, int] = field(default_factory=dict)

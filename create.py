@@ -190,20 +190,6 @@ def create_corp_factions(num_corps, all_regions):
     return corporations
 
 
-#tmpPrint
-""" def print_sample_characters_wallets(factions):
-    print("\n=== Sample Characters and Wallets ===")
-    for faction in factions:
-        print(f"\nFaction: {faction.name}")
-        seen_classes = set()
-
-        for character in faction.members:
-            class_name = character.__class__.__name__
-            if class_name not in seen_classes:
-                seen_classes.add(class_name)
-                print(f" - {character.name} ({class_name}): Cash = {character.wallet.cash}, BankCard = {character.wallet.bankCardCash}")
- """
-
 def create_factions(all_regions, all_locations):
     from create_game_state import get_game_state
     game_state = get_game_state()
@@ -246,14 +232,6 @@ def create_factions(all_regions, all_locations):
     factions.extend(corp_factions)
 
     all_characters = create_all_characters(factions, all_locations, all_regions)
-    #print(f"create_all_characters() called from {__name__}")
-    #print(f"✅ Total characters created: {len(all_characters)}")
-
-
-    
-    #print_sample_characters_wallets(factions)
-    #verbose output
-
 
     return factions, all_characters
 

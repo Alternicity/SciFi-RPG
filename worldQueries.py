@@ -33,3 +33,11 @@ def get_nearby_objects(npc, region=None, location=None):
         nearby.append(location)
 
     return nearby
+
+def observe_location(self, loc):
+    #print(f"[Observe] {self.name} observes {loc.name}")
+    perceptibles = getattr(loc, "list_perceptibles", lambda exclude=None: [])(exclude=[self])
+    for obj in perceptibles:
+        #add to self._percepts?
+        #perhaps just hand this off to UtilityAI compute_salience_for_percepts()
+        return

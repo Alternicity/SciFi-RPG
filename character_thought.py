@@ -2,7 +2,8 @@
 import time
 
 class Thought:
-    def __init__(self, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False, corollary=None):
+    def __init__(self, subject, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False, corollary=None):
+        self.subject = subject              #The object the thought is about. Character, faction, event, ObjectInWorld etc
         self.content = content              # Description of the thought (str or object)
         self.origin = origin                # What caused it (e.g., percept source)
         self.urgency = urgency              # How pressing it is
@@ -24,7 +25,12 @@ class Thought:
         
         # simple rule-based system
         for i, cor in enumerate(self.corollary):
-            if character.intelligence > (13 + i * 2):  # 13, 15, 17...
+            if character.intelligence > (13 + i * 2):
+
+                """ loop through corollary thoughts indexed by i.
+                A character will "unlock" more advanced corollaries if their intelligence is higher.
+                The thresholds are staggered: int 13, 15, 17 """
+
                 new_thought = Thought(
                     content=f"Corollary goal: {cor.replace('_', ' ').title()}",
                     origin="CorollaryEngine",
@@ -34,6 +40,11 @@ class Thought:
                 )
                 thoughts.append(new_thought)
         return thoughts
+
+    def compute_salience(self, observer):
+        if hasattr(self, 'memory') and self.memory:
+            return self.memory.origin.compute_salience(observer)
+        return 0
 
     def __repr__(self):
         return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "

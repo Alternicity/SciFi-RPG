@@ -74,17 +74,6 @@ class Pistol(RangedWeapon):
 
     def get_percept_data(self, observer=None):
         tags = ["weapon", "pistol", "ranged"]
-        base_salience = 5  # general background level
-
-        if hasattr(observer, "motivation_manager"):
-            motivation_types = {m.type for m in observer.motivation_manager.get_motivations()}
-
-            if "robbery" in motivation_types:
-                tags.extend(["robbable", "rob"])
-                base_salience += 10
-
-            if "buy_tech" in motivation_types:
-                base_salience += 2
 
         return {
             "description": self.human_readable_id or "Pistol",
@@ -94,6 +83,16 @@ class Pistol(RangedWeapon):
             "salience": self.compute_salience(observer),
             "size": self.size.value if hasattr(self, "size") else None
         }
+    
+    def compute_salience(self, observer=None):
+        salience = 5
+        if hasattr(observer, "motivation_manager"):
+            motivations = {m.type for m in observer.motivation_manager.get_motivations()}
+            if "rob" in motivations:
+                salience += 10
+            if "buy_tech" in motivations:
+                salience += 2
+        return salience
 #You can abstract this into a helper method later, but this is a good explicit start.
 #This allows the object to generate percepts from the perspective of the observer.
 

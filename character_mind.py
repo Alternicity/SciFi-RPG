@@ -54,7 +54,7 @@ class Mind:
                 return  # Don't add duplicate content
 
         self.thoughts.append(thought)
-        print(f"[MIND] Added thought: {thought.content}")
+        #print(f"[MIND] Added thought: {thought.content}")
         
     """ keep urgent() in Mind.
 Heres why:

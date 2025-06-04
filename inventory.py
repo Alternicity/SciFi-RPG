@@ -19,7 +19,7 @@ class Inventory:
         self.owner = owner
         self.primary_weapon = None
         self.weapons = []
-
+        #self.has_illegal_items = False 
         if items:
             for item in items:
                 self.add_item(item)
@@ -74,6 +74,9 @@ class Inventory:
 
         return True
 
+    def has_illegal_items(self):
+        """Returns True if any item in the inventory is illegal (legality=False)."""
+        return any(not item.legality for item in self.items.values())
 
     def remove_item(self, item_name, quantity=1):
         item = self.items.get(item_name)

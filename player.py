@@ -1,7 +1,7 @@
 from inventory import Inventory
 from characters import Character
 
-class Player(Character)
+class Player(Character):
     def __init__(self, name, health = 100):
         self.name = name
         self.health = health
@@ -16,7 +16,7 @@ class Player(Character)
         self.inventory.display_items()
         
     def take_damage(self, damage):
-        super()take_damage(damage)
+
         print(f"{self.name} now has {self.health}")
         
     def interact_with_object(self, game_object):

@@ -54,7 +54,8 @@ class Boss(Character):
         )
         self.directives = []  # High-level orders issued to Captains/Managers
         self.primary_status_domain = "criminal"
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+  # List to store items in the character's inventory
         
     def handle_observation(self, region):
         gang_observation_logic(self, region)
@@ -117,7 +118,8 @@ class CEO(Character):
             location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs # Pass remaining keyword arguments safely
         )
         self.directives = []  # List of high-level directives
-        self.inventory = inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+
         
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
@@ -658,7 +660,8 @@ class Civilian(Character):
         self.bankCardCash = 50 """
 
         # Inventory Initialization
-        self.inventory = kwargs.get("inventory", [])
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+
     
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
@@ -757,7 +760,8 @@ class VIP(Civilian):
         self.bankCardCash = bankCardCash  # Redundant but ensures it's explicitly set for VIP """
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+  # List to store items in the character's inventory
         self.position = position
         self.region = region  # Keep track of initial region
         self.location = location  # Is this being set properly?
@@ -842,7 +846,8 @@ class Child(Civilian):
         self.bankCardCash = bankCardCash """ 
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+  # List to store items in the character's inventory
         self.position = position
 
     def __repr__(self):
@@ -950,7 +955,8 @@ class Influencer(Civilian):
         self.bankCardCash = bankCardCash """  
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+  # List to store items in the character's inventory
         self.position = position
 
     def __repr__(self):
@@ -1044,7 +1050,8 @@ class Babe(Civilian):
         self.bankCardCash = bankCardCash  """
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+  # List to store items in the character's inventory
         self.position = position
         self.partner = Character
 
@@ -1237,7 +1244,8 @@ class Taxman(Character):
 
         # self.bankCardCash = bankCardCash
 
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+  # List to store items in the character's inventory
     
     # figure out how specific charcters store their specific actions, here or in that file or both
     def squeeze_taxes(self, target):
@@ -1301,7 +1309,8 @@ class Accountant(Character):
         )
         self.position = position
 
-        self.inventory = kwargs.get("inventory", [])  # List to store items in the character's inventory
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+  # List to store items in the character's inventory
     
 
     def __repr__(self):

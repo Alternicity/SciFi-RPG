@@ -77,12 +77,14 @@ class State(Faction):
 
 
 class FactionRelationship: #update class Faction to have a container for the object, and game_state
-    def __init__(self, other_faction, hostility=0, trust=5, is_public=True, is_frenemy=False):
+    def __init__(self, other_faction, hostility=0, trust=5, is_public=True, is_frenemy=False, is_business_partner=False, is_commercial_rival=True):
         self.other_faction = other_faction  # Could be object or name
         self.hostility = hostility  # 0-10 scale
         self.trust = trust          # 0-10 scale
         self.is_public = is_public
         self.is_frenemy = is_frenemy
+        self.is_business_partner
+        self.is_commercial_rival
 
     def adjust_trust(self, amount):
         self.trust = max(0, min(10, self.trust + amount))
@@ -98,7 +100,9 @@ class FactionRelationship: #update class Faction to have a container for the obj
             status = "Frenemy"
         return f"{self.other_faction.name}: {status} (Trust {self.trust}, Hostility {self.hostility})"
 
-
+    def terminate_business_arrangement(self, biz_partner):
+        #is_business_partner
+        pass
 
 """ class GeneralPopulation(Faction):
     def __init__(self, name, violence_disposition):

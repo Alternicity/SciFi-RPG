@@ -13,6 +13,7 @@ from character_thought import Thought
 from ai_utility import UtilityAI
 from character_memory import MemoryEntry, Memory, FactionRelatedMemory
 import uuid
+from worldQueries import observe_location
 
 import time
 if TYPE_CHECKING:
@@ -505,8 +506,8 @@ class Character(PerceptibleMixin):
             tags.append("wounded")
             salience += 10
 
-        if observer and "violence" in getattr(observer, "motivations", []):
-            salience += 2  # violence-oriented characters notice more
+        """ if observer and "violence" in getattr(observer, "motivations", []):
+            salience += 2  # violence-oriented characters notice more """
 
         return {
             "description": f"{self.name} (Character)",
@@ -517,130 +518,119 @@ class Character(PerceptibleMixin):
             "salience": salience
         }
 
-    def observe(self, nearby_objects=None, target=None, region=None, location=None, include_memory_check=True):
-        # Use fallback values from self if parameters aren't passed
+    def observe(self, *, nearby_objects=None, target=None, region=None, location=None, include_memory_check=True):
+
+        # Main perception logic for a character NPC.
         region = region or self.region
         location = location or self.location
 
-        print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
 
-        # Handle case where location is None safely
-        if location is None:
-            print("[DEBUG] observe() was called with a None location.")
-            return  # Early exit — nothing to observe
+        if region and not hasattr(region, "locations"):
+            print(f"[WARN] {self.name}'s 'region' is not a valid Region object: {region}")
+            return
 
-        # Debug objects present at the location
-        print(f"[DEBUG] Objects at {getattr(location, 'name', 'Unnamed Location')}:")
+        # Observe specific location if provided
+        if location:
+            observe_location(self, location)
+
+        # Observe all locations in the region
+        if region:
+            #print(f"[Observe] {self.name} is observing the region: {region}")
+            for loc in region.locations:
+                pass
+                #observe_location(self, loc) VERBOSE
+
+        # Perceive nearby objects
+        if nearby_objects:
+            if not isinstance(nearby_objects, (list, tuple)):
+                nearby_objects = [nearby_objects]
+            for obj in nearby_objects:
+                self.perceive_object(obj)
+                print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
+            
+        # Debug objects present at the location POSSIBLY DEPRECATE
+        #print(f"[DEBUG] Objects at {getattr(location, 'name', 'Unnamed Location')}:")
         for obj in getattr(location, 'objects_present', []):
             obj_name = getattr(obj, 'name', 'Unnamed object')
             obj_type = type(obj).__name__
+            location_status = "[No location set]" if getattr(obj, 'location', None) is None else ""
+            print(f"    - {obj_name} ({obj_type}) {location_status}")
 
-            # Check if obj has a valid location
-            if getattr(obj, 'location', None) is None:
-                print(f"    - {obj_name} ({obj_type}) [No location set]")
-            else:
-                print(f"    - {obj_name} ({obj_type})")
 
-        if region:
-        # Observe locations
-            for loc in region.locations:
-                self.observe(loc)
+            # Observe other characters in the region
+            if region:
+                for char in region.characters_there:
+                    if char is not self:
+                        self._perceive(char)
 
-            # Optionally observe characters
-            for char in region.characters_there:
-                if char is not self:
-                    self._perceive(char)
+            # Semantic memory: hostile factions & general region awareness
+            if include_memory_check and hasattr(self, "faction") and region:
+                self.memory.semantic.append(region)
 
-            # Remember any gang affiliations in this region
-            #generalize to enemy factions, not just gangs
-            if include_memory_check and hasattr(self, "faction"):
                 for gang in region.region_gangs:
                     self.memory.semantic.append(gang)
 
                     # Form thought if hostile
-                    if gang.name != self.faction.name: #figure out enemy lists
-                        hostile_thought = Thought(
-                            content=f"Enemy gang {gang.name} is here...",
-                            origin=region.name,
-                            urgency=5,
-                            tags=["gang", "hostile"],
-                            source="ThreatDetection",
-                            timestamp=time.time()
-                        )
-                        self.mind.add(hostile_thought)
-                        self.is_alert = True
-                        # 🔁 Let UtilityAI interpret and possibly expand on this thought
-                        self.utility_ai.evaluate_thought_for_threats(hostile_thought)
+                    if gang.name != self.faction.name:
+                        self._remember_hostile_faction(gang, region)
 
-            # Optional: remember region
-            #add events there, 
-            self.memory.semantic.append(region)
+                for gang in region.region_street_gangs:
+                    if gang.name != self.faction.name:
+                        self._remember_hostile_faction(gang, region)
 
-            for gang in region.region_street_gangs:
-                if gang.name != self.faction.name:
-                    hostile_thought = Thought(
-                        content=f"Enemy gang {gang.name} is here...",
-                        origin=region.name,
-                        urgency=5,
-                        tags=["gang", "hostile"],
-                        source="ThreatDetection",
-                        timestamp=time.time()
-                    )
-                    self.mind.add(hostile_thought)
-                    self.is_alert = True
-
-                    # 🔁 Conditional: let AI process this thought if this character has a UtilityAI
-                    if hasattr(self, 'utility_ai'):
-                        self.utility_ai.evaluate_thought_for_threats(hostile_thought)
-
-            # 🔁 Hook for subclass to respond to observations
-            #class Character doesn’t know or care how characters handle observations
-            #it just delegates to each subclass (if it has a handle_observation() method).
+            # Trigger subclass reaction if it exists
             if hasattr(self, "handle_observation"):
                 self.handle_observation(region)
 
-            
+            # Handle location inventory
+            if location:
+                if hasattr(location, 'inventory') and location.inventory:
+                    print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
+                else:
+                    print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
 
-        if location:
-            self._perceive(location)
-
-            # Handle location inventory check safely
-            if hasattr(location, 'inventory') and location.inventory:
-                print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
-            else:
-                print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
-
-            # Determine nearby objects
-            if nearby_objects is None:
+            # Auto-fetch nearby objects if not provided
+            if location and nearby_objects is None:
                 from worldQueries import get_nearby_objects
                 nearby_objects = get_nearby_objects(self, region, location)
 
+            # Perceive valid objects
             new_percepts = {}
+            for obj in nearby_objects or []:
+                if isinstance(obj, PerceptibleMixin):
+                    percept = obj.get_percept_data(observer=self)
+                    if percept:
+                        new_percepts[obj.id] = percept
+                        print(f"[Observe] {self.name} perceived: {percept['description']} with salience {percept['salience']}")
 
-        for obj in nearby_objects:
-            if isinstance(obj, PerceptibleMixin):
-                percept = obj.get_percept_data(observer=self)
-                if percept:
-                    new_percepts[obj.id] = percept
-                    print(f"[Observe] Found perceptible: {obj} → {percept['description']}")
-                    print(f"[Observe] {self.name} perceived: {percept['description']} with salience {percept['salience']}")
+            # Perceive self
+            self_percept = self.get_percept_data(observer=self)
+            if self_percept:
+                new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
 
-        # Self-perception
-        self_percept = self.get_percept_data(observer=self)
-        if self_percept:
-            new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
+            # Initialize or update internal percept dict
+            if not hasattr(self, '_percepts') or self._percepts is None:
+                self._percepts = {}
 
-        # Accumulate percepts over time, updating existing ones
-        if not hasattr(self, '_percepts') or self._percepts is None:
-            self._percepts = {}
+            self._percepts.update(new_percepts)
+            self.percepts_updated = True
 
-        self._percepts.update(new_percepts)
+            #print(f"[Observe] {self.name} now has {len(self._percepts)} percepts.")
 
+    def _remember_hostile_faction(self, gang, region):
+        hostile_thought = Thought(
+            content=f"Enemy gang {gang.name} is here...",
+            origin=region.name,
+            urgency=5,
+            tags=["gang", "hostile"],
+            source="ThreatDetection",
+            timestamp=time.time()
+        )
+        self.mind.add(hostile_thought)
+        self.is_alert = True
 
-        self.percepts_updated = True
-        print(f"[Observe, last line] {self.name} now has {len(self._percepts)} percepts.")
-
-
+        if hasattr(self, 'utility_ai'):
+            self.utility_ai.evaluate_thought_for_threats(hostile_thought)
 
     @property
     def percepts(self):
@@ -658,7 +648,7 @@ class Character(PerceptibleMixin):
         #Keep this simple and side-effect free:
         #If you want fancier output later (e.g., filtered by urgency), create a get_high_salience_percepts() 
         #method instead.
-        return self._percepts
+        return self._percepts or {}
     
     """     Example percept dict:
         {
@@ -677,6 +667,16 @@ class Character(PerceptibleMixin):
         key = percept.get("description", f"event_{id(percept)}")
         # Merge it in, respecting salience, etc.
         self.update_percepts([percept])
+
+    def perceive_object(self, obj):
+        """
+        Perceive an object in the world. Can be overridden by subclasses.
+        """
+        if isinstance(obj, PerceptibleMixin):
+            percept = obj.get_percept_data(observer=self)
+            if percept:
+                self.update_percepts([percept])
+                print(f"[{self.name}] perceived object: {percept['description']}")
 
     @percepts.setter
     def percepts(self, new_percepts):
@@ -714,8 +714,10 @@ class Character(PerceptibleMixin):
         """
         percepts = list(self._percepts.values())
 
-        if sort_by_salience:
-            percepts = sorted(percepts, key=lambda p: p.get('salience', 0), reverse=True)
+
+        #deprecated in favour of salience function in AI logic?
+        """ if sort_by_salience:
+            percepts = sorted(percepts, key=lambda p: p.get('salience', 0), reverse=True) """
 
         return percepts
     
@@ -856,7 +858,7 @@ class Location(PerceptibleMixin):
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional['Region'] = None
     child_location: Optional['Location'] = None  # Specific location within the location
-    
+    tags: list[str] = field(default_factory=list)
     menu_options: List[str] = field(default_factory=list)
     security: Security = field(default_factory=lambda: Security(
         level=1,

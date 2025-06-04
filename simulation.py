@@ -1,11 +1,12 @@
 #simulation.py
-import time
+import random
 from characters import GangMember
 from character_memory import MemoryEntry
 
 def run_simulation(all_characters, num_days=10):
     from simulate_day import simulate_days
     from create_game_state import get_game_state, game_state
+    from location import Shop
 
     print(f"\nRunning simulation for {num_days} days...\n")
     debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)
@@ -14,6 +15,17 @@ def run_simulation(all_characters, num_days=10):
     # Set test NPC to Easternhole if needed
     easternhole_region = next((r for r in game_state.all_regions if r.name == "Easternhole"), None)
     debug_gang_npc.region = easternhole_region
+
+    # Choose a non-shop location in Easternhole to place the test NPC
+    non_shop_locations = [loc for loc in easternhole_region.locations if not isinstance(loc, Shop)]
+
+    if non_shop_locations:
+        start_location = random.choice(non_shop_locations)
+        debug_gang_npc.location = start_location
+        start_location.characters_there.append(debug_gang_npc)
+        print(f"[INIT] Placed debug gang NPC at {start_location.name}")
+    else:
+        print("[WARNING] No valid non-shop locations found in Easternhole for debug NPC.")
 
     #no locationn is being set here
 
@@ -78,11 +90,9 @@ def run_simulation(all_characters, num_days=10):
         
         #so they could access their self.region.shops maybe, and write teh memory
 
-
-
         region = debug_gang_npc.region
         if region:
-            debug_gang_npc.ai.think(region)
+            debug_gang_npc.ai.think(debug_gang_npc.location.region)
         else:
             print(f"[Warning] {debug_gang_npc.name} has no assigned region.")
                   
