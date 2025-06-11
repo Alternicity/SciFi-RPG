@@ -28,17 +28,6 @@ def run_simulation(all_characters, num_days=10):
         print(f"[INIT] Placed debug gang NPC at {start_location.name}")
     else:
         print("[WARNING] No valid non-shop locations found in Easternhole for debug NPC.")
-
-    #no locationn is being set here
-
-    """ if easternhole_region:
-        # Use a first location in Easternhole
-        test_location = easternhole_region.locations[4]
-        debug_gang_npc.location = test_location
-        test_location.characters_there.append(debug_gang_npc)
-        print(f"[Simulation] Moved {debug_gang_npc.name} to {test_location}")
-    else:
-        print("[Simulation] WARNING: Easternhole region not found.") """
     
     from weapons import Pistol
     from InWorldObjects import CashWad
@@ -58,7 +47,7 @@ def run_simulation(all_characters, num_days=10):
         print(f"[Simulation] Selected DEBUG NPC: {debug_gang_npc.name}")
         print(f"[Simulation] Their location: {debug_gang_npc.location}")
 
-        print(f"[Simulation] Their region: {debug_gang_npc.region}")
+        #print(f"[Simulation] Their region: {debug_gang_npc.region}")
 
         #print(f"[Simulation] Their region: {getattr(debug_gang_npc.location, 'region', 'Unknown')}")
 
@@ -69,29 +58,28 @@ def run_simulation(all_characters, num_days=10):
         debug_gang_npc.motivation_manager.update_motivations("obtain_ranged_weapon", urgency=6)
         debug_gang_npc.motivation_manager.update_motivations("earn_money", urgency=5)
 
+        from create_game_state import get_game_state
+        from region_knowledge_builder import build_region_knowledge
+
+        for region in game_state.all_regions:
+            region_knowledge = build_region_knowledge(region, debug_gang_npc)
+            debug_gang_npc.mind.memory.semantic["region_knowledge"].append(region_knowledge)
+
+        #note this is a debug_npc injection, not a general one for all_characters
         entry = MemoryEntry(
             subject="Shop",
+            object_="ranged_weapon",
             details="This shop sells ranged weapons",
             importance=3,
-            tags=["shop", "weapons"]
+            tags=["shop", "weapons"],
+            type="injection",
+            initial_memory_type="semantic"
         )
-        debug_gang_npc.memory.add_semantic_entry(entry)  # Adds to episodic by default
-        #If this memory is later proven useful:
-        #debug_gang_npc.memory.promote_to_semantic(entry)
-
-        #Inject a semanitc memory here, test_npc should remember that region Easternhole has a shop location
-        #class shop has
-        """ class Region:
-            name: str
-            id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
-            shops: List[str] = field(default_factory=list)
-            locations: List[Location] = field(default_factory=list) """
-        
-        #so they could access their self.region.shops maybe, and write teh memory
+        debug_gang_npc.mind.memory.add_semantic(entry)  
 
         region = debug_gang_npc.region
         if region:
-            debug_gang_npc.ai.think(debug_gang_npc.location.region)
+            debug_gang_npc.location.region #line 82 ATTN
         else:
             print(f"[Warning] {debug_gang_npc.name} has no assigned region.")
                   
@@ -101,11 +89,11 @@ def run_simulation(all_characters, num_days=10):
             print(f" - {m.type} (urgency: {m.urgency})")
 
         """ print(f"{debug_gang_npc.name}'s episodic memory:")
-        for mem in debug_gang_npc.memory.episodic:
+        for mem in debug_gang_npc.mind.memory.episodic:
             print(f" - {mem}") """
 
         """ print(f"{debug_gang_npc.name}'s semantic memory:")
-        for mem in debug_gang_npc.memory.semantic:
+        for mem in debug_gang_npc.mind.memory.semantic:
             print(f" - {mem}") """
 
         """ print(f"{debug_gang_npc.name}'s thoughts, from simulation.py:")

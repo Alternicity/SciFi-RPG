@@ -678,3 +678,32 @@ def interact_with_partner(self):
         print(f"{self.name} talks to {self.partner.name} affectionately.")
         self.adjust_self_esteem(2)
         self.partner.adjust_self_esteem(2)
+
+def gossip(self):
+    if not self.partner: #ppl still gossip with their partner, adjust this
+        return
+
+    gossip_items = [m for m in self.mind.memory.semantic if "gossip" in m.tags]
+    if gossip_items:
+        gossip_item = random.choice(gossip_items)
+        self.partner.mind.memory.add_semantic(copy.deepcopy(gossip_item))
+        print(f"{self.name} gossips to {self.partner.name} about: {gossip_item.subject}")
+    #a form of conversation that spawns a gossip(Meme)
+    #which as knowledge (true or false) that has its own logic
+    #an motivation to spread itself to other characters
+    #add a propensity_to_gossip atribute to Character
+
+    #Future maybe Implement Gossip as an agent spreading a Meme
+    #  or MemoryEntry tagged as "gossip"
+
+    """ if self.partner:
+        print(f"{self.name} talks to {self.partner.name}.")
+        self.adjust_self_esteem(2)
+        self.partner.adjust_self_esteem(2) """
+
+def unlock_secret_knowledge(self):
+    for mem in self.mind.memory.semantic:
+        extract_required_level = 3 #placeholder
+        if "secret" in mem.tags and self.psy_level >= extract_required_level(mem.tags):
+            self.mind.memory.promote(mem, to="conscious")  # Or move to active knowledge
+

@@ -1,35 +1,27 @@
 #character_mind.py
 from collections import deque
 from character_thought import Thought
+from character_memory import Memory
 
 class Mind:
     def __init__(self, owner=None, capacity=None):
         #Not responsible for judgment — it just holds the data
-
         self.owner = owner #is this setting to None?
         capacity = capacity if capacity is not None else getattr(owner, 'intelligence', 10)
+
         self.thoughts = deque(maxlen=capacity)
+        self.memory = Memory()
+
+        # encapsulate both episodic + semantic
+        #adding this here should probably deprecate the self.memory = Memory() in class Character
+        #this will necessitate refactoring all code that writes to charcter.memory
+        #and move functions from Mind to memory that affect memories
+
         """ deque prevents memory bloat. 
         It mimics short-term/working memory: older thoughts are automatically discarded. """
 
-        self.episodic = []   # recent personal experiences (MemoryEntry objects), should this be a deque as well?
-
-        self.semantic = []   # general knowledge (MemoryEntry objects)
-
-    def add_episodic(self, memory_entry):
-        self.episodic.append(memory_entry)
-
-    def add_semantic(self, memory_entry):
-        self.semantic.append(memory_entry)
-
     def get_all(self):
         return list(self.thoughts)
-
-    def get_all_episodic(self):
-        return list(self.episodic)
-
-    def get_all_semantic(self):
-        return list(self.semantic)
 
     def clear(self):
         self.thoughts.clear()
@@ -38,7 +30,11 @@ class Mind:
         return iter(self.thoughts)
 
     def urgent(self, min_urgency):
-        return [t for t in self.thoughts if t.urgency >= min_urgency]
+        return sorted(
+            [t for t in self.thoughts if hasattr(t, 'urgency') and t.urgency >= min_urgency],
+            key=lambda t: t.urgency,
+            reverse=True
+        )
 
     def add_thought(self, thought: Thought):
         """
@@ -56,6 +52,9 @@ class Mind:
         self.thoughts.append(thought)
         #print(f"[MIND] Added thought: {thought.content}")
         
+    def add_thought_to_enemies(self, thought):
+        self.memory.semantic.setdefault("enemies", []).append(thought)
+
     """ keep urgent() in Mind.
 Heres why:
 The mind owns the thoughts and should manage querying/filtering them.

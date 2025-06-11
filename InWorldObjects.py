@@ -17,7 +17,7 @@ class Size(Enum):
     TWO_HANDED = "two_handed"
     HEAVY = "heavy"
 
-class ItemType(Enum):
+class ItemType(Enum): # I dont think this was adhered to
     WEAPON = "Weapon"
     GADGET = "Gadget"
     ARMOR = "Armor"
@@ -37,28 +37,53 @@ valid_items = [
 
 # Base class for all objects in the world
 class ObjectInWorld(PerceptibleMixin):
-    is_concrete = False  # An abstract class
-    def __init__(self, name, toughness, item_type, size, blackmarket_value, price=0, damage_points=None, legality=True,  owner_name=None, **kwargs):
-        PerceptibleMixin.__init__(self)
+    is_concrete = False  # Abstract base
 
+    def __init__(self, name, toughness, item_type, size, blackmarket_value,
+                 price=0, damage_points=None, legality=True,
+                 owner_name=None, quantity=1, **kwargs):
+        super().__init__()
         self.name = name
         self.toughness = toughness
-        self.item_type = item_type  # 'weapon', 'armor', etc.
+        self.item_type = item_type
         self.size = size
         self.blackmarket_value = blackmarket_value
         self.price = price
         self.damage_points = damage_points
         self.legality = legality
-        #self.item_type = item_type
-        #does this need to be here as well?
         self.owner_name = owner_name
-        self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID
+        self.quantity = quantity
+        self.bloodstained = None  # Can be a character reference or ID string
+
+    def get_percept_data(self, observer=None):
+        return {
+            "name": self.name,
+            "type": self.__class__.__name__,
+            "item_type": self.item_type,
+            "description": f"{self.name} ({self.item_type})",
+            "region": getattr(getattr(self, "region", None), "name", None),
+            "location": getattr(getattr(self, "location", None), "name", None),
+            "sublocation": getattr(getattr(self, "sublocation", None), "name", None),
+            "origin": self,
+            "salience": self.compute_salience(observer),
+            "tags": getattr(self, "tags", []),
+            "urgency": getattr(self, "urgency", 1),
+            "weight": self.percept_weight(observer),
+            "source": None,
+            "suggested_actions": self.get_suggested_actions(observer),
+            "security": getattr(self, "security_level", 0),
+            "has_security": self.has_security(),
+            "bloodstained": self.bloodstained,
+            "owner": self.owner_name,
+            "price": self.price,
+            "quantity": self.quantity,
+            "toughness": self.toughness.value if isinstance(self.toughness, Enum) else str(self.toughness),
+            "size": self.size.value if isinstance(self.size, Enum) else str(self.size)
+        }
+
 #It's probably cleaner and safer if all items that go in inventory have quantity by default (even if quantity=1 for weapons).
 
-#only concrete, fully implementable classes have the damage_points
-#and legality attributes.
-#Any object that represents something that could potentially break or
-#degrade over time should have damage_points.
+
 
 class Item:
     def __init__(self, name, price, size, quantity=1, category=None, description=""):
@@ -89,12 +114,11 @@ class CashWad(ObjectInWorld): #REMOVE ALL VALUE
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+
         }
 
     def get_value(self):
@@ -116,13 +140,11 @@ class Wallet:
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
-            #"salience": 20 if observer and self.owner == observer else 3
+            "description": f"{self.name} ({self.item_type})"
+            
         }
 
     def get_values(self):
@@ -167,12 +189,11 @@ class HardDrive(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
 
 class Medkit(ObjectInWorld):
@@ -191,13 +212,24 @@ class Medkit(ObjectInWorld):
         
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
+
+class AdvancedMedkit(Medkit):
+    def __init__(self):
+        super().__init__()
+        self.contains_xyz = True
+
+    def _postprocess_percept(self, data, observer):
+        if self.contains_xyz:
+            data["tags"] = data.get("tags", []) + ["useful"]
+            data["description"] = "Good to have when youre injured."
+        return data
+
 
 class FoodCrate(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
@@ -214,12 +246,11 @@ class FoodCrate(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
 class Laptop(ObjectInWorld):
@@ -238,12 +269,11 @@ class Laptop(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
 class MechanicalToolkit(ObjectInWorld):
@@ -261,12 +291,11 @@ class MechanicalToolkit(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
 class ElectricalToolkit(ObjectInWorld):
@@ -284,12 +313,11 @@ class ElectricalToolkit(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
 class PowerGenerator(ObjectInWorld):
@@ -306,12 +334,11 @@ class PowerGenerator(ObjectInWorld):
         )
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
 class WaterPurifier(ObjectInWorld):
@@ -328,12 +355,11 @@ class WaterPurifier(ObjectInWorld):
         )
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
 class SmartPhone(ObjectInWorld):
@@ -355,12 +381,11 @@ class SmartPhone(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
 class CommoditiesBox(ObjectInWorld):
@@ -378,12 +403,11 @@ class CommoditiesBox(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
 
 class CashRegister(ObjectInWorld):
@@ -393,12 +417,11 @@ class CashRegister(ObjectInWorld):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": type(self).__name__,
+            "type": self.__class__.__name__,
             "name": self.name,
             "item_type": self.item_type,
-            "owner": self.owner_name,
-            "size": self.size.value if hasattr(self, "size") else None,
-            "salience": self.compute_salience(observer)
+            "description": f"{self.name} ({self.item_type})"
+            
         }
     
     def deposit(self, amount):

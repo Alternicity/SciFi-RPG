@@ -45,6 +45,7 @@ class Gang(Faction):
         self.violence_disposition = violence_disposition
         self.HQ = None
         self.race = race
+        self.tags = ["gang", "faction", "violent"]
         self.goal_status = None
         self.boss = None
         self.captains = []

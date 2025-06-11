@@ -12,7 +12,8 @@ class Thought:
         self.weight = weight                # How impactful (can be salience or derived)
         self.timestamp = timestamp or time.time()
         self.resolved = resolved
-        self.corollary = corollary or []  # list of strings or callables, Functions or object
+        self.corollary = corollary or []  # a corollary will prbably be another thought object
+
 
     def mark_resolved(self):
         self.resolved = True
@@ -42,8 +43,8 @@ class Thought:
         return thoughts
 
     def compute_salience(self, observer):
-        if hasattr(self, 'memory') and self.memory:
-            return self.memory.origin.compute_salience(observer)
+        if hasattr(self, 'memory') and self.mind.memory.get_all_memories:
+            return self.mind.memory.origin.compute_salience(observer)
         return 0
 
     def summary(self, include_source=False, include_time=False):

@@ -9,7 +9,7 @@ from motivation_presets import MotivationPresets
 from status import CharacterStatus, FactionStatus, StatusLevel
 
 from utils import normalize_location_regions
-def create_civilian_population(all_locations, all_regions, factionless, num_civilians=30):
+def create_civilian_population(all_locations, all_regions, factionless, num_civilians=0):#30
     """Generate civilians and assign them logical locations."""
     from create_character_names import create_name
     from utils import get_region_for_location
@@ -95,7 +95,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
         #print(f"Civilian {civilian.name} has: {civilian.wallet.bankCardCash}")
 
     # Create Luna
-        status = CharacterStatus()
+        """ status = CharacterStatus()
         status.set_status("public", FactionStatus(StatusLevel.LOW, "Orphan"))
         name = "Luna"
         sex = "female"
@@ -128,17 +128,17 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             "explore_math": 16,
             "use_advanced_python_features": 20,
             "persuasion": 15,
-        })
+        }) """
 
-        faction.members.append(Luna)
-        game_state.civilians.append(Luna)
+        #faction.members.append(Luna)
+        #game_state.civilians.append(Luna)
         game_state.all_characters #add her here, there is no setter
-        game_state.orphans.append(Luna)
+        #game_state.orphans.append(Luna)
 
         # For AI targeting/utility control
-        Luna.is_test_npc = False  
-        Luna.is_peaceful_npc = True #is it better to have this, to avoid her trying to do GangMember stuff?
-        Luna.has_plot_armour = True
+        #Luna.is_test_npc = False  
+        #Luna.is_peaceful_npc = True
+        #Luna.has_plot_armour = True
 
 
 

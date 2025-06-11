@@ -5,7 +5,7 @@ from create_game_state import get_game_state
 from ai_utility import UtilityAI #not currently accessed
 from events import Robbery
 from characterActions import execute_action #not currently accessed
-
+from summary_utils import format_location
 
 def simulate_days(all_characters, num_days=1, debug_character=None):
     game_state = get_game_state()
@@ -21,25 +21,35 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 # OBSERVE
                 print(f"In simulate_days, {npc.name} attempting to observe.")
                 npc.observe(region=region, location=npc.location)
+                #observe call moved here from npc AI think functions
 
-
-                if debug_character and npc.name == debug_character.name:
-                    print(f"[DEBUG] {npc.name} percepts after observe:")
-                    for k, v in npc._percepts.items():
-                        print(f"  - {k}: {v.get('description', v['type'])}")                    
+                #tmp? debug check
+                from location import Region
+                if not isinstance(region, Region):
+                    print(f"[OBSERVE] {npc.name} given wrong region type: {type(region)} — {region}")
                     
-                    print(f"[DEBUG] {npc.name} location: {npc.location}")
-                    print(f"[DEBUG] {npc.name} region characters: {[c.name for c in region.characters_there]}")
+                if debug_character and npc.name == debug_character.name:
+                    print(f"[DEBUG] {npc.name} 1st percepts after observe:")
+                    for k, v in npc._percepts.items():
+                        print(f"  - {k}: {v.get('description') or v.get('type', 'UNKNOWN')}")
+                        #Try v['description'], If that's None or doesn't exist, try v['type'], If neither exists, fall back to 'UNKNOWN'
+                    
+                
+                    print(f"[DEBUG] {npc.name} location: {format_location(npc.location)}")
+                    #replace with call to summary_utils.py def format_location(loc):
+
+                    #print(f"[DEBUG] {npc.name} region characters: {[c.name for c in region.characters_there]}")
+                    #verbose
+
                     print(f"[DEBUG] {npc.name} region objects: {[o.name if hasattr(o, 'name') else str(o) for o in getattr(region, 'objects_there', [])]}")
 
-
                 if npc.is_test_npc:
-                    print(f"[DEBUG] {npc.name} percepts after observe: {[v.get('description', v['type']) for v in npc._percepts.values()]}")
+                    print(f"[DEBUG] {npc.name} 2nd percepts after observe: {[v.get('description') or v.get('type', 'UNKNOWN') for v in npc._percepts.values()]}")
 
                 #THINK
                 if hasattr(npc, 'ai') and npc.ai:
-                    npc.ai.think(npc.location.region)
-                    npc.ai.promote_thoughts()
+                    npc.ai.think(npc.location.region) #line 53
+                    npc.ai.promote_thoughts()#line 54
 
                 # DEBUG: Thought Check 1
                 if debug_character and npc.name == debug_character.name:
@@ -55,14 +65,8 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
                 # NEW: Let AI process thoughts
                 npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
-                if npc.location and npc.location.region:
-                    npc.ai.think(npc.location.region)
-                else:
-                    is_street = getattr(npc.faction, "is_street_gang", False)
-                    print(f"[Warning] {npc.name} ({npc.__class__.__name__}) has no location or region. Street Gang: {is_street}")
-
-
-                npc.ai.promote_thoughts()     # << Optional: Push important thoughts into action-focus
+                
+                npc.ai.promote_thoughts()     # line 71
 
                 # DEBUG: Thought Check 2
                 if debug_character and npc.name == debug_character.name:
@@ -90,16 +94,22 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
             
             #print("MEMORY (Episodic):")
 
-            for mem in npc.memory.episodic:
+            for mem in npc.mind.memory.episodic:
                 print(f" - {mem}")
-            print("MEMORY (Semantic):")
-            for mem in npc.memory.semantic:
-                print(f" - {mem}")
-            #print("THOUGHTS:")
+
+
+
+            """ print("MEMORY from simulate_day (Semantic):")
+            for memories in npc.mind.memory.semantic.values():
+                for memory in memories:
+                    print(f" - {memory}") """
+
+
+            print("THOUGHTS:")
             for thought in npc.mind:
                 pass
-                """ print(f" - {thought}")
-            print(f"ATTENTION: {npc.attention_focus}") """
+                print(f" - {thought}")
+            print(f"ATTENTION: {npc.attention_focus}")
 
     # STEP 4: Sanity Check on Character List
     for c in all_characters:

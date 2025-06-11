@@ -75,14 +75,22 @@ class Pistol(RangedWeapon):
     def get_percept_data(self, observer=None):
         tags = ["weapon", "pistol", "ranged"]
 
-        return {
+        data = {
             "description": self.human_readable_id or "Pistol",
+            "type": self.__class__.__name__,
             "origin": self,
             "urgency": 1,
+            "source": None,
             "tags": tags,
             "salience": self.compute_salience(observer),
             "size": self.size.value if hasattr(self, "size") else None
         }
+        # Optional post-processing hook
+        postproc = getattr(self, "_postprocess_percept", None)
+        if callable(postproc):
+            data = postproc(data, observer)
+
+        return data
     
     def compute_salience(self, observer=None):
         salience = 5
@@ -119,6 +127,7 @@ class SMG(RangedWeapon):
         tags = ["weapon", "SMG", "ranged"]
         return {
             "description": f"{self.name}",
+            "type": self.__class__.__name__,
             "item_type": self.item_type,
             "value": self.price,
             "tags": tags,
@@ -150,6 +159,7 @@ class Rifle(RangedWeapon):
         tags = ["weapon", "rifle", "ranged"]
         return {
             "description": f"{self.name}",
+            "type": self.__class__.__name__,
             "item_type": self.item_type,
             "value": self.price,
             "tags": tags,
@@ -181,6 +191,7 @@ class Shotgun(RangedWeapon):
         tags = ["weapon", "shotgun", "ranged"]
         return {
             "description": f"{self.name}",
+            "type": self.__class__.__name__,
             "item_type": self.item_type,
             "value": self.price,
             tags: tags,
@@ -210,6 +221,7 @@ class Sword(MeleeWeapon):
         tags = ["weapon", "sword"]
         return {
             "description": f"{self.name}",
+            "type": self.__class__.__name__,
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
@@ -241,6 +253,7 @@ class Knife(MeleeWeapon):
         tags = ["weapon", "knife"]
         return {
             "description": f"Knife ({self.human_readable_id})",
+            "type": self.__class__.__name__,
             "value": self.price,
             "danger": self.intimidation,
             "item_type": self.item_type,
@@ -268,6 +281,7 @@ class Club(MeleeWeapon):
         tags = ["weapon", "club"]
         return {
             "description": f"{self.name}",
+            "type": self.__class__.__name__,
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
@@ -297,6 +311,7 @@ class Electrobaton(MeleeWeapon):
         tags = ["weapon", "electrobaton"]
         return {
             "description": f"{self.name}",
+            "type": self.__class__.__name__,
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,

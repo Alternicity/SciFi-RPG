@@ -11,9 +11,12 @@ from perceptibility import PerceptibleMixin
 from character_mind import Mind
 from character_thought import Thought
 from ai_utility import UtilityAI
-from character_memory import MemoryEntry, Memory, FactionRelatedMemory
+
+#from location import Region
+#tmp? debug use
+
 import uuid
-from worldQueries import observe_location
+from worldQueries import observe_location, get_nearby_objects
 
 import time
 if TYPE_CHECKING:
@@ -196,7 +199,7 @@ class Character(PerceptibleMixin):
         self.is_player = False
         self.is_test_npc = False  # Default to False
         self.is_peaceful_npc = False
-        self.has_plot_armour = False
+        self.has_plot_armour = False# characters should perceive this but not print it to user
 
         if not self.is_player:
             
@@ -229,9 +232,9 @@ class Character(PerceptibleMixin):
         self.behaviors = set(behaviors) if behaviors else set_default_behaviour()
         self.behaviour_manager = BehaviourManager()
         self.posture = Posture.STANDING
-        
-        self.memory = Memory()  # Handles both episodic and semantic memory now
 
+        self.intelligence = intelligence
+        self.mind = Mind(owner=self, capacity=intelligence)
         self.task_manager = TaskManager(self)
         
 
@@ -244,11 +247,6 @@ class Character(PerceptibleMixin):
 
         self.self_awareness_score = 0
         self.self_awareness_level = SelfAwarenessLevel.ANIMAL
-        self.intelligence = intelligence
-
-        
-        self.mind = Mind(owner=self, capacity=self.intelligence)
-
         self._percepts = {}
         self.percepts_updated = False
 
@@ -409,7 +407,7 @@ class Character(PerceptibleMixin):
         self.preferred_actions.pop(action, None)
 
     def remember_task(self, task): #Remember your TOP task
-        self.memory.append({
+        self.mind.memory.append({
             "type": "task",
             "name": task.name,
             "time": "now",  # or use game clock
@@ -497,10 +495,14 @@ class Character(PerceptibleMixin):
         return self.motivation_manager.get_motivations()
     
     def get_percept_data(self, observer=None):
-        #You can abstract this into a helper method later
+        """
+        Return perceptual information for this character.
+        Subclasses should call super().get_percept_data(observer)
+        and then override or extend fields as needed.
+        """
 
         tags = ["human"]
-        salience = 1  # baseline
+        salience = 1  # baseline salience
 
         if self.bloodstained:
             tags.append("bloodstained")
@@ -509,110 +511,141 @@ class Character(PerceptibleMixin):
             tags.append("wounded")
             salience += 10
 
-        """ if observer and "violence" in getattr(observer, "motivations", []):
-            salience += 2  # violence-oriented characters notice more """
-
         return {
-            "description": f"{self.name} (Character)",
+            "name": self.name,
+            "type": self.__class__.__name__,
+            "description": f"{self.name}, a {self.__class__.__name__}",
+            "region": self.region.name if getattr(self, "region", None) else "Unknown",
+            "location": self.location.name if getattr(self, "location", None) else "Unknown",
+            "sublocation": self.sublocation.name if getattr(self, "sublocation", None) else "Unknown",
             "origin": self,
-            "urgency": 2,
+            "salience": salience,
             "tags": tags,
+            "urgency": 2,
             "source": None,
-            "salience": salience
+            "menu_options": [],
+            "has_security": getattr(self, "has_security", lambda: False)()
         }
 
-    def observe(self, *, nearby_objects=None, target=None, region=None, location=None, include_memory_check=True):
+    def observe_region(self, region, include_memory_check=True):
+        from location import Region
+        #assert isinstance(region, Region), f"[BUG] {self.name} was passed a non-Region as a region: {region} ({type(region)})"
+        assert isinstance(region, Region), f"[DEV] {self.name} observe_region got {type(region)} — {region}"
 
-        # Main perception logic for a character NPC.
-        region = region or self.region
-        location = location or self.location
-
-        if region and not hasattr(region, "locations"):
-            print(f"[WARN] {self.name}'s 'region' is not a valid Region object: {region}")
+        if not isinstance(region, Region):
+            print(f"[BUG] {self.name} was passed {region} of type {type(region).__name__} to observe_region().")
             return
 
-        # Observe specific location if provided
-        if location:
-            observe_location(self, location)
+        for loc in region.locations:  #line530
+            pass  # observe_location(self, loc)
 
-        # Observe all locations in the region
-        if region:
-            #print(f"[Observe] {self.name} is observing the region: {region}")
-            for loc in region.locations:
-                pass
-                #observe_location(self, loc) VERBOSE
+        for char in region.characters_there:
+            if char is not self:
+                self.perceive_object(char)
 
-        # Perceive nearby objects
-        if nearby_objects:
-            if not isinstance(nearby_objects, (list, tuple)):
-                nearby_objects = [nearby_objects]
-            for obj in nearby_objects:
-                self.perceive_object(obj)
-                print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
-            
-        # Debug objects present at the location POSSIBLY DEPRECATE
-        #print(f"[DEBUG] Objects at {getattr(location, 'name', 'Unnamed Location')}:")
+        # Semantic memory: hostile factions & general region awareness
+        #if include_memory_check and hasattr(self, "faction") and isinstance(region, Region):
+            from memory_entry import RegionKnowledge
+            rk = RegionKnowledge(
+                region_name=region.name,
+                character_or_faction=self,
+                region_gangs={g.name for g in region.region_gangs},
+                is_street_gang=any(getattr(g, "is_street_gang", False) for g in region.region_gangs),
+            )
+            self.mind.memory.semantic.setdefault("region_knowledge", []).append(rk)
+
+            for gang in region.region_gangs: #line 534
+                self.mind.memory.semantic.setdefault("factions", []).append(gang)
+
+                # Form thought if hostile
+                if gang.name != self.faction.name:
+                    self._remember_hostile_faction(gang, region)
+
+            for gang in region.region_street_gangs:
+                if gang.name != self.faction.name:
+                    self._remember_hostile_faction(gang, region)
+
+        # Trigger subclass reaction if it exists
+        if hasattr(self, "handle_observation"):
+            self.handle_observation(region)
+
+    def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
+        #print(f"[DEBUG] from class Character, observe_objects called.")
+        # Auto-fetch nearby objects if not provided
+        if nearby_objects is None and location:
+            from worldQueries import get_nearby_objects
+            fetched_objects = get_nearby_objects(self, self.region, location)
+            nearby_objects = fetched_objects or []
+        else:
+            nearby_objects = nearby_objects or []
+
+        # If it's a single object instead of a list, wrap it
+        if not isinstance(nearby_objects, list):
+            nearby_objects = [nearby_objects]
+
+        for obj in nearby_objects:
+            self.perceive_object(obj)
+            print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
+
+        # Optional debugging of objects at the location
         for obj in getattr(location, 'objects_present', []):
             obj_name = getattr(obj, 'name', 'Unnamed object')
             obj_type = type(obj).__name__
             location_status = "[No location set]" if getattr(obj, 'location', None) is None else ""
             print(f"    - {obj_name} ({obj_type}) {location_status}")
 
-
-            # Observe other characters in the region
-            if region:
-                for char in region.characters_there:
-                    if char is not self:
-                        self._perceive(char)
-
-            # Semantic memory: hostile factions & general region awareness
-            if include_memory_check and hasattr(self, "faction") and region:
-                self.memory.semantic.append(region)
-
-                for gang in region.region_gangs:
-                    self.memory.semantic.append(gang)
-
-                    # Form thought if hostile
-                    if gang.name != self.faction.name:
-                        self._remember_hostile_faction(gang, region)
-
-                for gang in region.region_street_gangs:
-                    if gang.name != self.faction.name:
-                        self._remember_hostile_faction(gang, region)
-
-            # Trigger subclass reaction if it exists
-            if hasattr(self, "handle_observation"):
-                self.handle_observation(region)
-
-            # Handle location inventory
-            if location:
-                if hasattr(location, 'inventory') and location.inventory:
-                    print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
-                else:
-                    print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
-
-            # Auto-fetch nearby objects if not provided
-            if location and nearby_objects is None:
-                from worldQueries import get_nearby_objects
-                nearby_objects = get_nearby_objects(self, region, location)
+        if location and include_inventory_check:
+            if hasattr(location, 'inventory') and location.inventory:
+                print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
+            else:
+                print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
 
             # Perceive valid objects
-            new_percepts = {}
+            new_percepts = {} #line 592
             for obj in nearby_objects or []:
                 if isinstance(obj, PerceptibleMixin):
                     percept = obj.get_percept_data(observer=self)
                     if percept:
                         new_percepts[obj.id] = percept
-                        print(f"[Observe] {self.name} perceived: {percept['description']} with salience {percept['salience']}")
+                        print(f"[Observe] {self.name} perceived: with salience {percept['salience']}")
+                        self._percepts.update(new_percepts)
+
+
+    def observe(self, *, nearby_objects=None, target=None, region=None, location=None):
+        from location import Region, Location
+        if isinstance(region, Location):
+            region = region.region
+        if not isinstance(region, Region):
+            raise TypeError(f"[DEV] {self.name} observe_region got invalid region type {type(region)} — {region}")
+        
+        if self.is_test_npc:
+            simple_list = [f"{c.name}, {c.__class__.__name__}" for c in location.characters_there]
+            print(f"[DEBUG] {self.name} observe() called, count these: {simple_list}")
+        
+        self.observe_region(region, include_memory_check=True)
+
+        self.observe_objects(nearby_objects, location, include_inventory_check=True) #line 614
+
+        # Main perception logic for a character NPC.
+        region = region or self.region
+        location = location or getattr(self, "location", None) 
+
+        #print(f"[DEBUG] from class Character. Region locations: {getattr(region, 'locations', 'No locations attr')}")
+        
+        # Observe specific location if provided
+        if location:
+            observe_location(self, location)
+
 
             # Perceive self
             self_percept = self.get_percept_data(observer=self)
             if self_percept:
-                new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
-
-            # Initialize or update internal percept dict
-            if not hasattr(self, '_percepts') or self._percepts is None:
-                self._percepts = {}
+                #new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
+                new_percepts = {}
+                self_percept = self.get_percept_data(observer=self)
+                if self_percept:
+                    new_percepts["self"] = self_percept
+                    self._percepts.update(new_percepts)
 
             self._percepts.update(new_percepts)
             self.percepts_updated = True
@@ -622,13 +655,16 @@ class Character(PerceptibleMixin):
     def _remember_hostile_faction(self, gang, region):
         hostile_thought = Thought(
             content=f"Enemy gang {gang.name} is here...",
+            subject=gang,
             origin=region.name,
             urgency=5,
             tags=["gang", "hostile"],
             source="ThreatDetection",
             timestamp=time.time()
         )
-        self.mind.add(hostile_thought)
+
+        #self.mind.add(hostile_thought)
+        self.mind.memory.semantic.setdefault("enemies", []).append(hostile_thought)
         self.is_alert = True
 
         if hasattr(self, 'utility_ai'):
@@ -678,6 +714,9 @@ class Character(PerceptibleMixin):
             percept = obj.get_percept_data(observer=self)
             if percept:
                 self.update_percepts([percept])
+
+                if 'description' not in percept:
+                    print(f"ERROR: Object {obj} (type: {type(obj)}) has no 'description' key in its percept: {percept}")
                 print(f"[{self.name}] perceived object: {percept['description']}")
 
     @percepts.setter
@@ -747,7 +786,7 @@ class Character(PerceptibleMixin):
 
     def calculate_self_awareness(self):
         score = 0
-        score += len(self.memory) * 0.5  # More memory, more reflective
+        score += len(self.mind.memory.capacity) * 0.5  # More memory, more reflective
         score += self.psy * 0.75         # Psy sensitivity
         if self.has_autonomous_goals():
             score += 2
@@ -908,6 +947,7 @@ class Location(PerceptibleMixin):
 
         return {
             "description": f"{self.name} (Location)",
+            "type": self.__class__.__name__,
             "origin": self,
             "urgency": 1,
             "tags": tags,

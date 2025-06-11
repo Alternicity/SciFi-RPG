@@ -3,9 +3,11 @@ from ai_base import BaseAI
 from motivation import Motivation
 from character_thought import Thought
 from npc_actions import rob_auto, steal_auto, visit_location_auto, idle_auto
-
+from character_memory import Memory
 from time import time
 from salience import compute_salience, compute_character_salience
+from collections import defaultdict
+from worldQueries import get_region_knowledge
 
 class UtilityAI(BaseAI):
     def __init__(self, npc):
@@ -28,7 +30,13 @@ class UtilityAI(BaseAI):
             return {"name": "idle"}
 
         percepts = list(npc.get_percepts())
-        memories = npc.mind.semantic
+        #percepts here is not accessed
+
+        memories = []
+        for memory_list in npc.mind.memory.semantic.values():
+            memories.extend(memory_list)
+
+
         actions = []
 
         for m in motivations:
@@ -177,14 +185,14 @@ class UtilityAI(BaseAI):
         urgency = npc.motivation_manager.get_urgency(motivation)
         return score * urgency #REVIST.
 
-    def promote_thoughts(self): #needs generalizing?
+    def promote_thoughts(self):
         npc = self.npc
         mind = npc.mind
         thoughts = mind.thoughts
 
         if not thoughts:
-            #print(f"[THINK] {npc.name} has no thoughts to promote.")
             npc.attention_focus = None
+            #print here, saying why not attention focus?
             return
 
         for thought in list(thoughts):
@@ -204,19 +212,56 @@ class UtilityAI(BaseAI):
         # Set attention focus to most urgent thought
         if thoughts:
             npc.attention_focus = max(thoughts, key=lambda t: t.urgency)
-            print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary()}")
+            #print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary()}")
             #for mmore info uncomment the following line
             #print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary(include_source=True, include_time=True)}")
         else:
             npc.attention_focus = None
 
+    def examine_episodic_memory(self, episodic_memories):
+        event_counts = defaultdict(int)
+        for m in episodic_memories:
+            key = (m.subject, m.object_, m.verb, m.event_type)
+            event_counts[key] += 1
+            if event_counts[key] >= 3:
+                print(f"[Insight]: {m.subject} has done {m.verb} {event_counts[key]} times.")
+                # You could generate a new belief, goal, or trait here
+
+    def deduplicate_thoughts_by_type(thoughts):
+        #call it: After thoughts are generated from percepts, before promotions happen
+
+        seen = {}
+        for t in thoughts:
+            if t.type not in seen or t.urgency > seen[t.type].urgency:
+                seen[t.type] = t
+        return list(seen.values())
+
+    
+
     def think(self, region):
-        self.npc.observe(region=region, location=self.npc.location)
+        from location import Region
+        #tmp if/print block for debug
+        if not isinstance(region, Region):
+            print(f"[DEBUG] {self.npc.name} UtilityAI def think calling observe with region={region}, location={self.npc.location}")
+            print(f"[UtilityAI] Bad region: {region} ({type(region).__name__}) for {self.npc.name}")
+
+        #observe calls have moved to the game loop tick  
+        #self.npc.observe(region=region, location=self.npc.location)
+
+        region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
+        if region_knowledge:
+            turf_status = self.evaluate_turf_war_status(self.npc, region_knowledge)  # Base awareness
+        self.promote_thoughts()
 
         motivations = self.npc.motivation_manager.get_urgent_motivations()
         if not motivations:
             #print(f"[THINK] {self.npc.name} has no urgent motivations.")
             return
+        
+        # Examine episodic memory for repeated events
+        episodic_memories = self.npc.mind.memory.get_episodic()
+        self.examine_episodic_memory(episodic_memories)
+        #logic to do something with them
 
         percepts = list(self.npc.get_percepts().values()) #get_percepts.values? Re check this
         candidate_thoughts = []
@@ -233,6 +278,11 @@ class UtilityAI(BaseAI):
                         tags=percept.get("tags", []),
                     )
                     self.npc.mind.add_thought(thought)
+                    #added
+                    thoughts = self.npc.mind.get_all()
+                    self.deduplicate_thoughts_by_type(thoughts)
+        
+
         self.promote_thoughts()
 
 
@@ -246,7 +296,9 @@ class UtilityAI(BaseAI):
         self.promote_thoughts()
         #flow needs to pass to score_action, then choose_action then execute_action
 
-
+    def evaluate_turf_war_status(self, region_knowledge):
+        # Basic version — maybe no-op or minimal response
+        return None
     
     def generate_thoughts_from_percepts(self):
         npc = self.npc  # shortcut
@@ -278,53 +330,7 @@ class UtilityAI(BaseAI):
             score += 5
         score *= motivation.urgency
         return score
-
-    def resolve_obtain_weapon_target(self, region):
-        # Return a location from percepts or memory
-        npc = self.npc  # Access from self
-
-
-        # # Step 1: Check immediate percepts
-        weapons = [p["origin"] for p in npc.percepts if "weapon" in p.get("tags", [])]
-        if weapons:
-            weapon = weapons[0]
-            print(f"[AI] {npc.name} trying to steal {weapon.name}")
-            steal(npc, weapon.location, target_item=weapon)
-
-            return {"name": "steal", "params": {"item": weapon.name}}
-
-        known_weapon_locations = [
-    m for m in npc.memory.semantic
-    if "weapon" in getattr(m, "tags", []) and "shop" in getattr(m, "tags", [])
-]
-
-        print(f"[DEBUG] {npc.name} has memory: {[m.tags for m in npc.memory.semantic]}")
-        print(f"[DEBUG] Known weapon locations: {known_weapon_locations}")
-
-        if known_weapon_locations:
-            memory = known_weapon_locations[0]
-            location = npc.memory.semantic or "shop"
-            print(f"[AI] {npc.name} remembers a shop with weapons: {location}")
-            return {"name": "visit_location", "params": {"location": location}}
-
-
-        # Step 3: No weapons visible or remembered, add a thought and let AI re-evaluate later
-        #Shouldnt this thought form IF the character remembers that shops have weapons
-        new_thought = Thought(
-            content="Maybe I should rob a shop to get a weapon.",
-            origin="General knowledge?",
-            urgency=7,
-            tags=["rob", "shop", "weapon"],
-            timestamp=time.time(),
-            source="Instinct",
-            weight=7
-        )
-        npc.mind.add(new_thought)
-        npc.motivation_manager.increase("rob", 3)
-        print(f"[THOUGHT] {npc.name} had a new thought: {new_thought.content}")
-
-        return {"name": "idle", "params": {}}
-
+    
     def evaluate_thoughts(self):
         """
         Loop through unresolved thoughts and increase motivations accordingly.
@@ -375,3 +381,25 @@ class UtilityAI(BaseAI):
             npc.mind.add(inferred)
             npc.is_alert = True
             print(f"[INFERENCE] {npc.name} escalated alertness based on: {thought.content}")
+
+    def faction_observation_logic(npc, region, content, subject, origin, urgency, source, weight, timestamp, resolved, corollary ): #A general function to handle faction characers observation of other factions
+
+#not sure if this func will be called automatically to appraise rival factions, or on a triggered in code when a rival 
+# faction does something. Maybe both? Thought can be update or have corollories?
+#a generalized version of def gang_observation_logic
+
+        appraise_rival = Thought(
+            content="So, they are xyz",
+            subject=subject,
+            origin=region.name,
+            urgency=urgency or 10,
+            tags=["compete", "danger", "faction"],
+            source="Observation",
+            weight = weight or 10, # How impactful (can be salience or derived)
+            timestamp=time.time(),
+            resolved= resolved,
+            corollary = corollary or []
+        )
+        npc.mind.add(appraise_rival)
+        if hasattr(npc, 'utility_ai'):
+            npc.utility_ai.evaluate_thought_for_threats(appraise_rival)

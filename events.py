@@ -6,9 +6,10 @@ from characterActionTests import IntimidationTest
 from InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
-from character_memory import MemoryEntry
+from memory_entry import MemoryEntry
 from character_thought import Thought
 from output_utils import group_reactions
+from memory_entry import MemoryEntry
 
 class Event(ABC):
     """ Do not make Event perceptible.
@@ -105,10 +106,15 @@ class TemplateEvent(Event):
             observer.perceive_event(percept)
             if hasattr(observer, "memory"):
                 observer.memory.append(MemoryEntry(
-                    event_type="template_event_observed",
+                    subject="Shop",
+                    object_="ranged_weapon",
+                    details="Shops usually have weapons",
+                    importance=6,
+                    type="template_event_observed",
                     target=self.instigator,
                     approx_identity=self.instigator.get_appearance_description(),
-                    description=f"Witnessed {self.instigator.name} perform an action."
+                    description=f"Template Event Memory.",
+                    initial_memory_type="episodic"
                 ))
 
     def conclude(self):
@@ -343,14 +349,17 @@ class Robbery(Event):
 
         #Should the below witness memory and thought go through the percept setter?
 
+        appearance = self.instigator.get_appearance_description()
         witness.memory.add_entry(MemoryEntry(
             subject=self.instigator,
+            object_="Robbery",
             details="Robbery witnessed",
-            importance=3,
-            event_type="crime_observed",
+            importance=8,
+            type="crime_observed",
             target=self.instigator,
             approx_identity=self.instigator.get_appearance_description(),
-            description=f"Witnessed a {appearance} commit a robbery at {self.location.name}"
+            description=f"Witnessed a {appearance} commit a robbery at {self.location.name}",
+            initial_memory_type="episodic"
         ))
 
         print(f"[MEMORY] {witness.name} will remember this episode involving {self.instigator.name} at {self.location.name}.")
@@ -514,3 +523,7 @@ class TurfWar(Event):
         #when there is <3 street gangs in a region,  conclude
         print(f"[DEBUG] {self.name} at {self.location.name} has concluded.")
         # Optional cleanup or progression logic here
+
+class GangWar(Event): #or possibly define a Conflict base/intermediary class
+    pass
+    #initiative, momentum

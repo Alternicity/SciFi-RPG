@@ -20,14 +20,17 @@ def create_faction_characters(faction, all_regions, factions=None):
     if isinstance(faction, Gang):
         return create_gang_characters(faction, all_regions)
     elif isinstance(faction, Corporation):
-        return create_corporation_characters(faction, factions)
+        #return create_corporation_characters(faction, factions)
+        pass
     elif isinstance(faction, State):
         return create_TheState_characters(faction)
     elif faction.name == "Factionless":
-        # Skip creating characters for factionless, its just to make code run for independent characters
+        # Skip creating characters for factionless
         return []
-    else:
-        raise ValueError(f"Unknown faction type: {faction}")
+
+    # Final fallback catch
+    print(f"[WARN] Unknown faction type for: {faction.name} ({type(faction)}) — returning empty list.")
+    return []
 
 def create_all_characters(factions, all_locations, all_regions):
     # TODO: Update NPC instantiation to support Inventory objects
@@ -39,7 +42,10 @@ def create_all_characters(factions, all_locations, all_regions):
    
     for faction in factions:
         faction_characters = create_faction_characters(faction, all_regions, factions)
-        all_characters.extend(faction_characters)
+        if faction_characters:
+            all_characters.extend(faction_characters)
+        else:
+            print(f"[ERROR] create_faction_characters() returned None for faction: {faction.name}")
 
     from createCivilians import create_civilian_population, assign_workplaces
 

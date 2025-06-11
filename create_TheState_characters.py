@@ -29,7 +29,7 @@ def create_TheState_characters(faction):
     #deprecated?
 
     # --- Create 5 VIPs (1 per region) ---
-    for i in range(5):
+    for i in range(0):
         building = municipal_buildings[i] if i < len(municipal_buildings) else faction.region.locations[0]
         #todo: check where the VIP characters actually start the game
 
@@ -45,7 +45,8 @@ def create_TheState_characters(faction):
             region=faction.region,
             location=building,
             motivations=MotivationPresets.for_class("VIP"),
-            status=status
+            status=status,
+            intelligence=15,
                 )
         faction.state_staff.append(vip)
         game_state.add_state_staff(vip)
@@ -53,9 +54,9 @@ def create_TheState_characters(faction):
 
     # --- Managers, Employees, Taxmen ---
     for cls, count, motivations, status_label, status_level in [
-        (Manager, random.randint(2, 3), MotivationPresets.for_class("Manager"), "Manager", StatusLevel.MID),
-        (Employee, random.randint(2, 3), MotivationPresets.for_class("Employee"), "Employee", StatusLevel.MID),
-        (Taxman, random.randint(2, 4), MotivationPresets.for_class("Taxman"), "Taxman", StatusLevel.HIGH)
+        (Manager, random.randint(0, 0), MotivationPresets.for_class("Manager"), "Manager", StatusLevel.MID),#2,3
+        (Employee, random.randint(0, 0), MotivationPresets.for_class("Employee"), "Employee", StatusLevel.MID),#2, 3
+        (Taxman, random.randint(0, 0), MotivationPresets.for_class("Taxman"), "Taxman", StatusLevel.HIGH)#2,4
     ]:
         for _ in range(count):
             race, sex, name = generate_identity()
@@ -85,8 +86,8 @@ def create_TheState_characters(faction):
 
     # --- Riot Cops & Detectives ---
     for cls, count, motivations, status_label, status_level in [
-        (RiotCop, random.randint(3, 5), MotivationPresets.for_class("RiotCop"), "RiotCop", StatusLevel.LOW),
-        (Detective, random.randint(1, 3), MotivationPresets.for_class("Detective"), "Detective", StatusLevel.MID)
+        (RiotCop, random.randint(0, 0), MotivationPresets.for_class("RiotCop"), "RiotCop", StatusLevel.LOW),#3,5
+        (Detective, random.randint(0, 0), MotivationPresets.for_class("Detective"), "Detective", StatusLevel.MID)#2, 3
     ]:
         for _ in range(count):
             race, sex, name = generate_identity()

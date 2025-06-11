@@ -428,3 +428,18 @@ def compare_locations(all_locations, all_regions):
         #print("✅ All locations are correctly assigned in all_locations!")
 
 
+def print_character_brief(char, *, show_name=True, show_class=True, show_location=True, show_faction=True):
+    parts = []
+    if show_name:
+        parts.append(char.name)
+    if show_class:
+        parts.append(char.__class__.__name__)
+    if show_location and getattr(char, "location", None):
+        loc = char.location
+        parts.append(f"{loc.__class__.__name__} in {loc.region.name}")
+    if show_faction and getattr(char, "faction", None):
+        parts.append(f"Faction: {char.faction.name}")
+    print(" | ".join(parts))
+    #use it like this
+    """ if self.is_test_npc:
+        print_character_brief(self) """

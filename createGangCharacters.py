@@ -41,9 +41,8 @@ def create_gang_characters(faction, all_regions):
     sex = random.choice(Character.VALID_SEXES)
     name = create_name(faction.race, sex)
     race = faction.race  
-
-
-    boss = Boss(
+    #uncomment
+    """ boss = Boss(
         name=name,
         race=faction.race,
         sex=sex,
@@ -62,8 +61,8 @@ def create_gang_characters(faction, all_regions):
 
     faction.boss = boss  # <-- Store boss reference in gang
     characters.append(boss)
-    faction.region.characters_there.append(boss)
-
+    faction.region.characters_there.append(boss) """
+#not neccesary to uncomment to restore gang chars instantiation
     """ if faction.HQ:
         faction.boss.location = faction.HQ #it seems this works for Bosses
         faction.boss.region = faction.HQ.region
@@ -75,16 +74,16 @@ def create_gang_characters(faction, all_regions):
             print(f"[ERROR] {faction.name} has no HQ and no street_gang_start_location. Boss location is undefined.")
             faction.boss.location = None
             faction.boss.region = faction.region """
-
-    from create_game_state import get_game_state
+#uncomment
+    """ from create_game_state import get_game_state
     game_state = get_game_state()
     for gang in game_state.gangs:
         if gang.name == faction.name:
             gang.add_boss(boss)
-            break
+            break """
 
     # Captains
-    for _ in range(random.randint(2, 3)):
+    for _ in range(random.randint(0, 0)):#2,3
         status = CharacterStatus()
         status.set_status("criminal", FactionStatus(StatusLevel.MID, "Captain"))
         
@@ -115,7 +114,7 @@ def create_gang_characters(faction, all_regions):
         faction.region.characters_there.append(captain)
 
     # Gang Members
-    for _ in range(random.randint(5, 10)):
+    for _ in range(random.randint(1,1)):#5, 10
         status = CharacterStatus()
         status.set_status("criminal", FactionStatus(StatusLevel.LOW, "Ganger"))
         
@@ -145,15 +144,24 @@ def create_gang_characters(faction, all_regions):
     
     for char in characters:
         if hasattr(char, "memory"):
-            char.memory.add_entry(MemoryEntry(
-                subject="weapons_location",
+            char.mind.memory.add_entry(MemoryEntry(
+                subject="Shop",
+                object_="ranged_weapon",
                 details="Shops usually have weapons",
                 importance=6,
-                tags=["weapon", "shop"]
-            ), type="semantic")  # Explicitly marking this as a semantic memory
+                tags=["weapon", "shop"],
+                type=("streetwise"),
+                initial_memory_type="episodic"
+            ))
+            
     if char.race != faction.race:
         print(f"[WARNING] {char.name} has race {char.race} but gang {faction.name} is {faction.race}")
 
+        print_gang_densities(all_regions)
+
+    return characters
+    
+def print_gang_densities(all_regions):
     already_logged = set()
 
     for region in all_regions:
@@ -167,4 +175,3 @@ def create_gang_characters(faction, all_regions):
                         print(f"[DENSITY] {count} members of street gang '{gang.name}' are starting at '{loc}' in region '{region.name}'")
                         already_logged.add(key)
 
-        return characters

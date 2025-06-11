@@ -41,3 +41,9 @@ def observe_location(self, loc):
         #add to self._percepts?
         #perhaps just hand this off to UtilityAI compute_salience_for_percepts()
         return
+    
+def get_region_knowledge(memory, region_name: str):
+    for rk in memory.get("region_knowledge", []):
+        if rk.region_name == region_name:
+            return rk
+    return None

@@ -11,18 +11,20 @@ from base_classes import Character, Location, Faction
 from location_security import Security
 from InWorldObjects import CashRegister
 import uuid
-from dataclasses import dataclass, field, field, field
+from dataclasses import dataclass, field
 from perceptibility import PerceptibleMixin
-
+from inventory import Inventory
 logging.basicConfig(level=logging.INFO)
 
 from common import DangerLevel #this was commented out once, probs for a circular imprt problem..
 
-@dataclass
+@dataclass #when you add things here, update region_knowledge
 class Region(PerceptibleMixin):
     name: str
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     wealth: str = "Normal"
+    
+    tags: List[str] = field(default_factory=list)
     shops: List[str] = field(default_factory=list)
     locations: List[Location] = field(default_factory=list)
     factions: List[str] = field(default_factory=list)
@@ -32,13 +34,22 @@ class Region(PerceptibleMixin):
     turf_war_triggered: bool = False
     characters_there: List = field(default_factory=list)
     region_corps: List = field(default_factory=list)
+    residents: List = field(default_factory=list)
+    active_regional_events: List = field(default_factory=list)
+    recent_regional_events: List = field(default_factory=list)
+    historical_regional_events: List = field(default_factory=list)
+    gossip: List = field(default_factory=list)
+    economic_info: List = field(default_factory=list)
+    
 
     def __post_init__(self):
         PerceptibleMixin.__init__(self)
 
     def get_percept_data(self, observer=None):
         return {
+            "name": self.name,
             "description": f"Region: {self.name}, Wealth: {self.wealth}",
+            "type": self.__class__.__name__,
             "origin": self,
             "salience": self.compute_salience(observer),
             "danger_level": str(self.danger_level) if self.danger_level else "Unknown"
@@ -73,6 +84,7 @@ class UndevelopedRegion(Region):
     name: str
     locations: List[str] = field(default_factory=list)
     factions: List[str] = field(default_factory=list)
+
 #OUT OF PLACE
 
 
@@ -82,6 +94,7 @@ class VacantLot(Location):
     def has_security(self):
         return False
     tags: list[str] = field(default_factory=lambda: ["vacant", "empty"])
+    description: str = "Empty Space"
     is_open: bool = True
     security_level: int = 0
     name: str = "Empty Land"
@@ -94,13 +107,20 @@ class VacantLot(Location):
     is_powered: bool = False
     energy_cost: int = 0
 
+
     def get_percept_data(self, observer=None):
         return {
+            "name": self.name,
             "description": f"{self.name} (VacantLot)",
+            "type": self.__class__.__name__,
+            "robbable": True,
             "origin": self,
             "urgency": 1,
             "tags": ["location", "unused"],
             "source": None,
+            "security": self.security_level,
+            "is_open": self.is_open,
+            "has_security": self.has_security(),
             "salience": 2
         }
     def __repr__(self):
@@ -113,10 +133,14 @@ class HQ(Location):
     def has_security(self):
         return False
     tags: list[str] = field(default_factory=lambda: ["hq", "faction"])
+    description: str = "An HQ"
     is_open: bool = True
     name: str = "Base"
     faction: Optional[Faction] = field(default=None)
-    items_available: List[str] = field(default_factory=list) 
+
+    items_available: List[str] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
     #entrance: List[str] = field(default_factory=list)
@@ -136,13 +160,18 @@ class HQ(Location):
 
     def get_percept_data(self, observer=None):
         return {
+            "name": self.name,
             "description": f"{self.name} (HQ)",
+            "type": self.__class__.__name__,
+            "robbable": True,
             "origin": self,
             "urgency": 1,
             "tags": ["location", "unused"],
             "source": None,
-            "salience": self.compute_salience(observer),
             "security": self.security_level,
+            "is_open": self.is_open,
+            "has_security": self.has_security(),
+            "salience": self.compute_salience(observer),
             "faction": self.faction.name if self.faction else None
         }
 
@@ -178,11 +207,18 @@ class Vendor(Location):
             tags.append(f"faction:{self.faction.name}")
 
         return {
+            "name": self.name,
             "description": f"{self.name} (Vendor)",
+            "type": self.__class__.__name__,
+            "robbable": True,
             "origin": self,
             "urgency": 2,
-            "tags": tags,
+            "tags": ["location", "intermediary"],
             "source": None,
+            "security": self.security_level,
+            "is_open": self.is_open,
+            "has_security": self.has_security(),
+            "salience": self.compute_salience(observer)
         }
 
     def show_inventory(self):
@@ -207,6 +243,7 @@ class Shop(Vendor):
 
     name: str = "QQ Store"
     tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial"])
+    description: str = "Some shop"
     legality: bool = True
     employees_there: List['Employee'] = field(default_factory=list)
     characters_there: List['Character'] = field(default_factory=list)
@@ -240,7 +277,9 @@ class Shop(Vendor):
     ))
     def get_percept_data(self, observer=None):
         return {
+            "name": self.name,
             "description": f"Shop: {self.name}",
+            "type": self.__class__.__name__,
             "robbable": True,
             "origin": self,
             "urgency": 1,
@@ -295,9 +334,12 @@ class CorporateStore(Vendor):
     name: str = "Stores"
     faction: Optional[Faction] = field(default=None)
     tags: list[str] = field(default_factory=lambda: ["corporate"])
+    description: str = "Corp Stores"
     corporation: str = "Default"  # Default value is now valid
     categories: List[str] = field(default_factory=lambda: ["workplace"])
+
     items_available: List[str] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
     is_concrete: bool = True
     bankCardCash: int = 0
     secret_entrance: bool = False
@@ -313,21 +355,21 @@ class CorporateStore(Vendor):
     ))
     cash: int = 1000
     bankCardCash: int = 0
-    inventory: dict = field(default_factory=dict)
     legality: str = "Legal"
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "CorporateStore",
+            "name": self.name,
+            "description": f"CorporateStore: {self.name}",
+            "type": self.__class__.__name__,
+            "robbable": True,
             "name": self.name,
             "region": self.region.name if self.region else None,
-            "description": f"CorporateStore: {self.name}",
-            "robbable": True,
             "origin": self,
             "urgency": 1,
             "tags": ["location", "weapons"],
             "source": None,
-            "salience": 2,
+            
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
@@ -357,7 +399,10 @@ class CorporateStore(Vendor):
 class MechanicalRepairWorkshop(Location):
     name: str = "Greasehands"
     tags: list[str] = field(default_factory=lambda: ["garage", "repair", "mechanical"])
+    description: str = "MechShop"
     items_available: list = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     # Inherit materials_required from the parent class (RepairWorkshop)
     materials_required: List[str] = field(default_factory=list)
@@ -376,20 +421,23 @@ class MechanicalRepairWorkshop(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "MechanicalRepairWorkshop",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"MechanicalRepairWorkshop: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
-            "salience": 2,
+            "salience": self.compute_salience(observer),
+            "tags": [],
+            "urgency": 1,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            
         }
 
     def to_dict(self):
@@ -409,7 +457,10 @@ class ElectricalWorkshop(Location):
     name: str = "Sparks"
     tags: list[str] = field(default_factory=lambda: ["electrical", "repair"])
     materials_required: List[str] = field(default_factory=list)  # An empty list
+    description: str = "ElectroShop"
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 15
     # Inherit materials_required from the parent class (RepairWorkshop)
@@ -427,20 +478,22 @@ class ElectricalWorkshop(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "ElectricalWorkshop",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"ElectricalWorkshop: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
+            "salience": self.compute_salience(observer),
             "urgency": 1,
-            "tags": ["location", "tools"],
+            "tags": ["workshop", "tools"],
+            "menu_options": [],
             "source": None,
             "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
+            
         }
 
 
@@ -460,10 +513,14 @@ class ElectricalWorkshop(Location):
 class Stash(Location):
     name: str = "Secret Stash 1"
     tags: list[str] = field(default_factory=lambda: ["secret", "gang"])
+    description: str = "Gang Stash"
     legality: bool = False
+
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     stored_items: List[str] = field(default_factory=list)
-    inventory: dict = field(default_factory=dict)
+
     cash: int = 0
     bankCardCash: int = 0
     upkeep: int = 5
@@ -481,20 +538,21 @@ class Stash(Location):
     ))
     def get_percept_data(self, observer=None):
         return {
-            "type": "Stash",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Gang Stash: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location", "Gang"],
+            "urgency": 1,
+            "menu_options": [],
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            
         }
 
     def to_dict(self):
@@ -520,9 +578,13 @@ class Stash(Location):
 class Factory(Location):
     name: str = "The Old Factory"
     tags: list[str] = field(default_factory=lambda: ["corporate", "factory"])
+    description: str = "A Factory"
     goods_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
+
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 60
     is_concrete: bool = True
@@ -539,20 +601,20 @@ class Factory(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Factory",
             "name": self.name,
+            "type": self.__class__.__name__,
+            "description": f"a {self.__class__.__name__}", # Placeholder, should be overridden
             "region": self.region.name if self.region else None,
-            "description": f"Factory: {self.name}",
             "robbable": True,
             "origin": self,
+            "salience": self.compute_salience(observer),
             "urgency": 1,
             "tags": ["location", "tools"],
+            "menu_options": [],
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
         }
     
 
@@ -576,8 +638,10 @@ class Factory(Location):
 class Nightclub(Location):
     name: str = "Music and Slappers"
     tags: list[str] = field(default_factory=lambda: ["fun", "social"])
+    description: str = "Some Club"
     fun: int = 1
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 30
     is_concrete: bool = True
@@ -594,16 +658,17 @@ class Nightclub(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Nightclub",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Nightclub: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location", "tools"],
+            "urgency": 1,
+            "menu_options": [],
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
@@ -635,8 +700,11 @@ class Nightclub(Location):
 class Mine(Location):
     name: str = "Typical Mine"
     tags: list[str] = field(default_factory=lambda: ["corporate", "grim"])
+    description: str = "A Mine"
     fun: int = 0
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     is_concrete: bool = True
     upkeep: int = 40
@@ -653,8 +721,8 @@ class Mine(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Mine",
             "name": self.name,
+            "type": self.__class__.__name__,
             "region": self.region.name if self.region else None,
             "description": f"Mine: {self.name}",
             "robbable": True,
@@ -680,9 +748,13 @@ class Mine(Location):
 class Powerplant(Location):
     name: str = "Le PowerPlant 1"
     tags: list[str] = field(default_factory=lambda: ["power", "grim"])
+    description: str = "A Powerplant"
     energy_output: int = 1000
     categories: List[str] = field(default_factory=lambda: ["workplace"])
+
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     connected_locations: List[Any] = field(default_factory=list)
     upkeep: int = 50
     is_concrete: bool = True
@@ -700,7 +772,7 @@ class Powerplant(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Powerplant",
+            "type": self.__class__.__name__,
             "name": self.name,
             "region": self.region.name if self.region else None,
             "description": f"Powerplant: {self.name}",
@@ -713,7 +785,6 @@ class Powerplant(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -761,12 +832,14 @@ class Powerplant(Location):
 class Airport(Location):
     name: str = "Air Port 1"
     tags: list[str] = field(default_factory=lambda: ["airport", "corporate", "export", "import"])
+    description: str = "An Airport"
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
     upkeep: int = 150
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = 0
@@ -782,20 +855,20 @@ class Airport(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Airport",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Airport: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location"],
+            "urgency": 1,
+            "menu_options": [],
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
         }
 
     def to_dict(self):
@@ -876,10 +949,12 @@ class Airport(Location):
 class Port(Location):
     name: str = "Edge Port"
     tags: list[str] = field(default_factory=lambda: ["port", "import", "export"])
+    description: str = "A Port"
     connected_locations: List[Any] = field(default_factory=list)  # An empty list, no connected locations
     import_capacity: int = 0  # Zero capacity as a meaningless default
     materials_inventory: Dict[str, int] = field(default_factory=dict)  # An empty dictionary, no materials
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 40
     is_concrete: bool = True
@@ -897,23 +972,22 @@ class Port(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Port",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Port: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location"],
+            "urgency": 1,
+            "menu_options": [],
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
         }
     
-
     def to_dict(self):
         return asdict(self)
 
@@ -992,11 +1066,15 @@ class Port(Location):
 class Factory(Location):
     name: str = "Default Factory Name"
     tags: list[str] = field(default_factory=lambda: ["corporate", "manufacture", "grim"])
+    description: str = "A Factory"
     raw_materials_needed: int = 100
     output_rate: int = 100
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     upkeep: int = 30
+
     items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     workers_needed: int = 5
     workers_present: int = 0  # Updated dynamically
     products: int = 0  # Tracks produced goods
@@ -1015,20 +1093,21 @@ class Factory(Location):
     
     def get_percept_data(self, observer=None):
         return {
-            "type": "Factory",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Factory: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location", "tools"],
+            "urgency": 1,
+            
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            
         }
     
     def to_dict(self):
@@ -1055,9 +1134,14 @@ class Factory(Location):
 class Cafe(Location):
     name: str = "Metro Cafe"
     tags: list[str] = field(default_factory=lambda: ["fun", "food", "social"])
+    description: str = "A cafe"
     upkeep: int = 10
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambiance_level: int = 1
+
+    items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     fun: int = 1
     is_concrete: bool = True
     secret_entrance: bool = False
@@ -1073,20 +1157,20 @@ class Cafe(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Cafe",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Cafe: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location", "food"],
+            "urgency": 1,
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            
         }
 
     def to_dict(self):
@@ -1112,10 +1196,15 @@ def __repr__(self):
 class Park(Location):
     name: str = "Green Park"
     tags: list[str] = field(default_factory=lambda: ["fun", "social"])
+    description: str = "A Park"
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     upkeep: int = 15
     ambiance_level: int = 1
     fun: int = 1
+
+    items_available: List[Any] = field(default_factory=list) #relevant? park toys?
+    inventory: Inventory = field(default_factory=Inventory)
+
     is_concrete: bool = True
     secret_entrance: bool = False
     is_powered: bool = False
@@ -1130,20 +1219,20 @@ class Park(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Park",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Park: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location"],
+            "urgency": 1,
+            "menu_options": [],
             "source": None,
-            "salience": 2,
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
         }
     
 
@@ -1158,10 +1247,15 @@ class Park(Location):
 class Museum(Location):
     name: str = "City Museum"
     tags: list[str] = field(default_factory=lambda: ["fun", "culture", "history"])
+    description: str = "A Museum"
     upkeep: int = 45
     artifact_count: int = 50
-    categories: List[str] = field(default_factory=lambda: ["workplace"])
+    items_available: List[Any] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
     exhibits: List[str] = field(default_factory=list)  # List of exhibit names
+
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
+    
     fun: int = 3
     is_concrete: bool = True
     secret_entrance: bool = True
@@ -1177,20 +1271,20 @@ class Museum(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Museum",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Museum: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
             "salience": self.compute_salience(observer),
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": 12
+            "has_security": self.has_security()
         }
     
     def to_dict(self):
@@ -1204,10 +1298,14 @@ class Museum(Location):
 class Library(Location):
     name: str = "Public Library"
     tags: list[str] = field(default_factory=lambda: ["books", "social"])
+    description: str = "A Library"
     categories: List[str] = field(default_factory=lambda: ["public"])
     upkeep: int = 20
+
     book_count: int = 10000
     genres_available: List[str] = field(default_factory=list)  # List of genres
+    inventory: Inventory = field(default_factory=Inventory) #overlap
+
     fun: int = 2
     is_concrete: bool = True
     secret_entrance: bool = False
@@ -1223,20 +1321,21 @@ class Library(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Library",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Library: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
-            "tags": ["location", "books"],
-            "source": None,
             "salience": self.compute_salience(observer),
+            "tags": ["location", "books"],
+            "urgency": 1,
+            
+            "source": None,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 12
         }
     
     def to_dict(self):
@@ -1250,7 +1349,10 @@ class Library(Location):
 class ResearchLab(Location):
     name: str = "OmniLab"
     tags: list[str] = field(default_factory=lambda: ["science", "tech"])
+    description: str = "A Lab"
     prototypes_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
+    inventory: Inventory = field(default_factory=Inventory)
+
     materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
     equipment_list: List[str] = field(default_factory=list) #An empty list but lab must have something here
     upkeep: int = 200
@@ -1269,20 +1371,20 @@ class ResearchLab(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "ResearchLab",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"ResearchLab: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
-            "tags": ["location", "tools"],
-            "source": None,
             "salience": self.compute_salience(observer),
+            "tags": ["location", "tools"],
+            "urgency": 1,
+            "source": None,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": 12
+            "has_security": self.has_security()
         }
     
 
@@ -1306,9 +1408,13 @@ class ResearchLab(Location):
 class Warehouse(Location):
     name: str = "Warehouse 5"
     tags: list[str] = field(default_factory=lambda: ["storage", "faction"])
+    description: str = "A Warehouse"
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
     storage_capacity: int = 50 # will need to upgrade to a more complex data structure
+    items_available: List[str] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     fun: int = 0
     is_concrete: bool = True
     secret_entrance: bool = False
@@ -1324,20 +1430,21 @@ class Warehouse(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Warehouse",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Warehouse: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
+            "salience": self.compute_salience(observer),
             "urgency": 1,
             "tags": ["location", "tools"],
+            
             "source": None,
-            "salience": 2,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
         }
     
     def to_dict(self):
@@ -1351,9 +1458,14 @@ class Warehouse(Location):
 class ApartmentBlock(Location):
     name: str = "Mass Housing"
     tags: list[str] = field(default_factory=lambda: ["homes", "grim"])
+    description: str = "An Apartment Block"
     upkeep: int = 35
     categories: List[str] = field(default_factory=lambda: ["residential"])
     storage_capacity: int = 50 # LOL, will need to upgrade to a more complex data structure
+
+    items_available: List[str] = field(default_factory=list)#just to make the code run
+    inventory: Inventory = field(default_factory=Inventory)
+
     fun: int = 0
     is_concrete: bool = True
     secret_entrance: bool = False
@@ -1369,20 +1481,22 @@ class ApartmentBlock(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "ApartmentBlock",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"ApartmentBlock: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location", "tools"],
+            "urgency": 1,
+            
             "source": None,
-            "salience": 2,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
             #"has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            
         }
     
     def to_dict(self):
@@ -1402,8 +1516,13 @@ class ApartmentBlock(Location):
 class House(Location):
     name: str = "Fam House"
     tags: list[str] = field(default_factory=lambda: ["home", "family"])
+    description: str = "A House"
     categories: List[str] = field(default_factory=lambda: ["residential"])
     upkeep: int = 5
+
+    items_available: List[str] = field(default_factory=list)#relevant?
+    inventory: Inventory = field(default_factory=Inventory)
+
     fun: int = 1
     is_concrete: bool = True
     secret_entrance: bool = False
@@ -1420,20 +1539,23 @@ class House(Location):
         return asdict(self)
     def get_percept_data(self, observer=None):
         return {
-            "type": "House",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"House: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
-            "tags": ["location"],
-            "source": None,
             "salience": self.compute_salience(observer),
+            "tags": ["location"],
+            "urgency": 1,
+            
+            "menu_options": [],
+            "source": None,
+            
             #"security": self.security_level,
-            "is_open": self.is_open,
+            "is_open": self.is_open
             #"has_security": self.has_security(),
-            "salience": 12
+
         }
     
     def __repr__(self):
@@ -1450,8 +1572,11 @@ class House(Location):
 class SportsCentre(Location):
     name: str = "The Stadium"
     tags: list[str] = field(default_factory=lambda: ["fun", "social"])
+    description: str = "A Stadium"
     upkeep: int = 30
     categories: List[str] = field(default_factory=lambda: ["workplace"])
+    items_available: List[str] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
     ambiance_level: int = 1
     fun: int = 1
     is_concrete: bool = True
@@ -1468,20 +1593,19 @@ class SportsCentre(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "SportsCentre",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"SportsCentre: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
             "tags": ["location", "tools"],
+            "urgency": 1,
             "source": None,
-            "salience": 2,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
         }
 
     def to_dict(self):
@@ -1499,8 +1623,11 @@ class SportsCentre(Location):
 class Holotheatre(Location):
     name: str = "Zodeono"
     tags: list[str] = field(default_factory=lambda: ["fun", "social"])
+    description: str = "A cinema"
     upkeep: int = 15
     categories: List[str] = field(default_factory=lambda: ["workplace"])
+    items_available: List[str] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
     ambiance_level: int = 1
     fun: int = 1
     is_concrete: bool = True
@@ -1517,20 +1644,21 @@ class Holotheatre(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "Holotheatre",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"Holotheatre: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location"],
+            "urgency": 1,
+            
             "source": None,
-            "salience": 2,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
         }
     
     def to_dict(self):
@@ -1548,7 +1676,11 @@ class Holotheatre(Location):
 class MunicipalBuilding(Location):
     name: str = "City Hall"
     tags: list[str] = field(default_factory=lambda: ["law", "state"])
-    items_available: List[str] = field(default_factory=list) 
+    description: str = "A Muni Building"
+    items_available: List[str] = field(default_factory=list)
+
+    inventory: Inventory = field(default_factory=Inventory)
+
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
     #entrance: List[str] = field(default_factory=list)
@@ -1567,20 +1699,22 @@ class MunicipalBuilding(Location):
 
     def get_percept_data(self, observer=None):
         return {
-            "type": "MunicipalBuilding",
             "name": self.name,
-            "region": self.region.name if self.region else None,
+            "type": self.__class__.__name__,
             "description": f"MunicipalBuilding: {self.name}",
+            "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "urgency": 1,
+            "salience": self.compute_salience(observer),
             "tags": ["location", "VIP"],
+            "urgency": 1,
+            
             "source": None,
-            "salience": 2,
+            "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security()
+            
         }
     
     def to_dict(self):
@@ -1595,8 +1729,12 @@ class MunicipalBuilding(Location):
 class PoliceStation(Location):
     name: str = "The Yard"
     tags: list[str] = field(default_factory=lambda: ["law", "grim"])
+    description: str = "A Copshop"
     categories: List[str] = field(default_factory=lambda: ["workplace"])
-    items_available: List[str] = field(default_factory=list) 
+ 
+    items_available: List[str] = field(default_factory=list)
+    inventory: Inventory = field(default_factory=Inventory)
+
     resource_storage: Dict[str, int] = field(default_factory=dict)
     special_features: List[str] = field(default_factory=list)
     #entrance: List[str] = field(default_factory=list)
@@ -1616,16 +1754,21 @@ class PoliceStation(Location):
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
+            "type": self.__class__.__name__,
             "description": f"{self.name} (PoliceStation)",
+            "region": self.region.name if self.region else None,
+            "robbable": True,
             "origin": self,
-            #"urgency": 1,
-            #"tags": ["location", "police", "weapons"],
-            #"source": None,
             "salience": self.compute_salience(observer),
-            #"robbable": True,
-            #"security": self.security_level,
-            #"is_open": self.is_open,
-            #"has_security": self.has_security(),
+            "tags": ["location", "police", "weapons"],
+            "urgency": 1,
+            
+            "source": None,
+            "menu_options": [],
+            "source": None,
+            "security": self.security_level,
+            "is_open": self.is_open,
+            "has_security": self.has_security()
         }
 
     def to_dict(self):

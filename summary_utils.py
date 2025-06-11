@@ -1,3 +1,4 @@
+#summary_utils.py
 from tabulate import tabulate
 import textwrap
 
@@ -21,7 +22,7 @@ def summarize_motivations_and_percepts(character) -> str:
     motive_2 = top_motives[1].type if len(top_motives) > 1 else '—'
 
     # Location
-    location = character.location if character.location else "in transit"
+    location = format_location(character.location) if character.location else "in transit"
 
     summary_rows.append([
         character.name,
@@ -43,6 +44,11 @@ def summarize_motivations_and_percepts(character) -> str:
                 percept_type = data.get("type", "Unknown")
                 details = data.get("details", "—")
                 output += f"- {percept_type} (salience: {salience}) — {details}\n"
+                print("[DEBUG] Percept data type:", type(entry.get("origin")))
+        #safety check
+        if key == "self":
+            percept_type = "Self"
+
         else:
             output += "— No percepts found —\n"
     except Exception as e:
@@ -60,10 +66,23 @@ def summarize_motivations_and_percepts(character) -> str:
     if percepts_dict:
         sorted_items = sorted(percepts_dict.items(), key=lambda item: item[1].get("salience", 0), reverse=True)
 
+        #TMP debug block
         for key, entry in sorted_items:
             data = entry.get("data", {})
             salience = entry.get("salience", "—")
-            percept_type = data.get("type", key)
+            
+            if key == "self":
+                percept_type = "Self"
+            else:
+                percept_type = data.get("type") or data.get("name")
+
+            if not percept_type:
+                percept_type = "Unknown"
+                print(f"[DEBUG] Unknown Percept detected for key '{key}':")
+                print(f"        salience = {salience}")
+                print(f"        data = {data}")
+                print(f"        keys in data = {list(data.keys())}")
+                print(f"        full entry = {entry}")
 
             header_row1.append(percept_type)
             header_row2.append("Salience")
@@ -74,3 +93,8 @@ def summarize_motivations_and_percepts(character) -> str:
         output += "\n— No percepts available —\n"
 
     return output
+
+def format_location(loc):
+    if hasattr(loc, 'name') and hasattr(loc, 'region'):
+        return f"{loc.name} in {loc.region.name if hasattr(loc.region, 'name') else loc.region}"
+    return str(loc)

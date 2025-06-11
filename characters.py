@@ -57,6 +57,12 @@ class Boss(Character):
         self.inventory = kwargs.get("inventory", Inventory(owner=self))
   # List to store items in the character's inventory
         
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, the Gang Leader of {self.faction.name}"
+        data["tags"].extend(["gang", "leader"])
+        return data
+
     def handle_observation(self, region):
         gang_observation_logic(self, region)
     
@@ -125,6 +131,12 @@ class CEO(Character):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
 
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, the CEO Leader of {self.faction.name}"
+        data["tags"].extend(["corporation", "leader"])
+        return data
+
     def issue_directive(self, directive):
         print(f"{self.name} (CEO) issues directive: {directive}")
         self.directives.append(directive)
@@ -180,6 +192,12 @@ class Captain(Character):
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, Gang Captain of {self.faction.name}"
+        data["tags"].extend(["gang", "captain", "midtier"])
+        return data
 
     @property
     def whereabouts(self):
@@ -237,6 +255,13 @@ class Manager(Character):
         else:
             print(f"⚠️ Manager {self.name} has no HQ assigned!")
         
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, a Manager in {self.faction.name}"
+        data["tags"].extend(["corporation", "manager", "midtier"])
+        return data
+
     def whereabouts(self):
         region_name = self.region.name if hasattr(self.region, "name") else str(self.region)
         location_name = getattr(self.location, "name", str(self.location))
@@ -317,6 +342,13 @@ class Employee(Subordinate):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
 
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, Employee of {self.faction.name}"
+        data["tags"].extend(["worker", "lowtier"])
+        return data
+
     @property
     def whereabouts(self):
         
@@ -369,6 +401,13 @@ class CorporateSecurity(Subordinate):
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
+
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, a guard for {self.faction.name}"
+        data["tags"].extend(["corporation", "lowtier"])
+        return data
 
     @property
     def whereabouts(self):
@@ -444,6 +483,13 @@ class CorporateAssasin(CorporateSecurity):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
     
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, an assassin."
+        data["tags"].extend(["outsider", "cold"])
+        return data
+
     @property
     def whereabouts(self):
         
@@ -504,7 +550,8 @@ class GangMember(Subordinate):
         self.bankCardCash = 20 """
 
     def handle_observation(self, region):
-        gang_observation_logic(self, region)
+        #set deafults here?
+        gang_observation_logic(self, region)        #all new parameters after regions are marked as not defined
 
     def default_skills(self):
         base = super().default_skills()
@@ -521,6 +568,12 @@ class GangMember(Subordinate):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
     
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, a GangMember of {self.faction.name}"
+        data["tags"].extend(["gang", "lowtier"])
+        return data
+
     @property
     def whereabouts(self):
         
@@ -594,6 +647,13 @@ class RiotCop(Character):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
 
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, an enforcer for {self.faction.name}"
+        data["tags"].extend(["cop", "drone"])
+        return data
+
     @property
     def whereabouts(self):
         
@@ -666,6 +726,13 @@ class Civilian(Character):
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
+
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, a regular person, {self.faction.name}"
+        data["tags"].extend(["civilian", "normie"])
+        return data
 
     @property
     def whereabouts(self):
@@ -775,6 +842,12 @@ class VIP(Civilian):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
 
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, a VIP, from {self.faction.name}"
+        data["tags"].extend(["State", "leader"])
+        return data
+
     
 class Child(Civilian):
     is_concrete = True
@@ -853,6 +926,12 @@ class Child(Civilian):
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, a child, {self.faction.name}"
+        data["tags"].extend(["child", "civilian"])
+        return data
 
     @property
     def whereabouts(self):
@@ -963,6 +1042,13 @@ class Influencer(Civilian):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
 
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, an influencer,  {self.faction.name}"
+        data["tags"].extend(["independent", "influencer"])
+        return data
+
     @property
     def whereabouts(self):
         
@@ -1063,6 +1149,13 @@ class Babe(Civilian):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
     
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, beautiful, charming,  {self.faction.name}"
+        data["tags"].extend(["fun", "hot"])
+        return data
+
     @property
     def whereabouts(self):
         
@@ -1173,7 +1266,11 @@ class Detective(Character): #Subordinate? Of the state?
         """ self.cash = 50
         self.bankCardCash = 300 """
 
-          # List to store items in the character's inventory
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, criminal investigator, {self.faction.name}"
+        data["tags"].extend(["State", "midtier"])
+        return data
 
     @property
     def whereabouts(self):
@@ -1245,8 +1342,13 @@ class Taxman(Character):
         # self.bankCardCash = bankCardCash
 
         self.inventory = kwargs.get("inventory", Inventory(owner=self))
-  # List to store items in the character's inventory
-    
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, taxman for {self.faction.name}"
+        data["tags"].extend(["State", "midtier"])
+        return data
+
     # figure out how specific charcters store their specific actions, here or in that file or both
     def squeeze_taxes(self, target):
         print(f"{self.name} squeezes taxes from {target}!")
@@ -1317,7 +1419,12 @@ class Accountant(Character):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
 
-    
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, accountant for {self.faction.name}"
+        data["tags"].extend(["corporate", "midtier"])
+        return data
+
     @property
     def whereabouts(self):
         
@@ -1394,6 +1501,13 @@ class SpecialChild(Child):
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, mysterious child,  {self.faction.name}"
+        data["tags"].extend(["child", "special", "plotarmour"])
+        return data
+
 
     @property
     def whereabouts(self):
