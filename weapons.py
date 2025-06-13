@@ -92,15 +92,7 @@ class Pistol(RangedWeapon):
 
         return data
     
-    def compute_salience(self, observer=None):
-        salience = 5
-        if hasattr(observer, "motivation_manager"):
-            motivations = {m.type for m in observer.motivation_manager.get_motivations()}
-            if "rob" in motivations:
-                salience += 10
-            if "buy_tech" in motivations:
-                salience += 2
-        return salience
+    
 #You can abstract this into a helper method later, but this is a good explicit start.
 #This allows the object to generate percepts from the perspective of the observer.
 
@@ -128,6 +120,7 @@ class SMG(RangedWeapon):
         return {
             "description": f"{self.name}",
             "type": self.__class__.__name__,
+            "origin": self,
             "item_type": self.item_type,
             "value": self.price,
             "tags": tags,
@@ -160,6 +153,7 @@ class Rifle(RangedWeapon):
         return {
             "description": f"{self.name}",
             "type": self.__class__.__name__,
+            "origin": self,
             "item_type": self.item_type,
             "value": self.price,
             "tags": tags,
@@ -192,6 +186,7 @@ class Shotgun(RangedWeapon):
         return {
             "description": f"{self.name}",
             "type": self.__class__.__name__,
+            "origin": self,
             "item_type": self.item_type,
             "value": self.price,
             tags: tags,
@@ -222,6 +217,7 @@ class Sword(MeleeWeapon):
         return {
             "description": f"{self.name}",
             "type": self.__class__.__name__,
+            "origin": self,
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
@@ -254,6 +250,7 @@ class Knife(MeleeWeapon):
         return {
             "description": f"Knife ({self.human_readable_id})",
             "type": self.__class__.__name__,
+            "origin": self,
             "value": self.price,
             "danger": self.intimidation,
             "item_type": self.item_type,
@@ -282,6 +279,7 @@ class Club(MeleeWeapon):
         return {
             "description": f"{self.name}",
             "type": self.__class__.__name__,
+            "origin": self,
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
@@ -312,6 +310,7 @@ class Electrobaton(MeleeWeapon):
         return {
             "description": f"{self.name}",
             "type": self.__class__.__name__,
+            "origin": self,
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,

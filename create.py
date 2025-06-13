@@ -131,13 +131,34 @@ def create_gang_factions(num_gangs, all_regions):
         race_specific_names = RACE_NAME_LOOKUP.get(race, (["Default"], ["Gang"]))
         first_part, second_part = race_specific_names
         assigned_region = random.choice(all_regions)
+        region_name = assigned_region.name.lower().replace(" ", "")  # Normalize it
+
         gang_name = f"{random.choice(first_part)} {random.choice(second_part)}"
         gang = Gang(name=gang_name, violence_disposition="5", race=race)
         gang.region = assigned_region  # Assign region before adding to list
         gangs.append(gang)
         game_state.add_gang(gang)  # Add to global GameState
-        assigned_region.region_gangs.append(gang)  # Update region's gang list
+
+        assigned_region.region_gangs.append(gang)  # Local region tracking
+
+        # Dynamically update the correct GameState list
+        attr_name = f"{region_name}_gangs"
+        if hasattr(game_state, attr_name):
+            getattr(game_state, attr_name).append(gang)
+        else:
+            print(f"[Warning] GameState has no attribute '{attr_name}'")
+
+
+
+
+
+                # Update region's gang list
+
         assign_hq(gang, assigned_region)
+        
+
+
+
         #assign Boss
         # Assign a random goal
         random_goal_type = random.choice(Goal.VALID_GOALS)
@@ -166,7 +187,17 @@ def create_corp_factions(num_corps, all_regions):
     corporations.append(hannival_corp)
 
     game_state.add_corporation(hannival_corp)
+
     hannival_region.region_corps.append(hannival_corp)
+
+    region_name = hannival_region.name.lower().replace(" ", "")
+    attr_name = f"{region_name}_corps"
+
+    if hasattr(game_state, attr_name):
+        getattr(game_state, attr_name).append(hannival_corp)
+    else:
+        print(f"[Warning] GameState has no attribute '{attr_name}'")
+
 
     for _ in range(num_corps):
         corp_name = f"{random.choice(first_parts).replace(',', '')} {random.choice(second_parts).replace(',', '')}"
@@ -175,9 +206,19 @@ def create_corp_factions(num_corps, all_regions):
         corporation = Corporation(name=corp_name, violence_disposition="2")
         corporation.region = assigned_region
 
+        region_name = assigned_region.name.lower().replace(" ", "")
+        attr_name = f"{region_name}_corps"
+
+        if hasattr(game_state, attr_name):
+            getattr(game_state, attr_name).append(corporation)
+        else:
+            print(f"[Warning] GameState has no attribute '{attr_name}'")
+
         # **Check if it already has an HQ before assigning**
         if corporation.HQ is None:
             assign_hq(corporation, assigned_region)
+            if corporation.HQ:
+                corporation.HQ.controlling_faction = corporation #needs checking. Should this be in assign_hq?
 
         corporations.append(corporation)
         game_state.add_corporation(corporation)
@@ -294,6 +335,70 @@ def assign_hq(faction, region):
                 region.trigger_event("turf_war")
                 region.turf_war_triggered = True
                 
+#create new factions
+def create_gang(game_state, gang, is_street_gang=True):
+    region_name = gang.region.name.lower().replace(" ", "")
+    
+    # Add to global gang list
+    game_state.add_gang(gang)
+    
+    # Add to region-specific list
+    gang.region.region_gangs.append(gang)
+
+    # Add to GameState region list dynamically
+    attr_name = f"{region_name}_gangs"
+    if hasattr(game_state, attr_name):
+        getattr(game_state, attr_name).append(gang)
+    else:
+        print(f"[Warning] GameState has no attribute '{attr_name}'")
+
+    # Optional: store street gang info if needed
+    gang.is_street_gang = is_street_gang
+
+def destroy_gang(game_state, gang):
+    region_name = gang.region.name.lower().replace(" ", "")
+    
+    # Remove from global list
+    if gang in game_state.gangs:
+        game_state.gangs.remove(gang)
+
+    # Remove from region-specific list
+    if gang in gang.region.region_gangs:
+        gang.region.region_gangs.remove(gang)
+
+    # Remove from GameState region list
+    attr_name = f"{region_name}_gangs"
+    if hasattr(game_state, attr_name):
+        region_list = getattr(game_state, attr_name)
+        if gang in region_list:
+            region_list.remove(gang)
+
+def create_corporation(game_state, corp):
+    region_name = corp.region.name.lower().replace(" ", "")
+    
+    game_state.add_corporation(corp)
+    corp.region.region_corps.append(corp)
+
+    attr_name = f"{region_name}_corps"
+    if hasattr(game_state, attr_name):
+        getattr(game_state, attr_name).append(corp)
+    else:
+        print(f"[Warning] GameState has no attribute '{attr_name}'")
+
+
+def destroy_corporation(game_state, corp):
+    region_name = corp.region.name.lower().replace(" ", "")
+    
+    if corp in game_state.corporations:
+        game_state.corporations.remove(corp)
+    if corp in corp.region.region_corps:
+        corp.region.region_corps.remove(corp)
+
+    attr_name = f"{region_name}_corps"
+    if hasattr(game_state, attr_name):
+        region_list = getattr(game_state, attr_name)
+        if corp in region_list:
+            region_list.remove(corp)
 
 
 

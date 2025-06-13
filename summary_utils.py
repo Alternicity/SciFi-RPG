@@ -45,9 +45,6 @@ def summarize_motivations_and_percepts(character) -> str:
                 details = data.get("details", "—")
                 output += f"- {percept_type} (salience: {salience}) — {details}\n"
                 print("[DEBUG] Percept data type:", type(entry.get("origin")))
-        #safety check
-        if key == "self":
-            percept_type = "Self"
 
         else:
             output += "— No percepts found —\n"

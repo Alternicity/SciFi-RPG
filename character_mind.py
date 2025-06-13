@@ -12,6 +12,8 @@ class Mind:
         self.thoughts = deque(maxlen=capacity)
         self.memory = Memory()
 
+        #Consider syncing Character.social_connections["enemies"] with mind.memory.semantic["enemies"] at periodic intervals
+
         # encapsulate both episodic + semantic
         #adding this here should probably deprecate the self.memory = Memory() in class Character
         #this will necessitate refactoring all code that writes to charcter.memory

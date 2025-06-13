@@ -58,7 +58,7 @@ class Boss(Character):
   # List to store items in the character's inventory
         
     def get_percept_data(self, observer=None):
-        data = super().get_percept_data(observer)
+        data = super().get_percept_data(observer)#does this imly that every perecpt data block must ha an observe entry?
         data["description"] = f"{self.name}, the Gang Leader of {self.faction.name}"
         data["tags"].extend(["gang", "leader"])
         return data

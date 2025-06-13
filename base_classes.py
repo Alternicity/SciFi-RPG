@@ -151,6 +151,7 @@ class Factionless(Faction):
         self.members = []
 
 class Character(PerceptibleMixin):
+    #keep PerceptibleMixin at the start of the base class list
 
     VALID_SEXES = ("male", "female")  # Class-level constant
     VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "Irish", "French", "Chinese", "German", "BlackAmerican", "Indian", "IndoAryan", "IranianPersian", "Japanese", "WhiteAryanNordic")  # Class-level constant
@@ -188,7 +189,8 @@ class Character(PerceptibleMixin):
         **kwargs,
         
     ):
-        PerceptibleMixin.__init__(self)  # Explicit call instead of super()
+        super().__init__()
+        #PerceptibleMixin.__init__(self)  # Explicit call instead of super()
 
 
         #print(f"[Character Init] name={name}, race={race}, sex={sex}")
@@ -543,12 +545,15 @@ class Character(PerceptibleMixin):
             if char is not self:
                 self.perceive_object(char)
 
-        # Semantic memory: hostile factions & general region awareness
-        #if include_memory_check and hasattr(self, "faction") and isinstance(region, Region):
+        #should not be inside observe_region() unless you want memory injection to
+        #  happen every time the region is observed.
+        #Move to character instantiation, later add a lesser version for child or stupid characters
+        #a one-time call like initialize_knowledge() during startup / setup.
             from memory_entry import RegionKnowledge
             rk = RegionKnowledge(
                 region_name=region.name,
                 character_or_faction=self,
+                tags = ["gangs", "region", "street_gang"],
                 region_gangs={g.name for g in region.region_gangs},
                 is_street_gang=any(getattr(g, "is_street_gang", False) for g in region.region_gangs),
             )
@@ -572,6 +577,7 @@ class Character(PerceptibleMixin):
     def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
         #print(f"[DEBUG] from class Character, observe_objects called.")
         # Auto-fetch nearby objects if not provided
+        new_percepts = {}
         if nearby_objects is None and location:
             from worldQueries import get_nearby_objects
             fetched_objects = get_nearby_objects(self, self.region, location)
@@ -582,10 +588,6 @@ class Character(PerceptibleMixin):
         # If it's a single object instead of a list, wrap it
         if not isinstance(nearby_objects, list):
             nearby_objects = [nearby_objects]
-
-        for obj in nearby_objects:
-            self.perceive_object(obj)
-            print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
 
         # Optional debugging of objects at the location
         for obj in getattr(location, 'objects_present', []):
@@ -601,15 +603,19 @@ class Character(PerceptibleMixin):
                 print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
 
             # Perceive valid objects
-            new_percepts = {} #line 592
-            for obj in nearby_objects or []:
+             #line 607 
+            new_percepts = {}
+            for obj in nearby_objects:
                 if isinstance(obj, PerceptibleMixin):
                     percept = obj.get_percept_data(observer=self)
                     if percept:
                         new_percepts[obj.id] = percept
-                        print(f"[Observe] {self.name} perceived: with salience {percept['salience']}")
-                        self._percepts.update(new_percepts)
+                        print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
+                        print(f"[Observe] {self.name} perceived {obj.name} with salience {percept.get('salience')}")
+                    else:
+                        print(f"[BUG] {obj.name} ({type(obj).__name__}) returned None from get_percept_data.")
 
+            self._percepts.update(new_percepts)
 
     def observe(self, *, nearby_objects=None, target=None, region=None, location=None):
         from location import Region, Location
@@ -617,7 +623,7 @@ class Character(PerceptibleMixin):
             region = region.region
         if not isinstance(region, Region):
             raise TypeError(f"[DEV] {self.name} observe_region got invalid region type {type(region)} — {region}")
-        
+            #will this block exclude nearby_objects from the subsequent call to observe_objects()?
         if self.is_test_npc:
             simple_list = [f"{c.name}, {c.__class__.__name__}" for c in location.characters_there]
             print(f"[DEBUG] {self.name} observe() called, count these: {simple_list}")
@@ -629,26 +635,21 @@ class Character(PerceptibleMixin):
         # Main perception logic for a character NPC.
         region = region or self.region
         location = location or getattr(self, "location", None) 
-
-        #print(f"[DEBUG] from class Character. Region locations: {getattr(region, 'locations', 'No locations attr')}")
         
         # Observe specific location if provided
         if location:
             observe_location(self, location)
 
-
             # Perceive self
             self_percept = self.get_percept_data(observer=self)
             if self_percept:
                 #new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
-                new_percepts = {}
+                new_percepts = {}#line 654
                 self_percept = self.get_percept_data(observer=self)
                 if self_percept:
                     new_percepts["self"] = self_percept
                     self._percepts.update(new_percepts)
-
-            self._percepts.update(new_percepts)
-            self.percepts_updated = True
+                    self.percepts_updated = True
 
             #print(f"[Observe] {self.name} now has {len(self._percepts)} percepts.")
 
@@ -678,7 +679,7 @@ class Character(PerceptibleMixin):
         #types> characters, events, utility, factions, locations, regions, chainOfActions
         #percepts, must include actual object references for the "origin" field
 
-        updated_percepts = {} #not accessed, deprecated?
+        updated_percepts = {} #not accessed, deprecated? line 689
 
         #should the following code be moved elsewhere out of class Character, it looks like placeholder code that
         #would need to grow very long.
@@ -900,6 +901,7 @@ class Location(PerceptibleMixin):
     region: Optional['Region'] = None
 
     sublocations: Optional[List['Location']] = None  # Specific location within the location
+    controlling_faction: Optional[Faction] = None
 
     tags: list[str] = field(default_factory=list)
     menu_options: List[str] = field(default_factory=list)

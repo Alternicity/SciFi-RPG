@@ -166,7 +166,7 @@ class HQ(Location):
             "robbable": True,
             "origin": self,
             "urgency": 1,
-            "tags": ["location", "unused"],
+            "tags": ["location", "base"],
             "source": None,
             "security": self.security_level,
             "is_open": self.is_open,
@@ -242,7 +242,11 @@ from characters import Employee
 class Shop(Vendor):
 
     name: str = "QQ Store"
+
     tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial"])
+    #Keep tags at class level (Shop(tags=["shop"])) for static traits like economic category.
+    #Use get_percept_data tags for dynamic, observer-relative info like visible weapons, open status, etc
+
     description: str = "Some shop"
     legality: bool = True
     employees_there: List['Employee'] = field(default_factory=list)
@@ -283,7 +287,7 @@ class Shop(Vendor):
             "robbable": True,
             "origin": self,
             "urgency": 1,
-            "tags": ["location", "weapons"],
+            "tags": ["location", "weapons", "weapon", "ranged_weapon"],
             "source": None,
             "security": self.security_level,
             "is_open": self.is_open,

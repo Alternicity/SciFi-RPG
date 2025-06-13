@@ -31,7 +31,17 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 if debug_character and npc.name == debug_character.name:
                     print(f"[DEBUG] {npc.name} 1st percepts after observe:")
                     for k, v in npc._percepts.items():
-                        print(f"  - {k}: {v.get('description') or v.get('type', 'UNKNOWN')}")
+                        data = v.get("data", {})
+                        desc = data.get("description") or data.get("type") or "UNKNOWN"
+                        origin = v.get("origin", "—")
+
+                        print(f"  - Key: {k}")
+                        print(f"    Desc: {desc}")
+                        print(f"    Type: {data.get('type', '—')}")
+                        print(f"    Origin: {origin if origin != '—' else '[MISSING]'}")
+                        print(f"    Data keys: {list(data.keys())}")
+                        print(f"    Full Data: {data}")
+                        print("")
                         #Try v['description'], If that's None or doesn't exist, try v['type'], If neither exists, fall back to 'UNKNOWN'
                     
                 
@@ -44,7 +54,17 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     print(f"[DEBUG] {npc.name} region objects: {[o.name if hasattr(o, 'name') else str(o) for o in getattr(region, 'objects_there', [])]}")
 
                 if npc.is_test_npc:
-                    print(f"[DEBUG] {npc.name} 2nd percepts after observe: {[v.get('description') or v.get('type', 'UNKNOWN') for v in npc._percepts.values()]}")
+                    print(f"[DEBUG] {npc.name} 2nd percepts after observe:")
+                    for i, v in enumerate(npc._percepts.values()):
+                        data = v.get("data", {})
+                        desc = data.get("description") or data.get("type") or "UNKNOWN2"
+                        origin = v.get("origin", "—")
+                        print(f"  [{i}] Desc: {desc}")
+                        print(f"       Type: {data.get('type', '—')}")
+                        print(f"       Origin: {origin if origin != '—' else '[MISSING]'}")
+                        print(f"       Data keys: {list(data.keys())}")
+                        print("")
+
 
                 #THINK
                 if hasattr(npc, 'ai') and npc.ai:

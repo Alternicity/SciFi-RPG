@@ -195,7 +195,7 @@ class UtilityAI(BaseAI):
             #print here, saying why not attention focus?
             return
 
-        for thought in list(thoughts):
+        for thought in self.npc.mind.thoughts:
             if not isinstance(thought, Thought):
                 print(f"[THINK] Skipping invalid thought in {npc.name}'s mind: {thought}")
                 continue

@@ -2,8 +2,30 @@
 #I am not sure if this entire file is now legacy code and unused
 from motivation import Motivation
 
-#class presets
+#class presets, under structural development, specifics not relevant to Luna
 class MotivationPresets:
+    
+    #old 
+    """ tag_to_motivation = {
+                        "rob": "rob",
+                        "steal": "steal",
+                        "weapon": "obtain_ranged_weapon",
+                        "shop": "visit_location",
+                        "explore": "visit_location",
+
+                    } """
+
+    @classmethod
+    def tag_to_motivation(cls):
+        return
+    tag_to_motivation_presets = {
+    "rob": Motivation("rob", 4, status_type="criminal"), #does the ai actually need status_type?
+    "steal": Motivation("steal", 4, status_type="criminal"),
+    "weapon": Motivation("obtain_ranged_weapon", 4),
+    "shop": Motivation("visit", 4),
+    "explore": Motivation("visit", 4),
+    }
+    
     _presets = {
 
         "GangMember": [
@@ -94,6 +116,8 @@ class MotivationPresets:
             ],
 
     }
+
+
 
     @classmethod
     def for_class(cls, class_name: str):

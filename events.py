@@ -101,6 +101,8 @@ class TemplateEvent(Event):
             "region": getattr(self.location, "region", "unknown"),
         }
 
+
+        #note observer is also used in percept system
         observers = getattr(self.location, "list_characters", lambda exclude=None: [])(exclude=[self.instigator])
         for observer in observers:
             observer.perceive_event(percept)

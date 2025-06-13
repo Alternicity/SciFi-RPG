@@ -116,6 +116,7 @@ class CashWad(ObjectInWorld): #REMOVE ALL VALUE
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
 
@@ -142,6 +143,7 @@ class Wallet:
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -191,6 +193,7 @@ class HardDrive(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -214,6 +217,7 @@ class Medkit(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -248,6 +252,7 @@ class FoodCrate(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -271,6 +276,7 @@ class Laptop(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -293,6 +299,7 @@ class MechanicalToolkit(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -315,6 +322,7 @@ class ElectricalToolkit(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -336,6 +344,7 @@ class PowerGenerator(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -357,6 +366,7 @@ class WaterPurifier(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -383,6 +393,7 @@ class SmartPhone(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -405,6 +416,7 @@ class CommoditiesBox(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
@@ -419,6 +431,7 @@ class CashRegister(ObjectInWorld):
         return {
             "type": self.__class__.__name__,
             "name": self.name,
+            "origin": self,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             

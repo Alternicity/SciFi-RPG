@@ -11,6 +11,7 @@ import random
 from city_vars import GameState
 from create_game_state import get_game_state
 from character_memory import RegionKnowledge
+from character_think_utils import promote_relevant_thoughts, should_promote_thought
 #from character_memory import Memory
 
 
@@ -59,9 +60,6 @@ class GangCaptainAI(UtilityAI):
     def execute_action(self, action, region):
         super().execute_action(action, region)
 
-def should_promote_thought(thought): #Why here?
-    return thought.urgency >= 4
-
 class GangMemberAI(UtilityAI):
     def __init__(self, npc):
         super().__init__(npc)  # calls UtilityAI.__init__, which sets self.npc = npc
@@ -70,42 +68,13 @@ class GangMemberAI(UtilityAI):
         """Custom salience tuning, override functions in UtilityAI
         Let UtilityAI produce options, and GangMemberAI choose from them based on gang-specific rules"""
 
-    def promote_thoughts(self): #line 72
+    def promote_thoughts(self): #line 71
         super().promote_thoughts()
         npc = self.npc
-        thoughts = npc.mind.get_all()
-        promoted = set()
+        for thought in self.npc.mind.thoughts:
+            promoted = set() #promoted marked not defined
 
-        tag_to_motivation = {
-            "rob": "rob",
-            "steal": "steal",
-            "weapon": "obtain_ranged_weapon",
-            "shop": "visit_location",
-            "explore": "visit_location",
-            # Add more mappings as needed
-        }
-
-        for thought in list(thoughts):
-            if not isinstance(thought, Thought):
-                continue
-
-            for tag in thought.tags:
-                if tag in tag_to_motivation and should_promote_thought(thought):
-                    motivation_type = tag_to_motivation[tag]
-                    motivation = Motivation(
-                        motivation_type,
-                        urgency=thought.urgency,
-                        target=thought.source,
-                        source=thought
-                    )
-                    npc.motivation_manager.update_motivations(
-                        motivation_type,
-                        motivation.urgency,
-                        target=motivation.target,
-                        source=thought
-                    )
-                    print(f"[GANG] {npc.name} promotes {motivation_type}: {motivation}")
-                    promoted.add(motivation_type)
+        promote_relevant_thoughts(npc, self.npc.mind.thoughts) #line 86
 
         if not promoted and npc.isTestNPC:
             print(f"[GANG] {npc.name} did not promote any thoughts this cycle.")
@@ -123,14 +92,7 @@ class GangMemberAI(UtilityAI):
 
         return {"name": "Idle"}
 
-    def compute_salience(self, obj):
-        from location import Shop, CorporateStore
-        base = super().compute_salience(obj)
-
-        if isinstance(obj, (Shop, CorporateStore)) and "weapon" in getattr(obj, "tags", []):
-            base += 5
-
-        return base
+    
 
     def execute_action(self, action, region):
         npc = self.npc 
@@ -159,11 +121,13 @@ class GangMemberAI(UtilityAI):
             print(f"[MIND DUMP] from GangMemberAI execute_action {npc.name} current thoughts: {[str(t) for t in npc.mind]}")
 
 
-    def resolve_weapon_target_from_percepts(self):
+    def resolve_weapon_target_from_percepts(self):#line 141
         print(f"[GangMemberAI] resolve_weapon_target_from_percepts called")
+        #get percepts. Can the npc perceive a target location with atrgetteable weapons?
 
-    def resolve_weapon_target_from_memory(self):
+    def resolve_weapon_target_from_memory(self):#line 145
         print(f"[GangMemberAI] resolve_weapon_target_from_memory() called")
+        #spawn a thought that spawns a semanitc memory search for target locations with weapons
 
     def resolve_obtain_weapon_target(self, region):
             
@@ -208,7 +172,7 @@ class GangMemberAI(UtilityAI):
             #This code  would seem to be better resolved by resolve_weapon_target_from_memory(self):
             # Only reach here if neither percepts nor memory yielded results
 
-            #line 210
+            #line 192
             new_thought = Thought(
                 content="Maybe I should rob a shop to get a weapon.",
                 origin="General knowledge?",
@@ -219,7 +183,7 @@ class GangMemberAI(UtilityAI):
                 weight=7
             )
             npc.mind.add(new_thought)
-            npc.motivation_manager.increase("rob", 3)#hmm a hack
+            npc.motivation_manager.increase("rob", 3)#hmm a hack, should this be within the thought above?
             print(f"[THOUGHT] {npc.name} had a new thought: {new_thought.content}")
             npc.ai.promote_thoughts()
             print(f"[THOUGHT] {npc.name} promote_thoughts called at end of: resolve_obtain_weapon_target()")
@@ -234,6 +198,9 @@ class GangMemberAI(UtilityAI):
             print("Idling from resolve_robbery_action: target not found")
             return {"name": "Idle"}
 
+    
+
+
     def think(self, region): #line 230
 
         #observe calls have moved to the game loop tick
@@ -245,6 +212,7 @@ class GangMemberAI(UtilityAI):
             print(f"[Percepts Before Thinking] {self.npc.name}:\n{summarize_motivations_and_percepts(self.npc)}")
             print("\n" * 1)
 
+        
 
         if self.npc.faction.is_street_gang == True:
             rk = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
@@ -329,44 +297,14 @@ class GangMemberAI(UtilityAI):
         # #does this call the UtilityAI promote_thoughts()? Why bother?
         
         npc = self.npc
-        thoughts = npc.mind.get_all()
+        thoughts = npc.mind.thoughts
         promoted = set()
 
-        tag_to_motivation = {
-            "rob": "rob",
-            "steal": "steal",
-            "weapon": "obtain_ranged_weapon",
-            "shop": "visit_location",
-            "explore": "visit_location",
-            # Add more mappings as needed
-        }
+        promote_relevant_thoughts(npc, self.npc.mind.thoughts) #line348
 
-        for thought in list(thoughts):
-            if not isinstance(thought, Thought):
-                continue
+    """ def compute_salience(self):
+        salience.compute_salience(obj, observer) """
 
-            for tag in thought.tags:
-                if tag in tag_to_motivation:
-                    motivation_type = tag_to_motivation[tag]
-                    should_promote_thought(thought)
-                    motivation = Motivation( #unexpected indentation here
-                        motivation_type,
-                        urgency=thought.urgency,
-                        target=thought.source,
-                        source=thought
-                    )
-                    npc.motivation_manager.update_motivations(
-                        motivation_type,
-                        motivation.urgency,
-                        target=motivation.target,
-                        source=thought
-                    )
-                    print(f"[GANG] {npc.name} promotes {motivation_type}: {motivation}")
-                    promoted.add(motivation_type)
-
-        if not promoted:
-            if npc.isTestNPC:
-                print(f"[GANG] {npc.name} did not promote any thoughts this cycle.")
 
     def resolve_steal_action(self, region):
             target = target = self.resolve_obtain_weapon_target(region)
