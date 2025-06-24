@@ -21,9 +21,12 @@ class MemoryEntry:
     importance: int = 1
     timestamp: Optional[str] = "now"
     tags: List[str] = field(default_factory=list)
-
+    confidence: int = 10 #average on a 1-10 scale
     type: str = "observation"
-    initial_memory_type:  str = ["semantic","episodic"], # is this syntax correct? It can be one or the other. 
+    initial_memory_type: str = "episodic"
+    #later, when promoting use
+    # deepcopy(memory_entry).initial_memory_type = "semantic"
+    #npc.mind.memory.semantic["procedures"].append(memory_entry) 
 
     target: Optional[Union[str, Any]] = None #possible over engineering, possible conceptual overlap with object_
     #Let me know if you'd like target to be restricted to a specific interface
@@ -239,3 +242,21 @@ RegionKnowledge should act like a composite knowledge profile derived from memor
 Call it like this
 rk = RegionKnowledge(region.name, npc)
 rk.ingest_memory(npc.mind.memory.semantic) """
+
+memory_departing_party = MemoryEntry(
+    subject="Luna",
+    object_="Party Departure",
+    verb="reflected",
+    details="Saw the younger woman watch you leave. Felt warmth, pity, inevitability, whilst I was happy dancing.",
+    importance=6,
+    confidence=15,
+    timestamp="now",
+    tags=["party", "sadness", "connection", "sanskrit", "dogs", "reflection"],
+    type="observation",
+    initial_memory_type="episodic",
+    description="A bittersweet exit, while I danced and L chatted.",
+    payload={"themes": ["compassion", "melancholy", "social_bond"]},
+    further_realizations=["The ache of what cannot stay"],
+    similarMemories=[],
+    target="Younger Woman"
+)

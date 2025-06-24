@@ -148,23 +148,15 @@ def create_gang_factions(num_gangs, all_regions):
         else:
             print(f"[Warning] GameState has no attribute '{attr_name}'")
 
-
-
-
-
                 # Update region's gang list
 
         assign_hq(gang, assigned_region)
         
-
-
-
         #assign Boss
         # Assign a random goal
         random_goal_type = random.choice(Goal.VALID_GOALS)
         goal_description = f"{gang.name} aims to {random_goal_type.replace('_', ' ')}."
         gang.goals.append(Goal(description=goal_description, goal_type=random_goal_type))
-
 
     return gangs
 
@@ -189,6 +181,8 @@ def create_corp_factions(num_corps, all_regions):
     game_state.add_corporation(hannival_corp)
 
     hannival_region.region_corps.append(hannival_corp)
+    #also I must  update game_states self.corporations list and all_locations, and also
+    # the correct game_state.xyz_corps list here
 
     region_name = hannival_region.name.lower().replace(" ", "")
     attr_name = f"{region_name}_corps"
@@ -305,6 +299,11 @@ def assign_hq(faction, region):
         #print(f"No available HQ for {faction.name}. Creating one.")
         new_hq = create_HQ(region, faction_type="corporate")
         region.locations.append(new_hq)
+        #the problem with adding it to these lists is they are not named yet
+        #add it to all_locations, which is not yet present here
+        #add it to game_state.all_locations
+        #add it to -
+        #game_state.location_registry.register()# ← new
         available_hqs.append(new_hq)
 
     if available_hqs: 
@@ -313,8 +312,7 @@ def assign_hq(faction, region):
         hq.name = f"{faction.name} HQ"  # Update HQ name
         faction.HQ = hq  # Update faction's HQ attribute
         #print(f"{faction.name} HQ assigned: in {region.name}")
-        
-    
+        #so appending to lists/register should happen here?
     else:
         faction.is_street_gang = True
         

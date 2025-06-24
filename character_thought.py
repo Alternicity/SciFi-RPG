@@ -12,36 +12,28 @@ class Thought:
         self.weight = weight                # How impactful (can be salience or derived)
         self.timestamp = timestamp or time.time()
         self.resolved = resolved
-        self.corollary = corollary or []  # a corollary will prbably be another thought object
-
+        self.corollary = corollary or []  # a corollary will probably be another thought object
 
     def mark_resolved(self):
         self.resolved = True
 
     def spawn_corollary_thoughts(self, character):
-        #Later you can replace .corollary with a LinkedCorollary object.
-        thoughts = []
+        results = []
         if not self.corollary:
-            return thoughts
-        
-        # simple rule-based system
-        for i, cor in enumerate(self.corollary):
-            if character.intelligence > (13 + i * 2):
+            return results
 
-                """ loop through corollary thoughts indexed by i.
-                A character will "unlock" more advanced corollaries if their intelligence is higher.
-                The thresholds are staggered: int 13, 15, 17 """
-
-                new_thought = Thought(
-                    content=f"Corollary goal: {cor.replace('_', ' ').title()}",
-                    origin="CorollaryEngine",
+        for i, cor_thought in enumerate(self.corollary):
+            if character.intelligence >= (13 + i * 2):
+                new = Thought(
+                    content=f"Corollary derived: {cor_thought.content}",
+                    origin="CorollaryMemory",
                     urgency=self.urgency - 1,
-                    tags=["corollary", "goal"],
-                    source="CorollaryThought",
+                    tags=["corollary"] + cor_thought.tags,
+                    source=cor_thought
                 )
-                thoughts.append(new_thought)
-        return thoughts
-
+                results.append(new)
+        return results
+    
     def compute_salience(self, observer):
         if hasattr(self, 'memory') and self.mind.memory.get_all_memories:
             return self.mind.memory.origin.compute_salience(observer)
@@ -60,6 +52,9 @@ class Thought:
             parts.append(f"time={int(self.timestamp)}")
         return f"<Thought: {', '.join(parts)}>"
 
+    def __str__(self):
+        return f"'{self.content}' (urgency: {self.urgency})"
+
     def __repr__(self):
         return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "
                 f"source='{getattr(self.source, 'name', self.source)}', urgency={self.urgency}, "
@@ -72,3 +67,17 @@ Add timestamp if needed later (you’ve used it before in the namedtuple)
 Add a .to_dict() or .summarize() method for UI/debug/logging, if needed
 
 Add __eq__ or __hash__ methods if you'll compare or de-duplicate thoughts """
+
+class FailedThought(Thought):
+    def __init__(self, content, cause=None, **kwargs):
+        super().__init__(content=content, tags=["error", "fail"], **kwargs)
+        self.cause = cause
+
+    #usage
+    """ try:
+        result = build_triangle()
+    except Exception as e:
+        self.npc.mind.add_thought(FailedThought("Couldn't build triangle", cause=str(e))) """
+    
+class ThoughtTools():
+    pass

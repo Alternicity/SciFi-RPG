@@ -220,6 +220,7 @@ def buy(character, shop, item):
     print(f"  Object ID: {id(shop.inventory.items[item_name])}")
 
     # Deepcopy item before giving it to character
+    #Is origin is being stripped when a deep copy is made? ATTN
     item_copy = copy.deepcopy(item_obj)
     item_copy.quantity = 1  # Important: avoid giving full stock amount
     character.inventory.add_item(item_copy)

@@ -3,8 +3,8 @@ import logging
 import random
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
-                           CEO, Manager, CorporateSecurity, Civilian, GangMember, Child, Influencer,
-                           Babe, Detective, Accountant, Taxman)
+                           CEO, Manager, CorporateSecurity, Civilian, Child, Influencer,
+                           Babe, Detective, Accountant, Taxman, Adepta)
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 from utils import get_faction_by_name, get_location_by_name, get_region_by_name
@@ -105,6 +105,23 @@ def player_character_options(all_regions, factions):
             "criminal": {"level": StatusLevel.LOW, "title": "Alone"}
     },
 },
+         
+{
+        "class": Adepta,
+        "name": "Ava",
+        "sex": "female",
+        "race": "Irish",
+        "faction_name": "Factionless",
+        "region_name": "Northville",
+        "location_name": "Park",
+        "wallet": Wallet(bankCardCash=500),
+        "preferred_actions": {"charm", "heal", "flirt"},
+        "motivations": MotivationPresets.for_class("Adepta"),  # new
+        "status_data": {
+            "public": {"level": StatusLevel.LOW, "title": "Woman"}
+    },
+    },
+
 ]   
 
     return character_data

@@ -1,3 +1,4 @@
+#createLocations.py
 from location import MunicipalBuilding, Shop, Region
 from base_classes import Location
 from typing import List
@@ -51,8 +52,11 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         locations.append(municipal_building)
         region.add_location(municipal_building)
 
-        # Game state tracking
+        game_state = get_game_state()
+        #game_state.all_locations.append(municipal_building) # ← legacy
         game_state.municipal_buildings[region.name] = municipal_building
+        game_state.location_registry.register(municipal_building)# ← new
+
     except Exception as e:
         print(f"⚠️ Error creating MunicipalBuilding in {region.name}: {e}")
 
@@ -68,4 +72,5 @@ def add_location(self, location: Location):
 
     game_state = get_game_state()
     if hasattr(game_state, "all_locations"):
-        game_state.all_locations.append(location)
+        #game_state.all_locations.append(location) #← legacy
+        game_state.location_registry.register(location)  # ← new

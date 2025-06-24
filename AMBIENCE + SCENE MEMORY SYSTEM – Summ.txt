@@ -1,0 +1,38 @@
+🧠 AMBIENCE + SCENE MEMORY SYSTEM – Summary & Prompt
+📜 Overview
+You’ve now integrated a system where:
+
+Every Location has an Ambience field (peace, curiosity, etc.).
+
+Each Character absorbs ambience based on their psy attribute.
+
+A peak vibe (the most dominant emotion in the space) is logged.
+
+Nearby social context (friends, enemies, others) is also captured.
+
+This data is stored into semantic["ambient_vibes"] per character.
+
+Thoughts are optionally generated: “This place feels peaceful.”
+
+🧠 PROMPT TO RE-ENGAGE DEVELOPMENT
+Use the following to jump back in:
+
+“Help me extend the ambience → memory system into emergent narrative generation.
+How can I use ambient_vibes + social context to generate scene memories, poetic reflections, or mood-based decisions?
+Could certain vibes trigger daydreams, flashbacks, or corollary thoughts in Luna?”
+
+🪞 Optional Prompts for Emergent Stories
+1. “Scene Diaries” Prompt:
+
+“Build a small diary system where characters reflect on recent high-vibe locations.
+Let Luna write a symbolic entry about a memory from a peaceful, friend-filled scene.”
+
+2. “Mood-Driven Flashback” Prompt:
+
+“If Luna absorbs a peak vibe of ‘melancholy’ in a quiet room—can she dream of a moment she forgot?
+Prototype a dream-spawned Thought object triggered by ambient memory reactivation.”
+
+3. “Social Resonance Reactions” Prompt:
+
+“Can two characters absorbing the same ambience form a temporary bond or insight?
+Let shared vibes lead to mutual memory entries or emergent friendships.”

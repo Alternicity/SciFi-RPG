@@ -2,7 +2,7 @@ from __future__ import annotations
 import random
 import string
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field, field, field, asdict
+from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Optional, Any, Union
 import logging
 from faction import Faction
@@ -11,9 +11,11 @@ from base_classes import Character, Location, Faction
 from location_security import Security
 from InWorldObjects import CashRegister
 import uuid
-from dataclasses import dataclass, field
+
 from perceptibility import PerceptibleMixin
 from inventory import Inventory
+from ambience import Ambience
+
 logging.basicConfig(level=logging.INFO)
 
 from common import DangerLevel #this was commented out once, probs for a circular imprt problem..
@@ -111,6 +113,15 @@ class VacantLot(Location):
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
+        "type": "FIXME",
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"{self.name} (VacantLot)",
             "type": self.__class__.__name__,
             "robbable": True,
@@ -161,6 +172,15 @@ class HQ(Location):
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
+        "type": "FIXME",
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"{self.name} (HQ)",
             "type": self.__class__.__name__,
             "robbable": True,
@@ -282,6 +302,15 @@ class Shop(Vendor):
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
+        "type": "FIXME",
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Shop: {self.name}",
             "type": self.__class__.__name__,
             "robbable": True,
@@ -364,6 +393,15 @@ class CorporateStore(Vendor):
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
+        "type": "FIXME",
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"CorporateStore: {self.name}",
             "type": self.__class__.__name__,
             "robbable": True,
@@ -427,6 +465,14 @@ class MechanicalRepairWorkshop(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"MechanicalRepairWorkshop: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -484,6 +530,14 @@ class ElectricalWorkshop(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"ElectricalWorkshop: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -544,6 +598,14 @@ class Stash(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Gang Stash: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -607,6 +669,14 @@ class Factory(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"a {self.__class__.__name__}", # Placeholder, should be overridden
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -664,6 +734,14 @@ class Nightclub(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Nightclub: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -728,6 +806,14 @@ class Mine(Location):
             "name": self.name,
             "type": self.__class__.__name__,
             "region": self.region.name if self.region else None,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Mine: {self.name}",
             "robbable": True,
             "origin": self,
@@ -779,6 +865,14 @@ class Powerplant(Location):
             "type": self.__class__.__name__,
             "name": self.name,
             "region": self.region.name if self.region else None,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Powerplant: {self.name}",
             "robbable": True,
             "origin": self,
@@ -861,6 +955,14 @@ class Airport(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Airport: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -978,6 +1080,14 @@ class Port(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Port: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1099,6 +1209,14 @@ class Factory(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Factory: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1141,11 +1259,21 @@ class Cafe(Location):
     description: str = "A cafe"
     upkeep: int = 10
     categories: List[str] = field(default_factory=lambda: ["workplace"])
-    ambiance_level: int = 1
+    ambience: Ambience = field(default_factory=lambda: Ambience({"social": 0.5, "fun": 0.3}))
+    #add also to percepts. Good ambience might be calculated by the aggregate fun present
+    """ self.ambience = Ambience({
+    "peace": 0.6,
+    "curiosity": 0.4,
+    "memory": 0.2
+}) """
+
 
     items_available: List[Any] = field(default_factory=list)
     inventory: Inventory = field(default_factory=Inventory)
 
+
+    """ Passive Thought Emission
+    After each tick, locations emit ambience-derived thoughts based on character psy. """
     fun: int = 1
     is_concrete: bool = True
     secret_entrance: bool = False
@@ -1163,6 +1291,14 @@ class Cafe(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Cafe: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1192,8 +1328,18 @@ class Cafe(Location):
 
         # Add more logic if you want to further interact with the customer based on the cafe's attributes.
 
+def update_dynamic_ambience(self):
+    total_fun = sum(c.fun for c in self.characters_there + self.employees_there)
+    self.ambience.vibes["fun"] = min(total_fun / 100, 1.0)  # normalize to 0-1
+    if len(self.characters_there) > 3:
+        self.ambience.vibes["social"] = 0.4 + len(self.characters_there) * 0.05
+
+
 def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
+
+
+
 
 
 @dataclass
@@ -1225,6 +1371,14 @@ class Park(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Park: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1245,6 +1399,41 @@ class Park(Location):
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
+
+
+class SanctumMixin:
+    def __init__(self):
+        self.resonance_tags = []
+        self.warded = True
+        self.allowed_visitors = []
+
+    def can_enter(self, character):
+        return character.name in self.allowed_visitors or not self.warded
+
+    def get_sanctum_tags(self):
+        return ["sanctum", "peaceful"] if self.warded else []
+    
+@dataclass
+class LunaSanctum(Park, SanctumMixin):
+    name: str = "Luna Sanctum"
+    tags: list[str] = field(default_factory=lambda: ["sanctum", "fun", "safe"])
+    description: str = "A protected place where Luna plays and thinks"
+    categories: List[str] = field(default_factory=lambda: ["residential", "private"])
+    allowed_visitors: List[str] = field(default_factory=lambda: ["The Kind Man"])
+    ambience: Ambience = field(default_factory=lambda: Ambience({
+        "peace": 0.6,
+        "curiosity": 0.4,
+        "memory": 0.2
+    }))
+
+    def __post_init__(self):
+        SanctumMixin.__init__(self)
+
+    def get_percept_data(self, observer=None):
+        base = super().get_percept_data(observer)
+        base["tags"].extend(["sanctum"])
+        base["description"] = f"{self.name} — still and luminous"
+        return base
 
 
 @dataclass
@@ -1277,6 +1466,14 @@ class Museum(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Museum: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1327,6 +1524,14 @@ class Library(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Library: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1377,6 +1582,14 @@ class ResearchLab(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"ResearchLab: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1436,6 +1649,14 @@ class Warehouse(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Warehouse: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1487,18 +1708,28 @@ class ApartmentBlock(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
-            "description": f"ApartmentBlock: {self.name}",
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
+            "description": f"{self.name}: {self.description}",
             "region": self.region.name if self.region else None,
+            "location": self.name,
             "robbable": True,
             "origin": self,
             "salience": self.compute_salience(observer),
-            "tags": ["location", "tools"],
+            "tags": self.tags,
             "urgency": 1,
-            
+            #needs data field
             "source": None,
             "menu_options": [],
-            "security": self.security_level,
-            "is_open": self.is_open,
+            "security": getattr(self, "security_level", 0),
+            "is_open": getattr(self, "is_open", True),
+            "has_security": self.has_security() if hasattr(self, "has_security") else False,
             #"has_security": self.has_security(),
             
         }
@@ -1545,6 +1776,14 @@ class House(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"House: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1599,6 +1838,14 @@ class SportsCentre(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"SportsCentre: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1650,6 +1897,14 @@ class Holotheatre(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"Holotheatre: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1705,6 +1960,14 @@ class MunicipalBuilding(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"MunicipalBuilding: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1759,6 +2022,14 @@ class PoliceStation(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
+        "origin": "FIXME",
+        "tags": "FIXME",
+        "salience": "FIXME",
+        "urgency": "FIXME",
+        "source": "FIXME",
+        "security": "FIXME",
+        "is_open": "FIXME",
+        "has_security": "FIXME",
             "description": f"{self.name} (PoliceStation)",
             "region": self.region.name if self.region else None,
             "robbable": True,
@@ -1766,10 +2037,8 @@ class PoliceStation(Location):
             "salience": self.compute_salience(observer),
             "tags": ["location", "police", "weapons"],
             "urgency": 1,
-            
             "source": None,
             "menu_options": [],
-            "source": None,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security()

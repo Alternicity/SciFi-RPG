@@ -18,6 +18,25 @@ class UtilityAI(BaseAI):
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
 
+    def compute_salience_for_motivation(self, percept_data, motivation):
+        tags = percept_data.get("tags", [])
+        
+        if motivation == "rob":
+            if "ranged_weapon" in tags or "weapon" in tags:
+                return 10
+            elif "shop" in tags:
+                return 7
+        elif motivation == "steal":
+            if "weapon" in tags:
+                return 9
+        elif motivation == "earn_money":
+            if "cash" in tags:
+                return 6
+            if "trade" in tags:
+                return 5
+        # fallback salience
+        return 1
+
     def choose_action(self, region):
         npc = self.npc
 
@@ -272,11 +291,11 @@ class UtilityAI(BaseAI):
 
                     #Should line below use mind.add_thought(self, thought: Thought):
                     thought = Thought(
-                        content=str(percept.get("description", p.get("origin"))),
+                        content = str(percept["description"] if "description" in percept else percept["origin"]),
                         urgency=salience,
-                        source=percept.get("origin"),
-                        tags=percept.get("tags", []),
-                    )
+                        source=str(percept["description"],
+                        tags=percept[("tags", [])],
+                    ))
                     self.npc.mind.add_thought(thought)
                     #added
                     thoughts = self.npc.mind.get_all()
@@ -324,9 +343,12 @@ class UtilityAI(BaseAI):
 
     def compute_salience_for_percepts(self, percept, motivation):
         score = 1
-        if motivation.type in percept.get("tags", []):
+        if "tags" in percept and motivation.type in percept["tags"]:
+        #alt version
+        #if motivation.type in percept.get("tags", []):
             score += 10
-        if percept.get("location") == self.npc.location.name:
+        if str(["location"]) == self.npc.location.name:
+
             score += 5
         score *= motivation.urgency
         return score
@@ -380,7 +402,7 @@ class UtilityAI(BaseAI):
             )
             npc.mind.add(inferred)
             npc.is_alert = True
-            print(f"[INFERENCE] {npc.name} escalated alertness based on: {thought.content}")
+            #print(f"[INFERENCE] {npc.name} escalated alertness based on: {thought.content}")
 
     def faction_observation_logic(npc, region, content, subject, origin, urgency, source, weight, timestamp, resolved, corollary ): #A general function to handle faction characers observation of other factions
 

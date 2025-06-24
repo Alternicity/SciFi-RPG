@@ -9,7 +9,7 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                            CEO, Manager, CorporateSecurity, Civilian)
 #🟢 ⚪🔴 🔵 🟡 🟠 🟣 ⚫  🟤
 from create_game_state import get_game_state  # Ensure we get the latest game state
-from typing import Optional
+from typing import List, Optional, Type, Union
 
 def get_region_by_name(name, all_regions): #these get functions get the object from a "string"
     """Finds and returns the region object by name."""
@@ -170,12 +170,57 @@ def normalize_location_regions(all_locations, all_regions):
                 matched_region.add_location(loc)
 
 from location import Location
-def find_sublocation(location: Location, name: str) -> Optional[Location]:
-        if location.sublocations:
-            for sub in location.sublocations:
-                if name.lower() in sub.name.lower():
+#assign VIPs to Airport etc
+def find_location_by_type(locations: List[Location], target_type: Union[Type, str]) -> Optional[Location]:
+    """
+    Searches a list of locations and their sublocations for one that matches the given type (class or string).
+    """
+    def matches(loc):
+        if isinstance(target_type, str):
+            return target_type.lower() in loc.name.lower()
+        return isinstance(loc, target_type)
+
+    for loc in locations:
+        if matches(loc):
+            return loc
+
+        # Check sublocations
+        if loc.sublocations:
+            for sub in loc.sublocations:
+                if matches(sub):
                     return sub
-        return None
+
+    return None
+#usage
+# Find a shop location
+#shop_loc = find_location_by_type(all_locations, "Shop")
+
+# Find a playground sublocation
+#playground = find_location_by_type(all_locations, "playground")
+
+# Or match by actual class if you imported it:
+#from locations import Shop
+#shop_obj = find_location_by_type(all_locations, Shop)
+
+def find_all_locations_by_type(locations, target_type):
+    matches = []
+
+    for loc in locations:
+        if isinstance(target_type, str) and target_type.lower() in loc.name.lower():
+            matches.append(loc)
+        elif isinstance(target_type, type) and isinstance(loc, target_type):
+            matches.append(loc)
+
+        if loc.sublocations:
+            for sub in loc.sublocations:
+                if isinstance(target_type, str) and target_type.lower() in sub.name.lower():
+                    matches.append(sub)
+                elif isinstance(target_type, type) and isinstance(sub, target_type):
+                    matches.append(sub)
+
+    return matches
+
+
 
                 
 #For displaying or logging wallet values:

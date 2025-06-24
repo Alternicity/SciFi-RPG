@@ -57,15 +57,6 @@ def compute_location_salience(location, observer):
 
     return salience
 
-
-#deprecate this block in favour of salience.py?
-    """
-        percept = obj.get_percept_data(observer)
-        if "weapon" in percept.get("tags", []):
-            base += 5
-        return base """
-
-
 def compute_object_salience(obj, observer):
     salience = 1
 

@@ -62,6 +62,9 @@ class Event(ABC):
         #get_character_driven_event_outcomes is marked as not defined
         outcomes.get(event_name, lambda: print(f"Unknown event outcome: {event_name}"))()
 
+""" Possible Event types: Emergence, Fracture, Choice, Dream, Revelation
+This could allow narrative-level motivation structures (beyond momentary urges). """
+
 class TemplateEvent(Event):
     def __init__(self, instigator, location, **kwargs):
         super().__init__(

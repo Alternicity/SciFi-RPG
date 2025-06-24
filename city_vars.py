@@ -1,4 +1,6 @@
 #city_vars.py
+
+
 #File to hold a class and object creation code to make accesible variables for other files to easily access
 #get_game_state() is not a hack in a negative sense — it’s a valid service locator pattern
 
@@ -23,7 +25,10 @@ class GameState:
         self.homes = [] #needs populating
         self.public_places = [] #needs populating
         self.all_regions = []
+
         self.all_locations = []
+        #self.location_registry = LocationRegistry()
+        
         self.factions = [] #is not used
         self.all_characters = [] #oof...integrate characters = []
         self.state_staff = []

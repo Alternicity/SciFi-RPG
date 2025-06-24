@@ -128,6 +128,7 @@ def create_gang_characters(faction, all_regions):
         faction=faction,
         region=faction.region,
         location=None,
+        origin=faction.region,
         motivations=[("idle", 1)],
         inventory=Inventory([Knife(owner_name=name)]),
         status=status

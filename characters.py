@@ -486,6 +486,7 @@ class CorporateAssasin(CorporateSecurity):
 
     def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)
+        
         data["description"] = f"{self.name}, an assassin."
         data["tags"].extend(["outsider", "cold"])
         return data
@@ -570,6 +571,7 @@ class GangMember(Subordinate):
     
     def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)
+        #print(f"[DEBUG] get_percept_data in {self.__class__.__name__}, origin: {self}")
         data["description"] = f"{self.name}, a GangMember of {self.faction.name}"
         data["tags"].extend(["gang", "lowtier"])
         return data
@@ -1180,6 +1182,109 @@ class Babe(Civilian):
         """Ends the relationship."""
         self.remove_partner()
         print(f"{self.name} has dumped their partner.")
+
+
+class Adepta(Civilian):
+    is_concrete = True
+
+    default_motivations = [
+        ("find_partner", 20),
+        ("gain_mid", 2),
+        ("have_fun", 3),
+        ("earn_money", 7)
+    ]
+
+    def __init__(self, name, race, sex, region, location, faction="None", partner=None, position="Pursuing U7s", loyalties=None,
+        influence=7, strength=11, agility=10, intelligence=10, 
+        luck=0, psy=14, charisma=18, toughness=11, morale=0, fun=4, hunger=1, status=None, preferred_actions=None, motivations=None, **kwargs):
+        
+
+        if status is None:
+            status = CharacterStatus()
+
+        # Public admiration
+        if "public" not in status.status_by_domain:
+            status.set_status("public", FactionStatus(StatusLevel.LOW, position))
+
+        kwargs["primary_status_domain"] = "public"
+
+        # Default loyalty setup for Babe
+        default_loyalties = {
+            "Law": 15,  # Just, whatever
+        }
+        # Merge defaults with provided loyalties
+        default_loyalties.update(loyalties or {})
+        wallet = kwargs.pop("wallet", generate_wallet("Babe"))
+        super().__init__(
+            name=name,
+            race=race,
+            sex=sex,
+            faction=faction,
+            region=region,
+            preferred_actions=preferred_actions,
+            location=location,
+            fun=fun,
+            partner=partner,
+            hunger=hunger,
+            position=position,  # Ensure position is passed correctly
+            strength=strength,
+            agility=agility,
+            intelligence=intelligence,
+            luck=luck,
+            psy=psy,
+            charisma=charisma,
+            toughness=toughness,
+            morale=morale,
+            loyalties=default_loyalties,
+            wallet=wallet,
+            status=status,
+            motivations=motivations or self.default_motivations,
+            **kwargs
+        )
+        
+        self.influence = influence
+        self.targetIsInMelee = False
+        self.health = 120 + toughness
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
+        # List to store items in the character's inventory
+        self.position = position
+        self.partner = None
+        self.base_preferred_actions = {
+            self.flirt: "U7s"
+        }
+
+    def __repr__(self):
+        base = super().__repr__()  # Will call Character.__repr__
+        return f"{base}, Faction: {self.faction or 'None'}"
+    
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data["description"] = f"{self.name}, beautiful, charming,  {self.faction.name}"
+        data["tags"].extend(["fun", "hot"])
+        return data
+
+    @property
+    def whereabouts(self):
+        
+        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
+
+    def influence(self, target):
+    #TMP
+        from characterActions import influence
+        return influence(self, target)
+
+    def flirt(self, target):
+        """Calls the generic flirt action."""
+        from characterActions import flirt
+        return flirt(self, target)
+
+    def charm(self, target):
+        """Calls the generic charm action."""
+        from characterActions import charm
+        return charm(self, target)
+
+
 
 class Detective(Character): #Subordinate? Of the state?
     is_concrete = True

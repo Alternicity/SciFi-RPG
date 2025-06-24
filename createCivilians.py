@@ -1,18 +1,19 @@
 #createCivilians.py
 import random
 from base_classes import Character, Factionless
-from location import Shop, Region
+from location import Shop, Region, Park
 from location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
-from characters import Civilian, SpecialChild
+from characters import Civilian, SpecialChild, Adepta
 from InWorldObjects import Wallet
 from motivation_presets import MotivationPresets
 from status import CharacterStatus, FactionStatus, StatusLevel
+from ai_civilian import AdeptaAI
 
-from utils import normalize_location_regions
+from utils import normalize_location_regions, get_region_for_location, find_location_by_type
 def create_civilian_population(all_locations, all_regions, factionless, num_civilians=0):#30
     """Generate civilians and assign them logical locations."""
     from create_character_names import create_name
-    from utils import get_region_for_location
+    #from utils import get_region_for_location
 
     """ print("DEBUG: Number of locations passed in:", len(all_locations))
     print("DEBUG: Regions passed in:", [r.name for r in all_regions])
@@ -101,13 +102,15 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
         sex = "female"
         race = "French"
         faction = factionless
-        location = get_playground_location(all_locations)  # implement this helper
+        from utils import find_location_by_type #move this to top if poss
+        location = playground = find_location_by_type(all_locations, "playground")
 
         motivations=MotivationPresets.for_class("SpecialChild"), 
 
         Luna = SpecialChild(
             name="Luna",
             race="French",
+            ai=LunaAI(UtilityAI),
             sex="female",
             faction=factionless,
             region=factionless.region,
@@ -115,6 +118,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             motivations=motivations,
             status=status,
             intelligence=20,  # Override default
+            max_thinks_per_tick=3,
             strength=2,
             agility=5,
             fun=4,
@@ -130,15 +134,57 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             "persuasion": 15,
         }) """
 
-        #faction.members.append(Luna)
-        #game_state.civilians.append(Luna)
+        park_location = find_location_by_type(all_locations, Park)
+
+        status = CharacterStatus()
+        status.set_status("public", FactionStatus(StatusLevel.LOW, "Adepta"))
+        name = "Ava"
+        sex = "female"
+        race = "Irish"
+        faction = factionless
+        region=park_location.region,
+        location=park_location
+
+        motivations=MotivationPresets.for_class("SpecialChild"), 
+
+        Ava = Adepta(
+            name="Ava",
+            race="Irish",
+            ai=AdeptaAI(),
+            sex="female",
+            faction=factionless,
+            region=park_location.region,
+            location=park_location,
+            motivations=motivations,
+            status=status,
+            intelligence=10,  # Override default
+            charisma=15,
+            max_thinks_per_tick=1,
+            strength=12,
+            agility=11,
+            fun=4,
+            hunger=1,
+            position="Adepta",
+            notable_features=["curly hair", "shapely"],
+            appearance={"clothing": "kinda 80s"},
+            self_esteem=8,
+                )
+        Ava.skills.update({
+            "heal": 16,
+            "raise_ambience": 15,
+            "persuasion": 15,
+        })
+        Ava.workplace = park_location  # if it makes sense
+        Ava.residences = [park_location]  # or a separate house
+        #faction.members.append(Ava)
+        #game_state.civilians.append(Ava)
         game_state.all_characters #add her here, there is no setter
-        #game_state.orphans.append(Luna)
+        #game_state.orphans.append(Ava)
 
         # For AI targeting/utility control
-        #Luna.is_test_npc = False  
-        #Luna.is_peaceful_npc = True
-        #Luna.has_plot_armour = True
+        #Ava.is_test_npc = False  
+        #Ava.is_peaceful_npc = True
+        #Ava.has_plot_armour = True
 
 
 
@@ -154,23 +200,25 @@ def assign_workplaces(civilians, all_locations):
     workplace_counts = {id(place): 0 for place in workplaces}  # Use unique ID as key
 
     for civilian in civilians:
+        if not civilian.is_employee:
+            continue  # Skip civilians not flagged for work
+
         correct_workplace = None
 
-        if civilian.is_employee:
-            if shop_instances:
-                # Assign employees in order to shops first
-                correct_workplace = shop_instances[shop_index % len(shop_instances)]
-                shop_index += 1  # Move to next shop in order
-            elif workplaces:
-                correct_workplace = random.choice(workplaces)
+        
+        if shop_instances:
+            # Assign employees in order to shops first
+            correct_workplace = shop_instances[shop_index % len(shop_instances)]
+            shop_index += 1  # Move to next shop in order
+        elif workplaces:
+            correct_workplace = random.choice(workplaces)
 
-            if correct_workplace:
-                correct_workplace.employees_there.append(civilian)
-                civilian.workplace = correct_workplace
-                workplace_counts[id(correct_workplace)] += 1
-                #print(f"Assigned {civilian.name} to {correct_workplace.name} in {correct_workplace.region}")
-            else:
-                print(f"⚠️ WARNING: No available workplaces for {civilian.name}")
+        if correct_workplace:
+            civilian.workplace = correct_workplace
+            correct_workplace.employees_there.append(civilian)
+            workplace_counts[id(correct_workplace)] += 1
+        else:
+            print(f"⚠️ WARNING: No available workplaces for {civilian.name}")
 
     return civilians
 

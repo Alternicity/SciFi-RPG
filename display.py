@@ -443,3 +443,162 @@ def print_character_brief(char, *, show_name=True, show_class=True, show_locatio
     #use it like this
     """ if self.is_test_npc:
         print_character_brief(self) """
+
+def get_display_name(obj):
+    """
+    Safely get a display-friendly name from an object, whether it's a
+    Character, Location, Thought, or anything else with a .name or .origin.
+    """
+    if obj is None:
+        return "[None]"
+
+    # If object has .origin, recurse into it
+    if hasattr(obj, "origin"):
+        return get_display_name(obj.origin)
+
+    # If object has .name, return it
+    if hasattr(obj, "name"):
+        return str(obj.name)
+
+    # Fallback: Use class name
+    return obj.__class__.__name__
+
+
+def display_region_knowledge_summary(knowledge_list, npc=None):
+    """
+    Given a list of RegionKnowledge objects, return a formatted summary table.
+    """
+    if not knowledge_list:
+        return "No region knowledge entries found."
+
+    table = []
+    seen_regions = set()  # prevent duplicates
+
+    for k in knowledge_list:
+        if k.region_name in seen_regions:
+            continue
+        seen_regions.add(k.region_name)
+
+        # Format location security levels
+        loc_summaries = []
+        for loc in k.locations:
+            try:
+                sec_level = loc.security.level if hasattr(loc, "security") else "?"
+                loc_summaries.append(f"{loc.name} (Sec: {sec_level})")
+            except Exception as e:
+                loc_summaries.append(str(loc)[:20])
+
+        # Option 1: Home, HQ, Attention
+        special_locs = []
+        if npc.residences:
+            special_locs.append(f"🏠 {get_display_name(npc.residences)}")
+        if npc.workplace:
+            special_locs.append(f"💼 {get_display_name(npc.workplace)}")
+        if npc.attention_focus:
+            special_locs.append(f"🎯 {get_display_name(npc.attention_focus)}")
+
+        locations_str = "\n".join(special_locs) if special_locs else "[No key locations]"
+        # cap at 5
+
+        # Placeholder for future
+        allies = "?"
+        enemies = "?"
+
+        # Notes field
+        notes_lines = []
+        if npc:
+            social = npc.social_connections
+            conn_count = {k: len(v) for k, v in social.items()}
+            notes_lines.append("Social:")
+            notes_lines.extend([f"- {k}: {v}" for k, v in conn_count.items()])
+
+
+            # Placeholder for faction relation (to implement later)
+            if npc.faction:
+                notes_lines.append("FactionRel: TODO")
+
+        is_home = (npc and npc.home_region.name == k.region_name)
+        if is_home:
+            notes_lines.insert(0, "Home")
+
+        table.append([
+            k.region_name,
+            len(k.region_gangs),
+            len(k.hostile_factions),
+            locations_str,
+            len(k.known_characters),
+            allies,
+            enemies,
+            "\n".join(notes_lines)
+        ])
+
+    headers = [
+        "Region",
+        "Gangs",
+        "Hostile",
+        "Locations",
+        "People",
+        "Allies",
+        "Enemies",
+        "Notes..........."
+    ]
+
+    return tabulate(table, headers=headers, tablefmt="rounded_outline")
+
+
+def format_origin(origin):
+    if origin == "—":
+        return "[MISSING]"
+    elif hasattr(origin, "name"):
+        return f"{origin.__class__.__name__}('{origin.name}')"
+    elif hasattr(origin, "__class__"):
+        return origin.__class__.__name__
+    else:
+        return str(origin)[:40]  # truncate long fallback
+
+def display_percepts_table(npc):
+    """
+    Prints a clean tabular debug summary of an NPC's percepts.
+    Only intended for debug characters or test NPCs.
+    """
+    print(f"\n[DEBUG] {npc.name} - Percepts Table After Observation:")
+
+    table_data = []
+
+    for i, (key, v) in enumerate(npc._percepts.items()):
+        # Step 1: Safely access nested data
+        data = v.get("data", {})
+        origin = v.get("origin", data.get("origin", "—"))
+
+        # Step 2: Get description/type
+        desc = data.get("description") or data.get("type") or "UNKNOWN"
+        
+
+        # If description includes a character string, simplify
+        if isinstance(desc, str) and "," in desc and " of " in desc:
+            desc = desc.split(",")[0]  # Only take the name part before comma
+
+        type_ = data.get("type", "—")
+
+        # Step 3: Format origin display
+        if origin != "—":
+            formatted_origin = str(origin).split(",")[0][:30]
+        else:
+            formatted_origin = "[MISSING]"
+
+        # Step 4: Count keys inside data block
+        n_keys = len(data.keys())
+
+        table_data.append([
+            i,
+            desc,
+            type_,
+            formatted_origin,
+            n_keys,
+        ])
+
+    print(tabulate(
+        table_data,
+        headers=["#", "Description", "Type", "Origin", "#Keys"],
+        tablefmt="rounded_outline"
+    ))

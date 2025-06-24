@@ -6,6 +6,10 @@ from ai_utility import UtilityAI #not currently accessed
 from events import Robbery
 from characterActions import execute_action #not currently accessed
 from summary_utils import format_location
+from display import display_region_knowledge_summary, display_percepts_table
+from memory_entry import RegionKnowledge
+from character_thought import Thought
+from ambience_and_psy_utils import compute_location_ambience
 
 def simulate_days(all_characters, num_days=1, debug_character=None):
     game_state = get_game_state()
@@ -19,57 +23,71 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     continue
 
                 # OBSERVE
-                print(f"In simulate_days, {npc.name} attempting to observe.")
+                
+                if npc is debug_character:
+                    print(f"[DEBUG] {npc.name} attempting to observe.")
+
                 npc.observe(region=region, location=npc.location)
                 #observe call moved here from npc AI think functions
 
-                #tmp? debug check
-                from location import Region
-                if not isinstance(region, Region):
-                    print(f"[OBSERVE] {npc.name} given wrong region type: {type(region)} — {region}")
-                    
-                if debug_character and npc.name == debug_character.name:
-                    print(f"[DEBUG] {npc.name} 1st percepts after observe:")
-                    for k, v in npc._percepts.items():
-                        data = v.get("data", {})
-                        desc = data.get("description") or data.get("type") or "UNKNOWN"
-                        origin = v.get("origin", "—")
+                print(f"[DEBUG] {npc.name} location: {format_location(npc.location)}")
+                #replace with call to summary_utils.py def format_location(loc):
 
-                        print(f"  - Key: {k}")
-                        print(f"    Desc: {desc}")
-                        print(f"    Type: {data.get('type', '—')}")
-                        print(f"    Origin: {origin if origin != '—' else '[MISSING]'}")
-                        print(f"    Data keys: {list(data.keys())}")
-                        print(f"    Full Data: {data}")
-                        print("")
-                        #Try v['description'], If that's None or doesn't exist, try v['type'], If neither exists, fall back to 'UNKNOWN'
-                    
-                
-                    print(f"[DEBUG] {npc.name} location: {format_location(npc.location)}")
-                    #replace with call to summary_utils.py def format_location(loc):
+                #print(f"[DEBUG] {npc.name} region characters: {[c.name for c in region.characters_there]}")
+                #verbose
 
-                    #print(f"[DEBUG] {npc.name} region characters: {[c.name for c in region.characters_there]}")
-                    #verbose
+                #print(f"[DEBUG] {npc.name} region objects: {[o.name if hasattr(o, 'name') else str(o) for o in getattr(region, 'objects_there', [])]}")
 
-                    print(f"[DEBUG] {npc.name} region objects: {[o.name if hasattr(o, 'name') else str(o) for o in getattr(region, 'objects_there', [])]}")
+                if npc.is_test_npc or npc is debug_character:
+                    display_percepts_table(npc)
 
-                if npc.is_test_npc:
-                    print(f"[DEBUG] {npc.name} 2nd percepts after observe:")
-                    for i, v in enumerate(npc._percepts.values()):
-                        data = v.get("data", {})
-                        desc = data.get("description") or data.get("type") or "UNKNOWN2"
-                        origin = v.get("origin", "—")
-                        print(f"  [{i}] Desc: {desc}")
-                        print(f"       Type: {data.get('type', '—')}")
-                        print(f"       Origin: {origin if origin != '—' else '[MISSING]'}")
-                        print(f"       Data keys: {list(data.keys())}")
-                        print("")
+                # --- Ambience Influence + Social Vibe Logging ---
+                #This framework sets the stage for scene-level emergent stories
+                for loc in game_state.all_locations:
+                    for char in getattr(loc, "characters_there", []):
+                        if not hasattr(char, "mind") or not hasattr(char, "psy"):
+                            continue
+
+                        perceived = compute_location_ambience(loc, observer=char)
+                        if not perceived:
+                            continue
+
+                        # 1. Add ambient thoughts
+                        for tag, power in perceived.items():
+                            if power > 0.1:
+                                char.mind.add_thought(Thought(
+                                    subject="Ambience",
+                                    content=f"This place feels {tag}",
+                                    urgency=round(power * 10),
+                                    tags=["ambience", tag]
+                                ))
+
+                        # 2. Log peak vibe
+                        peak_tag, peak_power = max(perceived.items(), key=lambda x: x[1], default=("none", 0))
+
+                        # 3. Capture social snapshot
+                        social_data = {
+                            "friends_present": [c.name for c in loc.characters_there if c.name in char.social_connections["friends"]],
+                            "enemies_present": [c.name for c in loc.characters_there if c.name in char.social_connections["enemies"]],
+                            "allies_present": [c.name for c in loc.characters_there if c.name in char.social_connections["allies"]],
+                        }
+
+                        # 4. Save semantic ambient snapshot
+                        char.mind.memory.semantic.setdefault("ambient_vibes", []).append({
+                            "location": loc.name,
+                            "top_vibe": peak_tag,
+                            "power": peak_power,
+                            "others_present": [c.name for c in loc.characters_there if c.name != char.name],
+                            **social_data
+                        })
 
 
-                #THINK
+                # THINK CYCLE
                 if hasattr(npc, 'ai') and npc.ai:
-                    npc.ai.think(npc.location.region) #line 53
-                    npc.ai.promote_thoughts()#line 54
+                    think_loops = getattr(npc, "max_thinks_per_tick", 1)
+                    for _ in range(think_loops):
+                        npc.ai.think(npc.location.region)
+                    npc.ai.promote_thoughts()
 
                 # DEBUG: Thought Check 1
                 if debug_character and npc.name == debug_character.name:
@@ -105,7 +123,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
         for npc in all_characters:
             if npc is not debug_character:
                 continue
-            print(f"=== DEBUG: {npc.name} ===")
             #print(f"MIND: {[str(thought) for thought in npc.mind]}")
 
             """ print("MOTIVATIONS:")
@@ -117,52 +134,34 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
             for mem in npc.mind.memory.episodic:
                 print(f" - {mem}")
 
+        for npc in all_characters:
+            if npc is debug_character:
+                region_knowledges = [
+                    mem for mem in npc.mind.memory.semantic.get("region_knowledge", [])
+                    if isinstance(mem, RegionKnowledge) and mem.region_name == npc.region.name
+                ]
+                print(f"=== REGION KNOWLEDGE: {npc.region.name}, {npc.name} ===")
+                print(display_region_knowledge_summary(region_knowledges, npc=npc))
 
+                print("THOUGHTS:")
+                for thought in npc.mind:
+                    print(f" - {thought}")  # Optional again
 
-            """ print("MEMORY from simulate_day (Semantic):")
-            for memories in npc.mind.memory.semantic.values():
-                for memory in memories:
-                    print(f" - {memory}") """
+                print(f"ATTENTION: {npc.attention_focus}")
 
-
-            print("THOUGHTS:")
-            for thought in npc.mind:
-                pass
-                print(f" - {thought}")
-            print(f"ATTENTION: {npc.attention_focus}")
 
     # STEP 4: Sanity Check on Character List
     for c in all_characters:
         if not hasattr(c, "motivation_manager"):
             print(f"[ERROR] Non-character in all_characters: {type(c)} -> {c}")
 
-    # STEP 5: Optional Motivation Debugging
-    for character in all_characters:
-        motivations = character.motivation_manager.get_motivations()
-        criminal_motivated = any(
-            m.type in {"rob", "steal", "obtain_ranged_weapon"} for m in motivations
-        )
-        # Debug print here if desired
+    # STEP 5: Optional Motivation Debugging CURRENTLY DOESNT DO ANYTHING
+    if debug_character:
+        for character in all_characters:
+            motivations = character.motivation_manager.get_motivations()
+            criminal_motivated = any(
+                m.type in {"rob", "steal", "obtain_ranged_weapon"} for m in motivations
+            )
 
-
-    #tmp
-    for c in all_characters:
-            if not hasattr(c, "motivation_manager"):
-                print(f"[ERROR] Non-character in all_characters: {type(c)} -> {c}")
-    #deprecated?
-    for character in all_characters:
-        motivations = character.motivation_manager.get_motivations()
-        criminal_motivated = any(m.type in {"rob", "steal", "obtain_ranged_weapon"} for m in motivations)
-
-        """if criminal_motivated:
-            print(f"[Action] {character.name} is criminally motivated:")
-             for m in motivations:
-                if m.type in {"rob", "steal", "obtain_ranged_weapon"}:
-                    print(f" - {m.type} (urgency: {m.urgency})") """
-
-        # 🔄 OPTIONAL: Add future game state updates here
-        # update_world_state(game_state)
-        # handle_daily_events(game_state)
-            # Add more actions like "Buy", "Recruit", "Report", etc.
 
 

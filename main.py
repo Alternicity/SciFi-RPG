@@ -30,6 +30,7 @@ def setup_game():
         return
 
     all_locations = [loc for region in all_regions for loc in region.locations if isinstance(loc, Location)]
+    
     game_state.all_locations = all_locations
 
     compare_locations(all_locations, all_regions)
@@ -40,11 +41,11 @@ def setup_game():
 
     print(f"Game setup complete. Total characters: {len(game_state.all_characters)}")
 
-
     return all_regions, factions, all_characters, all_locations
 
 def main():
     all_regions, factions, all_characters, all_locations = setup_game()
+
     main_menu(all_locations, all_characters)
     game()
 

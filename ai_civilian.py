@@ -1,0 +1,18 @@
+#ai_civilian.py
+
+from ai_utility import UtilityAI
+from worldQueries import get_region_knowledge
+from TheKindMan import Alter
+
+class AdeptaAI(UtilityAI):
+    target = Alter
+    def think(self, region):
+        rk = get_region_knowledge(self.mind.memory.semantic, region.name)
+        
+        self.promote_thoughts()
+
+    def find_U7s(target):
+        pass
+
+    def seduce_U7s(target):
+        pass

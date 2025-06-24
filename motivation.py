@@ -71,6 +71,7 @@ VALID_MOTIVATIONS = {
         "explore_math": 8,
         "use_advanced_python_features": 8,
         "stimulate_programmer": 8,
+        "charm U7s": 20,
     }
 
 class MotivationManager:
@@ -130,4 +131,6 @@ class MotivationManager:
                 return m.urgency
         return 0  # or a sensible fallback
 
-    
+class PoeticMotivation(Motivation):
+    metaphor: str
+    #You could later generate quests based on poetic triggers

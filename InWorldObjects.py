@@ -2,6 +2,7 @@ from dataclasses import field
 import uuid
 from enum import Enum
 from perceptibility import PerceptibleMixin
+from typing import Dict
 
 #all references to "value" must be replaced with "value"
 # Enums for toughness and size
@@ -38,6 +39,9 @@ valid_items = [
 # Base class for all objects in the world
 class ObjectInWorld(PerceptibleMixin):
     is_concrete = False  # Abstract base
+
+    base_ambience: Dict[str, float] = field(default_factory=dict)
+    placement_quality: str = "neutral"  # options: "perfect", "neutral", "poor"
 
     def __init__(self, name, toughness, item_type, size, blackmarket_value,
                  price=0, damage_points=None, legality=True,
@@ -78,9 +82,14 @@ class ObjectInWorld(PerceptibleMixin):
             "price": self.price,
             "quantity": self.quantity,
             "toughness": self.toughness.value if isinstance(self.toughness, Enum) else str(self.toughness),
-            "size": self.size.value if isinstance(self.size, Enum) else str(self.size)
+            "size": self.size.value if isinstance(self.size, Enum) else str(self.size),
+            "details": f"{self.name} ({self.item_type})"
         }
 
+    def modulated_ambience(self) -> Dict[str, float]:
+        modifier = {"perfect": 1.2, "neutral": 1.0, "poor": 0.7}.get(self.placement_quality, 1.0)
+        return {k: v * modifier for k, v in self.base_ambience.items()}
+    
 #It's probably cleaner and safer if all items that go in inventory have quantity by default (even if quantity=1 for weapons).
 
 
@@ -502,3 +511,175 @@ class MarbleBag(Container):
 #
 # 💡 Reminder:
 # Keep it simple, searchable, and semantically clear to make the economy system easier to expand and debug.
+
+class Vase(ObjectInWorld, Container):
+    is_concrete = True
+
+    def __init__(self, material="ceramic", placement_quality="perfect", quantity=1):
+        ObjectInWorld.__init__(
+            self,
+            name=f"{material.title()} Vase",
+            toughness=Toughness.FRAGILE,
+            item_type="container",
+            size=Size.MEDIUM,
+            blackmarket_value=5,
+            price=10,
+            legality=True,
+            quantity=quantity,
+        )
+        Container.__init__(self)
+
+        self.material = material
+        self.placement_quality = placement_quality
+        self.base_ambience = {
+            "peace": 0.2,
+            "order": 0.1,
+            "aesthetic": 0.3,
+        }
+        self.symbolism = ["grace", "containment", "ritual"]
+
+    def compute_ambience_from_contents(self):
+        ambience = self.base_ambience.copy()
+        for item in self.inventory:
+            if hasattr(item, "modulated_ambience"):
+                for k, v in item.modulated_ambience().items():
+                    ambience[k] = ambience.get(k, 0) + v
+        return ambience
+
+    def get_percept_data(self, observer=None):
+        base = super().get_percept_data(observer)
+        base.update({
+            "description": f"{self.material.title()} Vase with {len(self.inventory)} item(s)",
+            "tags": ["decor", "vessel", "peaceful", "container"],
+            "contents": [item.name for item in self.inventory]
+        })
+        return base
+
+    def __repr__(self):
+        return f"<{self.name}: holds {len(self.inventory)} items>"
+
+class Pot(ObjectInWorld, Container):
+    is_concrete = True
+
+    def __init__(self, material="ceramic", placement_quality="neutral", quantity=1):
+        ObjectInWorld.__init__(
+            self,
+            name=f"{material.title()} Pot",
+            toughness=Toughness.STURDY if material == "ceramic" else Toughness.FRAGILE,
+            item_type="container",
+            size=Size.SMALL,
+            blackmarket_value=3,
+            price=8,
+            legality=True,
+            quantity=quantity,
+        )
+        Container.__init__(self)
+
+        self.material = material
+        self.placement_quality = placement_quality
+        self.base_ambience = {
+            "earth": 0.2,
+            "rootedness": 0.2,
+        }
+
+        self.symbolism = []
+        if material == "ceramic":
+            self.symbolism.append("rustic")
+
+    def get_percept_data(self, observer=None):
+        base = super().get_percept_data(observer)
+        base.update({
+            "description": f"{self.material.title()} Pot containing {len(self.inventory)} item(s)",
+            "tags": ["container", "natural", "earthy"],
+            "symbolism": self.symbolism
+        })
+        return base
+
+class Statue(ObjectInWorld):
+    is_concrete = True
+
+    def __init__(self, material="stone", theme="contemplation"):
+        super().__init__(
+            name=f"{material.title()} Statue",
+            toughness=Toughness.STURDY,
+            item_type="decor",
+            size=Size.LARGE,
+            blackmarket_value=150,
+            price=200,
+            legality=True
+        )
+        self.theme = theme
+        self.symbolism = ["stillness", "legacy", theme]
+        #"stillness" and "legacy" are literal strings, while theme is a variable that holds a string
+        """ So, if theme = "contemplation", then the full list becomes:
+        ["stillness", "legacy", "contemplation"] """
+        
+        self.base_ambience = {
+            "contemplation": 0.4,
+            "stillness": 0.3
+        }
+
+    def get_percept_data(self, observer=None):
+        base = super().get_percept_data(observer)
+        base.update({
+            "tags": ["decor", "symbolic", "contemplative"],
+            "theme": self.theme,
+            "symbolism": self.symbolism
+        })
+        return base
+
+class Lamp(ObjectInWorld):
+    is_concrete = True
+
+    def __init__(self, color="warm_white", intensity=0.5):
+        super().__init__(
+            name=f"{color.replace('_', ' ').title()} Lamp",
+            toughness=Toughness.FRAGILE,
+            item_type="light",
+            size=Size.MEDIUM,
+            blackmarket_value=20,
+            price=40,
+            legality=True
+        )
+        self.color = color
+        self.intensity = intensity
+        self.base_ambience = {
+            "warmth": 0.2 * intensity,
+            "safety": 0.1 * intensity
+        }
+
+    def get_percept_data(self, observer=None):
+        base = super().get_percept_data(observer)
+        base.update({
+            "tags": ["light", "comfort"],
+            "color": self.color
+        })
+        return base
+    
+class ColoredLightingArray(ObjectInWorld):
+    is_concrete = True
+
+    def __init__(self, scheme="sunset"):
+        super().__init__(
+            name=f"{scheme.title()} Light Array",
+            toughness=Toughness.FRAGILE,
+            item_type="light",
+            size=Size.MEDIUM,
+            blackmarket_value=40,
+            price=70,
+            legality=True
+        )
+        self.scheme = scheme
+        self.base_ambience = {
+            "aesthetic": 0.3,
+            "emotion": 0.2 if scheme == "sunset" else 0.1
+        }
+
+    def get_percept_data(self, observer=None):
+        base = super().get_percept_data(observer)
+        base.update({
+            "tags": ["light", "decor", "emotion"],
+            "scheme": self.scheme
+        })
+        return base
+

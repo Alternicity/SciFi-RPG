@@ -5,7 +5,7 @@ def visit_location_auto(character, location):
 
     print(f"[AUTO VISIT] {character.name} is going to {location.name}")
     character.location = location
-    location.enter(character) #enter does not exist, this may be cruft
+    
 
     return True
 

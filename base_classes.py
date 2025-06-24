@@ -8,7 +8,7 @@ from enum import Enum, auto
 from collections import deque
 from tasks import TaskManager
 from perceptibility import PerceptibleMixin
-from character_mind import Mind
+from character_mind import Mind, Curiosity
 from character_thought import Thought
 from ai_utility import UtilityAI
 
@@ -220,6 +220,9 @@ class Character(PerceptibleMixin):
             raise ValueError(f"Invalid region assigned to character: {region}")
         
         self.location = location
+        self.home_region = self.region
+        self.residences: List[Location] = []
+        
         # Default preferred actions (subclasses can extend this)
         self.base_preferred_actions = {}
 
@@ -237,9 +240,10 @@ class Character(PerceptibleMixin):
 
         self.intelligence = intelligence
         self.mind = Mind(owner=self, capacity=intelligence)
-        self.task_manager = TaskManager(self)
+        self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)
+        self.curiosity = Curiosity(base_score=self.intelligence // 2)
         
-
+        self.task_manager = TaskManager(self)
         """ Should Tasks Be Stored in Memory?
         Yes, that makes a lot of sense — but with separation of concerns:
 
@@ -314,9 +318,11 @@ class Character(PerceptibleMixin):
             "friends": [],
             "enemies": [],
             "allies": [],
+            "neutral": [],
             "partners": [partner] if partner else [],
         }
-        #many things marked undefined after here, the entries aftre t equals sign
+
+        self.workplace: Optional[Location] = None
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
         self.partner = partner
@@ -388,9 +394,10 @@ class Character(PerceptibleMixin):
     def motivations(self, value):
         raise AttributeError("Use 'motivation_manager.update_motivations()' instead of setting motivations directly.")
 
-    @property
-    def attention_focus(self):
+    @property   #using a method like an attribute
+    def attention_focus(self):#but you can insert validation or logging code here
         return self._attention_focus
+    #Keep access syntax clean: npc.attention_focus, not npc.get_attention_focus()
 
     @attention_focus.setter
     def attention_focus(self, value):
@@ -598,7 +605,8 @@ class Character(PerceptibleMixin):
 
         if location and include_inventory_check:
             if hasattr(location, 'inventory') and location.inventory:
-                print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
+                #print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
+                pass
             else:
                 print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
 
@@ -609,9 +617,13 @@ class Character(PerceptibleMixin):
                 if isinstance(obj, PerceptibleMixin):
                     percept = obj.get_percept_data(observer=self)
                     if percept:
-                        new_percepts[obj.id] = percept
-                        print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
-                        print(f"[Observe] {self.name} perceived {obj.name} with salience {percept.get('salience')}")
+                        new_percepts[obj.id] = {
+                            "data": percept,
+                            "origin": obj
+                        }
+                        #print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
+                        #print(f"[Observe] {self.name} perceived {obj.name} with salience {percept['salience'] if 'salience' in percept else '?'}")
+
                     else:
                         print(f"[BUG] {obj.name} ({type(obj).__name__}) returned None from get_percept_data.")
 
@@ -626,11 +638,11 @@ class Character(PerceptibleMixin):
             #will this block exclude nearby_objects from the subsequent call to observe_objects()?
         if self.is_test_npc:
             simple_list = [f"{c.name}, {c.__class__.__name__}" for c in location.characters_there]
-            print(f"[DEBUG] {self.name} observe() called, count these: {simple_list}")
+            #print(f"[DEBUG] {self.name} observe() called, count these: {simple_list}")
         
         self.observe_region(region, include_memory_check=True)
 
-        self.observe_objects(nearby_objects, location, include_inventory_check=True) #line 614
+        self.observe_objects(nearby_objects, location, include_inventory_check=True)
 
         # Main perception logic for a character NPC.
         region = region or self.region
@@ -643,13 +655,13 @@ class Character(PerceptibleMixin):
             # Perceive self
             self_percept = self.get_percept_data(observer=self)
             if self_percept:
-                #new_percepts["self"] = {'data': self_percept, 'salience': self_percept["salience"]}
-                new_percepts = {}#line 654
-                self_percept = self.get_percept_data(observer=self)
-                if self_percept:
-                    new_percepts["self"] = self_percept
-                    self._percepts.update(new_percepts)
-                    self.percepts_updated = True
+                new_percepts = {}
+                new_percepts["self"] = {
+                    "data": self_percept,
+                    "origin": self
+                }
+                self._percepts.update(new_percepts)
+                self.percepts_updated = True
 
             #print(f"[Observe] {self.name} now has {len(self._percepts)} percepts.")
 
@@ -703,7 +715,7 @@ class Character(PerceptibleMixin):
         """
         Called when some external event (like a robbery) forces a perception.
         """
-        key = percept.get("description", f"event_{id(percept)}")
+        key = percept["description"] if "description" in percept else f"event_{id(percept)}"
         # Merge it in, respecting salience, etc.
         self.update_percepts([percept])
 
@@ -718,7 +730,7 @@ class Character(PerceptibleMixin):
 
                 if 'description' not in percept:
                     print(f"ERROR: Object {obj} (type: {type(obj)}) has no 'description' key in its percept: {percept}")
-                print(f"[{self.name}] perceived object: {percept['description']}")
+                #print(f"[{self.name}] perceived object: {percept['description']}")
 
     @percepts.setter
     def percepts(self, new_percepts):
@@ -731,23 +743,48 @@ class Character(PerceptibleMixin):
 
     def update_percepts(self, new_percepts: list[dict]):
         """
-        Merge or update percepts based on salience and replace logic.
+        Update the character's internal percept dictionary with new percepts.
+        Each percept must be wrapped as {"data": ..., "origin": ...}
+        If only a raw percept is passed, this will auto-wrap it using origin = data.get("origin").
         """
+
         for p in new_percepts:
-            key = p.get("id") or str(p)  # or hashable unique representation
-            salience = p.get("salience", 1)
-
-            if key in self._percepts:
-                # Keep the more salient percept
-                if salience > self._percepts[key]['salience']:
-                    self._percepts[key] = {'data': p, 'salience': salience}
+            # Auto-wrap flat percepts if needed
+            if "data" not in p:
+                wrapped = {
+                    "data": p,
+                    "origin": p.get("origin", None)
+                }
             else:
-                self._percepts[key] = {'data': p, 'salience': salience}
+                wrapped = p
 
-        # Optionally prune to observation capacity
+            data = wrapped["data"]
+            origin = wrapped.get("origin", data.get("origin", None))
+
+            # Validate required fields
+            if not isinstance(data, dict):
+                print(f"[WARNING] Percept data is not a dict: {data}")
+                continue
+            if "description" not in data:
+                print(f"[WARNING] Percept missing description: {data}")
+            if origin is None:
+                print(f"[WARNING] Percept missing origin: {data}")
+
+            key = getattr(origin, "id", None) or data.get("id") or str(origin)
+            salience = data.get("salience", 1)
+
+            # Keep the more salient version if duplicate
+            if key in self._percepts:
+                if salience > self._percepts[key]["data"].get("salience", 0):
+                    self._percepts[key] = {"data": data, "origin": origin}
+            else:
+                self._percepts[key] = {"data": data, "origin": origin}
+
+        # Prune by salience to observation capacity
         if len(self._percepts) > self.observation:
-            # Keep top-N salience only
-            sorted_items = sorted(self._percepts.items(), key=lambda kv: kv[1]['salience'], reverse=True)
+            sorted_items = sorted(
+                self._percepts.items(), key=lambda kv: kv[1]["data"].get("salience", 0), reverse=True
+            )
             self._percepts = dict(sorted_items[:self.observation])
 
     def get_percepts(self, sort_by_salience=True) -> list[dict]:
@@ -830,6 +867,7 @@ class Character(PerceptibleMixin):
             f"Fun: {self.fun}, Hunger: {self.hunger})"
         ) """
 
+    #could possibly show "Location: None" if location is missing or explicitly set to None
     def __repr__(self):
         return f"<Character: {self.name}, Location: {getattr(self, 'location', 'Unknown')}>"
     

@@ -115,6 +115,13 @@ class MotivationPresets:
                 Motivation("shelter", 2),
             ],
 
+        "Adepta": [
+                Motivation("earn_money", 3),
+                Motivation("have_fun", 6, status_type="civilian"),
+                Motivation("charm U7s", 20),
+                Motivation("increase_status", 2),
+            ],
+
     }
 
 

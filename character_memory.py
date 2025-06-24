@@ -10,19 +10,16 @@ If events and character_memory are highly interdependent, you may consider
 abstracting their connection via an interface or shared messaging/event system.
 But thats likely overkill for your current scale. """
 
+MEMORY_CATEGORIES = [
+    "events", "region_knowledge", "people", "awakening", "social",
+    "memory_entries", "enemies", "Objects", "procedures"
+]
+
 class Memory:
     def __init__(self):
         self.episodic = []   # List of MemoryEntry
-
-        self.semantic = {
-        "events": [],
-        "region_knowledge": [],
-        "people": [],
-        "awakening": [],
-        "social": [],
-        "memory_entries": [],
-        "enemies": [],
-    }
+        self.semantic = {cat: [] for cat in MEMORY_CATEGORIES}
+        self.forgotten = {cat: [] for cat in MEMORY_CATEGORIES}
 
     """ Suggestion: Semantic Memory API Addition
     If you want to store different memory types cleanly, you could eventually split the list: """
@@ -99,6 +96,14 @@ class Memory:
 
     def all_semantic(self): #return flattened data
         return [entry for entries in self.semantic.values() for entry in entries] 
+    
+    #for primacy and recency effects in episodic memory
+    def get_first_and_last(npc):
+        episodic = npc.mind.memory.episodic
+        return episodic[0] if episodic else None, episodic[-1] if len(episodic) > 1 else None
+    # for example 
+    # First memory: increase urgency or confidence
+    #Last memory: preserve via Dream Overflow, if not processed
 
     """ def __repr__(self):
         return (f"<Memory: subject='{self.subject}', details='{self.details}', "
@@ -106,7 +111,7 @@ class Memory:
 
     def recall(self):
         return f"Memory of {self.subject}: {self.details} (Importance: {self.importance}, Tags: {self.tags})" """
-    
+
 #Future Allow RegionKnowledge to decay, get outdated, be manipulated (misinfo, rumors).
 
 #Should Memory Entries be in their own file?
