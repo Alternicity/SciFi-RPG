@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 import uuid
+from tabulate import tabulate
 
 # Avoid using .get() for dict access unless missing keys are expected.
 # Use dict["key"] if the key should exist (will raise KeyError if missing).
@@ -87,3 +88,31 @@ class PerceptibleMixin:
 
 
 #Optional: Enums or constants (like percept categories: VISUAL, AUDIO, ITEM, etc.)
+def extract_appearance_summary(obj):
+    from base_classes import Character
+    """Given an object (Character, Location, ObjectInWorld), return a simple appearance string."""
+    if hasattr(obj, "get_percept_data"):
+        data = obj.get_percept_data()
+
+        # Apply any _postprocess_percept functions
+        if hasattr(obj, "_postprocess_percept") and callable(obj._postprocess_percept):
+            data = obj._postprocess_percept(data, observer=None)
+
+        if isinstance(obj, Character):
+            # Basic visual traits
+            race = obj.race
+            sex = obj.sex
+            features = obj.appearance.get("notable_features", [])
+            visual = [race, sex] + features
+            return ", ".join(filter(None, visual))
+
+        elif hasattr(obj, "condition") and hasattr(obj, "security"):
+            # Likely a Location
+            guarded = "guarded" if getattr(obj.security, "guards", []) else "unguarded"
+            return f"{obj.condition}, {guarded}"
+
+        elif hasattr(obj, "item_type"):
+            # Likely ObjectInWorld or similar
+            return data.get("description", obj.__class__.__name__)
+
+    return "[Unknown appearance]"

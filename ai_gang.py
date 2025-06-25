@@ -178,6 +178,12 @@ class GangMemberAI(UtilityAI):
         print(f"[THOUGHT] {npc.name} had a new thought: {new_thought.content}")
         npc.ai.promote_thoughts()
         print(f"[POST-THOUGHT] Thoughts: {npc.mind.thoughts}")
+
+        print(f"[DEBUG] From GangMemberAI resolve_obtain_weapon_target")
+        print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
+        print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
+        print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in top_percept]}")
+        print(f"[DEBUG] Thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
         return {"name": "idle", "params": {}}
 
 
@@ -204,27 +210,18 @@ class GangMemberAI(UtilityAI):
         else:
             print("Idling from resolve_robbery_action: target not found")
             return {"name": "Idle"}
+        
 
-    def compute_salience_for_motivation(percept, motivation):
-        tags = percept.get("tags", [])
-        if motivation == "rob":
-            if "weapon" in tags:
-                return 10
-            elif "shop" in tags:
-                return 7
-        if motivation == "steal":
-            if "weapon" in tags:
-                return 9
-        return 1
+    #def compute_salience_for_motivation(percept, motivation):
+    #override this
 
-
-
+    
     def think(self, region):
 
         if self.npc.isTestNPC:
             print(f"\n--- from GangMemberAI, {self.npc.name} is about to think ---")
             #print("\n" * 1)     
-            print(f"[Percepts Before Thinking] {self.npc.name}:\n{summarize_motivations_and_percepts(self.npc)}")
+            print(f"{self.npc.name}:\n{summarize_motivations_and_percepts(self.npc)}")
             print("\n" * 1)
 
         if self.npc.faction.is_street_gang == True:
@@ -276,6 +273,27 @@ class GangMemberAI(UtilityAI):
         motivations = self.npc.motivation_manager.get_motivations()
         motivation_types = {m.type for m in motivations}
 
+        # After gathering motivation
+        motivation = self.npc.motivation_manager.get_highest_priority_motivation()
+
+        if motivation and motivation.type == "rob":
+            region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, self.npc.region.name)
+
+            if region_knowledge:
+                shop_names = region_knowledge.locations or set()
+                if shop_names:
+                    for shop_name in shop_names:
+                        thought = Thought(
+                            content=f"Maybe I should rob {shop_name}.",
+                            subject=shop_name,
+                            origin="RegionKnowledge",
+                            urgency=7,
+                            tags=["rob", "shop"],
+                            timestamp=time.time()
+                        )
+                        self.npc.mind.add_thought(thought)
+                        print(f"[THOUGHT] Added shop-related thought: {thought.content}")
+
         relevant_thoughts = [
         t for t in self.npc.mind.thoughts
         if isinstance(t, Thought) and any(tag in motivation_types for tag in t.tags)
@@ -283,14 +301,13 @@ class GangMemberAI(UtilityAI):
 
 
         salient_thoughts = sorted(relevant_thoughts, key=lambda t: t.compute_salience(self), reverse=True)
-        #Would I then pass salient_thoughts into compute_salience from here, salient_thoughts is greyed out here, not accesed
-        """ You're sorting it, but then doing nothing with the result. To use it meaningfully, you need to either:
+        """ Am sorting it, but then doing nothing with the result. To use it meaningfully, I need to either:
         loop over salient_thoughts, or
         set the NPC's attention to the top one, or
         derive motivations from it """
 
         if salient_thoughts:
-            npc.attention_focus = salient_thoughts[0]
+            self.npc.attention_focus = salient_thoughts[0]
             print(f"[THINK] {self.npc.name} most salient thought: {salient_thoughts[0]}")
 
         if self.npc.is_test_npc:
@@ -299,8 +316,8 @@ class GangMemberAI(UtilityAI):
         self.promote_thoughts()
 
         npc = self.npc
-        thoughts = npc.mind.thoughts
-        promoted = set()
+        thoughts = npc.mind.thoughts #thoughts currently not accessed
+        promoted = set()# promoted currently not accessed
 
         promote_relevant_thoughts(npc, self.npc.mind.thoughts)
 

@@ -25,13 +25,13 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 # OBSERVE
                 
                 if npc is debug_character:
-                    print(f"[DEBUG] {npc.name} attempting to observe.")
+                    #print(f"[DEBUG] {npc.name} attempting to observe.")
 
-                npc.observe(region=region, location=npc.location)
-                #observe call moved here from npc AI think functions
+                    npc.observe(region=region, location=npc.location)
+                    #observe call moved here from npc AI think functions
 
-                print(f"[DEBUG] {npc.name} location: {format_location(npc.location)}")
-                #replace with call to summary_utils.py def format_location(loc):
+                    #print(f"[DEBUG] {npc.name} location: {format_location(npc.location)}")
+                    #replace with call to summary_utils.py def format_location(loc):
 
                 #print(f"[DEBUG] {npc.name} region characters: {[c.name for c in region.characters_there]}")
                 #verbose

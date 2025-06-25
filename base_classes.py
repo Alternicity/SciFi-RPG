@@ -793,11 +793,6 @@ class Character(PerceptibleMixin):
         """
         percepts = list(self._percepts.values())
 
-
-        #deprecated in favour of salience function in AI logic?
-        """ if sort_by_salience:
-            percepts = sorted(percepts, key=lambda p: p.get('salience', 0), reverse=True) """
-
         return percepts
     
 
@@ -954,7 +949,7 @@ class Location(PerceptibleMixin):
     objects_present: list[ObjectInWorld] = field(default_factory=list)
     robbable: bool = False
     is_open: bool = True
-    condition: str = "Unknown Condition"
+    condition: str = "Clean"
     fun: int = 0
     is_concrete: bool = False
     secret_entrance: bool = False

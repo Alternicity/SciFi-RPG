@@ -18,6 +18,7 @@ from common import get_file_path, BASE_REGION_DIR
 from typing import List, Union
 from character_creation_funcs import player_character_options
 from base_classes import Faction, Location
+from perceptibility import extract_appearance_summary
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -466,84 +467,70 @@ def get_display_name(obj):
 
 def display_region_knowledge_summary(knowledge_list, npc=None):
     """
-    Given a list of RegionKnowledge objects, return a formatted summary table.
+    Display two tables:
+    1. Region overview (name, gangs, enemies, etc.)
+    2. Social overview (friends, enemies, partners)
     """
     if not knowledge_list:
         return "No region knowledge entries found."
 
-    table = []
-    seen_regions = set()  # prevent duplicates
+    # Table 1: Region Summary
+    region_table = []
+    for rk in knowledge_list:
+        is_home = npc and rk.region_name == getattr(npc.home_region, "name", None)
+        region_label = "🏠 " if is_home else ""
 
-    for k in knowledge_list:
-        if k.region_name in seen_regions:
-            continue
-        seen_regions.add(k.region_name)
-
-        # Format location security levels
-        loc_summaries = []
-        for loc in k.locations:
-            try:
-                sec_level = loc.security.level if hasattr(loc, "security") else "?"
-                loc_summaries.append(f"{loc.name} (Sec: {sec_level})")
-            except Exception as e:
-                loc_summaries.append(str(loc)[:20])
-
-        # Option 1: Home, HQ, Attention
-        special_locs = []
-        if npc.residences:
-            special_locs.append(f"🏠 {get_display_name(npc.residences)}")
-        if npc.workplace:
-            special_locs.append(f"💼 {get_display_name(npc.workplace)}")
-        if npc.attention_focus:
-            special_locs.append(f"🎯 {get_display_name(npc.attention_focus)}")
-
-        locations_str = "\n".join(special_locs) if special_locs else "[No key locations]"
-        # cap at 5
-
-        # Placeholder for future
-        allies = "?"
-        enemies = "?"
-
-        # Notes field
-        notes_lines = []
-        if npc:
-            social = npc.social_connections
-            conn_count = {k: len(v) for k, v in social.items()}
-            notes_lines.append("Social:")
-            notes_lines.extend([f"- {k}: {v}" for k, v in conn_count.items()])
-
-
-            # Placeholder for faction relation (to implement later)
-            if npc.faction:
-                notes_lines.append("FactionRel: TODO")
-
-        is_home = (npc and npc.home_region.name == k.region_name)
-        if is_home:
-            notes_lines.insert(0, "Home")
-
-        table.append([
-            k.region_name,
-            len(k.region_gangs),
-            len(k.hostile_factions),
-            locations_str,
-            len(k.known_characters),
-            allies,
-            enemies,
-            "\n".join(notes_lines)
+        region_table.append([
+            f"{region_label}{rk.region_name}",
+            len(rk.region_gangs),
+            len(rk.hostile_factions),
+            len(rk.locations),
+            len(rk.active_events),
+            len(rk.known_characters),
+            ", ".join(rk.tags) if rk.tags else ""
         ])
 
-    headers = [
+    region_headers = [
         "Region",
         "Gangs",
         "Hostile",
         "Locations",
-        "People",
-        "Allies",
-        "Enemies",
-        "Notes..........."
+        "Events",
+        "Known People",
+        "Notes"
     ]
 
-    return tabulate(table, headers=headers, tablefmt="rounded_outline")
+    region_table_output = tabulate(region_table, headers=region_headers, tablefmt="fancy_grid")
+
+    # Table 2: Social Summary (one row per region, even if many values are 0)
+    social_table = []
+    for rk in knowledge_list:
+        if hasattr(rk, "social_map"):
+            smap = rk.social_map
+        else:
+            smap = {"friends": 0, "enemies": 0, "allies": 0, "neutral": 0, "partners": 0}
+
+        social_table.append([
+            rk.region_name,
+            smap.get("friends", 0),
+            smap.get("enemies", 0),
+            smap.get("allies", 0),
+            smap.get("neutral", 0),
+            smap.get("partners", 0),
+        ])
+
+    social_headers = [
+        "Region",
+        "Friends",
+        "Enemies",
+        "Allies",
+        "Neutral",
+        "Partners"
+    ]
+
+    social_table_output = tabulate(social_table, headers=social_headers, tablefmt="fancy_grid")
+
+    return f"{region_table_output}\n\n{social_table_output}"
 
 
 def format_origin(origin):
@@ -572,19 +559,34 @@ def display_percepts_table(npc):
 
         # Step 2: Get description/type
         desc = data.get("description") or data.get("type") or "UNKNOWN"
-        
-
-        # If description includes a character string, simplify
-        if isinstance(desc, str) and "," in desc and " of " in desc:
-            desc = desc.split(",")[0]  # Only take the name part before comma
 
         type_ = data.get("type", "—")
+        
+        # Remove redundant ": Type" or "(Type)" if it matches the actual type
+        if isinstance(desc, str) and type_ in desc:
+            desc = desc.replace(f": {type_}", "").replace(f"({type_})", "").strip()
 
-        # Step 3: Format origin display
+        # Simplify verbose character description
+        if isinstance(desc, str) and "," in desc and " of " in desc:
+            desc = desc.split(",")[0]
+
+        
+
+        # NEW: Add controlling faction to location descriptions
+        origin = v.get("origin", data.get("origin", "—"))
+
+        if type_ == "Location" and isinstance(origin, Location):
+            faction = getattr(origin, "controlling_faction", None)
+            if faction:
+                desc = f"{origin.name}, {faction.name}"
+            else:
+                desc = origin.name
+
+        # Step 3: Replace origin with Appearance summary
         if origin != "—":
-            formatted_origin = str(origin).split(",")[0][:30]
+            appearance = extract_appearance_summary(origin)
         else:
-            formatted_origin = "[MISSING]"
+            appearance = "[MISSING]"
 
         # Step 4: Count keys inside data block
         n_keys = len(data.keys())
@@ -593,12 +595,12 @@ def display_percepts_table(npc):
             i,
             desc,
             type_,
-            formatted_origin,
+            appearance,
             n_keys,
         ])
 
     print(tabulate(
         table_data,
-        headers=["#", "Description", "Type", "Origin", "#Keys"],
+        headers=["#", "Description", "Type", "Appearance", "#Keys"],
         tablefmt="rounded_outline"
     ))

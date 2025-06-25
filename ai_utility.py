@@ -1,4 +1,5 @@
 #ai_utility.py
+import random
 from ai_base import BaseAI
 from motivation import Motivation
 from character_thought import Thought
@@ -17,25 +18,6 @@ class UtilityAI(BaseAI):
     """ Filtering episodic memories and tagging/promoting important ones into thoughts.
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
-
-    def compute_salience_for_motivation(self, percept_data, motivation):
-        tags = percept_data.get("tags", [])
-        
-        if motivation == "rob":
-            if "ranged_weapon" in tags or "weapon" in tags:
-                return 10
-            elif "shop" in tags:
-                return 7
-        elif motivation == "steal":
-            if "weapon" in tags:
-                return 9
-        elif motivation == "earn_money":
-            if "cash" in tags:
-                return 6
-            if "trade" in tags:
-                return 5
-        # fallback salience
-        return 1
 
     def choose_action(self, region):
         npc = self.npc
@@ -237,6 +219,22 @@ class UtilityAI(BaseAI):
         else:
             npc.attention_focus = None
 
+        # in think() or promote_thoughts
+        top_thought = npc.attention_focus
+        if top_thought and isinstance(top_thought, Thought):
+            shop_name = top_thought.subject
+
+            # Try to match to a known location
+            for loc in npc.region.locations:
+                if loc.name == shop_name:
+                    print(f"[DECISION] Decided to move to {loc.name}")
+                    return {
+                        "name": "visit_location",
+                        "params": {
+                            "location": loc
+                        }
+                    }
+
     def examine_episodic_memory(self, episodic_memories):
         event_counts = defaultdict(int)
         for m in episodic_memories:
@@ -255,7 +253,27 @@ class UtilityAI(BaseAI):
                 seen[t.type] = t
         return list(seen.values())
 
-    
+    def compute_salience_for_motivation(self, percept, motivation):
+        tags = percept.get("tags", []) # also thoughts?
+        desc = percept.get("description", "UNKNOWN")
+        score = 0
+
+        if motivation.type == "rob":
+            if "shop" in tags:
+                score += 10
+            if "weapon" in tags:
+                score += 5
+        elif motivation.type == "obtain_ranged_weapon":
+            if "weapon" in tags and "ranged" in tags:
+                score += 10
+            elif "weapon" in tags:
+                score += 6
+        elif motivation.type == "steal":
+            if "weapon" in tags or "valuable" in tags:
+                score += 7
+
+        print(f"[SALIENCE] Motivation: {motivation.type}, Percept: {desc}, Score: {score}")
+        return score
 
     def think(self, region):
         from location import Region
@@ -308,12 +326,25 @@ class UtilityAI(BaseAI):
         self.compute_salience_for_percepts() # pass motivations here? Also characters percepts, then return salient percepts
         #also this function does not yet exist.
 
-        #You can skip generate_thoughts_from_percepts() entirely unless you need to run an extra pass on percepts 
-        # not handled via motivations. I will, there will be other factors like eventually tasks.
         self.generate_thoughts_from_percepts()#can we then just add the salient percepts to the parameters here?
 
         self.promote_thoughts()
         #flow needs to pass to score_action, then choose_action then execute_action
+
+        print(f"[DEBUG] From UtilityAI, def think()")
+        print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
+        print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
+        print(f"[DEBUG] Thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
+
+        if not percepts and not promoted_actions:
+            unexplored = [l for l in region.locations if l.name != self.npc.location.name]
+            if unexplored:
+                next_loc = random.choice(unexplored)
+                print(f"[EXPLORE] {self.npc.name} wandering to {next_loc.name}")
+                return {
+                    "name": "visit_location",
+                    "params": {"location": next_loc}
+                }
 
     def evaluate_turf_war_status(self, region_knowledge):
         # Basic version — maybe no-op or minimal response

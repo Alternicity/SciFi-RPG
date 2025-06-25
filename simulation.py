@@ -25,7 +25,7 @@ def run_simulation(all_characters, num_days=10):
         start_location = random.choice(non_shop_locations)
         debug_gang_npc.location = start_location
         start_location.characters_there.append(debug_gang_npc)
-        print(f"[INIT] Placed debug gang NPC at {start_location.name}")
+        
     else:
         print("[WARNING] No valid non-shop locations found in Easternhole for debug NPC.")
     
@@ -45,7 +45,8 @@ def run_simulation(all_characters, num_days=10):
 
     if debug_gang_npc:
         print(f"[Simulation] Selected DEBUG NPC: {debug_gang_npc.name}")
-        print(f"[Simulation] Their location: {debug_gang_npc.location}")
+        print(f"[INIT] Placed debug gang NPC at {start_location.name}")
+        #print(f"[Simulation] Their location: {debug_gang_npc.location}")
 
         #print(f"[Simulation] Their region: {debug_gang_npc.region}")
 
