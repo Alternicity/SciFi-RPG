@@ -3,13 +3,9 @@
 You’ve now integrated a system where:
 
 Every Location has an Ambience field (peace, curiosity, etc.).
-
 Each Character absorbs ambience based on their psy attribute.
-
 A peak vibe (the most dominant emotion in the space) is logged.
-
 Nearby social context (friends, enemies, others) is also captured.
-
 This data is stored into semantic["ambient_vibes"] per character.
 
 Thoughts are optionally generated: “This place feels peaceful.”
@@ -26,6 +22,7 @@ Could certain vibes trigger daydreams, flashbacks, or corollary thoughts in Luna
 
 “Build a small diary system where characters reflect on recent high-vibe locations.
 Let Luna write a symbolic entry about a memory from a peaceful, friend-filled scene.”
+Influncers make blog posts and video diaries.
 
 2. “Mood-Driven Flashback” Prompt:
 
@@ -36,3 +33,4 @@ Prototype a dream-spawned Thought object triggered by ambient memory reactivatio
 
 “Can two characters absorbing the same ambience form a temporary bond or insight?
 Let shared vibes lead to mutual memory entries or emergent friendships.”
+Trocas olhas, temporary friendship boost.

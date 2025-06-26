@@ -108,7 +108,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
                 # DEBUG: Thought Check 2
                 if debug_character and npc.name == debug_character.name:
-                    print(f"\n[DEBUG] from simulate_days Thought Check 2{npc.name} Thoughts:")
+                    print(f"\n[DEBUG] from simulate_days Thought Check 2 {npc.name} Thoughts:")
                     for t in npc.mind.thoughts:
                         print(f" - {t}")
                     print(f"[DEBUG] Attention focus: {npc.attention_focus}")
@@ -141,27 +141,29 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     if isinstance(mem, RegionKnowledge) and mem.region_name == npc.region.name
                 ]
                 print(f"=== REGION KNOWLEDGE: {npc.region.name}, {npc.name} ===")
-                print(display_region_knowledge_summary(region_knowledges, npc=npc))
+                for i, rk in enumerate(region_knowledges):
 
-                print("THOUGHTS:")
-                for thought in npc.mind:
-                    print(f" - {thought}")  # Optional again
+                    print(display_region_knowledge_summary(region_knowledges, npc=npc))
 
-                print(f"ATTENTION: {npc.attention_focus}")
+                    print("THOUGHTS:")
+                    for thought in npc.mind:
+                        print(f" - {thought}")  # Optional again
+
+                    print(f"ATTENTION: {npc.attention_focus}")
 
 
-    # STEP 4: Sanity Check on Character List
-    for c in all_characters:
-        if not hasattr(c, "motivation_manager"):
-            print(f"[ERROR] Non-character in all_characters: {type(c)} -> {c}")
+        # STEP 4: Sanity Check on Character List
+        for c in all_characters:
+            if not hasattr(c, "motivation_manager"):
+                print(f"[ERROR] Non-character in all_characters: {type(c)} -> {c}")
 
-    # STEP 5: Optional Motivation Debugging CURRENTLY DOESNT DO ANYTHING
-    if debug_character:
-        for character in all_characters:
-            motivations = character.motivation_manager.get_motivations()
-            criminal_motivated = any(
-                m.type in {"rob", "steal", "obtain_ranged_weapon"} for m in motivations
-            )
+        # STEP 5: Optional Motivation Debugging CURRENTLY DOESNT DO ANYTHING
+        if debug_character:
+            for character in all_characters:
+                motivations = character.motivation_manager.get_motivations()
+                criminal_motivated = any(
+                    m.type in {"rob", "steal", "obtain_ranged_weapon"} for m in motivations
+                )
 
 
 

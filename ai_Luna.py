@@ -35,7 +35,18 @@ class LunaAI(UtilityAI):
         if self.is_triangular_number(total_red):
             self.think("I wonder if I can build a pyramid with these...")
 
-    
+    #For AI Subclasses that need special behavior, override this method only
+    def compute_salience_for_motivation(self, percept, motivation):
+        # Start from default
+        score = super().compute_salience_for_motivation(percept, motivation)
+
+        # Tweak or add special Luna-specific logic
+        """ if motivation.type == "rob":
+            if percept.get("tags") and "gang_territory" in percept["tags"]:
+                score += 0.3 """
+        #MODEL LOGIC
+
+        return score
 
     def think(self, region):
         self.tick_counter += 1

@@ -1,5 +1,6 @@
 #character_thought.py
 import time
+from salience import compute_salience
 
 class Thought:
     def __init__(self, subject, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False, corollary=None):
@@ -34,10 +35,20 @@ class Thought:
                 results.append(new)
         return results
     
-    def compute_salience(self, observer):
-        if hasattr(self, 'memory') and self.mind.memory.get_all_memories:
-            return self.mind.memory.origin.compute_salience(observer)
-        return 0
+    def salience_for(self, observer, anchor=None):
+        """
+        Computes how salient this thought is to the observer.
+        Anchor is optional and can be a motivation, event, object, etc.
+        """
+        from salience import compute_salience
+        return compute_salience(self, anchor=anchor, context={"observer": observer})
+        #usage
+        """ salient_thoughts = sorted(
+        relevant_thoughts,
+        key=lambda t: t.salience_for(self.npc, anchor=self.npc.primary_motivation()),
+        reverse=True
+    ) """
+
 
     def summary(self, include_source=False, include_time=False):
         parts = [

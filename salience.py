@@ -3,95 +3,109 @@
 #all if, elif statements that wont scale well
 
 #Centralize all salience into salience.py, with specific helpers for object types.
-
+from typing import Optional
 
 from weapons import Pistol
 
-def compute_salience(obj, observer):
+def compute_salience(obj, anchor: str, context=None) -> float:
     """
-    Routes to the appropriate salience function based on the type of object.
+    Stateless global router. Should NOT access self.npc directly.
+    If needed, NPC should be passed via context["npc"] or context["observer"].
     """
     from location import Location
     from characters import Character
-    from events import Event  # if you have such a class
+    from events import Event
+
+    observer = context.get("observer") if context else None
 
     if isinstance(obj, Location):
-        return compute_location_salience(obj, observer)
+        return compute_location_salience(obj, observer, anchor)
     elif isinstance(obj, Character):
-        return obj.compute_salience(observer)
-    elif isinstance(obj, Event):  # Optional: Event class
-        return compute_event_salience(obj, observer)
+        return compute_character_salience(obj, observer, anchor)
+    elif isinstance(obj, Event):
+        return compute_event_salience(obj, observer, anchor)
     else:
-        return compute_object_salience(obj, observer)
+        return compute_object_salience(obj, observer, anchor)
 
 #Ensure observer.enemies and faction.enemies use a consistent structure for reliable checking.
 
-def compute_character_salience(character, observer):
-    salience = 1
-    if character.bloodstained:
-        salience += 5
-    if character.is_visibly_wounded:
-        salience += 10
-    if observer and "violence" in getattr(observer, "motivations", []): #use tags?
-        salience += 2
-    # more conditions...
+def compute_character_salience(character, observer, anchor=None):
+    """
+    Computes how attention-grabbing another character is to the observer.
+    """
+    salience = 1.0
+
+    if character is observer:
+        return 0  # Don't self-evaluate
+
+    if getattr(character, "bloodstained", False):
+        salience += 0.4
+
+    if getattr(character, "is_visibly_wounded", False):
+        salience += 0.3
+
+    # Motivation-aware evaluation
+    if anchor == "violence":
+        salience += 0.5
+
+    # If observer has history or relationship with character
+    if hasattr(observer, "enemies") and character in observer.enemies:
+        salience += 0.6
+    if hasattr(observer, "friends") and character in observer.friends:
+        salience += 0.3
+
     return salience
 
 
-def compute_location_salience(location, observer):
-    salience = 1
+def compute_location_salience(location, observer, anchor):
+    salience = 1.0
 
-    #we must define which location we are computing salience for
-    #the current character.location and a potential location to move to
-    #or list of them
+    if anchor == "rob":
+        if getattr(location, "robbable", False):
+            salience += 1.3
+        if location.security and location.security.level > 1:
+            salience -= 0.4
 
-    if hasattr(location, "faction") and location.faction in observer.enemies:
-        salience += 5
-    if location.security and location.security.level > 1:
-        salience += 3
     if getattr(location, "contains_weapons", False):
-        salience += 4
-
-
-    #compute_location_salience
+        salience += 1.0
 
     return salience
 
-def compute_object_salience(obj, observer):
-    salience = 1
+def compute_object_salience(obj, observer, anchor):
+    salience = 1.0
 
-    if isinstance(obj, Pistol):
-        salience += 5
-        if observer and hasattr(observer, "motivation_manager"):
-            motivations = {m.type for m in observer.motivation_manager.get_motivations()}
-            if "rob" in motivations:
-                salience += 10
-        #usage?
-        #return compute_pistol_salience(obj, observer)
+    if anchor == "obtain_ranged_weapon" and getattr(obj, "is_weapon", False):
+        if getattr(obj, "is_ranged", False):
+            salience += 2.0
+        else:
+            salience += 1.0
 
-    if getattr(obj, "is_weapon", False):
-        salience += 5
-
-    if getattr(obj, "is_valuable", False):
-        salience += 4
-
-    if getattr(obj, "faction", None) in observer.enemies:
-        salience += 3
+    if anchor == "steal" and getattr(obj, "is_valuable", False):
+        salience += 1.5
 
     return salience
 
-def compute_event_salience(event, observer):
-    salience = 1
+def compute_event_salience(event, observer, anchor=None):
+    """
+    Computes how attention-worthy an event is to the observer.
+    """
+    salience = 1.0
 
+    # Match anchor to event tags
+    if anchor in getattr(event, "tags", []):
+        salience += 1.0
 
-    if "violence" in event.tags and "violence" in observer.motivations:
-        salience += 4
+    if "violence" in getattr(event, "tags", []) and anchor == "violence":
+        salience += 0.6
 
-    if event.involves(observer.partner) or event.involves(observer.enemy):
-        salience += 5
+    if hasattr(event, "involves"):
+        if event.involves(getattr(observer, "partner", None)):
+            salience += 0.7
+        if event.involves(getattr(observer, "enemy", None)):
+            salience += 0.8
 
-    if "loot" in event.tags:
-        salience += 2
+    if "loot" in getattr(event, "tags", []) and anchor == "steal":
+        salience += 0.6
 
     return salience
 

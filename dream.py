@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 import uuid
-import random
+from random import random
 from typing import List, Optional, Union, Any
 from memory_entry import memory_departing_party
 
@@ -79,15 +79,18 @@ class DreamFirewall:
 
 """ 🧠 Confabulation, Overflow, and Cleanup
 Perfect use of:
-
 confidence score in MemoryEntry
-
 dream type: Ghost of Memory Overflow   """
 def dream_cleanup(npc):
     for mem in npc.mind.memory.episodic:
         if mem.importance < 2 and mem.confidence < 4:
             npc.mind.memory.episodic.remove(mem)
 
+def seed_dream_from_obsessions(self):
+    for obsession in self.obsessions:
+        if random() < obsession.dream_potential:
+            return obsession  # Return the obsession most likely to enter the dream
+    return None
 
 dream_of_the_unspoken = Dream(
     id=str(uuid.uuid4()),

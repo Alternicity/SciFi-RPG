@@ -61,7 +61,7 @@ def summarize_motivations_and_percepts(character) -> str:
     percepts_dict = getattr(character, "_percepts", {})
 
     if percepts_dict:
-        sorted_items = sorted(percepts_dict.items(), key=lambda item: item[1].get("salience", 0), reverse=True)
+        sorted_items = sorted(percepts_dict.items(), key=lambda item: item[1].get("salience", 0.0), reverse=True)
 
         #TMP debug block
         for key, entry in sorted_items:

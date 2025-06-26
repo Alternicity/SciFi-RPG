@@ -99,7 +99,7 @@ class TemplateEvent(Event):
             "description": f"{self.name} at {self.location.name}",
             "origin": self,
             "tags": ["template", "event"],
-            "salience": 10,
+            "salience": 1.0,
             "location": self.location.name,
             "region": getattr(self.location, "region", "unknown"),
         }
@@ -330,7 +330,7 @@ class Robbery(Event):
                 "description": f"Robbery at {self.location.name}",
                 "origin": self,
                 "tags": ["crime", "robbery"],
-                "salience": 18,
+                "salience": 1.3,
                 "location": self.location.name,
                 "region": region,
                 "weapon": {
@@ -462,7 +462,7 @@ class ArmedRobbery(Event):
         return {
             "description": f"Armed robbery by {self.instigator.name} at {self.location.name}",
             "tags": ["crime", "robbery", "armed"],
-            "salience": 18,
+            "salience": 1.5,
             "location": self.location.name,
             "weapon": {
                 "name": self.weapon.name if self.weapon else None,
@@ -519,7 +519,7 @@ class TurfWar(Event):
             "description": f"{self.name} at {self.location.name}",
             "origin": self,
             "tags": ["template", "event"],
-            "salience": 10,
+            "salience": 1.2,
             "location": self.location.name,
             "region": getattr(self.location, "region", "unknown"),
         }

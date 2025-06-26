@@ -1,5 +1,7 @@
 #ai_utility.py
 import random
+from dataclasses import dataclass, field
+from typing import Literal, List, Optional
 from ai_base import BaseAI
 from motivation import Motivation
 from character_thought import Thought
@@ -34,55 +36,13 @@ class UtilityAI(BaseAI):
         #percepts here is not accessed
 
         memories = []
-        for memory_list in npc.mind.memory.semantic.values():
+        for memory_list in npc.mind.memory.semantic.values():#this is direct acces, not via a getter
             memories.extend(memory_list)
-
 
         actions = []
 
         for m in motivations:
             m_type = m.type
-
-            # Visit shops known to have weapons
-            for memory in memories:
-                if "weapon" in memory.tags and "shop" in memory.tags:
-                    location = memory.source
-                    if location and location != npc.location:
-                        actions.append({
-                            "name": "visit_location",
-                            "params": {"location": location},
-                            "motivation": m_type
-                        })
-
-            # Steal item in current location
-            if npc.location:
-                for item in npc.location.objects_present:
-                    if "weapon" in item.tags:
-                        actions.append({
-                            "name": "steal",
-                            "params": {"location": npc.location, "target_item": item},
-                            "motivation": m_type
-                        })
-
-            # Rob the location if it's a shop or high value
-            if npc.location and "shop" in npc.location.tags:
-                actions.append({
-                    "name": "rob",
-                    "params": {"location": npc.location},
-                    "motivation": m_type
-                })
-
-            # Leave scene of crime or after acquiring item
-            from inventory import Inventory
-            #print(f"DEBUG: npc.inventory type is {type(npc.inventory)}")
-            if not isinstance(npc.inventory, Inventory):
-                raise TypeError(f"npc.inventory is {type(npc.inventory)}, expected Inventory")
-            if npc.inventory.has_illegal_items():
-                actions.append({
-                    "name": "exit_location",
-                    "params": {},
-                    "motivation": "escape"
-                })
 
         # Basic needs fallback
         if npc.hunger > 7:
@@ -163,20 +123,6 @@ class UtilityAI(BaseAI):
                 if motivation == "obtain_weapon":
                     score += 5
 
-        elif name == "steal":
-            score = 10
-            if "weapon" in target_item.tags:
-                score += 5
-            if hasattr(target_item, "salience"):
-                score += int(target_item.salience)
-
-        elif name == "rob":
-            score = 7
-            if location and getattr(location, "value", 0) > 50:
-                score += 3
-            if hasattr(location, "salience"):
-                score += int(location.salience)
-
         elif name == "exit_location" and npc.location and npc.location.name in ["Shop", "Heist Site"]:
             score = 6
 
@@ -253,27 +199,16 @@ class UtilityAI(BaseAI):
                 seen[t.type] = t
         return list(seen.values())
 
-    def compute_salience_for_motivation(self, percept, motivation):
-        tags = percept.get("tags", []) # also thoughts?
-        desc = percept.get("description", "UNKNOWN")
-        score = 0
+    #For the future, replace urgent_motivation as anchor with object of this
+    @dataclass
+    class Anchor:
+        name: str # "rob", "join_faction"
+        type: Literal["motivation", "plan", "event"]
+        weight: float = 1.0
+        enables: List[str] = field(default_factory=list)
+        #You can now begin calling
+        #thought.salience_for(npc, anchor=Anchor(name="rob", type="motivation", weight=1.5))
 
-        if motivation.type == "rob":
-            if "shop" in tags:
-                score += 10
-            if "weapon" in tags:
-                score += 5
-        elif motivation.type == "obtain_ranged_weapon":
-            if "weapon" in tags and "ranged" in tags:
-                score += 10
-            elif "weapon" in tags:
-                score += 6
-        elif motivation.type == "steal":
-            if "weapon" in tags or "valuable" in tags:
-                score += 7
-
-        print(f"[SALIENCE] Motivation: {motivation.type}, Percept: {desc}, Score: {score}")
-        return score
 
     def think(self, region):
         from location import Region
@@ -319,15 +254,10 @@ class UtilityAI(BaseAI):
                     thoughts = self.npc.mind.get_all()
                     self.deduplicate_thoughts_by_type(thoughts)
         
-
         self.promote_thoughts()
-
-
         self.compute_salience_for_percepts() # pass motivations here? Also characters percepts, then return salient percepts
         #also this function does not yet exist.
-
         self.generate_thoughts_from_percepts()#can we then just add the salient percepts to the parameters here?
-
         self.promote_thoughts()
         #flow needs to pass to score_action, then choose_action then execute_action
 
@@ -336,16 +266,7 @@ class UtilityAI(BaseAI):
         print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
         print(f"[DEBUG] Thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
 
-        if not percepts and not promoted_actions:
-            unexplored = [l for l in region.locations if l.name != self.npc.location.name]
-            if unexplored:
-                next_loc = random.choice(unexplored)
-                print(f"[EXPLORE] {self.npc.name} wandering to {next_loc.name}")
-                return {
-                    "name": "visit_location",
-                    "params": {"location": next_loc}
-                }
-
+        
     def evaluate_turf_war_status(self, region_knowledge):
         # Basic version — maybe no-op or minimal response
         return None
@@ -354,7 +275,7 @@ class UtilityAI(BaseAI):
         npc = self.npc  # shortcut
 
         for key, value in npc.percepts.items():
-            salience = value.get("salience", 1)  # default to 1 if missing
+            salience = value.get("salience", 1.0)
             description = value.get("description", str(value.get("origin")))
             origin = value.get("origin", None)
             tags = value.get("tags", [])
@@ -367,20 +288,30 @@ class UtilityAI(BaseAI):
                     content=description,
                     urgency=urgency,
                     source=origin,
-                    tags=tags
+                    tags=tags #salience not present
                 )
                 npc.mind.add_thought(thought)
                 print(f"[THOUGHT GEN] {npc.name} adds thought: {thought}")
 
+
+
+    def compute_salience_for_motivation(self, percept, motivation):
+        # Use centralized logic
+        context = {"observer": self.npc}
+        score = compute_salience(percept, motivation.type, context)
+
+        print(f"[SALIENCE] {self.npc.name} sees {percept.get('description', str(percept))} for {motivation.type}: {score:.2f}")
+        return score
+
     def compute_salience_for_percepts(self, percept, motivation):
-        score = 1
+        score = 1.0
         if "tags" in percept and motivation.type in percept["tags"]:
         #alt version
         #if motivation.type in percept.get("tags", []):
-            score += 10
+            score += 1.3
         if str(["location"]) == self.npc.location.name:
 
-            score += 5
+            score += 1.4
         score *= motivation.urgency
         return score
     
@@ -417,6 +348,12 @@ class UtilityAI(BaseAI):
                     npc.mind.add(thought)
                     npc.is_alert = True
                     print(f"[THREAT] {npc.name} became alert due to memory: {memory.name}")
+
+    def get_salience(self, item):
+        return item.salience_for(self.npc)
+    #Usage
+    #salient_thoughts = sorted(relevant_thoughts, key=self.get_salience, reverse=True)
+
 
     def evaluate_thought_for_threats(self, thought):
         npc = self.npc

@@ -13,6 +13,7 @@ def steal_auto():
     print (f"npc steal called")
 
 def rob_auto(npc, region=None, location=None, **kwargs):
+    
     pass
     #print (f"npc rob called")
 
@@ -26,3 +27,16 @@ def eat_auto():
 def idle_auto(npc, region=None, **kwargs):
     pass
     #print (f"npc idle called")
+
+#explore
+    """ if not percepts and not promoted_actions:
+            unexplored = [l for l in region.locations if l.name != self.npc.location.name]
+            if unexplored:
+                next_loc = random.choice(unexplored)
+                print(f"[EXPLORE] {self.npc.name} wandering to {next_loc.name}")
+                return {
+                    "name": "visit_location",
+                    "params": {"location": next_loc}
+                } """
+    
+

@@ -511,14 +511,14 @@ class Character(PerceptibleMixin):
         """
 
         tags = ["human"]
-        salience = 1  # baseline salience
+        salience = 1.0  # baseline salience
 
         if self.bloodstained:
             tags.append("bloodstained")
-            salience += 5
+            salience += 5.0
         if self.is_visibly_wounded:
             tags.append("wounded")
-            salience += 10
+            salience += 5.0
 
         return {
             "name": self.name,
@@ -708,7 +708,7 @@ class Character(PerceptibleMixin):
     "urgency": 5,
     "tags": ["violence", "threat"],
     "source": None,
-    "salience": 17
+    "salience": 1.3
     } """
 
     def perceive_event(self, percept: dict):
@@ -771,11 +771,11 @@ class Character(PerceptibleMixin):
                 print(f"[WARNING] Percept missing origin: {data}")
 
             key = getattr(origin, "id", None) or data.get("id") or str(origin)
-            salience = data.get("salience", 1)
+            salience = data.get("salience", 1.0)
 
             # Keep the more salient version if duplicate
             if key in self._percepts:
-                if salience > self._percepts[key]["data"].get("salience", 0):
+                if salience > self._percepts[key]["data"].get("salience", 0.0):
                     self._percepts[key] = {"data": data, "origin": origin}
             else:
                 self._percepts[key] = {"data": data, "origin": origin}
@@ -783,7 +783,7 @@ class Character(PerceptibleMixin):
         # Prune by salience to observation capacity
         if len(self._percepts) > self.observation:
             sorted_items = sorted(
-                self._percepts.items(), key=lambda kv: kv[1]["data"].get("salience", 0), reverse=True
+                self._percepts.items(), key=lambda kv: kv[1]["data"].get("salience", 0.0), reverse=True
             )
             self._percepts = dict(sorted_items[:self.observation])
 
@@ -975,7 +975,7 @@ class Location(PerceptibleMixin):
 
     def get_percept_data(self, observer=None):
         tags = ["location"]
-        salience = 1
+        salience = 1.0
 
         if self.security and self.security.level > 1:
             tags.append("secure")

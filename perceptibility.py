@@ -14,7 +14,7 @@ class PerceptibleMixin:
     def __init__(self):
         self.id = str(uuid.uuid4())
 
-    def compute_salience(self, observer=None):
+    def compute_salience(self, observer=None):#rename?
         return getattr(self, "salience", 1)
 
     def percept_weight(self, observer=None):

@@ -116,7 +116,7 @@ class VacantLot(Location):
         "type": "FIXME",
         "origin": "FIXME",
         "tags": "FIXME",
-        "salience": "FIXME",
+        "salience": "0.9",
         "urgency": "FIXME",
         "source": "FIXME",
         "security": "FIXME",
@@ -132,7 +132,7 @@ class VacantLot(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": 2
+            "salience": 1.2 #DUPLICATE?
         }
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
@@ -547,7 +547,7 @@ class ElectricalWorkshop(Location):
             "tags": ["workshop", "tools"],
             "menu_options": [],
             "source": None,
-            "salience": 2,
+            "salience": 1.0,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security()
@@ -820,7 +820,7 @@ class Mine(Location):
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
-            "salience": 2,
+            "salience": 1.0,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
@@ -879,7 +879,7 @@ class Powerplant(Location):
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
-            "salience": 2,
+            "salience": 1.1,
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),

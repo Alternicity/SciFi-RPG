@@ -13,6 +13,7 @@ from create_game_state import get_game_state
 from character_memory import RegionKnowledge
 from character_think_utils import promote_relevant_thoughts, should_promote_thought
 #from character_memory import Memory
+from salience import compute_salience
 
 
 class BossAI(UtilityAI):
@@ -68,27 +69,95 @@ class GangMemberAI(UtilityAI):
         """Custom salience tuning, override functions in UtilityAI
         Let UtilityAI produce options, and GangMemberAI choose from them based on gang-specific rules"""
 
-    def promote_thoughts(self): #line 71
+    def promote_thoughts(self):
         super().promote_thoughts()
         npc = self.npc
         for thought in self.npc.mind.thoughts:
-            promoted = set()
+            #promoted = set()
+            #marked for deprecation
 
-        promote_relevant_thoughts(npc, self.npc.mind.thoughts)
+        promote_relevant_thoughts(npc, self.npc.mind.thoughts)#should this be indented?
 
+        for thought in npc.mind.thoughts:
+            #should it be adressing self.npc.mind.thoughts?
+            if "intention" in thought.tags:
+                if "weapon" in thought.content:
+                    self.npc.motivation_manager.update_motivations("obtain_ranged_weapon", urgency=thought.urgency, source=thought)
+                    
         if not promoted and npc.isTestNPC:
             print(f"[GANG] {npc.name} did not promote any thoughts this cycle.")
+
+
+    #For AI Subclasses that need special behavior, override this method only
+    def compute_salience_for_motivation(self, percept, motivation):
+        # Start from default
+        score = super().compute_salience_for_motivation(percept, motivation)
+
+        # Tweak or add special GangMember-specific logic
+        if motivation.type == "rob":
+            if percept.get("tags") and "gang_territory" in percept["tags"]:
+                score += 0.3
+
+        return score
+
 
     def choose_action(self, region):
         #self.think(region)
         #moving think() to tick
 
         top_motivation = self.npc.motivation_manager.get_highest_priority_motivation()
-        if top_motivation == "rob":
+        if top_motivation and top_motivation.type == "rob":
             return self.resolve_robbery_action(region)
 
         if top_motivation == "steal":
+            #if top_motivation and top_motivation.type == "steal":  ?
             return self.resolve_steal_action(region)
+
+        percepts = self.npc.get_percepts()
+
+        # Compute contextual salience
+        scored = [(p, self.compute_salience_for_motivation(p["data"], motivation)) for p in percepts]
+        scored = sorted(scored, key=lambda x: x[1], reverse=True)
+
+        if scored:
+            top_percept, score = scored[0]
+            print(f"[SALIENT] Most salient percept for '{motivation}' is: {top_percept['data'].get('name')} (score: {score})")
+            
+            if "weapon" in top_percept["data"].get("tags", []):
+                weapon = top_percept["origin"]
+                return {"name": "steal", "params": {"item": weapon.name}}
+
+        # Step 2: Memory fallback
+        known_weapon_locations = self.npc.mind.memory.query_memory_by_tags(["weapon", "shop"])
+        print(f"[DEBUG] Known weapon locations: {known_weapon_locations}")
+
+        if known_weapon_locations:
+            memory = known_weapon_locations[0]
+            location = memory.source
+            if location:
+                print(f"[AI] {self.npc.name} remembers a shop with weapons: {location}")
+                return {"name": "visit_location", "params": {"location": location}}
+
+        # Step 3: Spawn a thought and wait
+        motivation = self.npc.motivation_manager.get_highest_priority_motivation()
+        new_thought = Thought(
+            subject="ranged_weapon",
+            content="Maybe I should get a weapon before robbing.",
+            origin="resolve_robbery_action",
+            urgency=7,
+            tags=["rob", "shop", "weapon", "enable", "crime"],
+            timestamp=time.time(),
+            source=motivation,
+            weight=7
+        )
+        self.npc.mind.add(new_thought)
+        print(f"[THOUGHT] {self.npc.name} had a new thought: {new_thought.content}")
+
+        self.npc.attention_focus = new_thought
+        self.npc.motivation_manager.increase("rob", 1.1)
+        print(f"[AI] {npc.name} choosing action. Primary motivation: {top_motivation}")
+        self.npc.ai.promote_thoughts()
+        print(f"[POST-THOUGHT] Thoughts: {self.npc.mind.thoughts}")
 
         return {"name": "Idle"}
 
@@ -120,7 +189,6 @@ class GangMemberAI(UtilityAI):
         if npc.is_test_npc:
             print(f"[MIND DUMP] from GangMemberAI execute_action {npc.name} current thoughts: {[str(t) for t in npc.mind]}")
 
-
     def resolve_weapon_target_from_percepts(self):#line 141
         print(f"[GangMemberAI] resolve_weapon_target_from_percepts called")
         #get percepts. Can the npc perceive a target location with a targetteable weapons?
@@ -137,47 +205,7 @@ class GangMemberAI(UtilityAI):
         self.resolve_weapon_target_from_percepts()
         self.resolve_weapon_target_from_memory()
 
-        percepts = npc.get_percepts()
-
-        # Compute contextual salience
-        motivation = npc.motivation_manager.get_highest_priority_motivation()
-        scored = [(p, self.compute_salience_for_motivation(p["data"], motivation)) for p in percepts]
-        scored = sorted(scored, key=lambda x: x[1], reverse=True)
-
-        if scored:
-            top_percept, score = scored[0]
-            print(f"[SALIENT] Most salient percept for '{motivation}' is: {top_percept['data'].get('name')} (score: {score})")
-            
-            if "weapon" in top_percept["data"].get("tags", []):
-                weapon = top_percept["origin"]
-                return {"name": "steal", "params": {"item": weapon.name}}
-
-        # Step 2: Memory fallback
-        known_weapon_locations = npc.mind.memory.query_memory_by_tags(["weapon", "shop"])
-        print(f"[DEBUG] Known weapon locations: {known_weapon_locations}")
-
-        if known_weapon_locations:
-            memory = known_weapon_locations[0]
-            location = memory.source
-            if location:
-                print(f"[AI] {npc.name} remembers a shop with weapons: {location}")
-                return {"name": "visit_location", "params": {"location": location}}
-
-        # Step 3: Spawn a thought and wait
-        new_thought = Thought(
-            content="Maybe I should rob a shop to get a weapon.",
-            origin="General knowledge?",
-            urgency=7,
-            tags=["rob", "shop", "weapon"],
-            timestamp=time.time(),
-            source="Instinct",
-            weight=7
-        )
-        npc.mind.add(new_thought)
-        npc.motivation_manager.increase("rob", 3)
-        print(f"[THOUGHT] {npc.name} had a new thought: {new_thought.content}")
-        npc.ai.promote_thoughts()
-        print(f"[POST-THOUGHT] Thoughts: {npc.mind.thoughts}")
+        
 
         print(f"[DEBUG] From GangMemberAI resolve_obtain_weapon_target")
         print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
@@ -186,17 +214,6 @@ class GangMemberAI(UtilityAI):
         print(f"[DEBUG] Thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
         return {"name": "idle", "params": {}}
 
-
-    def compute_salience_for_rob(percept, npc):
-        if "ranged_weapon" in percept.get("tags", []): 
-            return 10
-        if "shop" in percept.get("tags", []):#should there be a logical AND here? If the npc is
-            #aware that ranged weapon is salient to rob, AND they are aware that a shop is
-            #a good robbery target, AND that there is a shop in their self.region (via their RegionKnowledge semantic memory object)
-            #is this the correct place to make that calculation?
-            return 6
-        return 1
-
     def debug_percepts(npc, context=""):
         print(f"\n--- [PERCEPT DEBUG] {npc.name} ({context}) ---")
         for p in npc.get_percepts():
@@ -204,18 +221,26 @@ class GangMemberAI(UtilityAI):
             print(f"→ {d.get('type')} | {d.get('name')} | tags: {d.get('tags')} | salience: {p.get('salience')}")
 
     def resolve_robbery_action(self, region):
-        target = self.resolve_obtain_weapon_target(region)
-        if target:
-            return target  # May be 'steal' or 'visit_location'
-        else:
-            print("Idling from resolve_robbery_action: target not found")
-            return {"name": "Idle"}
-        
+        npc = self.npc
 
-    #def compute_salience_for_motivation(percept, motivation):
-    #override this
+        # Do we have a ranged weapon?
+        if not npc.inventory.has_ranged_weapon():
+            enable_motive = "obtain_ranged_weapon"
+            self.npc.motivation_manager.update_motivations(enable_motive, urgency=5)
+            if not npc.inventory.has_ranged_weapon():
+                return self.resolve_obtain_weapon_target(region)
+            
 
-    
+            print(f"[CHAIN] Enabling motivation '{enable_motive}' activated. Thought added.")
+            return self.resolve_obtain_weapon_target(region)
+
+        # Are we in a robbable location?
+        if npc.location and getattr(npc.location, "robbable", False):
+            return {"name": "Rob", "params": {"location": npc.location}}
+
+        # Else: No robbable location or still lacking weapon
+        return {"name": "Idle", "params": {}}
+
     def think(self, region):
 
         if self.npc.isTestNPC:
@@ -276,13 +301,21 @@ class GangMemberAI(UtilityAI):
         # After gathering motivation
         motivation = self.npc.motivation_manager.get_highest_priority_motivation()
 
-        if motivation and motivation.type == "rob":
-            region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, self.npc.region.name)
+        if motivation.type == "rob":
+            if not self.npc.inventory.find_item("ranged_weapon"):
+                enable_motive = "obtain_ranged_weapon"
+                self.npc.motivation_manager.update_motivations(motivation_type=enable_motive, urgency=5)
+                print(f"[CHAIN] Promoting enabling motivation: {enable_motive}")
+
+            region_knowledge = None
+            for memory in self.npc.mind.memory.get_semantic():
+                if isinstance(memory, RegionKnowledge) and memory.region_name == self.npc.region.name:
+                    region_knowledge = memory
+                    break
 
             if region_knowledge:
                 shop_names = region_knowledge.locations or set()
-                if shop_names:
-                    for shop_name in shop_names:
+                for shop_name in shop_names:
                         thought = Thought(
                             content=f"Maybe I should rob {shop_name}.",
                             subject=shop_name,
@@ -300,7 +333,8 @@ class GangMemberAI(UtilityAI):
     ]
 
 
-        salient_thoughts = sorted(relevant_thoughts, key=lambda t: t.compute_salience(self), reverse=True)
+        salient_thoughts = sorted(relevant_thoughts, key=lambda t: t.salience_for(self.npc), reverse=True)
+
         """ Am sorting it, but then doing nothing with the result. To use it meaningfully, I need to either:
         loop over salient_thoughts, or
         set the NPC's attention to the top one, or

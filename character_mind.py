@@ -1,7 +1,12 @@
 #character_mind.py
 from collections import deque
+from dataclasses import dataclass, field
+import time
+from typing import Optional, List, Any
+
 from character_thought import Thought
 from character_memory import Memory
+
 
 class Mind:
     def __init__(self, owner=None, capacity=None):
@@ -12,6 +17,7 @@ class Mind:
         self.thoughts = deque(maxlen=capacity)
         self.corollaries = deque(maxlen=capacity)
         self.memory = Memory()
+        self.obsessions: List[Obsession] = []
         self.max_thinks_per_tick=1
         #Consider syncing Character.social_connections["enemies"] with mind.memory.semantic["enemies"] at periodic intervals
 
@@ -55,6 +61,27 @@ class Mind:
         self.thoughts.append(thought)
         #print(f"[MIND] Added thought: {thought.content}")
         
+    def check_obsessions(self):
+        for obsession in self.obsessions:
+            obsession.decay()
+            if obsession.should_reactivate():
+                thought = Thought(
+                    subject=self.owner.name,
+                    content=f"[Recurring] {obsession.content}",
+                    origin=obsession.origin,
+                    urgency=min(10, obsession.intensity * 2),
+                    tags=obsession.tags + ["obsession"]
+                )
+                self.thoughts.append(thought)
+                obsession.strengthen(0.05)
+
+    def add_obsession(self, content, origin=None, tags=None):
+        for o in self.obsessions:
+            if o.content == content:
+                o.strengthen()
+                return
+        self.obsessions.append(Obsession(content=content, origin=origin, tags=tags or []))
+
     def add_thought_to_enemies(self, thought):
         self.memory.semantic.setdefault("enemies", []).append(thought)
 
@@ -85,3 +112,29 @@ class Curiosity:
 
     def get(self, topic):
         return self.interests.get(topic, self.base)
+    
+
+@dataclass
+class Obsession:
+    content: str  # Core of the recurring theme
+    tags: List[str] = field(default_factory=list)
+    origin: Optional[Any] = None  # MemoryEntry, Thought, ObjectInWorld, etc.
+    intensity: float = 1.0  # Grows with reactivation, fades without stimulation
+    recurrence_rate: float = 0.05  # Chance per tick to return as thought
+    last_invoked: float = field(default_factory=time.time)
+    dream_potential: float = 0.2  # Probability it shows up in dreams
+    resolved: bool = False
+
+    def should_reactivate(self) -> bool:
+        """Determine if the obsession should resurface as a thought."""
+        if self.resolved:
+            return False
+        from random import random
+        return random() < self.recurrence_rate * self.intensity
+
+    def strengthen(self, amount=0.1):
+        self.intensity = min(self.intensity + amount, 10)
+        self.last_invoked = time.time()
+
+    def decay(self, rate=0.01):
+        self.intensity = max(0.0, self.intensity - rate)

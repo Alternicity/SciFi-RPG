@@ -49,12 +49,52 @@ class Memory:
     def promote_to_semantic(self, entry):
         if entry in self.episodic:
             print(f"[MEMORY] Promoted to semantic: '{entry.description}' about {getattr(entry.target, 'name', entry.target)}. Tags: {entry.tags}. Importance: {entry.importance}.")
+
         if isinstance(entry, MemoryEntry):
             self.semantic["memory_entries"].append(entry)
+
         elif isinstance(entry, RegionKnowledge):
+            existing = self.find_region_knowledge(entry.region_name)
+            if existing:
+                print(f"[MEMORY] RegionKnowledge for '{entry.region_name}' already exists. Skipping add.")
+                return  # ✅ STOP HERE to prevent duplicate
             self.semantic["region_knowledge"].append(entry)
+            
+        #merge usage
+            """ if existing:
+                # Merge relevant fields
+                existing.locations.update(entry.locations)
+                existing.region_gangs.update(entry.region_gangs)
+                existing.hostile_factions.update(entry.hostile_factions)
+                existing.known_characters.update(entry.known_characters)
+                existing.tags = list(set(existing.tags or []) | set(entry.tags or []))
+                print(f"[MEMORY] Merged RegionKnowledge for '{entry.region_name}'") """
         else:
             print("[MEMORY] Unknown semantic type — not added.")
+
+    def find_region_knowledge(self, region_name):
+        for rk in self.semantic.get("region_knowledge", []):
+            if rk.region_name == region_name:
+                return rk
+        return None
+
+    def deduplicate_region_knowledge(npc):
+        seen = {}
+        to_keep = []
+        for rk in npc.mind.memory.semantic.get("region_knowledge", []):
+            if rk.region_name in seen:
+                existing = seen[rk.region_name]
+                # Merge data into existing
+                existing.locations.update(rk.locations)
+                existing.region_gangs.update(rk.region_gangs)
+                existing.hostile_factions.update(rk.hostile_factions)
+                existing.known_characters.update(rk.known_characters)
+                existing.tags = list(set(existing.tags or []) | set(rk.tags or []))
+            else:
+                seen[rk.region_name] = rk
+                to_keep.append(rk)
+
+        npc.mind.memory.semantic["region_knowledge"] = to_keep
 
     def recent(self, count=5):
         return sorted(self.episodic, key=lambda e: e.timestamp, reverse=True)[:count]

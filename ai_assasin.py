@@ -3,13 +3,9 @@ from time import time
 
 from ai_utility import UtilityAI
 from worldQueries import get_region_knowledge
-from npc_actions import steal_auto, visit_location_auto, idle_auto
 from character_thought import Thought
-
 from npc_actions import visit_location_auto
 from character_thought import Thought
-import random
-import time
 
 class AssassinAI(UtilityAI):
     def __init__(self, npc):
@@ -64,6 +60,17 @@ class AssassinAI(UtilityAI):
             self.search_complete = True
 
         return {"name": "idle", "params": {}}
+    
+    #For AI Subclasses that need special behavior, override this method only
+    def compute_salience_for_motivation(self, percept, motivation):
+        # Start from default
+        score = super().compute_salience_for_motivation(percept, motivation)
+
+        # Tweak or add special Assasin-specific logic
+        """ if motivation.type == "rob":
+            if percept.get("tags") and "gang_territory" in percept["tags"]:
+                score += 0.3 """
+        #MODEL LOGIC
 
     def think(self, region):
         npc = self.npc
