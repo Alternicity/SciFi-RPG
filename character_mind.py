@@ -3,7 +3,7 @@ from collections import deque
 from dataclasses import dataclass, field
 import time
 from typing import Optional, List, Any
-
+import random
 from character_thought import Thought
 from character_memory import Memory
 
@@ -19,7 +19,13 @@ class Mind:
         self.memory = Memory()
         self.obsessions: List[Obsession] = []
         self.max_thinks_per_tick=1
+        self.default_focus = None
+
         #Consider syncing Character.social_connections["enemies"] with mind.memory.semantic["enemies"] at periodic intervals
+
+        #Future idea
+        #npc.thinking_style = "scatterbrain" Many thoughts
+        #npc.thinking_style = "disciplined"
 
         # encapsulate both episodic + semantic
         #adding this here should probably deprecate the self.memory = Memory() in class Character
@@ -29,6 +35,16 @@ class Mind:
         """ deque prevents memory bloat. 
         It mimics short-term/working memory: older thoughts are automatically discarded. """
 
+    def regain_focus(self):
+        if not self.attention_focus and hasattr(self, "default_focus"):
+            if random.random() < self.concentration / 10:
+                self.regain_focus()
+                print(f"[FOCUS] {self.name} is regaining attention focus on: {self.default_focus}")
+                self.attention_focus = self.default_focus
+
+    def get_episodic(self):
+        return self.memory.episodic
+    
     def get_all(self):
         return list(self.thoughts)
 
@@ -45,6 +61,9 @@ class Mind:
             reverse=True
         )
 
+    def has_similar_thought(self, new_thought):
+        return any(t.content == new_thought.content for t in self.thoughts)
+
     def add_thought(self, thought: Thought):
         """
         Adds a thought to the mind, avoiding duplicates by content.
@@ -60,6 +79,8 @@ class Mind:
 
         self.thoughts.append(thought)
         #print(f"[MIND] Added thought: {thought.content}")
+        """ You may eventually want to detect duplicates not just 
+        by .content but also by .subject or .tags depending on future use cases """
         
     def check_obsessions(self):
         for obsession in self.obsessions:

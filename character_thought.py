@@ -41,7 +41,7 @@ class Thought:
         Anchor is optional and can be a motivation, event, object, etc.
         """
         from salience import compute_salience
-        return compute_salience(self, anchor=anchor, context={"observer": observer})
+        return compute_salience(self, observer, anchor)
         #usage
         """ salient_thoughts = sorted(
         relevant_thoughts,

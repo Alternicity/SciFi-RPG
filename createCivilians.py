@@ -118,6 +118,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             motivations=motivations,
             status=status,
             intelligence=20,  # Override default
+            concentration = 20,
             max_thinks_per_tick=3,
             strength=2,
             agility=5,
@@ -158,6 +159,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             motivations=motivations,
             status=status,
             intelligence=10,  # Override default
+            concentration = 9,
             charisma=15,
             max_thinks_per_tick=1,
             strength=12,

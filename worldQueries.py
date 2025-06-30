@@ -1,6 +1,8 @@
 #worldQueries.py
-
 #location searches, filtering targets, etc.
+
+from memory_entry import RegionKnowledge
+from typing import Dict, List, Optional
 
 def get_viable_robbery_targets(region):
     return [
@@ -42,8 +44,9 @@ def observe_location(self, loc):
         #perhaps just hand this off to UtilityAI compute_salience_for_percepts()
         return
     
-def get_region_knowledge(memory, region_name: str):
-    for rk in memory.get("region_knowledge", []):
-        if rk.region_name == region_name:
+def get_region_knowledge(semantic_memory: Dict[str, List], region_name: str) -> Optional[RegionKnowledge]:
+    region_knowledge_entries = semantic_memory.get("RegionKnowledge", [])
+    for rk in region_knowledge_entries:
+        if isinstance(rk, RegionKnowledge) and rk.region_name == region_name:
             return rk
     return None

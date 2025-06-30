@@ -1,5 +1,8 @@
 #ai_utility_thought_tools
 from character_thought import Thought, FailedThought
+from salience import Anchor
+from typing import Optional
+
 class UtilityAIThoughtTools():
 
     def emotion_corollary(self, thought):
@@ -22,3 +25,10 @@ class DoubtMixin:
     """ Attach this to Thoughts, Memories, Dreams, Beliefs
     A doubt in one corollary led her to refine the pattern
     and birth a stronger Thought. """
+
+def extract_anchor_from_action(action: dict) -> Optional[Anchor]:#line 108
+        if "anchor" in action:
+            return action["anchor"]
+        elif "motivation" in action:
+            return Anchor(name=action["motivation"], type="motivation", weight=1.0)
+        return None

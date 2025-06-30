@@ -74,9 +74,15 @@ class AssassinAI(UtilityAI):
 
     def think(self, region):
         npc = self.npc
+
+        self.generate_thoughts_from_percepts()  # New: gain general awareness
+
         if not npc.attention_focus:
             action = self.resolve_find_target("Karen")
             self.execute_action(action, region)
+
+        
+        self.promote_thoughts()  # Consider what's most urgent or interesting
 
     def execute_action(self, action, region):
         npc = self.npc

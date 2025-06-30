@@ -7,9 +7,9 @@ from InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
 from memory_entry import MemoryEntry
-from character_thought import Thought
+
 from output_utils import group_reactions
-from memory_entry import MemoryEntry
+
 
 class Event(ABC):
     """ Do not make Event perceptible.

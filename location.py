@@ -43,7 +43,6 @@ class Region(PerceptibleMixin):
     gossip: List = field(default_factory=list)
     economic_info: List = field(default_factory=list)
     
-
     def __post_init__(self):
         PerceptibleMixin.__init__(self)
 
@@ -59,6 +58,12 @@ class Region(PerceptibleMixin):
 
     def get_all_locations(self):
         return self.locations
+    
+    def get_location_by_name(self, name: str) -> Optional["Location"]:
+        for loc in self.locations:
+            if loc.name.lower() == name.lower():
+                return loc
+        return None
         
 #Each region will contain a list of Shop and other Location objects
     def add_location(self, location: Location):

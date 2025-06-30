@@ -44,7 +44,7 @@ def run_simulation(all_characters, num_days=10):
 
 
     if debug_gang_npc:
-        print(f"[Simulation] Selected DEBUG NPC: {debug_gang_npc.name}")
+        print(f"[Simulation] Selected DEBUG NPC: {debug_gang_npc.name}, {debug_gang_npc.race}")
         print(f"[INIT] Placed debug gang NPC at {start_location.name}")
         #print(f"[Simulation] Their location: {debug_gang_npc.location}")
 

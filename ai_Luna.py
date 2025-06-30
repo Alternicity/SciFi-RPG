@@ -53,7 +53,7 @@ class LunaAI(UtilityAI):
         npc = self.npc
         percepts = list(npc.get_percepts().values())
 
-        self.generate_thoughts_from_percepts()
+        self.generate_thoughts_from_percepts()#defined in UtilityAI
 
         if self.tick_counter % 3 == 0:
             self.symbolic_thought_spawner(percepts)

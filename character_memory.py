@@ -4,6 +4,7 @@
 from typing import List, Dict, Optional, Any, Union, Set, Callable
 from events import Event
 from memory_entry import MemoryEntry, RegionKnowledge
+from dataclasses import dataclass, field
 
 """ Rethink tight coupling (Long-term suggestion)
 If events and character_memory are highly interdependent, you may consider
@@ -176,3 +177,7 @@ MemoryEntry(
     initial_memory_type="semantic"
 )
 
+@dataclass
+class KnownWeaponLocationMemory(MemoryEntry):
+    location: Optional[Any] = None  # Must have .name or .id
+    weapon_tags: List[str] = field(default_factory=lambda: ["weapon", "ranged", "valuable"])

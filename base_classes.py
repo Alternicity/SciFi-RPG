@@ -177,6 +177,7 @@ class Character(PerceptibleMixin):
         strength=10,
         agility=10,
         intelligence=10,
+        concentration = 10,
         luck=10,
         psy=10,
         charisma=10, #1-20
@@ -242,7 +243,8 @@ class Character(PerceptibleMixin):
         self.mind = Mind(owner=self, capacity=intelligence)
         self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)
         self.curiosity = Curiosity(base_score=self.intelligence // 2)
-        
+        self.concentration = concentration
+
         self.task_manager = TaskManager(self)
         """ Should Tasks Be Stored in Memory?
         Yes, that makes a lot of sense — but with separation of concerns:
@@ -792,6 +794,8 @@ class Character(PerceptibleMixin):
         Returns a list of percept dictionaries, optionally sorted by salience (descending).
         """
         percepts = list(self._percepts.values())
+        if sort_by_salience:
+            percepts.sort(key=lambda p: p.get("salience", 1.0), reverse=True)
 
         return percepts
     

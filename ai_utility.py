@@ -8,9 +8,13 @@ from character_thought import Thought
 from npc_actions import rob_auto, steal_auto, visit_location_auto, idle_auto
 from character_memory import Memory
 from time import time
-from salience import compute_salience, compute_character_salience
+from salience import compute_salience, compute_character_salience, compute_salience_for_percept_with_anchor
+from anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation
 from collections import defaultdict
 from worldQueries import get_region_knowledge
+from memory_entry import MemoryEntry
+
+
 
 class UtilityAI(BaseAI):
     def __init__(self, npc):
@@ -28,8 +32,8 @@ class UtilityAI(BaseAI):
         if not getattr(npc, "isTestNPC", False):
             return {"name": "idle"}
 
-        motivations = npc.motivation_manager.get_motivations()
-        if not motivations:
+        anchors = [create_anchor_from_motivation(m) for m in npc.motivation_manager.get_motivations()]
+        if not motivations:#motivations is not defined here
             return {"name": "idle"}
 
         percepts = list(npc.get_percepts())
@@ -41,8 +45,8 @@ class UtilityAI(BaseAI):
 
         actions = []
 
-        for m in motivations:
-            m_type = m.type
+        for anchor in anchors:
+            anchor_type = anchor.type
 
         # Basic needs fallback
         if npc.hunger > 7:
@@ -105,6 +109,9 @@ class UtilityAI(BaseAI):
         else:
             print(f"[UtilityAI] {npc.name} has no valid action to execute ({action_name}).")
 
+    
+
+
     def score_action(self, action: dict, context: dict = None) -> int:
         #can be replaced by a registry-based design or use decorators to register scorers by action['name']
         context = context or {}
@@ -112,7 +119,10 @@ class UtilityAI(BaseAI):
         score = 0
 
         name = action.get("name")
-        motivation = action.get("motivation", "")
+        motivation = action.get("motivation", anchor.name if anchor else "")
+        if "motivation" in action and "anchor" not in action:
+            print(f"[LEGACY] Action is using legacy motivation string: '{motivation}'")
+
         location = action.get("params", {}).get("location")
         target_item = action.get("params", {}).get("target_item")
 
@@ -120,7 +130,7 @@ class UtilityAI(BaseAI):
         if name == "visit_location":
             if location and location != npc.location:
                 score = 5
-                if motivation == "obtain_weapon":
+                if motivation == "obtain_weapon":#motivation is needed here
                     score += 5
 
         elif name == "exit_location" and npc.location and npc.location.name in ["Shop", "Heist Site"]:
@@ -128,58 +138,73 @@ class UtilityAI(BaseAI):
 
         elif name == "eat":
             score = 8 if npc.hunger > 7 else 2
-            
-        urgency = npc.motivation_manager.get_urgency(motivation)
-        return score * urgency #REVIST.
+        from ai_utility_thought_tools import extract_anchor_from_action
+        anchor = extract_anchor_from_action(action)#line 141 extract_anchor_from_action is marked not defined
+        urgency = anchor.weight if anchor else 1.0
+        return score * urgency
+
+    def create_anchor_from_thought(self, thought: Thought, name: str, type_: str = "motivation") -> Anchor:
+        return Anchor(name=name, type=type_, weight=thought.urgency, source=thought, tags=thought.tags)
+
+    """ Best sequence:
+1. Anchor from Thought
+2. Add Anchor to Episodic Memory
+3. Add (or reinforce) Thought in mind
+4. Promote to Semantic later (based on usage) """
 
     def promote_thoughts(self):
         npc = self.npc
         mind = npc.mind
         thoughts = mind.thoughts
+        anchor = None
 
         if not thoughts:
             npc.attention_focus = None
-            #print here, saying why not attention focus?
+            print(f"[FOCUS] {npc.name} has no thoughts to process.")
             return
 
-        for thought in self.npc.mind.thoughts:
+        for thought in thoughts:
             if not isinstance(thought, Thought):
                 print(f"[THINK] Skipping invalid thought in {npc.name}'s mind: {thought}")
                 continue
 
             content_lower = thought.content.lower()
 
+            # Example general trigger
             if "obtain" in content_lower and "weapon" in thought.tags:
-                motivation = Motivation("obtain_ranged_weapon", strength=thought.urgency, tags=["weapon"], source=thought)
-                npc.motivation_manager.update_motivations(motivation.type, motivation.urgency, source=thought)
-                print(f"[THINK] {npc.name} promoted to motivation: {motivation}")
+                anchor = self.create_anchor_from_thought(thought, "obtain_ranged_weapon", type="motivation", weight=thought.urgency)
+                
+        if anchor and not npc.default_focus:
+            npc.default_focus = anchor  # Could also be the thought or memory_entry
 
-            # Add more general-purpose thought promotions here as needed
+            #anchor = Anchor(name="obtain_ranged_weapon", type="motivation", weight=thought.urgency)
+            npc.motivation_manager.update_motivations(anchor.name, urgency=anchor.weight, source=thought)
+            print(f"[THINK] {npc.name} promoted to motivation: {anchor}")
 
-        # Set attention focus to most urgent thought
-        if thoughts:
-            npc.attention_focus = max(thoughts, key=lambda t: t.urgency)
-            #print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary()}")
-            #for mmore info uncomment the following line
-            #print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary(include_source=True, include_time=True)}")
-        else:
-            npc.attention_focus = None
+            memory_entry = MemoryEntry(
+                subject=npc.name,
+                object_="anchor",
+                verb="generated",
+                details=f"Anchor {anchor.name} was created from thought '{thought.content}'",
+                tags=["anchor", "thought"],
+                target=anchor,
+                importance=thought.urgency,
+                type="anchor_creation",
+                initial_memory_type="episodic"
+            )
+            npc.mind.memory.add_episodic(memory_entry)
+            #anchors are important, promte to semantic here
+            #Later logic could be time passed, number of times reinforced, used successfully in decision-making
 
-        # in think() or promote_thoughts
-        top_thought = npc.attention_focus
-        if top_thought and isinstance(top_thought, Thought):
-            shop_name = top_thought.subject
+    
 
-            # Try to match to a known location
-            for loc in npc.region.locations:
-                if loc.name == shop_name:
-                    print(f"[DECISION] Decided to move to {loc.name}")
-                    return {
-                        "name": "visit_location",
-                        "params": {
-                            "location": loc
-                        }
-                    }
+        # Set attention focus
+        npc.attention_focus = max(thoughts, key=lambda t: t.urgency)
+        #set npc.default_focus here as well
+
+        if self.npc.is_test_npc:
+            print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary(include_source=True, include_time=True)}")
+
 
     def examine_episodic_memory(self, episodic_memories):
         event_counts = defaultdict(int)
@@ -188,7 +213,7 @@ class UtilityAI(BaseAI):
             event_counts[key] += 1
             if event_counts[key] >= 3:
                 print(f"[Insight]: {m.subject} has done {m.verb} {event_counts[key]} times.")
-                # You could generate a new belief, goal, or trait here
+                # I could generate a Anchor, new belief, goal, or trait here, and return it
 
     def deduplicate_thoughts_by_type(thoughts):
         #call it: After thoughts are generated from percepts, before promotions happen
@@ -199,15 +224,39 @@ class UtilityAI(BaseAI):
                 seen[t.type] = t
         return list(seen.values())
 
-    #For the future, replace urgent_motivation as anchor with object of this
-    @dataclass
-    class Anchor:
-        name: str # "rob", "join_faction"
-        type: Literal["motivation", "plan", "event"]
-        weight: float = 1.0
-        enables: List[str] = field(default_factory=list)
-        #You can now begin calling
-        #thought.salience_for(npc, anchor=Anchor(name="rob", type="motivation", weight=1.5))
+    def matches_motivation(self, percept: dict, motivation) -> bool:
+        """
+        Returns True if the percept is relevant to the given motivation.
+        """
+        if not isinstance(percept, dict):
+            print(f"[BUG] Expected percept to be dict, got {type(percept)}: {percept}")
+            return False
+        
+        percept_tags = percept.get("tags", [])
+        m_type = getattr(motivation, "type", str(motivation)).lower()  # Handle both Motivation objects and strings
+
+        # Example logic: match if motivation type appears in tags or matches known aliases
+        if m_type in percept_tags:
+            return True
+
+        known_matches = {
+            "rob": ["shop", "cash", "loot"],
+            "steal": ["valuable", "item", "weapon"],
+            "obtain_ranged_weapon": ["weapon", "gun", "ranged"],
+            "violence": ["blood", "enemy", "gunshot"]
+        }
+
+        if m_type in known_matches:
+            for tag in known_matches[m_type]:
+                if tag in percept_tags:
+                    return True
+
+        """ You might later improve it with:
+        Salience thresholds.
+        Anchors (e.g., matches_anchor(percept, anchor)).
+        NPC role sensitivity (e.g., cops prioritize violence tags, merchants focus on trade).
+        """
+        return False
 
 
     def think(self, region):
@@ -235,9 +284,14 @@ class UtilityAI(BaseAI):
         self.examine_episodic_memory(episodic_memories)
         #logic to do something with them
 
-        percepts = list(self.npc.get_percepts().values()) #get_percepts.values? Re check this
-        candidate_thoughts = []
+        percepts = list(self.npc.get_percepts()) #get_percepts.values? Re check this
+
+        for i, percept in enumerate(percepts):
+            print(f"[DEBUG] From UtilityAI, think() Percept[{i}]: {type(percept)} {percept}")
+
+        candidate_thoughts = [] #not accesssed
         for motivation in motivations:
+            anchor = create_anchor_from_motivation(motivation)#both these lines?
             for percept in percepts:
                 if self.matches_motivation(percept, motivation):
                     salience = self.compute_salience_for_percepts(percept, motivation)
@@ -255,8 +309,9 @@ class UtilityAI(BaseAI):
                     self.deduplicate_thoughts_by_type(thoughts)
         
         self.promote_thoughts()
-        self.compute_salience_for_percepts() # pass motivations here? Also characters percepts, then return salient percepts
-        #also this function does not yet exist.
+        
+        score = compute_salience_for_percept_with_anchor(percept, anchor) #anchor now defined, but score not accessed
+       
         self.generate_thoughts_from_percepts()#can we then just add the salient percepts to the parameters here?
         self.promote_thoughts()
         #flow needs to pass to score_action, then choose_action then execute_action
@@ -271,49 +326,54 @@ class UtilityAI(BaseAI):
         # Basic version — maybe no-op or minimal response
         return None
     
+    
+
     def generate_thoughts_from_percepts(self):
-        npc = self.npc  # shortcut
+        npc = self.npc
+        percepts = list(npc._percepts.values())  # direct access, safe in this context
 
-        for key, value in npc.percepts.items():
-            salience = value.get("salience", 1.0)
-            description = value.get("description", str(value.get("origin")))
-            origin = value.get("origin", None)
-            tags = value.get("tags", [])
-            urgency = value.get("urgency", salience)
+        motivations = npc.motivation_manager.get_urgent_motivations()
+        if not motivations:
+            return
 
-            # Avoid duplicate thoughts
-            existing = [t.content for t in npc.mind.thoughts]
-            if description not in existing:
+        for motivation in motivations:
+            anchor = create_anchor_from_motivation(motivation)
+
+            for percept in percepts:
+                
+                origin_obj = percept.get("origin")
+                if origin_obj is None:
+                    continue
+
+                try:
+                    salience = compute_salience(origin_obj, npc, anchor)
+                except Exception as e:
+                    print(f"[SALIENCE ERROR] {npc.name} computing salience for {origin_obj}: {e}")
+                    continue
+
+                if salience < 5:
+                    continue
+
+                description = percept.get("description", str(origin_obj))
+                tags = percept.get("tags", [])
+                urgency = salience  # or: urgency = max(anchor.weight, salience)
+
                 thought = Thought(
+                    subject=npc.name,
                     content=description,
+                    origin=origin_obj,
                     urgency=urgency,
-                    source=origin,
-                    tags=tags #salience not present
+                    tags=tags,
+                    source=anchor  # useful for later motivation tracking
                 )
-                npc.mind.add_thought(thought)
-                print(f"[THOUGHT GEN] {npc.name} adds thought: {thought}")
+
+                if not npc.mind.has_similar_thought(thought):
+                    npc.mind.add_thought(thought)
+                    print(f"[THOUGHT GEN] {npc.name} thought about {description} (salience={salience}, anchor={anchor.name})")
 
 
 
-    def compute_salience_for_motivation(self, percept, motivation):
-        # Use centralized logic
-        context = {"observer": self.npc}
-        score = compute_salience(percept, motivation.type, context)
-
-        print(f"[SALIENCE] {self.npc.name} sees {percept.get('description', str(percept))} for {motivation.type}: {score:.2f}")
-        return score
-
-    def compute_salience_for_percepts(self, percept, motivation):
-        score = 1.0
-        if "tags" in percept and motivation.type in percept["tags"]:
-        #alt version
-        #if motivation.type in percept.get("tags", []):
-            score += 1.3
-        if str(["location"]) == self.npc.location.name:
-
-            score += 1.4
-        score *= motivation.urgency
-        return score
+    
     
     def evaluate_thoughts(self):
         """

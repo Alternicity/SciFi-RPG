@@ -604,3 +604,43 @@ def display_percepts_table(npc):
         headers=["#", "Description", "Type", "Appearance", "#Keys"],
         tablefmt="rounded_outline"
     ))
+
+def display_npc_mind(npc):
+    thoughts_data = []
+    for thought in npc.mind.thoughts:
+        corollary_count = len(thought.corollary) if thought.corollary else 0
+        thoughts_data.append([
+            f"{thought.content} ({corollary_count} corollaries)",
+            thought.subject,
+            thought.origin,
+            ", ".join(thought.tags),
+            f"{thought.urgency:.1f}"
+        ])
+
+    print("\n--- Thought Table ---")
+    print(tabulate(thoughts_data, headers=["Thought", "Subject", "Origin", "Tags", "Urgency"]))
+
+    focus_data = []
+    if npc.attention_focus:
+        focus = npc.attention_focus
+        focus_data.append([
+            focus.content,
+            focus.subject,
+            focus.origin,
+            ", ".join(focus.tags),
+            f"{focus.urgency:.1f}"
+        ])
+
+    print("\n--- Focus ---")
+    print(tabulate(focus_data, headers=["Thought", "Subject", "Origin", "Tags", "Urgency"]))
+
+    obsessions_data = []
+    for ob in npc.mind.obsessions:
+        obsessions_data.append([
+            ob.name,
+            f"{ob.strength:.1f}",
+            ", ".join(ob.tags)
+        ])
+
+    print("\n--- Obsessions ---")
+    print(tabulate(obsessions_data, headers=["Source", "Weight", "Tags"]))
