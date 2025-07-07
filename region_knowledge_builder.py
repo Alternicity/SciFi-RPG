@@ -13,6 +13,7 @@ def build_region_knowledge(region: Region, character_or_faction: Union["Characte
         friendly_factions=set(),
         hostile_factions=set(),
         locations={loc.name for loc in region.locations},
+        shops={loc.name for loc in region.shops},
         known_characters={c.name for c in region.characters_there},
         active_events=region.active_regional_events.copy(),
         recent_regional_events=region.recent_regional_events.copy(),

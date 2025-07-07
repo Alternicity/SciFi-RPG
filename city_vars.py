@@ -25,10 +25,7 @@ class GameState:
         self.homes = [] #needs populating
         self.public_places = [] #needs populating
         self.all_regions = []
-
         self.all_locations = []
-        #self.location_registry = LocationRegistry()
-        
         self.factions = [] #is not used
         self.all_characters = [] #oof...integrate characters = []
         self.state_staff = []

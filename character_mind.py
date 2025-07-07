@@ -51,6 +51,12 @@ class Mind:
     def clear(self):
         self.thoughts.clear()
 
+    def remove_thought_by_content(self, content: str):
+        self.thoughts = deque(
+            [t for t in self.thoughts if t.content.lower() != content.lower()],
+            maxlen=self.thoughts.maxlen
+    )
+
     def __iter__(self):
         return iter(self.thoughts)
 

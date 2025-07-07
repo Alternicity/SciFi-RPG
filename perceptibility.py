@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any
 import uuid
 from tabulate import tabulate
+#from salience import compute_salience as global_salience_fn
 
 # Avoid using .get() for dict access unless missing keys are expected.
 # Use dict["key"] if the key should exist (will raise KeyError if missing).
@@ -14,8 +15,10 @@ class PerceptibleMixin:
     def __init__(self):
         self.id = str(uuid.uuid4())
 
-    def compute_salience(self, observer=None):#rename? Delete as redundant?
+    def compute_salience(self, observer=None, anchor=None):
+        # Avoid circular import; override in subclasses or call global compute_salience externally
         return getattr(self, "salience", 1)
+    # this can be made smarter (e.g. based on tags, distance, traits, etc.)
 
     def percept_weight(self, observer=None):
         return getattr(self, "weight", 1)

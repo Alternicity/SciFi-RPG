@@ -37,10 +37,14 @@ class Memory:
 
     def query_memory_by_tags(self, tags: list):
         matching = []
-        for category, memories in self.semantic.items():
+        for category, memories in self.semantic.items(): #catagory not accessed
             for mem in memories:
-                if all(tag in mem.tags for tag in tags):
+                desc = getattr(mem, "description", type(mem).__name__)
+                print(f"[MEMORY DEBUG] Checking {desc} with tags {getattr(mem, 'tags', [])}")
+
+                if has_tags(mem.tags, tags):
                     matching.append(mem)
+
         return matching
 
     def get_all_memories(self):
@@ -181,3 +185,7 @@ MemoryEntry(
 class KnownWeaponLocationMemory(MemoryEntry):
     location: Optional[Any] = None  # Must have .name or .id
     weapon_tags: List[str] = field(default_factory=lambda: ["weapon", "ranged", "valuable"])
+
+#utility functions
+def has_tags(memory_tags: list[str], required_tags: list[str]) -> bool:
+    return all(tag in memory_tags for tag in required_tags)

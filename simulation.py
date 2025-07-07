@@ -67,12 +67,15 @@ def run_simulation(all_characters, num_days=10):
             debug_gang_npc.mind.memory.semantic["region_knowledge"].append(region_knowledge)
 
         #note this is a debug_npc injection, not a general one for all_characters
+        if region.shops:
+            shop = region.shops[0]
         entry = MemoryEntry(
             subject="Shop",
             object_="ranged_weapon",
             details="This shop sells ranged weapons",
             importance=3,
             tags=["shop", "weapons"],
+            target=shop,
             type="injection",
             initial_memory_type="semantic"
         )

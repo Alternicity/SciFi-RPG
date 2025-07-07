@@ -2,6 +2,20 @@
 from character_thought import Thought
 from dataclasses import dataclass, field
 from memory_entry import MemoryEntry
+from LunaMath import FractalRoot
+
+def luna_puzzle(x):
+    froot = FractalRoot(x)
+    print(f"Luna's Fractal Puzzle:")
+    print(f"Number: {x}")
+    print(f"Upper Root: {froot.upper:.6f}")
+    print(f"Lower Root: {froot.lower:.6f}")
+    print(f"Do they multiply to the original number? {'Yes' if abs(froot.product() - x) < 1e-9 else 'No'}")
+
+#the Fractal Root can be gamified as a harmonic puzzle or visualization toy
+""" usage
+luna_puzzle(5) """
+
 
 def triangular_numbers(limit=100):
     """Generate a list of all triangular numbers up to 'limit' (inclusive)."""

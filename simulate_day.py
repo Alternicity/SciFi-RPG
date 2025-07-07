@@ -36,8 +36,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 #print(f"[DEBUG] {npc.name} region characters: {[c.name for c in region.characters_there]}")
                 #verbose
 
-                #print(f"[DEBUG] {npc.name} region objects: {[o.name if hasattr(o, 'name') else str(o) for o in getattr(region, 'objects_there', [])]}")
-
                 if npc.is_test_npc or npc is debug_character:
                     display_percepts_table(npc)
 
@@ -118,6 +116,8 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 action = npc.ai.choose_action(npc.location)
                 if action:
                     npc.ai.execute_action(action, region)
+                    print(f"[FLOW DEBUG] {npc.name} finished action, current location: {npc.location}")
+
 
         # STEP 3: Post-Day DEBUG (single character)
         for npc in all_characters:

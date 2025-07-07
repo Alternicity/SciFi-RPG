@@ -85,7 +85,7 @@ class Alter(Character):
         "faction_name": "Factionless",
         "region_name": "Southville",
         "location_name": "None",
-        "inventory": Inventory([Knife(owner_name="Swiz")]),
+        "inventory": Inventory([Knife(owner_name="U7s")]),
         "wallet": Wallet(bankCardCash=50),
         "preferred_actions": {"Feed": 1, "Teach": 2, "Protect": 2, "Create": 2 },
         "motivations": MotivationPresets.for_class("GangMember"),

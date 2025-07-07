@@ -19,8 +19,13 @@ from typing import List, Union
 from character_creation_funcs import player_character_options
 from base_classes import Faction, Location
 from perceptibility import extract_appearance_summary
+from shop_name_generator import format_shop_debug
+from salience import compute_salience
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+
 
 def load_region_mappings():
     # List of region names
@@ -548,6 +553,9 @@ def display_percepts_table(npc):
     Prints a clean tabular debug summary of an NPC's percepts.
     Only intended for debug characters or test NPCs.
     """
+    anchor = getattr(npc, "current_anchor", None)
+    if not getattr(npc, "is_test_npc", False):
+        return
     print(f"\n[DEBUG] {npc.name} - Percepts Table After Observation:")
 
     table_data = []
@@ -570,8 +578,6 @@ def display_percepts_table(npc):
         if isinstance(desc, str) and "," in desc and " of " in desc:
             desc = desc.split(",")[0]
 
-        
-
         # NEW: Add controlling faction to location descriptions
         origin = v.get("origin", data.get("origin", "—"))
 
@@ -591,17 +597,27 @@ def display_percepts_table(npc):
         # Step 4: Count keys inside data block
         n_keys = len(data.keys())
 
+        salience = 0
+        anchor = getattr(npc, "current_anchor", None)
+        if hasattr(origin, "compute_salience") and callable(origin.compute_salience):#a problem line?
+            try:
+                salience = origin.compute_salience(npc, anchor)
+            except Exception as e:
+                salience = f"ERR: {e}"
+
+        salience_score = compute_salience(data, npc, anchor) #compute_salience here marked as not defined
         table_data.append([
             i,
             desc,
             type_,
             appearance,
             n_keys,
+            f"{salience_score:.2f}"
         ])
 
     print(tabulate(
         table_data,
-        headers=["#", "Description", "Type", "Appearance", "#Keys"],
+        headers=["#", "Description", "Type", "Appearance", "#Keys", "Salience"],
         tablefmt="rounded_outline"
     ))
 
@@ -644,3 +660,26 @@ def display_npc_mind(npc):
 
     print("\n--- Obsessions ---")
     print(tabulate(obsessions_data, headers=["Source", "Weight", "Tags"]))
+
+
+def display_sellers(shops: list):
+    """Display a nicely formatted table of sellers (shops)."""
+    if not shops:
+        print("No shops to display.")
+        print(f"[DEBUG] {len(shops)} shops to display")
+        return
+
+    rows = [format_shop_debug(shop) for shop in shops]
+    headers = rows[0].keys() if rows else []
+    print(tabulate(rows, headers="keys", tablefmt="fancy_grid"))
+
+def debug_display_all_shops(all_regions):
+    print("[DEBUG] Displaying all shops:")
+
+    all_shops = []
+    for region in all_regions:
+        if hasattr(region, "shops"):
+            all_shops.extend(region.shops)
+
+    display_sellers(all_shops)
+

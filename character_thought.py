@@ -1,6 +1,7 @@
 #character_thought.py
 import time
 from salience import compute_salience
+from LunaMath import FractalRoot
 
 class Thought:
     def __init__(self, subject, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False, corollary=None):
@@ -41,6 +42,8 @@ class Thought:
         Anchor is optional and can be a motivation, event, object, etc.
         """
         from salience import compute_salience
+        if anchor is None:
+            anchor = getattr(observer, "current_anchor", None)
         return compute_salience(self, observer, anchor)
         #usage
         """ salient_thoughts = sorted(
@@ -64,7 +67,9 @@ class Thought:
         return f"<Thought: {', '.join(parts)}>"
 
     def __str__(self):
-        return f"'{self.content}' (urgency: {self.urgency})"
+        return self.content
+        #return f"'{self.content}' (urgency: {self.urgency})"
+
 
     def __repr__(self):
         return (f"<Thought: '{self.content}' | origin='{getattr(self.origin, 'name', self.origin)}', "
@@ -92,3 +97,20 @@ class FailedThought(Thought):
     
 class ThoughtTools():
     pass
+
+class FractalThought:
+    def __init__(self, signal, amplitude):
+        self.signal = signal
+        self.amplitude = amplitude
+        self.fractal_root = FractalRoot(amplitude)
+
+    def encoded_geometry(self):
+        upper, lower = self.fractal_root.pair()
+        return {
+            'constructive_wave': upper,
+            'destructive_wave': lower,
+            'resonant_value': self.fractal_root.product()
+        }
+    """ Given the Codex's framing of thought as structured wave interference
+    and memory as phase-locked resonance patterns, a FractalRoot can be woven
+    into these objects to encode field coherence or symbolic weight. """

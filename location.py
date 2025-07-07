@@ -1,3 +1,4 @@
+#location.py
 from __future__ import annotations
 import random
 import string
@@ -70,7 +71,9 @@ class Region(PerceptibleMixin):
         """Adds a location to this region and updates the location's region reference."""
         location.region = self
         self.locations.append(location)
-        #print(f"Added {location.name} to region {self.name}.")
+        from create_game_state import get_game_state
+        get_game_state().all_locations.append(location)
+        #HERE get_game_state is marked as not defined
 
     def trigger_event(self, event_type: str):
         print(f"Event triggered: {event_type} in {self.name}")
@@ -271,6 +274,7 @@ class Shop(Vendor):
     tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial"])
     #Keep tags at class level (Shop(tags=["shop"])) for static traits like economic category.
     #Use get_percept_data tags for dynamic, observer-relative info like visible weapons, open status, etc
+    #these  won't be automatically included in memory — only what’s passed into the MemoryEntry.tags
 
     description: str = "Some shop"
     legality: bool = True
@@ -307,21 +311,14 @@ class Shop(Vendor):
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
-        "type": "FIXME",
-        "origin": "FIXME",
-        "tags": "FIXME",
-        "salience": "FIXME",
-        "urgency": "FIXME",
-        "source": "FIXME",
-        "security": "FIXME",
-        "is_open": "FIXME",
-        "has_security": "FIXME",
             "description": f"Shop: {self.name}",
             "type": self.__class__.__name__,
             "robbable": True,
             "origin": self,
             "urgency": 1,
-            "tags": ["location", "weapons", "weapon", "ranged_weapon"],
+            "tags": ["location", "weapons", "weapon", "ranged_weapon"],#not used by query_memory_by_tags() 
+            #unless you create a memory entry that inherits those tags.
+
             "source": None,
             "security": self.security_level,
             "is_open": self.is_open,

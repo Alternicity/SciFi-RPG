@@ -12,7 +12,6 @@ class Anchor:
     weight: float = 1.0
     priority: float = 1.0#represents how core this anchor is to current action. Separate from weight
     #(which is comparative relevance during salience scoring)
-
     enables: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list) #Good for fuzzy matching in salience logic
     source: Union[object, None] = None  # where the anchor originated, Thought, Memory, NPC, etc.
@@ -20,6 +19,8 @@ class Anchor:
     time_created: float = field(default_factory=time.time) #can be useful for decaying relevance
     #You can now begin calling
     #thought.salience_for(npc, anchor=Anchor(name="rob", type="motivation", weight=1.5))
+
+    #   If you're concerned about leakiness, you can tag anchors with .owner or use NPC-specific salience filtering
 
 def create_anchor_from_motivation(motivation) -> Anchor:
     """

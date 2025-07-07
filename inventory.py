@@ -12,6 +12,10 @@ logging.basicConfig(level=logging.INFO)
 class Inventory:
     """Manages a collection of items for characters, shops, or other entities."""
 
+    def has_ranged_weapon(self):
+        from weapons import RangedWeapon
+        return any(isinstance(item, RangedWeapon) for item in self.items)
+
     def __init__(self, items=None, max_capacity=None, owner=None):
         """Initialize an inventory with optional maximum capacity."""
         self.items = {}  # key: item.name, value: item object

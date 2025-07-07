@@ -15,7 +15,7 @@ from location_security import Security
 from visual_effects import loading_bar, RED, color_text
 from typing import List, Dict, Union
 import os
-
+from display import display_sellers
 from character_creation_funcs import create_all_characters
 import random
 
@@ -32,6 +32,7 @@ def create_regions():
     from create_game_state import get_game_state  # Keep this if needed
     from createLocations import create_locations
     from location import Region, Shop
+    from display import debug_display_all_shops
     #global game_state  
     # Ensure Python uses the global game_state
 
@@ -79,6 +80,8 @@ def create_regions():
 
         except Exception as e:
             print(f"❌ Error creating locations for region '{region.name}': {e}")
+    
+    debug_display_all_shops(all_regions)
 
     # 📦 Save to game_state
     game_state.all_regions = all_regions
@@ -271,6 +274,9 @@ def create_factions(all_regions, all_locations):
 
     return factions, all_characters
 
+
+
+
 def create_HQ(region, faction_type="gang"):
     """Dynamically creates an HQ for a faction in a given region."""
     hq_name = f"{region.name} {'Corporate' if faction_type == 'corporate' else 'Gang'} HQ"
@@ -397,9 +403,3 @@ def destroy_corporation(game_state, corp):
         region_list = getattr(game_state, attr_name)
         if corp in region_list:
             region_list.remove(corp)
-
-
-
-
-
-

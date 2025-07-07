@@ -38,6 +38,8 @@ class MemoryEntry:
     similarMemories: List[Any] = field(default_factory=list)
     verb: str = ""
     
+    def has_tags(self, required_tags: list[str]) -> bool:
+        return all(tag in self.tags for tag in required_tags)
 
     def __post_init__(self):
         # Default description to details if not explicitly set
@@ -63,6 +65,7 @@ class RegionKnowledge:
     friendly_factions: Set[str] = field(default_factory=set)
     hostile_factions: Set[str] = field(default_factory=set)
     locations: Set[str] = field(default_factory=set)
+    shops: Set[str] = field(default_factory=set)
     known_characters: Set[str] = field(default_factory=set)
     character_relationships: Dict[str, List[str]] = field(default_factory=dict)
     active_events: List["Event"] = field(default_factory=list)

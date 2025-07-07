@@ -1,16 +1,15 @@
 # npc_actions.py
-def visit_location_auto(character, location):
+def visit_location_auto(character, region, location):
     if location is None:
         return False
-
     print(f"[AUTO VISIT] {character.name} is going to {location.name}")
     character.location = location
-    
-
     return True
 
-def steal_auto():
-    print (f"npc steal called")
+def steal_auto(character, region):
+    print(f"[STEAL] {character.name} tries to steal something at {character.location.name}")
+    # Logic for: success chance, item taken, consequences
+
 
 def rob_auto(npc, region=None, location=None, **kwargs):
     

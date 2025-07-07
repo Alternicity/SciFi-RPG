@@ -5,7 +5,7 @@
 #Centralize all salience into salience.py, with specific helpers for object types.
 
 
-from weapons import Pistol
+
 import time
 from anchor_utils import Anchor
 from events import Event
@@ -18,18 +18,32 @@ Skipping percepts with "type": "unknown" or "origin": None
 When motivations mature further, you may replace motivation objects entirely with
 anchors passed down from higher-level decision-making or goal generation. """
 
-def compute_salience(obj, observer, anchor: Anchor):
+def compute_salience(obj, observer, anchor=None):
     from base_classes import Character, Location
-    if isinstance(obj, Location):
-        return compute_location_salience(obj, observer, anchor)
-    elif isinstance(obj, Character):
-        return compute_character_salience(obj, observer, anchor)
-    elif isinstance(obj, Event):
-        return compute_event_salience(obj, observer, anchor)
-    else:
-        return compute_object_salience(obj, observer, anchor)
+    if anchor is None:
+        print(f"[SALIENCE] No anchor provided. Defaulting salience to 1 for {obj}")
+        return getattr(obj, "salience", 1)
+    
 
-#Ensure observer.enemies and faction.enemies use a consistent structure for reliable checking.
+    score = 1.0  # base score
+
+    if hasattr(obj, "tags"):
+        obj_tags = set(obj.tags or [])
+        anchor_tags = set(anchor.tags or [])
+        matches = obj_tags & anchor_tags
+        if matches:
+            score *= 1.2 + 0.1 * len(matches)  # Tag match boost
+
+    if hasattr(obj, "name") and anchor.name in str(obj.name).lower():
+        score *= 1.5  # High-name match boost
+
+    if hasattr(obj, "type") and anchor.name in str(obj.type).lower():
+        score *= 1.3
+
+    # Let objects override via .salience attribute
+    score *= getattr(obj, "salience", 1.0)
+
+    return round(score, 2)
 
 def compute_character_salience(character, observer, anchor: Anchor = None):
     if character is observer:
@@ -62,7 +76,8 @@ def compute_location_salience(location, observer, anchor: Anchor = None):
         if anchor.name in ["rob", "steal"]:
             if getattr(location, "robbable", False):
                 salience += 1.3
-            if getattr(location, "security", 0) > 1:
+            if hasattr(location, "security") and getattr(location.security, "level", 0) > 1:
+
                 salience -= 0.4
 
         if anchor.name in ["obtain_weapon", "obtain_ranged_weapon"] and getattr(location, "contains_weapons", False):

@@ -3,6 +3,7 @@ import os
 
 # Adjust this to your actual names directory
 NAMES_DIR = r"C:\Users\Stuart\Python Scripts\scifiRPG\data\Names"
+#this filepath is deprecated, it's from an old laptop
 
 import csv
 

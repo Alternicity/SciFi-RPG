@@ -286,7 +286,7 @@ class Character(PerceptibleMixin):
         else:
             self.appearance["faction_semiotics"] = []
 
-
+        self.current_anchor = None
         from motivation import MotivationManager, Motivation
 
         self.motivation_manager = MotivationManager(self)
@@ -586,6 +586,7 @@ class Character(PerceptibleMixin):
     def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
         #print(f"[DEBUG] from class Character, observe_objects called.")
         # Auto-fetch nearby objects if not provided
+        self._percepts.clear()
         new_percepts = {}
         if nearby_objects is None and location:
             from worldQueries import get_nearby_objects
@@ -613,7 +614,6 @@ class Character(PerceptibleMixin):
                 print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
 
             # Perceive valid objects
-             #line 607 
             new_percepts = {}
             for obj in nearby_objects:
                 if isinstance(obj, PerceptibleMixin):

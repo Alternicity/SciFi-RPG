@@ -79,7 +79,6 @@ class MotivationManager:
         self.character = character
         self.motivations = []  # Now a list of Motivation instances
 
-
     def update_motivations(self, motivation_type=None, urgency=None, **kwargs):
         """Add or boost a motivation."""
         if motivation_type:
@@ -124,6 +123,9 @@ class MotivationManager:
         for m in self.motivations:
             if m.type == type_name:
                 m.urgency = max(0, m.urgency - amount)
+
+    def increase(self, motivation_type, amount=1):
+        self.update_motivations(motivation_type, urgency=amount)
 
     def get_urgency(self, motivation_type):
         for m in self.motivations:

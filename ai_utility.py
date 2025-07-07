@@ -33,7 +33,7 @@ class UtilityAI(BaseAI):
             return {"name": "idle"}
 
         anchors = [create_anchor_from_motivation(m) for m in npc.motivation_manager.get_motivations()]
-        if not motivations:#motivations is not defined here
+        if not motivations:#motivations is not defined here, I need to define thm by getting self.npc.motivations
             return {"name": "idle"}
 
         percepts = list(npc.get_percepts())
@@ -93,7 +93,6 @@ class UtilityAI(BaseAI):
         action_map = {
             "visit_location": visit_location_auto,
             "steal": steal_auto,
-            "rob": rob_auto,
             "exit_location": exit_location_auto,
             "eat": eat_auto,
             "idle": idle_auto
@@ -195,16 +194,12 @@ class UtilityAI(BaseAI):
             npc.mind.memory.add_episodic(memory_entry)
             #anchors are important, promte to semantic here
             #Later logic could be time passed, number of times reinforced, used successfully in decision-making
-
-    
-
         # Set attention focus
         npc.attention_focus = max(thoughts, key=lambda t: t.urgency)
         #set npc.default_focus here as well
 
         if self.npc.is_test_npc:
-            print(f"[FOCUS] {npc.name}'s attention focused on: {npc.attention_focus.summary(include_source=True, include_time=True)}")
-
+            print(f"[FOCUS] From promote_thoughts {self.npc.name}'s attention focused on: {self.npc.attention_focus}")
 
     def examine_episodic_memory(self, episodic_memories):
         event_counts = defaultdict(int)
@@ -223,6 +218,29 @@ class UtilityAI(BaseAI):
             if t.type not in seen or t.urgency > seen[t.type].urgency:
                 seen[t.type] = t
         return list(seen.values())
+
+    
+    def recall_location_with_tags(npc, required_tags: list, min_salience=0.5):
+        memories = npc.mind.memory.query_memory_by_tags(required_tags)
+        scored = []
+        anchor = npc.attention_focus or npc.default_focus
+
+        for memory in memories:
+            location = memory.source
+            if location:
+                sal = compute_salience(location, npc, anchor)
+                scored.append((location, sal))
+
+        if scored:
+            scored.sort(key=lambda x: x[1], reverse=True)
+            top_location, score = scored[0]
+            if score >= min_salience:
+                return top_location
+        return None
+    #usage
+    """ loc = recall_location_with_tags(npc, ["weapon", "shop"])
+        if loc:
+            return {"name": "visit_location", "params": {"location": loc}} """
 
     def matches_motivation(self, percept: dict, motivation) -> bool:
         """
@@ -326,7 +344,29 @@ class UtilityAI(BaseAI):
         # Basic version — maybe no-op or minimal response
         return None
     
-    
+    def find_known_locations_by_tags(self, required_tags: list[str], region_name: str = None) -> list:
+        npc = self.npc
+        region_name = region_name or npc.region.name
+        matches = []
+        region_knowledge = get_region_knowledge(npc.mind.memory.semantic, region_name)
+
+        if not region_knowledge:
+            print(f"[UtilityAI] No region knowledge for {region_name}")
+            return []
+
+        for loc_name in region_knowledge.locations:
+            location = npc.region.get_location_by_name(loc_name)
+            print(f"[DEBUG] from find_known_locations_by_tags Couldn't find location: {loc_name}")
+            if not location:
+                continue
+
+            if hasattr(location, "get_percept_data"):
+                percept_data = location.get_percept_data(observer=npc)
+                tags = percept_data.get("tags", [])
+                if all(tag in tags for tag in required_tags):
+                    matches.append(location)
+
+        return matches
 
     def generate_thoughts_from_percepts(self):
         npc = self.npc
@@ -371,10 +411,6 @@ class UtilityAI(BaseAI):
                     npc.mind.add_thought(thought)
                     print(f"[THOUGHT GEN] {npc.name} thought about {description} (salience={salience}, anchor={anchor.name})")
 
-
-
-    
-    
     def evaluate_thoughts(self):
         """
         Loop through unresolved thoughts and increase motivations accordingly.
@@ -386,7 +422,7 @@ class UtilityAI(BaseAI):
             # You can adjust these based on your thought/tag system
             if "rob" in thought.tags and "weapon" in thought.tags:
                 print(f"[THOUGHT EVAL] {self.npc.name} is influenced by thought: {thought.content}")
-                self.npc.motivation_manager.increase("rob", thought.weight)
+                self.npc.motivation_manager.increase_urgency("rob", thought.weight)
                 thought.resolved = True  # Only apply once for now
 
     def evaluate_memory_for_threats(self, memory):
@@ -453,3 +489,39 @@ class UtilityAI(BaseAI):
         npc.mind.add(appraise_rival)
         if hasattr(npc, 'utility_ai'):
             npc.utility_ai.evaluate_thought_for_threats(appraise_rival)
+
+def generate_location_visit_thought(npc, location, enabling_motivation=None):
+        """
+        Creates a thought suggesting visiting a specific location to satisfy a motivation.
+        """
+        tags = []
+        reason = []
+
+        if hasattr(location, "tags"):
+            tags.extend(location.tags)
+        if getattr(location, "is_robbable", False):
+            tags.append("robbable")
+            reason.append("it's robbable")
+        if getattr(location, "contains_weapons", False):
+            tags.append("weapon")
+            reason.append("it has weapons")
+        if "shop" in location.name.lower():
+            tags.append("shop")
+            reason.append("it's a shop")
+
+        thought = Thought(
+            subject="visit_location",
+            content=f"Maybe I should go to {location.name} because {' and '.join(reason)}.",
+            origin="generate_location_visit_thought",
+            urgency=6,
+            tags=tags + ["location", "move", "travel"],
+            source=enabling_motivation,
+            weight=6
+        )
+
+        npc.mind.add_thought(thought)
+
+        # Optional: Remove “No focus” placeholder
+        npc.mind.remove_thought_by_content("No focus")
+
+        return thought

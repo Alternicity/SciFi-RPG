@@ -42,4 +42,4 @@ def secret_laptop_postprocess(self, data, observer):
     return data
 
 SecretLaptop._postprocess_percept = types.MethodType(secret_laptop_postprocess, SecretLaptop)
-    
+
