@@ -83,7 +83,8 @@ class AssassinAI(UtilityAI):
 
         
         self.promote_thoughts()  # Consider what's most urgent or interesting
-
+        self.npc.mind.remove_thought_by_content("No focus")
+        
     def execute_action(self, action, region):
         npc = self.npc
         name = action.get("name")

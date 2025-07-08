@@ -18,10 +18,13 @@ Skipping percepts with "type": "unknown" or "origin": None
 When motivations mature further, you may replace motivation objects entirely with
 anchors passed down from higher-level decision-making or goal generation. """
 
-def compute_salience(obj, observer, anchor=None):
+def compute_salience(obj, npc, anchor=None):
     from base_classes import Character, Location
+
+    #adding the above leaves npc marked as not defined here
     if anchor is None:
-        print(f"[SALIENCE] No anchor provided. Defaulting salience to 1 for {obj}")
+        if getattr(npc, "is_test_npc", False):
+            print(f"[SALIENCE DEBUG] No anchor provided. Defaulting salience to 1 for {obj}")
         return getattr(obj, "salience", 1)
     
 
@@ -129,7 +132,7 @@ def compute_salience_for_motivation(self, percept, motivation):
         context = {"observer": self.npc}
         score = compute_salience(percept, motivation.type, context)
 
-        print(f"[SALIENCE] {self.npc.name} sees {percept.get('description', str(percept))} for {motivation.type}: {score:.2f}")
+        print(f"[SALIENCE] {self.npc.name} sees {percept.get('description', str(percept))} for {motivation.type}: {score:.2f}")# line 135
         return score
 
 def compute_salience_for_percept_with_anchor(percept, anchor, observer=None):

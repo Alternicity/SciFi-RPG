@@ -13,7 +13,7 @@ from anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_fr
 from collections import defaultdict
 from worldQueries import get_region_knowledge
 from memory_entry import MemoryEntry
-
+from ai_utility_thought_tools import extract_anchor_from_action
 
 
 class UtilityAI(BaseAI):
@@ -32,38 +32,71 @@ class UtilityAI(BaseAI):
         if not getattr(npc, "isTestNPC", False):
             return {"name": "idle"}
 
-        anchors = [create_anchor_from_motivation(m) for m in npc.motivation_manager.get_motivations()]
-        if not motivations:#motivations is not defined here, I need to define thm by getting self.npc.motivations
+        motivations = npc.motivation_manager.get_motivations()
+        if not motivations:
             return {"name": "idle"}
+        anchors = [create_anchor_from_motivation(m) for m in motivations]
 
         percepts = list(npc.get_percepts())
         #percepts here is not accessed
 
-        memories = []
-        for memory_list in npc.mind.memory.semantic.values():#this is direct acces, not via a getter
-            memories.extend(memory_list)
-
-        actions = []
-
-        for anchor in anchors:
-            anchor_type = anchor.type
+        possible_actions = []
 
         # Basic needs fallback
         if npc.hunger > 7:
-            actions.append({
-                "name": "eat",
-                "params": {},
-                "motivation": "satisfy_hunger"
-            })
+            possible_actions.append({
+            "name": "eat",
+            "params": {},
+            "motivation": "satisfy_hunger"
+        })
 
-        if not actions:
+        
+        # Add salience-informed actions based on memory
+        for anchor in anchors:
+            if anchor.name == "obtain_ranged_weapon":
+                known_weapon_locations = npc.mind.memory.query_memory_by_tags(["weapons", "shop"])
+
+                for memory in known_weapon_locations:
+                    location = memory.target
+                    if location:
+                        action = {
+                            "name": "visit_location",
+                            "params": {"location": location},
+                            "anchor": anchor
+                        }
+                        possible_actions.append(action)
+
+        if not possible_actions:
             return {"name": "idle"}
 
-        # Score and choose
-        scored = [(self.score_action(a), a) for a in actions]
+        # Add salience-informed actions based on memory
+        for anchor in anchors:
+            if anchor.name == "obtain_ranged_weapon":
+                known_weapon_locations = npc.mind.memory.query_memory_by_tags(["weapons", "shop"])
+
+                for memory in known_weapon_locations:
+                    location = memory.target
+                    if location:
+                        action = {
+                            "name": "visit_location",
+                            "params": {"location": location},
+                            "anchor": anchor
+                        }
+                        possible_actions.append(action)
+
+        if not possible_actions:
+            return {"name": "idle"}
+    
+        from ai_utility_thought_tools import extract_anchor_from_action
+
+        scored = [(self.score_action(a), a) for a in possible_actions]
         scored.sort(key=lambda x: x[0], reverse=True)
+
         best_score, best_action = scored[0]
-        print(f"[UtilityAI] {npc.name} chose {best_action['name']} with score {best_score}")
+
+        if npc.is_test_npc:
+            print(f"[UtilityAI] {npc.name} chose {best_action['name']} with score {best_score:.2f}")
+
         return best_action
 
     
@@ -108,39 +141,53 @@ class UtilityAI(BaseAI):
         else:
             print(f"[UtilityAI] {npc.name} has no valid action to execute ({action_name}).")
 
-    
-
-
-    def score_action(self, action: dict, context: dict = None) -> int:
-        #can be replaced by a registry-based design or use decorators to register scorers by action['name']
-        context = context or {}
+    def score_action(self, action: dict, context: dict = None) -> float:
         npc = self.npc
+        context = context or {}
+
+        # Extract anchor from action, fallback to npc.focus
+        from ai_utility_thought_tools import extract_anchor_from_action
+        anchor = extract_anchor_from_action(action) or npc.attention_focus or npc.default_focus
+        if anchor is None:
+            print(f"[SCORE] No anchor found for {npc.name}'s action '{action.get('name')}'")
+            return 0
+
         score = 0
-
         name = action.get("name")
-        motivation = action.get("motivation", anchor.name if anchor else "")
-        if "motivation" in action and "anchor" not in action:
-            print(f"[LEGACY] Action is using legacy motivation string: '{motivation}'")
+        motivation_type = getattr(anchor, "name", "").lower()
 
-        location = action.get("params", {}).get("location")
-        target_item = action.get("params", {}).get("target_item")
-
-        # Base motivations
+        # === Core Action Types ===
         if name == "visit_location":
-            if location and location != npc.location:
-                score = 5
-                if motivation == "obtain_weapon":#motivation is needed here
-                    score += 5
-
-        elif name == "exit_location" and npc.location and npc.location.name in ["Shop", "Heist Site"]:
-            score = 6
+            location = action.get("params", {}).get("location")
+            if location:
+                salience = compute_salience(location, npc, anchor)
+                score += salience
+                if "shop" in getattr(location, "tags", []):
+                    score += 1
+                if getattr(location, "contains_weapons", False):
+                    score += 2
 
         elif name == "eat":
-            score = 8 if npc.hunger > 7 else 2
-        from ai_utility_thought_tools import extract_anchor_from_action
-        anchor = extract_anchor_from_action(action)#line 141 extract_anchor_from_action is marked not defined
-        urgency = anchor.weight if anchor else 1.0
-        return score * urgency
+            hunger_score = npc.hunger / 10.0  # Normalize to 0–1
+            score += hunger_score * anchor.weight  # Amplify by motivational urgency
+
+        elif name == "steal":
+            item = action.get("params", {}).get("item")
+            if item:
+                salience = compute_salience(item, npc, anchor) #this code is depracted anyway
+                score += salience
+
+        elif name == "idle":
+            # Lowest priority fallback
+            score = 0.1
+
+        else:
+            print(f"[SCORE] Unknown action type '{name}' for {npc.name}")
+            score = 0.1
+
+        print(f"[SCORE] {npc.name} scored action '{name}' as {score:.2f} (anchor: {anchor.name})")
+        return score
+
 
     def create_anchor_from_thought(self, thought: Thought, name: str, type_: str = "motivation") -> Anchor:
         return Anchor(name=name, type=type_, weight=thought.urgency, source=thought, tags=thought.tags)
@@ -171,7 +218,7 @@ class UtilityAI(BaseAI):
 
             # Example general trigger
             if "obtain" in content_lower and "weapon" in thought.tags:
-                anchor = self.create_anchor_from_thought(thought, "obtain_ranged_weapon", type="motivation", weight=thought.urgency)
+                anchor = self.create_anchor_from_thought(thought, "obtain_ranged_weapon", type_="motivation")
                 
         if anchor and not npc.default_focus:
             npc.default_focus = anchor  # Could also be the thought or memory_entry
@@ -197,6 +244,7 @@ class UtilityAI(BaseAI):
         # Set attention focus
         npc.attention_focus = max(thoughts, key=lambda t: t.urgency)
         #set npc.default_focus here as well
+        self.npc.mind.remove_thought_by_content("No focus")
 
         if self.npc.is_test_npc:
             print(f"[FOCUS] From promote_thoughts {self.npc.name}'s attention focused on: {self.npc.attention_focus}")
@@ -319,17 +367,15 @@ class UtilityAI(BaseAI):
                         content = str(percept["description"] if "description" in percept else percept["origin"]),
                         urgency=salience,
                         source=str(percept["description"],
-                        tags=percept[("tags", [])],
+                        tags=percept.get("tags", []),
                     ))
                     self.npc.mind.add_thought(thought)
                     #added
                     thoughts = self.npc.mind.get_all()
                     self.deduplicate_thoughts_by_type(thoughts)
+                    self.npc.mind.remove_thought_by_content("No focus")
         
-        self.promote_thoughts()
-        
-        score = compute_salience_for_percept_with_anchor(percept, anchor) #anchor now defined, but score not accessed
-       
+        self.promote_thoughts()       
         self.generate_thoughts_from_percepts()#can we then just add the salient percepts to the parameters here?
         self.promote_thoughts()
         #flow needs to pass to score_action, then choose_action then execute_action
@@ -410,6 +456,8 @@ class UtilityAI(BaseAI):
                 if not npc.mind.has_similar_thought(thought):
                     npc.mind.add_thought(thought)
                     print(f"[THOUGHT GEN] {npc.name} thought about {description} (salience={salience}, anchor={anchor.name})")
+
+                self.npc.mind.remove_thought_by_content("No focus")
 
     def evaluate_thoughts(self):
         """

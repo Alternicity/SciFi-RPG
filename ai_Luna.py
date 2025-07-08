@@ -54,7 +54,8 @@ class LunaAI(UtilityAI):
         percepts = list(npc.get_percepts().values())
 
         self.generate_thoughts_from_percepts()#defined in UtilityAI
-
+        self.npc.mind.remove_thought_by_content("No focus")
+        
         if self.tick_counter % 3 == 0:
             self.symbolic_thought_spawner(percepts)
 

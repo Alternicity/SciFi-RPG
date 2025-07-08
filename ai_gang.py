@@ -24,6 +24,7 @@ class BossAI(UtilityAI):
         if rk:
             evaluate_turf_war_status(self.npc, observed_region=rk)
         self.promote_thoughts()
+        self.npc.mind.remove_thought_by_content("No focus")
 
 class GangCaptainAI(UtilityAI):
     def think(self, region):
@@ -32,6 +33,7 @@ class GangCaptainAI(UtilityAI):
             evaluate_turf_war_status(self.npc, observed_region=rk)
 
         self.promote_thoughts()
+        self.npc.mind.remove_thought_by_content("No focus")
 
     def choose_action(self, region):
 
@@ -86,6 +88,7 @@ class GangMemberAI(UtilityAI):
 
                 npc.motivation_manager.update_motivations(anchor.name, urgency=thought.urgency, source=thought)
                 print(f"[GANG] {npc.name} reinforced motivation to obtain weapon from thought: {thought.content}")
+                self.npc.mind.remove_thought_by_content("No focus")
 
         if npc.isTestNPC and not npc.attention_focus:
             print(f"[GANG] {npc.name} did not promote any thoughts this cycle.")
@@ -114,7 +117,7 @@ class GangMemberAI(UtilityAI):
         #Without the enclosing square brackets, it would be a generator — not immediately usable as a list.
         scored.sort(key=lambda x: x[1], reverse=True)
         
-        anchor = self.npc.current_anchor  # Is this til necessary? We already got anchor above, from top_motivation
+        anchor = self.npc.current_anchor  # Is this still necessary? We already got anchor above, from top_motivation
         #but now we also use current_anchor
 
         if npc.is_test_npc:
@@ -127,14 +130,6 @@ class GangMemberAI(UtilityAI):
             else:
                 print(f"[AI] {npc.name} found no percepts worth acting on.")
 
-        if anchor.name == "obtain_ranged_weapon":
-            for p in percepts:
-                data = p["data"]
-                tags = data.get("tags", [])
-                if "weapon" in tags and "pistol" in tags:
-                    print(f"[AI DECISION] {npc.name} sees a pistol and will try to steal it.")
-                    return {"name": "Steal", "params": {"item": p["origin"]}}
-                
         if anchor.name == "obtain_ranged_weapon":
             for p in percepts:
                 data = p["data"]
@@ -412,7 +407,7 @@ class GangMemberAI(UtilityAI):
                     timestamp=time.time()
                 )
                     self.npc.mind.add_thought(thought)
-
+                    self.npc.mind.remove_thought_by_content("No focus")
         if not self.npc.mind.thoughts:
 
             idk_thought = Thought(
