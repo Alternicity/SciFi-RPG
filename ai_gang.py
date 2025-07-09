@@ -91,7 +91,7 @@ class GangMemberAI(UtilityAI):
                 self.npc.mind.remove_thought_by_content("No focus")
 
         if npc.isTestNPC and not npc.attention_focus:
-            print(f"[GANG] {npc.name} did not promote any thoughts this cycle.")
+            print(f"[GandgMemberAI] {npc.name} did not promote any thoughts this cycle.")
 
     #For AI Subclasses that need special behavior, override this method only
     def compute_salience_for_motivation(self, percept, motivation):
@@ -262,6 +262,8 @@ class GangMemberAI(UtilityAI):
                         source=origin
                     )
                 )
+                self.npc.mind.remove_thought_by_content("No focus")
+
                 if "weapon" in top_percept["data"].get("tags", []):
                     weapon = top_percept["origin"]
                     loc = getattr(weapon, "location", None)
@@ -333,6 +335,7 @@ class GangMemberAI(UtilityAI):
                     )
                     npc.mind.add_thought(thought)
                     npc.attention_focus = thought
+                    npc.mind.remove_thought_by_content("No focus")
                     print(f"[MEMORY] {npc.name} thought of visiting {location.name} for weapons.")
 
                     found_any = True
@@ -420,19 +423,6 @@ class GangMemberAI(UtilityAI):
 
             self.npc.mind.add_thought(idk_thought)
 
-        """ for memories in self.npc.mind.memory.semantic.values():
-            for memory in memories:
-                if "weapon" in memory.tags:
-                    self.npc.mind.add(
-                        Thought(
-                            content=f"Scored memory: {memory.description}",
-                            origin="semantic_memory",
-                            urgency=8,
-                            tags=memory.tags,
-                            source=memory
-                        )
-                    ) """
-
         motivations = self.npc.motivation_manager.get_motivations()
         motivation_types = {m.type for m in motivations}
 
@@ -460,6 +450,7 @@ class GangMemberAI(UtilityAI):
                         timestamp=time.time()
                     )
                     self.npc.mind.add_thought(thought)
+                    npc.mind.remove_thought_by_content("No focus")
 
         anchor = create_anchor_from_motivation(motivation)
 
@@ -485,7 +476,7 @@ class GangMemberAI(UtilityAI):
         self.npc.attention_focus = salient_thoughts[0] if salient_thoughts else None
 
         if self.npc.is_test_npc:
-            print(f"[MIND DUMP] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind]}")
+            print(f"[GangMemberAI think()] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind]}")
 
         episodic_memories = self.npc.mind.get_episodic()
         self.examine_episodic_memory(episodic_memories)
@@ -538,6 +529,7 @@ class GangMemberAI(UtilityAI):
                     timestamp=time.time()
                 )
                 self.npc.mind.add_thought(thought)
+                self.npc.mind.remove_thought_by_content("No focus")
 
 game_state = get_game_state() #why is this here?
 
@@ -563,6 +555,7 @@ def evaluate_turf_war_status(npc, observed_region):
                 corollary=["monitor_streetgang_migration"]
             )
             npc.mind.add_thought(thought)
+            npc.mind.remove_thought_by_content("No focus")
         return
 
     # Handle street gang logic
@@ -591,6 +584,7 @@ def evaluate_turf_war_status(npc, observed_region):
                         corollary=["monitor_streetgang_migration"]
                     )
                     npc.mind.add_thought(thought)
+                    npc.mind.remove_thought_by_content("No focus")
                     npc.is_alert = True
 
                     # ShareKnowledge up chain

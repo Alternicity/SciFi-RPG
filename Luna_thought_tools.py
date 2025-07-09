@@ -55,6 +55,7 @@ def add_symbolic_thought(self, content):
         tags=["symbolic", "math"]
     )
     self.npc.mind.add_thought(thought)
+    self.npc.mind.remove_thought_by_content("No focus")
 
 def think_about_marbles(self):
     # placeholder for logic functions, Fibonacci, triangular numbers etc.

@@ -20,6 +20,7 @@ def build_region_knowledge(region: Region, character_or_faction: Union["Characte
         historical_regional_events=region.historical_regional_events.copy(),
         gossip=[],  # maybe fill this later through social observation
         economic_info={},  # optionally parse from region or simulation systems
+        tags=["region", "region_knowledge"] + [g.name for g in region.region_gangs],
 
     )
 

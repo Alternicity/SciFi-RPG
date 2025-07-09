@@ -59,6 +59,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                                     urgency=round(power * 10),
                                     tags=["ambience", tag]
                                 ))
+                                npc.mind.remove_thought_by_content("No focus")
 
                         # 2. Log peak vibe
                         peak_tag, peak_power = max(perceived.items(), key=lambda x: x[1], default=("none", 0))
@@ -88,11 +89,13 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     npc.ai.promote_thoughts()
 
                 # DEBUG: Thought Check 1
-                if debug_character and npc.name == debug_character.name:
+
+                """ if debug_character and npc.name == debug_character.name:
                     print(f"\n[DEBUG] From simulate_days Thought Check 1 {npc.name} Thoughts:")
                     for t in npc.mind:
                         print(f" - {t}")
-                    print(f"[DEBUG] simulate_days Thought Check 1, debug_character attention focus is {npc.attention_focus}")
+                    print(f"[DEBUG] simulate_days Thought Check 1, debug_character attention focus is {npc.attention_focus}") """
+                
                     #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
 
         # STEP 2: Choose and Execute Action
@@ -105,11 +108,13 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 npc.ai.promote_thoughts()     # line 71
 
                 # DEBUG: Thought Check 2
-                if debug_character and npc.name == debug_character.name:
+
+                """ if debug_character and npc.name == debug_character.name:
                     print(f"\n[DEBUG] from simulate_days Thought Check 2 {npc.name} Thoughts:")
                     for t in npc.mind.thoughts:
                         print(f" - {t}")
-                    print(f"[DEBUG] Attention focus: {npc.attention_focus}")
+                    print(f"[DEBUG] Attention focus: {npc.attention_focus}") """
+
                     #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
 
                 region = npc.location.region if hasattr(npc.location, 'region') else None

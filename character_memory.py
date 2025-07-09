@@ -36,6 +36,11 @@ class Memory:
         self.semantic["region_knowledge"].append(rk)
 
     def query_memory_by_tags(self, tags: list):
+        if not tags or not hasattr(tags, "__len__") or len(tags) == 0:
+            import traceback
+            print("[MEMORY DEBUG] WARNING: query_memory_by_tags() called with empty or invalid tags!")
+            traceback.print_stack(limit=5)
+
         matching = []
         for category, memories in self.semantic.items(): #catagory not accessed
             for mem in memories:
@@ -59,6 +64,8 @@ class Memory:
             self.semantic["memory_entries"].append(entry)
 
         elif isinstance(entry, RegionKnowledge):
+            if not entry.tags:
+                print(f"[MEMORY WARNING] RegionKnowledge promoted without tags! Region: {entry.region_name}")
             existing = self.find_region_knowledge(entry.region_name)
             if existing:
                 print(f"[MEMORY] RegionKnowledge for '{entry.region_name}' already exists. Skipping add.")

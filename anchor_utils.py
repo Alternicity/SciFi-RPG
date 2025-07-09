@@ -22,6 +22,36 @@ class Anchor:
 
     #   If you're concerned about leakiness, you can tag anchors with .owner or use NPC-specific salience filtering
 
+def compute_salience_for(self, percept_data, npc) -> float:
+        """
+        Anchors now define how salience is computed for percepts.
+        """
+        # Generic example: match tags
+        overlap = set(self.tags) & set(percept_data.get("tags", []))
+        base_score = 1.0
+
+        if not overlap:
+            return 1.5  # Irrelevant
+
+        score = base_score - (0.1 * len(overlap))
+
+        # Penalize irrelevant types
+        if percept_data.get("type") in {"PoliceStation", "ApartmentBlock"}:
+            score += 0.3
+
+        # Add hook for subclasses to override
+        return round(score * self.weight, 2)
+
+class RobberyAnchor(Anchor):
+    def compute_salience_for(self, percept_data, npc) -> float:
+        score = super().compute_salience_for(percept_data, npc)
+
+        if "robbable" in percept_data and percept_data["robbable"]:
+            score -= 0.2
+        if "has_security" in percept_data and percept_data["has_security"]:
+            score += 0.2
+        return round(score * self.weight, 2)
+
 def create_anchor_from_motivation(motivation) -> Anchor:
     """
     Converts a Motivation object into an Anchor for salience evaluation.

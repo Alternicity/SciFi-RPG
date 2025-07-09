@@ -1710,30 +1710,18 @@ class ApartmentBlock(Location):
         return {
             "name": self.name,
             "type": self.__class__.__name__,
-        "origin": "FIXME",
-        "tags": "FIXME",
-        "salience": "FIXME",
-        "urgency": "FIXME",
-        "source": "FIXME",
-        "security": "FIXME",
-        "is_open": "FIXME",
-        "has_security": "FIXME",
+            "origin": "self",
+            "tags": "self.tags",
+            "salience": "1.0",
+            "urgency": "0",
             "description": f"{self.name}: {self.description}",
-            "region": self.region.name if self.region else None,
-            "location": self.name,
             "robbable": True,
-            "origin": self,
-            "salience": self.compute_salience(observer),
-            "tags": self.tags,
-            "urgency": 1,
             #needs data field
             "source": None,
             "menu_options": [],
-            "security": getattr(self, "security_level", 0),
-            "is_open": getattr(self, "is_open", True),
+            "security": getattr(self, "security_level", 0), #is this valid percept cde, aor a bad paste from attributes?
+            "is_open": getattr(self, "is_open", True),#same
             "has_security": self.has_security() if hasattr(self, "has_security") else False,
-            #"has_security": self.has_security(),
-            
         }
     
     def to_dict(self):

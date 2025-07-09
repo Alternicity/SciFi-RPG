@@ -24,7 +24,7 @@ def compute_salience(obj, npc, anchor=None):
     #adding the above leaves npc marked as not defined here
     if anchor is None:
         if getattr(npc, "is_test_npc", False):
-            print(f"[SALIENCE DEBUG] No anchor provided. Defaulting salience to 1 for {obj}")
+            print(f"[SALIENCE COMPUTE] No anchor provided. Defaulting salience to 1 for {obj}")
         return getattr(obj, "salience", 1)
     
 

@@ -68,24 +68,6 @@ class UtilityAI(BaseAI):
 
         if not possible_actions:
             return {"name": "idle"}
-
-        # Add salience-informed actions based on memory
-        for anchor in anchors:
-            if anchor.name == "obtain_ranged_weapon":
-                known_weapon_locations = npc.mind.memory.query_memory_by_tags(["weapons", "shop"])
-
-                for memory in known_weapon_locations:
-                    location = memory.target
-                    if location:
-                        action = {
-                            "name": "visit_location",
-                            "params": {"location": location},
-                            "anchor": anchor
-                        }
-                        possible_actions.append(action)
-
-        if not possible_actions:
-            return {"name": "idle"}
     
         from ai_utility_thought_tools import extract_anchor_from_action
 
@@ -206,7 +188,7 @@ class UtilityAI(BaseAI):
 
         if not thoughts:
             npc.attention_focus = None
-            print(f"[FOCUS] {npc.name} has no thoughts to process.")
+            print(f"[UtilityAI] {npc.name} has no thoughts to promote.")
             return
 
         for thought in thoughts:
@@ -568,6 +550,7 @@ def generate_location_visit_thought(npc, location, enabling_motivation=None):
         )
 
         npc.mind.add_thought(thought)
+        npc.mind.remove_thought_by_content("No focus")
 
         # Optional: Remove “No focus” placeholder
         npc.mind.remove_thought_by_content("No focus")

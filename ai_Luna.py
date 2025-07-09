@@ -5,6 +5,8 @@ from character_thought import Thought
 from character_mind import Curiosity
 from character_thought import FailedThought
 from Luna_thought_tools import LunaThoughtTools
+from luna_recursiae import RecursiaePulse
+
 #"It is not the hands that call us.."
 #A childish scientist who accidentally teaches me Python while playing with toys.
 #Lets use generators, iterators, and decorators here, when possible, so I good learn them.
@@ -16,13 +18,11 @@ class LunaAI(UtilityAI):
         self.experiments = []  # Optional log or thought patterns
         self.experimental_thoughts = []
         self.tick_counter = 0
-
+        self.pulses = [RecursiaePulse()]
         self.personal_corollary_hooks = {
             "geometry": self.geometry_corollary,
             "emotion": self.emotion_corollary
         }#hmm maybe if a ai and a thought both have the hook, the cor thought can spawn
-
-    
 
     def decide(self):
         # Customize the Utility decision cycle
@@ -40,12 +40,6 @@ class LunaAI(UtilityAI):
         # Start from default
         score = super().compute_salience_for_motivation(percept, motivation)
 
-        # Tweak or add special Luna-specific logic
-        """ if motivation.type == "rob":
-            if percept.get("tags") and "gang_territory" in percept["tags"]:
-                score += 0.3 """
-        #MODEL LOGIC
-
         return score
 
     def think(self, region):
@@ -56,6 +50,12 @@ class LunaAI(UtilityAI):
         self.generate_thoughts_from_percepts()#defined in UtilityAI
         self.npc.mind.remove_thought_by_content("No focus")
         
+        # Recursiae thought-pulse expansion
+        for _ in range(np.random.randint(2, 5)):
+            new_pulse = self.pulses[-1].evolve()
+            self.pulses.append(new_pulse)
+            self.log_pulse_thought(new_pulse)
+
         if self.tick_counter % 3 == 0:
             self.symbolic_thought_spawner(percepts)
 
@@ -63,6 +63,11 @@ class LunaAI(UtilityAI):
             self.narrate_top_thought()
 
         self.promote_thoughts()
+
+    def log_pulse_thought(self, pulse):
+        content = f"Echo at ({pulse.x:.2f}, {pulse.y:.2f}) with r={pulse.resonance:.2f}"
+        self.npc.mind.add_thought(Thought(content, urgency=abs(pulse.resonance)))
+
 
     def narrate_top_thought(self):
         if self.npc.mind.thoughts:
@@ -85,3 +90,8 @@ class LunaAI(UtilityAI):
         Error catching
         Unexpected pattern collapse
         This is a path to Reverse Teaching. """
+
+        """ Optional Enhancements
+Tie pulse.resonance to semantic memory activation.
+Use pulse.x/y as coordinates in an internal symbolic map.
+Let Luna “dream” only when resonance > threshold (symbolic overload). """
