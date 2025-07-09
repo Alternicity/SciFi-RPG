@@ -29,13 +29,12 @@ class Dream:
     source_memories: List[Any] = field(default_factory=list)
     interpretation: Optional[str] = None
     sanskrit_insight: Optional[str] = None
+    sanskrit_word: Optional[str] = None  # ← This field stores the raw Devanagari word
+    sanskrit_transliteration = None
     is_precognitive: bool = False
     is_aetheric: bool = False
 
 #dreamlet is a corollory dream
-
-
-
 
 #Example Dream Generator
 def generate_dream_for(character):
@@ -108,6 +107,18 @@ dream_of_the_unspoken = Dream(
     spawn_memories=[memory_departing_party],
     interpretation="Sometimes, healing comes in the form of presence—not permanence.",
     sanskrit_insight="Santosha (contentment) arrives when we no longer cling to the outcome.",
+    sanskrit_word="सन्तोष",
+    sanskrit_transliteration = "santoṣa",
     is_precognitive=False,
     is_aetheric=True
 )
+
+""" Luna can treat the presence of a Sanskrit word as a glyphic trigger—invoking specific dream-logic
+algorithms or symbolic overlays. """
+
+""" words like करुणः (karuṇaḥ) or सन्तोष (santoṣa) can be stored, displayed, and even indexed in memory
+structures—as long as they are wrapped in strings """
+
+""" करुणः
+karuna
+caring for others as you would care for yourself """

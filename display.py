@@ -597,15 +597,20 @@ def display_percepts_table(npc):
         # Step 4: Count keys inside data block
         n_keys = len(data.keys())
 
-        salience = 0
-        anchor = getattr(npc, "current_anchor", None)
+        salience_score = anchor.compute_salience_for(data, npc) if anchor else compute_salience(data, npc)
+
         if hasattr(origin, "compute_salience") and callable(origin.compute_salience):#a problem line?
-            try:
+            try:#is this block now deprecated?
                 salience = origin.compute_salience(npc, anchor)
             except Exception as e:
-                salience = f"ERR: {e}"
+                salience = f"ERR: {e}"#salience not accessed
 
-        salience_score = compute_salience(data, npc, anchor) #compute_salience here marked as not defined
+        origin = v.get("origin") or data.get("origin")
+        if origin is not None:
+            salience_score = compute_salience(origin, npc, anchor)
+        else:
+            salience_score = compute_salience(data, npc, anchor)  # fallback
+
         table_data.append([
             i,
             desc,

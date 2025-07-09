@@ -2,6 +2,14 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Toggle this to enable/disable the module
+RUN_SCALAR_FIELD = False
+
+if not RUN_SCALAR_FIELD:
+    print("[SCALAR FIELD] Module disabled. Skipping scalar field visualization.")
+    exit()
+    
 if __name__ == "__main__":
     mode = "3D"  # Change to "2D" to run the original field
 

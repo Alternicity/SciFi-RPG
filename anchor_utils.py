@@ -5,6 +5,8 @@ import time
 from memory_entry import MemoryEntry
 
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
+
+#context-aware decision filter
 @dataclass
 class Anchor:
     name: str  # e.g., "rob", "join_faction"
@@ -90,3 +92,16 @@ def create_anchor_from_thought(self, npc, thought, name: str, anchor_type: str =
     npc.mind.memory.add_episodic(memory_entry)
 
     return anchor
+
+class ObtainWeaponAnchor(Anchor):
+    def compute_salience_for(self, percept_data, npc) -> float:
+        score = super().compute_salience_for(percept_data, npc)
+
+        if "weapon" in percept_data.get("tags", []):
+            score -= 0.3
+        if "location" in percept_data.get("tags", []):
+            score -= 0.1
+        if "has_security" in percept_data and percept_data["has_security"]:
+            score += 0.3
+
+        return round(score * self.weight, 2)

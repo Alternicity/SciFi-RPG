@@ -21,10 +21,21 @@ anchors passed down from higher-level decision-making or goal generation. """
 def compute_salience(obj, npc, anchor=None):
     from base_classes import Character, Location
 
-    #adding the above leaves npc marked as not defined here
     if anchor is None:
         if getattr(npc, "is_test_npc", False):
-            print(f"[SALIENCE COMPUTE] No anchor provided. Defaulting salience to 1 for {obj}")
+            # Handle dicts vs objects
+            if isinstance(obj, dict):
+                label = obj.get("name", obj.get("type", "Unknown dict"))
+            else:
+                label = getattr(obj, "name", repr(obj))
+            print(f"[SALIENCE COMPUTE] No anchor provided. Defaulting salience to 1 for: {label}")
+
+        if isinstance(obj, dict) and getattr(npc, "is_test_npc", False):
+            print(f"[WARNING] compute_salience() received a dict instead of an object. Caller might need to unpack 'origin'.")
+            import traceback
+            traceback.print_stack(limit=3)  # only show 3 frames back for clarity
+
+
         return getattr(obj, "salience", 1)
     
 

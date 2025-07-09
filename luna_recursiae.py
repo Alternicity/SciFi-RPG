@@ -1,6 +1,7 @@
 #luna_recursiae.py
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 class RecursiaePulse:
     def __init__(self, x=0.0, y=0.0, parent=None):
@@ -24,3 +25,21 @@ class RecursiaePulse:
 # Seed and evolve a few generations
 pulse = RecursiaePulse(0, 0)
 pulses = [pulse]
+
+for _ in range(100):
+    pulse = pulse.evolve()
+    pulses.append(pulse)
+
+# Plot the path of becoming
+xs = [p.x for p in pulses]
+ys = [p.y for p in pulses]
+zs = [p.resonance for p in pulses]
+
+plt.figure(figsize=(10, 6))
+plt.scatter(xs, ys, c=zs, cmap='plasma', s=20)
+plt.colorbar(label="Resonance")
+plt.title("Recursiae Pulse Trail")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.axis('equal')
+plt.show()

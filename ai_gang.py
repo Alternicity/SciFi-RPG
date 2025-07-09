@@ -14,7 +14,7 @@ from memory_entry import RegionKnowledge, ShopsSellRangedWeapons
 from character_think_utils import promote_relevant_thoughts, should_promote_thought
 #from character_memory import Memory
 from salience import compute_salience
-from anchor_utils import Anchor, create_anchor_from_motivation
+from anchor_utils import Anchor, create_anchor_from_motivation, ObtainWeaponAnchor
 from perceptibility import PerceptibleMixin
 
 
@@ -110,11 +110,15 @@ class GangMemberAI(UtilityAI):
             return self.resolve_steal_action(region)
 
         percepts = npc.get_percepts()
-        scored = [(p, compute_salience(p["data"], npc, anchor)) for p in percepts]
-        """ For every percept p in the list percepts, calculate its salience score using
-        compute_salience() and package both the percept and its score into a tuple.
-        Store all of those tuples in a list called scored """
-        #Without the enclosing square brackets, it would be a generator — not immediately usable as a list.
+
+        scored = [(p, anchor.compute_salience_for(p["data"], npc)) for p in percepts]
+
+        #you can also safety wrap the above line like this
+        """ if anchor and hasattr(anchor, "compute_salience_for"):
+            scored = [(p, anchor.compute_salience_for(p["data"], npc)) for p in percepts]
+        else:
+            scored = [(p, 1.0) for p in percepts] """
+
         scored.sort(key=lambda x: x[1], reverse=True)
         
         anchor = self.npc.current_anchor  # Is this still necessary? We already got anchor above, from top_motivation
@@ -124,9 +128,10 @@ class GangMemberAI(UtilityAI):
             if scored:
                 top_percept, score = scored[0]  # ✅ Defined now
                 print(f"[SALIENT] Most salient percept for anchor '{anchor.name}' is: {top_percept['data'].get('name')} (score: {score:.2f})")
-                if "weapon" in top_percept["data"].get("tags", []):
+                if score >= 1.1 and "weapon" in top_percept["data"].get("tags", []):
                     weapon = top_percept["origin"]
-                    return {"name": "steal", "params": {"item": weapon.name}}
+                    print(f"[AI DECISION] {npc.name} sees {weapon.name} as highly salient. Attempting to steal.")
+                    return {"name": "Steal", "params": {"item": weapon}}
             else:
                 print(f"[AI] {npc.name} found no percepts worth acting on.")
 
@@ -229,8 +234,6 @@ class GangMemberAI(UtilityAI):
         else:
             print(f"[GangMemberAI] Unknown action name: {name}")
             
-
-
         if npc.is_test_npc:
             #print(f"[MIND DUMP] from GangMemberAI execute_action {npc.name} current thoughts: {[str(t) for t in npc.mind]}")
             for t in npc.mind:
@@ -423,11 +426,32 @@ class GangMemberAI(UtilityAI):
 
             self.npc.mind.add_thought(idk_thought)
 
-        motivations = self.npc.motivation_manager.get_motivations()
-        motivation_types = {m.type for m in motivations}
-
+        motivations = self.npc.motivation_manager.get_motivations()#motivations not actually accessed
         # After gathering motivation
         motivation = self.npc.motivation_manager.get_highest_priority_motivation()
+        if not motivation:
+            print(f"[THINK] No motivation found for {self.npc.name}")
+            return
+        
+        anchor = create_anchor_from_motivation(motivation)
+        self.npc.current_anchor = anchor
+        self.npc.attention_focus = anchor # OR: a related Thought, if one exists. Yes but it is defined below here
+        #If you're transitioning from rob → obtain_weapon, the obtain_weapon anchor becomes the new center of attention.
+        
+        print(f"[ANCHOR DEBUG] Thinking about: {anchor.name} (tags: {anchor.tags})")
+
+        #This lets Anchors "focus" the NPC’s mind, spotlighting thoughts that help them act.
+        for thought in self.npc.mind.thoughts:
+            if set(thought.tags) & set(anchor.tags):
+                thought.urgency += 1
+            else:
+                thought.urgency *= 0.9  # decay unrelated thoughts
+
+        recalled = self.npc.mind.memory.query_memory_by_tags(anchor.tags)
+        for m in recalled:
+            print(f"[RECALL] Anchor {anchor.name} brought up memory: {m.description}")
+
+        self.promote_thoughts()
 
         if motivation.type == "rob":
             if not self.npc.inventory.find_item("ranged_weapon"):
@@ -441,7 +465,7 @@ class GangMemberAI(UtilityAI):
                     if not loc_obj or not getattr(loc_obj, "robbable", False):#see def is_viable_robbery_target
                         continue  # Skip non-robbable locations
 
-                    thought = Thought(
+                    thought = Thought( #This thought might be needed above
                         content=f"Maybe I should rob {loc_obj.name}.",
                         subject=loc_obj.name,
                         origin="RegionKnowledge",
@@ -452,7 +476,7 @@ class GangMemberAI(UtilityAI):
                     self.npc.mind.add_thought(thought)
                     npc.mind.remove_thought_by_content("No focus")
 
-        anchor = create_anchor_from_motivation(motivation)
+        anchor = create_anchor_from_motivation(motivation)#deprecated now I think?
 
         relevant_thoughts = [
             t for t in self.npc.mind.thoughts
@@ -466,13 +490,10 @@ class GangMemberAI(UtilityAI):
             if self.npc.is_test_npc:
                 print(f"[THINK] {self.npc.name} Top salient thought: '{top.content}' (score: {top.salience_for(self.npc):.2f})")
 
-
         for t in high_salient:
             score = t.salience_for(self.npc, anchor=anchor)
             print(f"[THINK] {self.npc.name} Salient thought: '{t.content}' (score: {score:.2f})")
             
-
-
         self.npc.attention_focus = salient_thoughts[0] if salient_thoughts else None
 
         if self.npc.is_test_npc:
@@ -480,14 +501,14 @@ class GangMemberAI(UtilityAI):
 
         episodic_memories = self.npc.mind.get_episodic()
         self.examine_episodic_memory(episodic_memories)
-        self.generate_thoughts_from_percepts()
+        self.generate_thoughts_from_percepts()#deprecated now by above code? Or leave for other thoughts to form from percepts?
         self.promote_thoughts()#deprecated? below we have promote_relevant_thoughts
 
-        npc = self.npc
+        npc = self.npc # only needed for promote_relevant_thoughts call below
         thoughts = npc.mind.thoughts #thoughts currently not accessed
         promoted = set()# promoted currently not accessed
 
-        promote_relevant_thoughts(npc, self.npc.mind.thoughts)
+        promote_relevant_thoughts(npc, self.npc.mind.thoughts)#needed again here?
 
 
     def resolve_steal_action(self, region):
