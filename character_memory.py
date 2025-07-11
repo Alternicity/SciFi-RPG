@@ -45,8 +45,9 @@ class Memory:
         for category, memories in self.semantic.items(): #catagory not accessed
             for mem in memories:
                 desc = getattr(mem, "description", type(mem).__name__)
-                print(f"[MEMORY DEBUG] Checking {desc} with tags {getattr(mem, 'tags', [])}")
-
+                #print(f"[MEMORY DEBUG] Checking {desc} with tags {getattr(mem, 'tags', [])}")
+                #verbose
+                
                 if has_tags(mem.tags, tags):
                     matching.append(mem)
 

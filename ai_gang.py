@@ -102,7 +102,8 @@ class GangMemberAI(UtilityAI):
         top_motivation = npc.motivation_manager.get_highest_priority_motivation()
         anchor = create_anchor_from_motivation(top_motivation)
         npc.current_anchor = anchor
-        print(f"[ANCHOR DEBUG] Active anchor: {npc.current_anchor.name}, tags: {npc.current_anchor.tags}")
+        if self.npc.is_test_npc:
+            print(f"[ANCHOR DEBUG] Active anchor: {npc.current_anchor.name}, tags: {npc.current_anchor.tags}")
 
         if top_motivation and top_motivation.type == "rob":
             return self.resolve_robbery_action(region)
@@ -146,8 +147,8 @@ class GangMemberAI(UtilityAI):
                     print(f"[AI DECISION] {npc.name} sees a pistol and will try to steal it.")
                     return {"name": "Steal", "params": {"item": p["origin"]}}
             
-        known_weapon_locations = npc.mind.memory.query_memory_by_tags(["weapons", "shop"])
-        print(f"[DEBUG] Known weapon locations: {known_weapon_locations}")
+            known_weapon_locations = npc.mind.memory.query_memory_by_tags(["weapons", "shop"])
+            print(f"[DEBUG] Known weapon locations: {known_weapon_locations}")
 
         if npc.is_test_npc and known_weapon_locations:
             memory = known_weapon_locations[0]
@@ -236,6 +237,18 @@ class GangMemberAI(UtilityAI):
             # After visiting a location, observe surroundings
             if name == "visit_location":
                 npc.observe(location=npc.location, region=region)
+                from display import (
+                    show_shop_inventory,
+                    display_employees,
+                    display_npc_mind,
+                )
+                from location import Shop
+
+                # Only do this for test NPCs and if new location is a shop
+                if npc.is_test_npc and isinstance(npc.location, Shop):
+                    show_shop_inventory(npc, npc.location)
+                    display_employees(npc.location)
+                    display_npc_mind(npc)
 
             action_func(npc, region, **params) #the actual function call
         else:
@@ -449,8 +462,8 @@ class GangMemberAI(UtilityAI):
         self.npc.current_anchor = anchor
         self.npc.attention_focus = anchor # OR: a related Thought, if one exists. Yes but it is defined below here
         #If you're transitioning from rob → obtain_weapon, the obtain_weapon anchor becomes the new center of attention.
-        
-        print(f"[ANCHOR DEBUG] Thinking about: {anchor.name} (tags: {anchor.tags})")
+        if self.npc.is_test_npc:
+            (f"[ANCHOR DEBUG] Thinking about: {anchor.name} (tags: {anchor.tags})")
 
         #This lets Anchors "focus" the NPC’s mind, spotlighting thoughts that help them act.
         for thought in self.npc.mind.thoughts:

@@ -188,7 +188,8 @@ class UtilityAI(BaseAI):
 
         if not thoughts:
             npc.attention_focus = None
-            print(f"[UtilityAI] {npc.name} has no thoughts to promote.")
+            if self.npc.is_test_npc:
+                print(f"[UtilityAI] {npc.name} has no thoughts to promote.")
             return
 
         for thought in thoughts:

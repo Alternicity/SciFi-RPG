@@ -539,7 +539,7 @@ class Character(PerceptibleMixin):
             "has_security": getattr(self, "has_security", lambda: False)()
         }
 
-    def observe_region(self, region, include_memory_check=True):
+    def observe_region(self, region, include_memory_check=True, include_inventory_check=False):
         from location import Region
         #assert isinstance(region, Region), f"[BUG] {self.name} was passed a non-Region as a region: {region} ({type(region)})"
         assert isinstance(region, Region), f"[DEV] {self.name} observe_region got {type(region)} — {region}"
@@ -584,56 +584,20 @@ class Character(PerceptibleMixin):
         if hasattr(self, "handle_observation"):
             self.handle_observation(region)
 
-    def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
-        #print(f"[DEBUG] from class Character, observe_objects called.")
-        # Auto-fetch nearby objects if not provided
-        self._percepts.clear()
-        new_percepts = {}
-        if nearby_objects is None and location:
-            from worldQueries import get_nearby_objects
-            fetched_objects = get_nearby_objects(self, self.region, location)
-            nearby_objects = fetched_objects or []
-        else:
-            nearby_objects = nearby_objects or []
-
-        # If it's a single object instead of a list, wrap it
-        if not isinstance(nearby_objects, list):
-            nearby_objects = [nearby_objects]
-
-        # Optional debugging of objects at the location
-        for obj in getattr(location, 'objects_present', []):
-            obj_name = getattr(obj, 'name', 'Unnamed object')
-            obj_type = type(obj).__name__
-            location_status = "[No location set]" if getattr(obj, 'location', None) is None else ""
-            print(f"    - {obj_name} ({obj_type}) {location_status}")
-
-        if location and include_inventory_check:
-            if hasattr(location, 'inventory') and location.inventory:
-                #print(f"[DEBUG] {location.name} inventory: {location.inventory.get_inventory_summary()}")
-                pass
-            else:
-                print(f"[DEBUG] {location.name} has no inventory or inventory is not initialized.")
-
-            # Perceive valid objects
-            new_percepts = {}
-            for obj in nearby_objects:
-                if isinstance(obj, PerceptibleMixin):
-                    percept = obj.get_percept_data(observer=self)
+        if include_inventory_check and self.location and hasattr(self.location, "inventory"):#line 587
+            #include_inventory_check is marked as not defined, it needs to be passed in from the call
+            for item in self.location.inventory.items.values():
+                if isinstance(item, PerceptibleMixin):
+                    percept = item.get_percept_data(observer=self)
                     if percept:
-                        new_percepts[obj.id] = {
+                        self._percepts[item.id] = {
                             "data": percept,
-                            "origin": obj
-                        }
-                        #print(f"[Observe] {self.name} is observing objects in {location.name if location else 'unknown'}")
-                        #print(f"[Observe] {self.name} perceived {obj.name} with salience {percept['salience'] if 'salience' in percept else '?'}")
-
-                    else:
-                        print(f"[BUG] {obj.name} ({type(obj).__name__}) returned None from get_percept_data.")
-
-            self._percepts.update(new_percepts)
+                            "origin": item
+                    }
+        
 
     def observe(self, *, nearby_objects=None, target=None, region=None, location=None):
-        from location import Region, Location
+        from location import Region, Location#line 609
         if isinstance(region, Location):
             region = region.region
         if not isinstance(region, Region):
@@ -643,9 +607,8 @@ class Character(PerceptibleMixin):
             simple_list = [f"{c.name}, {c.__class__.__name__}" for c in location.characters_there]
             #print(f"[DEBUG] {self.name} observe() called, count these: {simple_list}")
         
-        self.observe_region(region, include_memory_check=True)
-
-        self.observe_objects(nearby_objects, location, include_inventory_check=True)
+        self.observe_region(region, include_memory_check=True, include_inventory_check=True)
+        self.observe_objects(nearby_objects=nearby_objects, location=location, include_inventory_check=True)
 
         # Main perception logic for a character NPC.
         region = region or self.region
@@ -667,6 +630,47 @@ class Character(PerceptibleMixin):
                 self.percepts_updated = True
 
             #print(f"[Observe] {self.name} now has {len(self._percepts)} percepts.")
+
+    def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
+        """
+        Gathers percepts from nearby Perceptible objects and optionally from the location's inventory.
+        Updates self._percepts.
+        """
+        self._percepts.clear()
+        new_percepts = {}
+
+        # Auto-fetch nearby objects if not provided
+        if nearby_objects is None and location:
+            from worldQueries import get_nearby_objects
+            nearby_objects = get_nearby_objects(self, region=self.region, location=location)
+        else:
+            nearby_objects = nearby_objects or []
+
+        # Perceive items from the location's inventory (if enabled)
+        if include_inventory_check and location and hasattr(location, "inventory"):
+            for item in location.inventory.items.values():
+                if isinstance(item, PerceptibleMixin):
+                    percept = item.get_percept_data(observer=self)
+                    if percept:
+                        new_percepts[item.id] = {
+                            "data": percept,
+                            "origin": item
+                        }
+
+        # Perceive nearby loose objects (including employees, characters, containers, etc.)
+        for obj in nearby_objects:
+            if isinstance(obj, PerceptibleMixin):
+                percept = obj.get_percept_data(observer=self)
+                if percept:
+                    new_percepts[obj.id] = {
+                        "data": percept,
+                        "origin": obj
+                    }
+                else:
+                    print(f"[BUG] {obj.name} ({type(obj).__name__}) returned None from get_percept_data.")
+
+        self._percepts.update(new_percepts)
+        self.percepts_updated = True
 
     def _remember_hostile_faction(self, gang, region):
         hostile_thought = Thought(

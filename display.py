@@ -1,6 +1,7 @@
 #display.py
 from tabulate import tabulate
 import logging
+from textwrap import wrap
 
 import loader
 import os
@@ -485,6 +486,15 @@ def display_region_knowledge_summary(knowledge_list, npc=None):
         is_home = npc and rk.region_name == getattr(npc.home_region, "name", None)
         region_label = "🏠 " if is_home else ""
 
+        # Clean tag list
+        #cleaned_tags = [tag for tag in rk.tags if tag not in {"region", "region_knowledge"}]
+        cleaned_tags = sorted(tag for tag in rk.tags if tag not in {"region", "region_knowledge"})
+
+        # Wrap long tag strings at ~20 characters
+        
+        joined_tags = ", ".join(cleaned_tags)
+        wrapped_tags = "\n".join(wrap(joined_tags, width=20)) if joined_tags else ""
+
         region_table.append([
             f"{region_label}{rk.region_name}",
             len(rk.region_gangs),
@@ -492,7 +502,7 @@ def display_region_knowledge_summary(knowledge_list, npc=None):
             len(rk.locations),
             len(rk.active_events),
             len(rk.known_characters),
-            ", ".join(rk.tags) if rk.tags else ""
+            wrapped_tags
         ])
 
     region_headers = [

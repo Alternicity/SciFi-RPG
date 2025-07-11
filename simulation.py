@@ -12,7 +12,7 @@ def run_simulation(all_characters, num_days=10):
     debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)
 
     #mark test npc
-    debug_gang_npc.isTestNPC = True
+    debug_gang_npc.is_test_npc = True
 
     # Set test NPC to Easternhole if needed
     easternhole_region = next((r for r in game_state.all_regions if r.name == "Easternhole"), None)
