@@ -4,10 +4,11 @@ from typing import Literal, List, Union
 import time
 from memory_entry import MemoryEntry
 
+
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
 
 #context-aware decision filter
-@dataclass
+@dataclass #line 11
 class Anchor:
     name: str  # e.g., "rob", "join_faction"
     type: Literal["motivation", "plan", "event", "object"]
@@ -24,25 +25,25 @@ class Anchor:
 
     #   If you're concerned about leakiness, you can tag anchors with .owner or use NPC-specific salience filtering
 
-def compute_salience_for(self, percept_data, npc) -> float:
-        """
-        Anchors now define how salience is computed for percepts.
-        """
-        # Generic example: match tags
-        overlap = set(self.tags) & set(percept_data.get("tags", []))
-        base_score = 1.0
+    def compute_salience_for(self, percept_data, npc) -> float:
+            """
+            Anchors now define how salience is computed for percepts.
+            """
+            # Generic example: match tags
+            overlap = set(self.tags) & set(percept_data.get("tags", []))
+            base_score = 1.0
 
-        if not overlap:
-            return 1.5  # Irrelevant
+            if not overlap:
+                return 1.5  # Irrelevant
 
-        score = base_score - (0.1 * len(overlap))
+            score = base_score - (0.1 * len(overlap))
 
-        # Penalize irrelevant types
-        if percept_data.get("type") in {"PoliceStation", "ApartmentBlock"}:
-            score += 0.3
+            # Penalize irrelevant types
+            if percept_data.get("type") in {"PoliceStation", "ApartmentBlock"}:
+                score += 0.3
 
-        # Add hook for subclasses to override
-        return round(score * self.weight, 2)
+            # Add hook for subclasses to override
+            return round(score * self.weight, 2)
 
 class RobberyAnchor(Anchor):
     def compute_salience_for(self, percept_data, npc) -> float:
@@ -55,17 +56,39 @@ class RobberyAnchor(Anchor):
         return round(score * self.weight, 2)
 
 def create_anchor_from_motivation(motivation) -> Anchor:
-    """
-    Converts a Motivation object into an Anchor for salience evaluation.
-    """
-    return Anchor(
+    from anchor_utils import RobberyAnchor, ObtainWeaponAnchor
+
+    tags = motivation.tags
+
+    if motivation.type == "rob":
+        return RobberyAnchor(
+            name="rob",
+            type="motivation",
+            weight=motivation.urgency,
+            priority=motivation.urgency,
+            tags = tags,
+            source=motivation
+        )
+
+    if motivation.type == "obtain_ranged_weapon":
+        return ObtainWeaponAnchor(
+            name="obtain_ranged_weapon",
+            type="motivation",
+            weight=motivation.urgency,
+            priority=motivation.urgency,
+            tags = tags,
+            source=motivation
+        )
+
+    return Anchor(#same here
         name=motivation.type,
         type="motivation",
         weight=motivation.urgency,
         priority=motivation.urgency,
-        tags=motivation.tags if hasattr(motivation, "tags") else [],
+        tags = tags,
         source=motivation
     )
+
 
 
 def create_anchor_from_thought(self, npc, thought, name: str, anchor_type: str = "motivation") -> Anchor:
@@ -93,9 +116,10 @@ def create_anchor_from_thought(self, npc, thought, name: str, anchor_type: str =
 
     return anchor
 
-class ObtainWeaponAnchor(Anchor):
+class ObtainWeaponAnchor(Anchor):#line 119
     def compute_salience_for(self, percept_data, npc) -> float:
         score = super().compute_salience_for(percept_data, npc)
+        print(f"[SALIENCE] Base score from Anchor: {score}")
 
         if "weapon" in percept_data.get("tags", []):
             score -= 0.3

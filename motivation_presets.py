@@ -1,21 +1,33 @@
 #motivation_presets.py
-#I am not sure if this entire file is now legacy code and unused
+#I am not sure if some of this code is now legacy code and unused
 from motivation import Motivation
+
+#not actually a preset, but it serves the same registry purpose.
+# Maps motivation types to default tags for use with Anchors and AI
+DEFAULT_MOTIVATION_TAGS = {
+    "rob": ["crime", "shop", "money", "weapon"],
+    "steal": ["crime", "object", "money"],
+    "obtain_ranged_weapon": ["weapon", "ranged", "shop"],
+    "idle": ["idle", "boredom", "chill", "no-mind"],
+    "earn_money": ["job", "money", "task"],
+    # Add others as needed
+}
+def get_tags_for_motivation(motivation_type: str) -> list:
+    return DEFAULT_MOTIVATION_TAGS.get(motivation_type, [])
 
 #class presets, under structural development, specifics not relevant to Luna
 class MotivationPresets:
-    
-    #old 
-    """ tag_to_motivation = {
+
+    tag_to_motivation = {
                         "rob": "rob",
                         "steal": "steal",
                         "weapon": "obtain_ranged_weapon",
                         "shop": "visit_location",
                         "explore": "visit_location",
 
-                    } """
+                    }
 
-    @classmethod
+    @classmethod #questionable value, and not in alignment with recent motivation tag appending needed for anchor dev
     def tag_to_motivation(cls):
         return
     tag_to_motivation_presets = {
@@ -26,6 +38,7 @@ class MotivationPresets:
     "explore": Motivation("visit", 4),
     }
     
+    #the following code is used, and necesary
     _presets = {
 
         "GangMember": [

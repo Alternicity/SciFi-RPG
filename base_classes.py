@@ -324,6 +324,7 @@ class Character(PerceptibleMixin):
             "partners": [partner] if partner else [],
         }
 
+        self.just_arrived = False
         self.workplace: Optional[Location] = None
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working
@@ -962,6 +963,8 @@ class Location(PerceptibleMixin):
     CATEGORIES = ["residential", "workplace", "public"]
     is_workplace: bool = False
     characters_there: list = field(default_factory=list)  # Tracks characters present at this location
+    recent_arrivals: list = field(default_factory=list)
+
     employees_there: list = field(default_factory=list)
     # Instance-specific categories field
     categories: List[str] = field(default_factory=list) #ALERT

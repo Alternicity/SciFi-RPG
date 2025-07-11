@@ -14,7 +14,8 @@ from ambience_and_psy_utils import compute_location_ambience
 def simulate_days(all_characters, num_days=1, debug_character=None):
     game_state = get_game_state()
     all_regions = game_state.all_regions
-
+    all_locations = game_state.all_locations
+    
     for _ in range(num_days):
         # STEP 1: Perceive and Think
         for region in all_regions:
@@ -22,6 +23,11 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 if npc.is_player:
                     continue
 
+                for npc in npc.location.characters_there:
+                    npc.just_arrived = False
+
+                for location in all_locations:
+                    location.recent_arrivals.clear()
                 # OBSERVE
                 
                 if npc is debug_character:

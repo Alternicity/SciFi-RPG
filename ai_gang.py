@@ -126,9 +126,12 @@ class GangMemberAI(UtilityAI):
 
         if npc.is_test_npc:
             if scored:
-                top_percept, score = scored[0]  # ✅ Defined now
+                top_percept, score = scored[0]
                 print(f"[SALIENT] Most salient percept for anchor '{anchor.name}' is: {top_percept['data'].get('name')} (score: {score:.2f})")
-                if score >= 1.1 and "weapon" in top_percept["data"].get("tags", []):
+                if score >= 1.1 and "weapon" in top_percept["data"].get("tags", []) and hasattr(top_percept["origin"], "location"):
+                    #alt version of above line
+                    #if isinstance(top_percept["origin"], Item) and "weapon" in top_percept["data"].get("tags", []):
+                    #in this version item is not defined
                     weapon = top_percept["origin"]
                     print(f"[AI DECISION] {npc.name} sees {weapon.name} as highly salient. Attempting to steal.")
                     return {"name": "Steal", "params": {"item": weapon}}
@@ -197,6 +200,7 @@ class GangMemberAI(UtilityAI):
                     npc.attention_focus = thought
                     npc.default_focus = anchor
                     return {"name": "visit_location", "params": {"location": best_location}}
+                
 
             print(f"[POST-THOUGHT] Thoughts: {[t.summary() for t in npc.mind.thoughts]}")
             for m in npc.mind.memory.semantic.get("shop_knowledge", []):
@@ -229,6 +233,9 @@ class GangMemberAI(UtilityAI):
             print(f"[DEBUG] {npc.name} will execute: {name} with params: {params}")
             action_func(npc, region, **params)
             print(f"[POST-ACTION] {npc.name} is now at {npc.location.name}")
+            # After visiting a location, observe surroundings
+            if name == "visit_location":
+                npc.observe(location=npc.location, region=region)
 
             action_func(npc, region, **params) #the actual function call
         else:
@@ -243,6 +250,7 @@ class GangMemberAI(UtilityAI):
             print(f"[POST-ACTION DEBUG] {npc.name} is now at {npc.location.name}")
             print(f"[POST-ACTION] Current attention: {npc.attention_focus}")
             print(f"[POST-ACTION] Current motivation: {npc.motivation_manager.get_urgent_motivations()}")
+            print(f"[DEBUG] {npc.name}'s inventory: {[item.name for item in npc.inventory]}")
                                                                                   
 
     def resolve_weapon_target_from_percepts(self):
@@ -434,6 +442,10 @@ class GangMemberAI(UtilityAI):
             return
         
         anchor = create_anchor_from_motivation(motivation)
+        # If the anchor has no tags, patch them from defaults
+        if not anchor.tags:
+            anchor.tags = motivation.tags
+
         self.npc.current_anchor = anchor
         self.npc.attention_focus = anchor # OR: a related Thought, if one exists. Yes but it is defined below here
         #If you're transitioning from rob → obtain_weapon, the obtain_weapon anchor becomes the new center of attention.
@@ -449,7 +461,10 @@ class GangMemberAI(UtilityAI):
 
         recalled = self.npc.mind.memory.query_memory_by_tags(anchor.tags)
         for m in recalled:
-            print(f"[RECALL] Anchor {anchor.name} brought up memory: {m.description}")
+            if isinstance(m, RegionKnowledge):
+                print(f"[RECALL] Anchor {anchor.name} brought up memory: I know {m.region_name} pretty well.")
+            else:
+                print(f"[RECALL] Anchor {anchor.name} brought up memory: {getattr(m, 'description', 'Unknown memory')}")
 
         self.promote_thoughts()
 
@@ -476,39 +491,42 @@ class GangMemberAI(UtilityAI):
                     self.npc.mind.add_thought(thought)
                     npc.mind.remove_thought_by_content("No focus")
 
-        anchor = create_anchor_from_motivation(motivation)#deprecated now I think?
-
         relevant_thoughts = [
             t for t in self.npc.mind.thoughts
             if isinstance(t, Thought) and t.salience_for(self.npc, anchor=anchor) > 0
         ]
         salient_thoughts = sorted(relevant_thoughts, key=lambda t: t.salience_for(self.npc, anchor=anchor), reverse=True)
         #all salience is computed relative to an anchor
-        high_salient = [t for t in salient_thoughts if t.salience_for(self.npc, anchor) >= 6]
+        high_salient = [t for t in salient_thoughts if t.salience_for(self.npc, anchor) >= 6]#if change search high_salient and edit
         if salient_thoughts:
             top = salient_thoughts[0]
             if self.npc.is_test_npc:
                 print(f"[THINK] {self.npc.name} Top salient thought: '{top.content}' (score: {top.salience_for(self.npc):.2f})")
 
-        for t in high_salient:
+        for t in high_salient: #currently >= 6
             score = t.salience_for(self.npc, anchor=anchor)
             print(f"[THINK] {self.npc.name} Salient thought: '{t.content}' (score: {score:.2f})")
             
-        self.npc.attention_focus = salient_thoughts[0] if salient_thoughts else None
+                # Finalize attention
+        self.npc.attention_focus = salient_thoughts[0] if salient_thoughts else anchor
 
         if self.npc.is_test_npc:
-            print(f"[GangMemberAI think()] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind]}")
+            print(f"[GangMemberAI think()] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
 
+        # Memory review & supporting thought generation
         episodic_memories = self.npc.mind.get_episodic()
         self.examine_episodic_memory(episodic_memories)
-        self.generate_thoughts_from_percepts()#deprecated now by above code? Or leave for other thoughts to form from percepts?
-        self.promote_thoughts()#deprecated? below we have promote_relevant_thoughts
 
-        npc = self.npc # only needed for promote_relevant_thoughts call below
-        thoughts = npc.mind.thoughts #thoughts currently not accessed
-        promoted = set()# promoted currently not accessed
+        # Only generate perceptual thoughts if attention isn't already focused
+        if not high_salient:
+            self.generate_thoughts_from_percepts()
 
-        promote_relevant_thoughts(npc, self.npc.mind.thoughts)#needed again here?
+        # Promote any new insights based on current mental context
+        self.promote_thoughts()
+
+        # Refine & structure relevant thoughts
+        promote_relevant_thoughts(self.npc, self.npc.mind.thoughts)
+
 
 
     def resolve_steal_action(self, region):

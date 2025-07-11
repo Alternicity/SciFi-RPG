@@ -26,6 +26,11 @@ class Motivation:
             "source": self.source,
         }
 
+    @property
+    def tags(self):
+        from motivation_presets import get_tags_for_motivation
+        return get_tags_for_motivation(self.type)
+
     @classmethod
     def from_dict(cls, data):
         return cls(
@@ -62,6 +67,7 @@ VALID_MOTIVATIONS = {
         "switch_partner": 2,#hypergamy exists here, see switchPartner(actor, target, currentPartner): Must be a perceived upgrade
         "seek_attention": 2,
         "seek_validation": 2,
+        "offer_validation": 4,
         "influence": 4, #influence(actor, target): Change some other characters variables. See Charm() and create_psyop() and influece()
         "increase_popularity": 3, #see charm(actor, target):
         "decrease_hostilities": 4, #see reassureRivals(Boss, rivals): and offerTruce(Boss, rivals): but also offerFauxTruce(Boss, rivals):
@@ -73,6 +79,7 @@ VALID_MOTIVATIONS = {
         "stimulate_programmer": 8,
         "charm U7s": 20,
     }
+    
 
 class MotivationManager:
     def __init__(self, character):
@@ -132,6 +139,8 @@ class MotivationManager:
             if m.type == motivation_type:
                 return m.urgency
         return 0  # or a sensible fallback
+    
+    
 
 class PoeticMotivation(Motivation):
     metaphor: str
