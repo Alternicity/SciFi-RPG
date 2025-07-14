@@ -98,6 +98,8 @@ class GangMemberAI(UtilityAI):
         return compute_salience(percept, self.npc, create_anchor_from_motivation(motivation))
 
     def choose_action(self, region):
+        print(f"[CHECK] choose_action called")
+        known_weapon_locations = []
         npc = self.npc
         top_motivation = npc.motivation_manager.get_highest_priority_motivation()
         anchor = create_anchor_from_motivation(top_motivation)
@@ -114,12 +116,6 @@ class GangMemberAI(UtilityAI):
 
         scored = [(p, anchor.compute_salience_for(p["data"], npc)) for p in percepts]
 
-        #you can also safety wrap the above line like this
-        """ if anchor and hasattr(anchor, "compute_salience_for"):
-            scored = [(p, anchor.compute_salience_for(p["data"], npc)) for p in percepts]
-        else:
-            scored = [(p, 1.0) for p in percepts] """
-
         scored.sort(key=lambda x: x[1], reverse=True)
         
         anchor = self.npc.current_anchor  # Is this still necessary? We already got anchor above, from top_motivation
@@ -129,13 +125,18 @@ class GangMemberAI(UtilityAI):
             if scored:
                 top_percept, score = scored[0]
                 print(f"[SALIENT] Most salient percept for anchor '{anchor.name}' is: {top_percept['data'].get('name')} (score: {score:.2f})")
-                if score >= 1.1 and "weapon" in top_percept["data"].get("tags", []) and hasattr(top_percept["origin"], "location"):
+                if score >= 0.8 and "weapon" in top_percept["data"].get("tags", []) and hasattr(top_percept["origin"], "location"):
                     #alt version of above line
                     #if isinstance(top_percept["origin"], Item) and "weapon" in top_percept["data"].get("tags", []):
                     #in this version item is not defined
                     weapon = top_percept["origin"]
+                    print(f"[SALIENCE DEBUG] {npc.name} sees percept {data.get('name')} with score {score:.2f}")
                     print(f"[AI DECISION] {npc.name} sees {weapon.name} as highly salient. Attempting to steal.")
+                    for p, s in scored:
+                        print(f"[DEBUG] Percept: {p['data'].get('name', p['data'].get('type'))}, Salience: {s:.2f}")
                     return {"name": "Steal", "params": {"item": weapon}}
+                if score < 0.8:
+                    print(f"[SKIP] {npc.name} sees {weapon.name} but score {score:.2f} is too low")
             else:
                 print(f"[AI] {npc.name} found no percepts worth acting on.")
 
@@ -206,8 +207,10 @@ class GangMemberAI(UtilityAI):
             print(f"[POST-THOUGHT] Thoughts: {[t.summary() for t in npc.mind.thoughts]}")
             for m in npc.mind.memory.semantic.get("shop_knowledge", []):
                 print(f"[DEBUG] Semantic memory: {m.description} tags: {m.tags} source: {getattr(m, 'source', None)}")
-
-            return {"name": "Idle"}
+            
+            print(f"[CHOOSE ACTION] {npc.name} returns Steal with item: {weapon.name}")
+            return {"name": "Steal", "params": {"item": weapon}}#this should be temporary, this is a general choose function
+            #return {"name": "Idle"}# the old default return
 
         from display import display_percepts_table
         display_percepts_table(npc)
@@ -269,7 +272,7 @@ class GangMemberAI(UtilityAI):
     def resolve_weapon_target_from_percepts(self):
         percepts = self.npc.get_percepts()
         anchor = Anchor(name="obtain_ranged_weapon", type="motivation", weight=1.5)
-        scored = [(p, compute_salience(p["data"], anchor, observer=self.npc)) for p in percepts]
+        scored = [(p, anchor.compute_salience_for(p["data"], self.npc)) for p in percepts]
         scored.sort(key=lambda x: x[1], reverse=True)
         if scored:
             top_percept, score = scored[0]
@@ -318,16 +321,17 @@ class GangMemberAI(UtilityAI):
                 # Confirm it's a shop that sells ranged weapons
                 from location import Shop
                 if not isinstance(location, Shop):
-                    print(f"[DEBUG] {location.name} is not a Shop instance.")
+                    if npc.is_test_npc:
+                        print(f"[DEBUG] {location.name} is not a Shop instance.")
                     continue
                 if not location.inventory.has_ranged_weapon():
                     print(f"[DEBUG] {location.name} does not sell ranged weapons.")
-                    print(f"[DEBUG] Shop inventory: {[item.name for item in location.inventory.items]}")
+                    print(f"[DEBUG] Shop inventory: {[item.name for item in location.inventory.items.values()]}")
 
                     continue
                 
                 print(f"[MEMORY CHECK] Considering shop: {location.name}")
-                print(f"[MEMORY CHECK] Inventory items: {[item.name for item in location.inventory.items]}")
+                print(f"[MEMORY CHECK] Inventory items: {[item.name for item in location.inventory.items.values()]}")
                 print(f"[MEMORY CHECK] Has ranged weapon: {location.inventory.has_ranged_weapon()}")
 
 

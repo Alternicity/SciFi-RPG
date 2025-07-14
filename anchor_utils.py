@@ -119,7 +119,7 @@ def create_anchor_from_thought(self, npc, thought, name: str, anchor_type: str =
 class ObtainWeaponAnchor(Anchor):#line 119
     def compute_salience_for(self, percept_data, npc) -> float:
         score = super().compute_salience_for(percept_data, npc)
-        print(f"[SALIENCE] Base score from Anchor: {score}")
+        print(f"[SALIENCE] Score: {score:.2f} for {percept_data.get('name', percept_data.get('type'))} | Anchor: {self.name}")
 
         if "weapon" in percept_data.get("tags", []):
             score -= 0.3

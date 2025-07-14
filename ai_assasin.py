@@ -6,6 +6,7 @@ from worldQueries import get_region_knowledge
 from character_thought import Thought
 from npc_actions import visit_location_auto
 from character_thought import Thought
+from anchor_utils import Anchor
 
 class AssassinAI(UtilityAI):
     def __init__(self, npc):
@@ -63,8 +64,13 @@ class AssassinAI(UtilityAI):
     
     #For AI Subclasses that need special behavior, override this method only
     def compute_salience_for_motivation(self, percept, motivation):
-        # Start from default
-        score = super().compute_salience_for_motivation(percept, motivation)
+        # Create an anchor specific to the motivation or context
+        anchor = Anchor(name="assassin_target", type="motivation", weight=motivation.urgency, tags=["assassin", "target_search"])
+        return anchor.compute_salience_for(percept, self.npc)
+        """ Notice how create_anchor_from_motivation(top_motivation) is used to define the anchor, and anchor drives
+        subsequent behavior.
+        So for all relevant actions, anchor.compute_salience_for() is how you'll calculate salience. """
+
 
         # Tweak or add special Assasin-specific logic
         """ if motivation.type == "rob":

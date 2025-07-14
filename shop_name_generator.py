@@ -135,7 +135,8 @@ def guess_specialization_from_inventory(inventory) -> str:
     for item in inventory.items.values():
         if hasattr(item, "get_percept_data"):
             data = item.get_percept_data()
-            tags.extend(data.get("tags", []))
+            if data is not None:
+                tags.extend(data.get("tags", []))
 
     # Simplified heuristics
     if any("weapon" in tag for tag in tags):

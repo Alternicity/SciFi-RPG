@@ -110,6 +110,25 @@ class MotivationManager:
             return Motivation("earn_money", 5)
         return max(self.motivations, key=lambda m: m.urgency)
 
+    def clear_highest_priority_motivation(self):
+        """Remove the motivation with the highest urgency."""
+        if not self.motivations:
+            return None  # Nothing to clear
+
+        top = max(self.motivations, key=lambda m: m.urgency)
+        self.motivations.remove(top)
+        return top
+
+    def resolve_motivation(self, type_name: str):
+        self.motivations = [m for m in self.motivations if m.type != type_name]
+        #removes a specific type
+
+    """ def clear_highest_priority_motivation(self):
+        for
+            max(self.motivations, key=lambda m: m.urgency)
+
+        return  """
+
     def get_motivations(self):
         return sorted(self.motivations, key=lambda m: m.urgency, reverse=True)
 
@@ -122,9 +141,6 @@ class MotivationManager:
 
     def has(self, motivation_type):
         return any(m.type == motivation_type for m in self.motivations)
-
-    def resolve_motivation(self, type_name: str):
-        self.motivations = [m for m in self.motivations if m.type != type_name]
 
     def reduce_urgency(self, type_name: str, amount=1):
         for m in self.motivations:

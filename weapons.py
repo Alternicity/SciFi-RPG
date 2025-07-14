@@ -21,6 +21,10 @@ class Weapon(ObjectInWorld):
         self.user = None        # Currently wielding the weapon
         self.history = []  # List of (character, event_type, timestamp)
 
+    @property
+    def tags(self):
+        return super().tags + ["weapon"]
+
     def assign_user(self, character):
         self.user = character
         logging.info(f"{character.name} is now using {self.name}")
@@ -39,6 +43,9 @@ class RangedWeapon(Weapon):
         self.range = range
         self.ammo = ammo
 
+    @property
+    def tags(self):
+        return super().tags + ["ranged", "ranged_weapon"]
 #MeleeWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them
 class MeleeWeapon(Weapon):
@@ -73,24 +80,28 @@ class Pistol(RangedWeapon):
         self.human_readable_id = "Unowned Pistol"
 
     def get_percept_data(self, observer=None):
-        tags = ["weapon", "pistol", "ranged"]
-
         data = {
             "description": self.human_readable_id or "Pistol",
             "type": self.__class__.__name__,
             "origin": self,
             "urgency": 1,
             "source": None,
-            "tags": tags,
-            "salience": self.compute_salience(observer),
-            "size": self.size.value if hasattr(self, "size") else None
+            "tags": self.tags,
+            "size": getattr(self, "size", None),
         }
-        # Optional post-processing hook
-        postproc = getattr(self, "_postprocess_percept", None)
-        if callable(postproc):
-            data = postproc(data, observer)
+
+        if observer is not None:
+                data["salience"] = self.compute_salience(observer)
 
         return data
+
+    @property
+    def tags(self):
+        return super().tags + ["pistol"]
+        
+        #return super().tags + ["weapon", "pistol", "ranged", "ranged_weapon"]
+    
+        
     
     
 #You can abstract this into a helper method later, but this is a good explicit start.

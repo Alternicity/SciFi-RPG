@@ -59,6 +59,10 @@ class ObjectInWorld(PerceptibleMixin):
         self.quantity = quantity
         self.bloodstained = None  # Can be a character reference or ID string
 
+    @property
+    def tags(self):
+        return []
+
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
@@ -69,7 +73,7 @@ class ObjectInWorld(PerceptibleMixin):
             "location": getattr(getattr(self, "location", None), "name", None),
             "sublocation": getattr(getattr(self, "sublocation", None), "name", None),
             "origin": self,
-            "salience": self.compute_salience(observer),
+            "salience": self.compute_salience(observer),  # Using anchor-based salience now
             "tags": getattr(self, "tags", []),
             "urgency": getattr(self, "urgency", 1),
             "weight": self.percept_weight(observer),
@@ -85,6 +89,21 @@ class ObjectInWorld(PerceptibleMixin):
             "size": self.size.value if isinstance(self.size, Enum) else str(self.size),
             "details": f"{self.name} ({self.item_type})"
         }
+
+    def compute_salience(self, observer):
+
+        anchor = getattr(observer, "current_anchor", None)
+        if anchor is None:
+            return getattr(self, "salience", 1.0)
+        # Lightweight data dict to avoid recursive call
+
+        data = {
+            "name": getattr(self, "name", "unknown"),
+            "type": self.__class__.__name__,
+            "tags": getattr(self, "tags", []),
+        }
+
+        return anchor.compute_salience_for(data, observer)
 
     def modulated_ambience(self) -> Dict[str, float]:
         modifier = {"perfect": 1.2, "neutral": 1.0, "poor": 0.7}.get(self.placement_quality, 1.0)

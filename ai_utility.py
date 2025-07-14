@@ -235,7 +235,7 @@ class UtilityAI(BaseAI):
     def examine_episodic_memory(self, episodic_memories):
         event_counts = defaultdict(int)
         for m in episodic_memories:
-            key = (m.subject, m.object_, m.verb, m.event_type)
+            key = (m.subject, m.object_, m.verb, m.type)
             event_counts[key] += 1
             if event_counts[key] >= 3:
                 print(f"[Insight]: {m.subject} has done {m.verb} {event_counts[key]} times.")

@@ -147,12 +147,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
         print(f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})")
 
-        for npc in all_characters:
-            print(f"[DEBUG] Checking npc: {npc.name} (id={id(npc)})")
-
-            if npc is debug_character:
-                print(f"[MATCH] {npc.name} is debug_character (same object)")
-
         if npc is debug_character:
             region_knowledges = [
                 mem for mem in npc.mind.memory.semantic.get("region_knowledge", [])
