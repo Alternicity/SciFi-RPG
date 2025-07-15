@@ -103,7 +103,8 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     print(f"[DEBUG] simulate_days Thought Check 1, debug_character attention focus is {npc.attention_focus}") """
                 
                     #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
-
+                    #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
+                    
         # STEP 2: Choose and Execute Action
         for npc in all_characters:
             if hasattr(npc, 'ai') and npc.ai:

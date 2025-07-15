@@ -410,6 +410,9 @@ class Character(PerceptibleMixin):
     def get_attribute(self, name):
         return getattr(self, name, 0)  # default to 0 if not found
 
+    def has_recently_acquired(self, tag: str):
+        return self.inventory and any(tag in item.tags for item in self.inventory.recently_acquired)
+
     def add_preferred_action(self, action: Callable, target: Any):
         """Add a preferred action for this character."""
         self.preferred_actions[action] = target

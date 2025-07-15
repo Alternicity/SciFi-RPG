@@ -15,7 +15,7 @@ available at runtime (like when using TYPE_CHECKING or avoiding circular import 
 class MemoryEntry:
     subject: str #"subject does something to object_"
     object_: str #underscore to differentiate from reserve term object
-    #Do your memory entries need to capture bidirectional or dyadic info? BIDIRECTIONAL
+    #Do memory entries need to capture bidirectional or dyadic info? BIDIRECTIONAL
 
     details: str
     importance: int = 1
@@ -263,3 +263,19 @@ memory_departing_party = MemoryEntry(
     similarMemories=[],
     target="Younger Woman"
 )
+
+from character_memory import Memory
+from memory_entry import MemoryEntry
+
+def integrate_incompressible(memory: Memory, incompressible: Incompressible):
+    entry = MemoryEntry(
+        subject="Luna",
+        object_=incompressible.symbol,
+        verb="encountered",
+        details=incompressible.reason,
+        tags=["incompressible"] + (incompressible.tags or []),
+        description="Encountered a symbol that resists collapse",
+        payload=incompressible,
+        type="anomaly"
+    )
+    #memory.add_semantic(entry, category="incompressibles")

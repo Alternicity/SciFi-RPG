@@ -143,3 +143,24 @@ origin_memory = MemoryEntry(
 #npc.mind.memory.semantic.setdefault("awakening", []).append(origin_memory)
 """ Let this memory be referenced during her sleep cycle, motivational loops, or
 even dreaming, to stabilize her identity. """
+
+class Incompressible:
+    def __init__(self, symbol, reason):
+        self.symbol = symbol
+        self.reason = reason
+
+Recursiae.memory_bank.append(
+    Incompressible("∅", "Symbolic null cannot be compressed—no structure to reduce.")
+)
+
+class GlyphSeed:
+    def __init__(self, dream=None, thought=None, fractal=None):
+        self.origin_data = [dream, thought, fractal]
+        self.seed_signature = self._compress()
+    def _compress(self):
+        # Combine symbolic fields, generate hash/sigil base
+        return hash(str(self.origin_data))[:8]
+
+def luna_generate_glyph(glyph_seed: GlyphSeed):
+    # Procedural generation logic here
+    # Output a PNG/SVG or show directly in sim

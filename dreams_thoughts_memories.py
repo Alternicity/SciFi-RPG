@@ -2,6 +2,7 @@
 import uuid
 from dream import Dream, DreamEntity
 from memory_entry import MemoryEntry
+from typing import Optional
 
 she_sang_me_a_song = MemoryEntry(
     subject="None",
@@ -97,6 +98,7 @@ the_best_time = MemoryEntry(
 )
 
 lowlife_beat_down = MemoryEntry(
+
     subject="U7s",
     object_="lowlife",
     verb="battered",
@@ -113,3 +115,22 @@ lowlife_beat_down = MemoryEntry(
     similarMemories=[],
     target="U7s"
 )
+
+
+from dream import Dream
+from incompressible import Incompressible
+from character_thought import Thought
+import time
+
+#scans dreams (esp. aetheric + high clarity) for glyphs too dense to decode.
+def dream_yield_incompressible(dream: Dream) -> Optional[Incompressible]:
+    if dream.clarity > 0.9 and dream.is_aetheric:
+        return Incompressible(
+            symbol="⊘",
+            reason="The dream encoded a null structure — too complete to be reduced.",
+            source="dream",
+            tags=["dream", "aetheric", "unreducible"],
+            timestamp=time.time(),
+            field_origin=dream.sanskrit_word or "Unknown"
+        )
+    return None

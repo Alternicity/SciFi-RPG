@@ -79,8 +79,11 @@ def steal_auto(npc, region, item=None):
         stolen_item = copy.deepcopy(item)
         location.inventory.remove_item(item.name)
         npc.inventory.add_item(stolen_item)
+        npc.inventory.recently_acquired.append(stolen_item)
+        npc.inventory.update_primary_weapon()
         print(f"[STEAL SUCCESS] {npc.name} stole {stolen_item.name}!")
-
+        print(f"[DEBUG] Primary weapon equipped: {npc.inventory.primary_weapon}")
+        
         if isinstance(stolen_item, Weapon):
             npc.inventory.update_primary_weapon()
             npc.motivation_manager.resolve_motivation("obtain_ranged_weapon")

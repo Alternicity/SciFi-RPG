@@ -1,7 +1,4 @@
-# Instead Inventory inheriting from another class, it contains instances
-# of ObjectInWorld. This is a "has-a" relationship rather than an "is-a" relationship.
-# Keeping the Inventory class standalone ensures modularity. You can later extend it to work with shops,
-# NPCs, or even factions without tight coupling.
+#inventory.py
 
 # The Inventory class can be reused for other entities like shops, factions, or NPCs without rewriting the logic
 from weapons import Weapon
@@ -23,6 +20,12 @@ class Inventory:
         self.owner = owner
         self.primary_weapon = None
         self.weapons = []
+        self.recently_acquired = [] #develop this more once the game tick/time cycle is more granular
+        #Later, during your time tick refactor, you could turn recently_acquired into a list of 
+        # (item, timestamp) tuples and prune based on age.
+        # see also character.has_recently_acquired
+        #You can let the AI treat new items with a kind of “spotlight” attention (salience boost, thought generation, etc.)
+
         #self.has_illegal_items = False 
         if items:
             for item in items:
@@ -65,6 +68,8 @@ class Inventory:
             if isinstance(item, Weapon) and self.owner:
                 self.weapons.append(item)
                 self.update_primary_weapon()
+            if "weapon" in item.tags:
+                self.recently_acquired.append(item)
 
         else:
             item.quantity = quantity
@@ -77,6 +82,20 @@ class Inventory:
                 self.update_primary_weapon()
 
         return True
+
+    def has_item(self, item) -> bool:
+        return item in self.items.values()
+        #If items is a dict keyed by name, you can do:
+        """ def has_item(self, item) -> bool:
+            return item.name in self.items """
+
+
+    def has_recently_acquired(self, item_type_or_tag: str) -> bool:
+        for item in self.recently_acquired:
+            tags = getattr(item, "tags", [])
+            if item_type_or_tag in tags:
+                return True
+        return False
 
     def has_illegal_items(self):
         """Returns True if any item in the inventory is illegal (legality=False)."""
@@ -147,9 +166,6 @@ class Inventory:
             self.primary_weapon = best_weapon
             print(f"{self.owner.name}'s primary weapon is now {best_weapon.name}.")
             
-    def has_ranged_weapon(self):
-        from weapons import RangedWeapon
-        return isinstance(self.primary_weapon, RangedWeapon)
 
 # Example Usage
 if __name__ == "__main__":
