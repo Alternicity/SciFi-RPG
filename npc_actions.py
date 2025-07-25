@@ -10,6 +10,7 @@ def visit_location_auto(character, region, location):
     character.location = location
     character.just_arrived = True
     location.recent_arrivals.append(character)
+    character.perceive_current_location()
     return True
 
 def rob_auto(npc, region=None, location=None, target_item=None, **kwargs):
@@ -80,6 +81,7 @@ def steal_auto(npc, region, item=None):
         location.inventory.remove_item(item.name)
         npc.inventory.add_item(stolen_item)
         npc.inventory.recently_acquired.append(stolen_item)
+        npc.inventory.update_weapon_flags()
         npc.inventory.update_primary_weapon()
         print(f"[STEAL SUCCESS] {npc.name} stole {stolen_item.name}!")
         print(f"[DEBUG] Primary weapon equipped: {npc.inventory.primary_weapon}")
@@ -103,9 +105,14 @@ def steal_auto(npc, region, item=None):
             importance=7,
             type="theft",
             tags=["theft", "weapon", "crime"],
-            initial_memory_type="episodic"
+            initial_memory_type="episodic",
+            function_reference=None,
+            implementation_path=None,
+            associated_function=None
         )
         npc.mind.memory.add_episodic(memory_entry)
+
+        print(f"[STEAL] {npc.name} successfully stole {stolen_item.name} from {location.name}")
 
         # Reduce related motivation
         npc.motivation_manager.resolve_motivation("obtain_ranged_weapon")

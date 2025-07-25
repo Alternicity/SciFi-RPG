@@ -19,7 +19,10 @@ she_sang_me_a_song = MemoryEntry(
     payload={"themes": ["music", "love", "friends"]},
     further_realizations=["I felt good"],
     similarMemories=[""],
-    target="U7s"
+    target="U7s",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
 
 my_adeptas = MemoryEntry(
@@ -37,7 +40,10 @@ my_adeptas = MemoryEntry(
     payload={"themes": ["sexual", "love", "flirtation"]},
     further_realizations=["I won't commit to any of them"],
     similarMemories=["queen_victoria_strategy"],
-    target="U7s"
+    target="U7s",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
 
 
@@ -56,7 +62,10 @@ she_held_my_hand = MemoryEntry(
     payload={"themes": ["sexual", "love", "flirtation"]},
     further_realizations=["We wanted more"],
     similarMemories=[],
-    target="U7s"
+    target="U7s",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
 
 she_held_my_hand = Dream(
@@ -94,7 +103,10 @@ the_best_time = MemoryEntry(
     payload={"themes": ["fun", "love", "laughter"]},
     further_realizations=["We needed the wetsuits"],
     similarMemories=[],
-    target="fam"
+    target="fam",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
 
 lowlife_beat_down = MemoryEntry(
@@ -113,7 +125,10 @@ lowlife_beat_down = MemoryEntry(
     payload={"themes": ["bruises", "status", "flirtation"]},
     further_realizations=["Danni got hot for me for that"],
     similarMemories=[],
-    target="U7s"
+    target="U7s",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
 
 

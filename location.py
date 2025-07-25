@@ -53,7 +53,6 @@ class Region(PerceptibleMixin):
             "description": f"Region: {self.name}, Wealth: {self.wealth}",
             "type": self.__class__.__name__,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "danger_level": str(self.danger_level) if self.danger_level else "Unknown"
         }
 
@@ -199,7 +198,6 @@ class HQ(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer),
             "faction": self.faction.name if self.faction else None
         }
 
@@ -229,7 +227,6 @@ class Vendor(Location):
 
     def get_percept_data(self, observer=None):
         tags = ["vendor", "shop", "human"]
-        salience = self.compute_salience(observer)
 
         if hasattr(self, "faction"):
             tags.append(f"faction:{self.faction.name}")
@@ -246,7 +243,6 @@ class Vendor(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
         }
 
     def show_inventory(self):
@@ -278,6 +274,8 @@ class Shop(Vendor):
 
     description: str = "Some shop"
     legality: bool = True
+    has_security: bool = True  # <-- For testing
+
     employees_there: List['Employee'] = field(default_factory=list)
     characters_there: List['Character'] = field(default_factory=list)
      # menu_options should be defined with actions
@@ -316,15 +314,15 @@ class Shop(Vendor):
             "robbable": True,
             "origin": self,
             "urgency": 1,
-            "tags": ["location", "weapons", "weapon", "ranged_weapon"],#not used by query_memory_by_tags() 
+            "tags": ["location", "weapons", "weapon", "pistol", "ranged_weapon"],#not used by query_memory_by_tags() 
             #unless you create a memory entry that inherits those tags.
 
             "source": None,
             "security": self.security_level,
             "is_open": self.is_open,
-            "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
+            "has_security": self.has_security,
         }
+    
 
     def to_dict(self):
         return asdict(self)
@@ -418,7 +416,6 @@ class CorporateStore(Vendor):
             "is_open": self.is_open,
             "has_security": self.has_security(),
             "faction": self.faction.name if self.faction else None,
-            "salience": self.compute_salience(observer)
         }
     
     def __repr__(self):
@@ -482,7 +479,6 @@ class MechanicalRepairWorkshop(Location):
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
-            "salience": self.compute_salience(observer),
             "tags": [],
             "urgency": 1,
             "menu_options": [],
@@ -544,7 +540,6 @@ class ElectricalWorkshop(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "urgency": 1,
             "tags": ["workshop", "tools"],
             "menu_options": [],
@@ -612,7 +607,6 @@ class Stash(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "Gang"],
             "urgency": 1,
             "menu_options": [],
@@ -683,7 +677,6 @@ class Factory(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "urgency": 1,
             "tags": ["location", "tools"],
             "menu_options": [],
@@ -748,7 +741,6 @@ class Nightclub(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "tools"],
             "urgency": 1,
             "menu_options": [],
@@ -756,7 +748,6 @@ class Nightclub(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -826,7 +817,6 @@ class Mine(Location):
             "security": self.security_level,
             "is_open": self.is_open,
             "has_security": self.has_security(),
-            "salience": self.compute_salience(observer)
         }
 
     def to_dict(self):
@@ -969,7 +959,6 @@ class Airport(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location"],
             "urgency": 1,
             "menu_options": [],
@@ -1094,7 +1083,6 @@ class Port(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location"],
             "urgency": 1,
             "menu_options": [],
@@ -1223,7 +1211,6 @@ class Factory(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "tools"],
             "urgency": 1,
             
@@ -1305,7 +1292,6 @@ class Cafe(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "food"],
             "urgency": 1,
             "source": None,
@@ -1385,7 +1371,6 @@ class Park(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location"],
             "urgency": 1,
             "menu_options": [],
@@ -1483,7 +1468,6 @@ class Museum(Location):
             "urgency": 1,
             "tags": ["location", "tools"],
             "source": None,
-            "salience": self.compute_salience(observer),
             "menu_options": [],
             "security": self.security_level,
             "is_open": self.is_open,
@@ -1538,7 +1522,6 @@ class Library(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "books"],
             "urgency": 1,
             
@@ -1596,7 +1579,6 @@ class ResearchLab(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "tools"],
             "urgency": 1,
             "source": None,
@@ -1663,7 +1645,6 @@ class Warehouse(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "urgency": 1,
             "tags": ["location", "tools"],
             
@@ -1778,7 +1759,6 @@ class House(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location"],
             "urgency": 1,
             
@@ -1899,7 +1879,6 @@ class Holotheatre(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location"],
             "urgency": 1,
             
@@ -1962,7 +1941,6 @@ class MunicipalBuilding(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "VIP"],
             "urgency": 1,
             
@@ -2024,7 +2002,6 @@ class PoliceStation(Location):
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,
-            "salience": self.compute_salience(observer),
             "tags": ["location", "police", "weapons"],
             "urgency": 1,
             "source": None,

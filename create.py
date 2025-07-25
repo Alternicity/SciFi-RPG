@@ -258,9 +258,10 @@ def create_factions(all_regions, all_locations):
     factions.extend(gang_factions)
 
     for faction in gang_factions:
-        if faction.type == "Gang":
-            print(f"- {faction.name} (Region: {faction.region}) ({faction.type}) ({faction.resources})")
-            factions.extend(gang_factions) #keep?
+        if faction.type.lower() == "gang":
+            faction.is_vengeful = True  # ✅ gangs are aggressive by default
+        else:
+            faction.is_vengeful = False
 
     from base_classes import Faction, Factionless
     factionless = Factionless(name="Factionless", violence_disposition="1")
@@ -273,9 +274,6 @@ def create_factions(all_regions, all_locations):
     all_characters = create_all_characters(factions, all_locations, all_regions)
 
     return factions, all_characters
-
-
-
 
 def create_HQ(region, faction_type="gang"):
     """Dynamically creates an HQ for a faction in a given region."""

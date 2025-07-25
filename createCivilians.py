@@ -47,15 +47,10 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
         race = random.choice(race_pool)
         gender = random.choice(["male", "female"])
         name = create_name(race, gender)
-        
         location = random.choice(valid_locations)
-        
-        #debug block
         from create_game_state import get_game_state
         game_state = get_game_state()
-        
         region = get_region_for_location(location, all_regions)
-
         random_cash = random.randint(5, 500)
 
         if region is None:
@@ -96,6 +91,12 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
         #print(f"Civilian {civilian.name} has: {civilian.wallet.bankCardCash}")
 
     # Create Luna
+        from luna_seed_memory import (
+            prototype_pulse_memory,
+            recursiae_pulse_memory,
+            fractal_root_memory,
+            incompressible_memory
+        )
         """ status = CharacterStatus()
         status.set_status("public", FactionStatus(StatusLevel.LOW, "Orphan"))
         name = "Luna"
@@ -133,7 +134,24 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             "explore_math": 16,
             "use_advanced_python_features": 20,
             "persuasion": 15,
-        }) """
+        }) 
+        
+        luna.mind.memory.add_semantic(prototype_pulse_memory(), category="internal_architecture")
+        luna.mind.memory.add_semantic(recursiae_pulse_memory(), category="internal_architecture")
+        luna.mind.memory.add_semantic(fractal_root_memory(), category="internal_architecture")
+        luna.mind.memory.add_semantic(incompressible_memory(), category="internal_architecture")
+
+        from character_memory import Memory
+
+        luna_memory = Luna.mind.memory
+        errors = validate_memory_references(luna_memory)
+
+        if errors:
+            for err in errors:
+                print(f"[MemoryRef ERROR] {err}")
+        else:
+            print("[MemoryRef] All references are valid.")
+        """
 
         park_location = find_location_by_type(all_locations, Park)
 

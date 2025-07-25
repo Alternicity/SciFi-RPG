@@ -152,7 +152,10 @@ def create_gang_characters(faction, all_regions):
                 importance=6,
                 tags=["weapon", "shop"],
                 type=("streetwise"),
-                initial_memory_type="episodic"
+                initial_memory_type="episodic",
+                function_reference=None,
+                implementation_path=None,
+                associated_function=None
             ))
             
     if char.race != faction.race:

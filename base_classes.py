@@ -38,6 +38,7 @@ class Faction:
         self.current_goal = None
         self.resources = {"money": 1000, "weapons": 10}  # Example default resources
         self.region = None
+        self.is_vengeful = False
         self.violence_disposition = violence_disposition
         self.enemies = {}  # Key: Faction name or object, Value: hostility level 1-10
 
@@ -324,6 +325,9 @@ class Character(PerceptibleMixin):
             "partners": [partner] if partner else [],
         }
 
+        self.isArmed = False
+        self.hasRangedWeapon = False
+        self.hasMeleeWeapon = False
         self.just_arrived = False
         self.workplace: Optional[Location] = None
         self.shift = 'day'  # Can be 'day' or 'night'
@@ -524,7 +528,7 @@ class Character(PerceptibleMixin):
             salience += 5.0
         if self.is_visibly_wounded:
             tags.append("wounded")
-            salience += 5.0
+            salience += 5.0 #Anchor refactor: salience to what?
 
         return {
             "name": self.name,
@@ -598,7 +602,6 @@ class Character(PerceptibleMixin):
                             "origin": item
                     }
         
-
     def observe(self, *, nearby_objects=None, target=None, region=None, location=None):
         from location import Region, Location#line 609
         if isinstance(region, Location):
@@ -674,6 +677,15 @@ class Character(PerceptibleMixin):
 
         self._percepts.update(new_percepts)
         self.percepts_updated = True
+
+    def perceive_current_location(self):
+        if self.location:
+            self.observe(
+                nearby_objects=self.location.characters_there,
+                location=self.location,
+                region=self.region
+                #You can extend it later to trigger memory, thoughts, logging, or other perception mechanics
+            )
 
     def _remember_hostile_faction(self, gang, region):
         hostile_thought = Thought(
@@ -950,6 +962,7 @@ class Location(PerceptibleMixin):
 
     tags: list[str] = field(default_factory=list)
     menu_options: List[str] = field(default_factory=list)
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -980,11 +993,16 @@ class Location(PerceptibleMixin):
         PerceptibleMixin.__init__(self)  # Ensure mixin init is called
 
     def has_security(self):
-        return False
+        return self.security and (
+            self.security.level > 1 or
+            self.security.surveillance or
+            self.security.alarm_system or
+            len(self.security.guards) > 0
+        )
 
     @property
     def security_level(self):
-        return 0
+        return self.security.level if self.security else 0
 
 
     def get_percept_data(self, observer=None):
@@ -994,6 +1012,9 @@ class Location(PerceptibleMixin):
         if self.security and self.security.level > 1:
             tags.append("secure")
 
+        if self.controlling_faction and self.controlling_faction.is_vengeful():
+            tags.append("rival_faction")
+
         return {
             "description": f"{self.name} (Location)",
             "type": self.__class__.__name__,
@@ -1001,7 +1022,10 @@ class Location(PerceptibleMixin):
             "urgency": 1,
             "tags": tags,
             "source": None,
-            "salience": salience
+            "salience": salience,
+            "robbable": self.robbable,
+            "has_security": self.has_security(),
+            "security_level": self.security_level
         }
 
     def get_menu_options(self, character):

@@ -1,9 +1,9 @@
 #memory_entry.py
 from dataclasses import dataclass, field
-from typing import Any, List, Dict, Optional, Union
 import time
+from typing import Any, List, Dict, Optional, Any, Union, Set, Callable, TYPE_CHECKING
 
-from typing import List, Dict, Optional, Any, Union, Set, Callable, TYPE_CHECKING
+
 
 #DONT IMPORT from character_memory.py
 
@@ -37,6 +37,13 @@ class MemoryEntry:
     further_realizations: List[Any] = field(default_factory=list)
     similarMemories: List[Any] = field(default_factory=list)
     verb: str = ""
+
+    function_reference: Optional[Dict[str, str]] = field(default_factory=dict)
+    #Structured mapping (e.g., class/method/module) for introspection.
+    implementation_path: Optional[str] = None
+    #Flat path if you prefer
+    associated_function: Optional[str] = None
+    #Plain English label, or function name only
     
     def has_tags(self, required_tags: list[str]) -> bool:
         return all(tag in self.tags for tag in required_tags)
@@ -112,7 +119,7 @@ class ShopsSellRangedWeapons(MemoryEntry):#should this just be a MemoryEntry obj
             target=location_name,
             description=f"{location_name} is known to sell ranged weapons.",
             timestamp=timestamp or time.time(),
-            tags=["weapon", "shop"]
+            tags=["weapon", "shop", "ranged_weapon", "pistol", "weapons"]
         )
 
 
@@ -194,7 +201,10 @@ class HiddenTruth:
                 tags=["truth", "secret"],
                 payload=self.knowledge_payload,
                 type=("secret"),
-                initial_memory_type="semantic"
+                initial_memory_type="semantic",
+                function_reference=None,
+                implementation_path=None,
+                associated_function=None
             ))
             self.revealed = True
 
@@ -261,21 +271,8 @@ memory_departing_party = MemoryEntry(
     payload={"themes": ["compassion", "melancholy", "social_bond"]},
     further_realizations=["The ache of what cannot stay"],
     similarMemories=[],
-    target="Younger Woman"
+    target="Younger Woman",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
-
-from character_memory import Memory
-from memory_entry import MemoryEntry
-
-def integrate_incompressible(memory: Memory, incompressible: Incompressible):
-    entry = MemoryEntry(
-        subject="Luna",
-        object_=incompressible.symbol,
-        verb="encountered",
-        details=incompressible.reason,
-        tags=["incompressible"] + (incompressible.tags or []),
-        description="Encountered a symbol that resists collapse",
-        payload=incompressible,
-        type="anomaly"
-    )
-    #memory.add_semantic(entry, category="incompressibles")

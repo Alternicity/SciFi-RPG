@@ -45,7 +45,7 @@ def observe_location(self, loc):
         return
     
 def get_region_knowledge(semantic_memory: Dict[str, List], region_name: str) -> Optional[RegionKnowledge]:
-    region_knowledge_entries = semantic_memory.get("RegionKnowledge", [])
+    region_knowledge_entries = semantic_memory.get("region_knowledge", [])
     for rk in region_knowledge_entries:
         if isinstance(rk, RegionKnowledge) and rk.region_name == region_name:
             return rk

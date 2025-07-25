@@ -6,7 +6,7 @@ from characterActionTests import IntimidationTest
 from InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
-from memory_entry import MemoryEntry
+
 
 from output_utils import group_reactions
 
@@ -95,6 +95,7 @@ class TemplateEvent(Event):
 
     def generate_percepts(self):
         # Isolate percept logic from resolve()
+        from memory_entry import MemoryEntry
         percept = {
             "description": f"{self.name} at {self.location.name}",
             "origin": self,
@@ -119,7 +120,10 @@ class TemplateEvent(Event):
                     target=self.instigator,
                     approx_identity=self.instigator.get_appearance_description(),
                     description=f"Template Event Memory.",
-                    initial_memory_type="episodic"
+                    initial_memory_type="episodic",
+                    function_reference=None,
+                    implementation_path=None,
+                    associated_function=None
                 ))
 
     def conclude(self):
@@ -253,6 +257,7 @@ class Robbery(Event):
         return None
     
     def resolve(self, simulate=False, verbose=True):
+        from memory_entry import MemoryEntry
         print(f"\n[Event]: {self.description}")
         self.apply(self.instigator)
 
@@ -364,7 +369,10 @@ class Robbery(Event):
             target=self.instigator,
             approx_identity=self.instigator.get_appearance_description(),
             description=f"Witnessed a {appearance} commit a robbery at {self.location.name}",
-            initial_memory_type="episodic"
+            initial_memory_type="episodic",
+            function_reference=None,
+            implementation_path=None,
+            associated_function=None
         ))
 
         print(f"[MEMORY] {witness.name} will remember this episode involving {self.instigator.name} at {self.location.name}.")

@@ -90,20 +90,6 @@ class ObjectInWorld(PerceptibleMixin):
             "details": f"{self.name} ({self.item_type})"
         }
 
-    def compute_salience(self, observer):
-
-        anchor = getattr(observer, "current_anchor", None)
-        if anchor is None:
-            return getattr(self, "salience", 1.0)
-        # Lightweight data dict to avoid recursive call
-
-        data = {
-            "name": getattr(self, "name", "unknown"),
-            "type": self.__class__.__name__,
-            "tags": getattr(self, "tags", []),
-        }
-
-        return anchor.compute_salience_for(data, observer)
 
     def modulated_ambience(self) -> Dict[str, float]:
         modifier = {"perfect": 1.2, "neutral": 1.0, "poor": 0.7}.get(self.placement_quality, 1.0)
@@ -422,11 +408,16 @@ class SmartPhone(ObjectInWorld):
             "type": self.__class__.__name__,
             "name": self.name,
             "origin": self,
+            "tags": self.tags,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
         }
     
+    @property
+    def tags(self):
+        return ["electronic", "smartphone", "gadget"]
+
 class CommoditiesBox(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
@@ -460,11 +451,16 @@ class CashRegister(ObjectInWorld):
             "type": self.__class__.__name__,
             "name": self.name,
             "origin": self,
+            "tags": self.tags,
             "item_type": self.item_type,
             "description": f"{self.name} ({self.item_type})"
             
         }
-    
+
+    @property
+    def tags(self):
+        return ["cash", "econonmic"]
+
     def deposit(self, amount):
         self.cash += amount
 

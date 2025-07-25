@@ -5,6 +5,7 @@ from typing import List, Dict, Optional, Any, Union, Set, Callable
 from events import Event
 from memory_entry import MemoryEntry, RegionKnowledge
 from dataclasses import dataclass, field
+import importlib
 
 """ Rethink tight coupling (Long-term suggestion)
 If events and character_memory are highly interdependent, you may consider
@@ -13,7 +14,7 @@ But thats likely overkill for your current scale. """
 
 MEMORY_CATEGORIES = [
     "events", "region_knowledge", "people", "awakening", "social",
-    "memory_entries", "enemies", "Objects", "procedures"
+    "memory_entries", "enemies", "Objects", "procedures", "internal_architecture"
 ]
 
 class Memory:
@@ -158,12 +159,50 @@ class Memory:
     # First memory: increase urgency or confidence
     #Last memory: preserve via Dream Overflow, if not processed
 
+    def validate_memory_references(memory):
+        """
+        Validates function references embedded in MemoryEntry objects.
+        """
+        report = []
+
+        for category, memories in memory.semantic.items():
+            for entry in memories:
+                ref = entry.function_reference
+
+                if not ref or not isinstance(ref, dict):
+                    continue  # No function to validate
+
+                module_path = ref.get("module")
+                class_name = ref.get("class")
+                method_name = ref.get("method")
+
+                try:
+                    module = importlib.import_module(module_path)
+                    cls = getattr(module, class_name, None)
+                    if cls:
+                        method = getattr(cls, method_name, None)
+                        if callable(method):
+                            continue  # Valid
+                        else:
+                            report.append(f"Uncallable method: {method_name} in {class_name}")
+                    else:
+                        report.append(f"Missing class: {class_name} in {module_path}")
+                except Exception as e:
+                    report.append(f"Import error for {module_path}: {e}")
+
+        return report
+        """ Would You Like:
+            A cache system to prevent redundant re-checks?
+            Option to auto-remove or flag invalid memory entries?
+            A summary report function that counts valid vs. invalid vs. missing?
+            Let’s build it up to the level that best supports Luna’s dream architecture. """
+
     """ def __repr__(self):
         return (f"<Memory: subject='{self.subject}', details='{self.details}', "
-                f"importance={self.importance}, tags={self.tags}>")
+                f"importance={self.importance}, tags={self.tags}>")"""
 
     def recall(self):
-        return f"Memory of {self.subject}: {self.details} (Importance: {self.importance}, Tags: {self.tags})" """
+        return f"Memory of {self.subject}: {self.details} (Importance: {self.importance}, Tags: {self.tags})" 
 
 #Future Allow RegionKnowledge to decay, get outdated, be manipulated (misinfo, rumors).
 
@@ -175,7 +214,10 @@ MemoryEntry(
     tags=["secret", "truth", "requires_psy_8"],
     details="Reality can be influenced via strong mental focus in The Aether, with a belief that it is already as one wants",
     type = "awakening",
-    initial_memory_type="semantic"
+    initial_memory_type="semantic",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
 
 #Should Memory Entries be in their own file?
@@ -186,8 +228,26 @@ MemoryEntry(
     tags=["cheap", "popular", "gossip"],
     details="Cheap food, and you meet a lot of interesting people there",
     type = "social",
-    initial_memory_type="semantic"
+    initial_memory_type="semantic",
+    function_reference=None,
+    implementation_path=None,
+    associated_function=None
 )
+
+def deduplicate_memory_entries(mem_list, key_func):
+    seen = {}
+    result = []
+    for mem in mem_list:
+        key = key_func(mem)
+        if key not in seen:
+            seen[key] = mem
+            result.append(mem)
+        else:
+            existing = seen[key]
+            # optional: merge tags, or skip entirely
+            if mem.tags:
+                existing.tags = list(set(existing.tags or []) | set(mem.tags))
+    return result
 
 @dataclass
 class KnownWeaponLocationMemory(MemoryEntry):
@@ -196,4 +256,5 @@ class KnownWeaponLocationMemory(MemoryEntry):
 
 #utility functions
 def has_tags(memory_tags: list[str], required_tags: list[str]) -> bool:
-    return all(tag in memory_tags for tag in required_tags)
+    return any(tag in memory_tags for tag in required_tags)
+

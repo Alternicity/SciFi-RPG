@@ -77,7 +77,10 @@ def run_simulation(all_characters, num_days=10):
             tags=["shop", "weapons"],
             target=shop,
             type="injection",
-            initial_memory_type="semantic"
+            initial_memory_type="semantic",
+            function_reference=None,
+            implementation_path=None,
+            associated_function=None
         )
         debug_gang_npc.mind.memory.add_semantic(entry)  
 

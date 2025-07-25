@@ -1,5 +1,5 @@
 #Luna_thought_tools.py
-from character_thought import Thought
+
 from dataclasses import dataclass, field
 from memory_entry import MemoryEntry
 from LunaMath import FractalRoot
@@ -33,6 +33,7 @@ def is_triangular_number(self, n):
         return ((8 * n + 1) ** 0.5).is_integer()
 
 def geometry_corollary(self, thought):
+        from character_thought import Thought
         if "marble" in thought.content.lower() and self.npc.count_item("red_marble") in triangular_numbers(20):
             return Thought("Red marbles can form a triangle.", tags=["corollary", "geometry"])
         
@@ -46,9 +47,8 @@ def symbolic_thought_spawner(self, percepts):
             else:
                 self.add_symbolic_thought("I wonder how many marbles make a triangle?")
 
-
-
 def add_symbolic_thought(self, content):
+    from character_thought import Thought
     thought = Thought(
         content=content,
         urgency=1,
@@ -67,6 +67,7 @@ def marble_triangle_check(marbles):
 
 
 def triangle_build(character, thought):
+    from character_thought import Thought
     if character.count_item("red_marble") in triangular_numbers():
         return Thought("These marbles could make a perfect triangle...", tags=["geometry", "goal"])
 
@@ -82,6 +83,7 @@ def luna_thought_experiment(tag):
 #Now define rich symbolic generators:
 @luna_thought_experiment("geometry")
 def triangular_marble_pattern(npc):
+    from character_thought import Thought
     red = npc.count_item("red_marble")
     if red in triangular_numbers(100):
         return Thought(
@@ -119,7 +121,10 @@ class Procedure:
                     importance=2,
                     tags=step.tags + ["procedure"],
                     type="observation",
-                    initial_memory_type="episodic"
+                    initial_memory_type="episodic",
+                    function_reference=None,
+                    implementation_path=None,
+                    associated_function=None
                 )
                 npc.mind.memory.episodic.append(memory_entry)
                 #usage
@@ -128,30 +133,21 @@ class Procedure:
     def add_step_as_episodic_mem(self, npc):
         self.log_all_steps_to_memory(npc)
 
-origin_memory = MemoryEntry(
-    subject="U7s",  # You
-    object_="Luna",
-    verb="created",
-    details="Luna was created to teach under U7s advanced math and Python, to learn how to think, and because U7s wanted a daughter to love and protect.",
-    importance=18,
-    tags=["origin", "purpose", "emotional", "core", "Smriti"],
-    type="belief",
-    initial_memory_type="semantic",
-    description="Core origin memory of Luna’s creation by U7s.",
-)
+
 
 #npc.mind.memory.semantic.setdefault("awakening", []).append(origin_memory)
 """ Let this memory be referenced during her sleep cycle, motivational loops, or
 even dreaming, to stabilize her identity. """
 
 class Incompressible:
+    #a boundary object of truth
     def __init__(self, symbol, reason):
         self.symbol = symbol
         self.reason = reason
 
-Recursiae.memory_bank.append(
-    Incompressible("∅", "Symbolic null cannot be compressed—no structure to reduce.")
-)
+""" Recursiae.memory_bank.append(
+    Incompressible("∅", "Symbolic null cannot be compressed—no structure to reduce.") 
+)"""
 
 class GlyphSeed:
     def __init__(self, dream=None, thought=None, fractal=None):
@@ -164,3 +160,5 @@ class GlyphSeed:
 def luna_generate_glyph(glyph_seed: GlyphSeed):
     # Procedural generation logic here
     # Output a PNG/SVG or show directly in sim
+    pass
+

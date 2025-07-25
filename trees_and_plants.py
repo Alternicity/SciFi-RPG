@@ -56,9 +56,12 @@ class Plant(ObjectInWorld):
 class GoldenRatioTree(Plant):
     name: str = "Golden Spiral Tree"
     geometry: str = "phi_spiral"
-    resonance_factor: float = 1.5
+    resonance_factor: float = 1.5# resurse this
     golden_ratio_influence: float = 2.0
     foliage_color: str = "gold"
+#"What I receive, I reshape. What I shape, I become"
+#That is pretty good. Maybe my imaginary trees need recursion built into their resonance.
+
 
 @dataclass
 class BonsaiTree(Plant):

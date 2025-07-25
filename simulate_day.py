@@ -22,9 +22,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
             for npc in region.characters_there:
                 if npc.is_player:
                     continue
-
-                for npc in npc.location.characters_there:
-                    npc.just_arrived = False
+                
 
                 for location in all_locations:
                     location.recent_arrivals.clear()
@@ -129,7 +127,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 if action:
                     npc.ai.execute_action(action, region)
                     print(f"[FLOW DEBUG] {npc.name} finished action, current location: {npc.location}")
-
+                npc.just_arrived = False
 
         # STEP 3: Post-Day DEBUG (single character)
         for npc in all_characters:
@@ -178,5 +176,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 m.type in {"rob", "steal", "obtain_ranged_weapon"} for m in motivations
             )
 
-
+def begin_npc_turn(npc):
+    npc.just_arrived = False
 

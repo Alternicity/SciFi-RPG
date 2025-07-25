@@ -219,7 +219,10 @@ class UtilityAI(BaseAI):
                 target=anchor,
                 importance=thought.urgency,
                 type="anchor_creation",
-                initial_memory_type="episodic"
+                initial_memory_type="episodic",
+                function_reference=None,
+                implementation_path=None,
+                associated_function=None
             )
             npc.mind.memory.add_episodic(memory_entry)
             #anchors are important, promte to semantic here
@@ -368,7 +371,28 @@ class UtilityAI(BaseAI):
         print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
         print(f"[DEBUG] Thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
 
-        
+    def resolve_percept_target_for_anchor(self, anchor, required_tags=None):
+        """
+        Utility function to return the best percept matching an anchor.
+        """
+        percepts = self.npc.get_percepts()
+        scored = []
+
+        for p in percepts:
+            data = p["data"]
+            origin = p["origin"]
+            if not anchor.is_percept_useful(data):
+                continue
+            if required_tags and not all(tag in data.get("tags", []) for tag in required_tags):
+                continue
+            score = anchor.compute_salience_for(data, self.npc)
+            scored.append((origin, score))
+
+        if scored:
+            scored.sort(key=lambda x: x[1], reverse=True)
+            return scored[0][0]  # return best match origin
+        return None
+
     def evaluate_turf_war_status(self, region_knowledge):
         # Basic version — maybe no-op or minimal response
         return None
@@ -453,7 +477,7 @@ class UtilityAI(BaseAI):
             # You can adjust these based on your thought/tag system
             if "rob" in thought.tags and "weapon" in thought.tags:
                 print(f"[THOUGHT EVAL] {self.npc.name} is influenced by thought: {thought.content}")
-                self.npc.motivation_manager.increase_urgency("rob", thought.weight)
+                self.npc.motivation_manager.increase("rob", amount=thought.weight)
                 thought.resolved = True  # Only apply once for now
 
     def evaluate_memory_for_threats(self, memory):

@@ -11,7 +11,38 @@ class Inventory:
 
     def has_ranged_weapon(self):
         from weapons import RangedWeapon
-        return any(isinstance(item, RangedWeapon) for item in self.items)
+        has_ranged = any(isinstance(item, RangedWeapon) for item in self.items)
+
+        if hasattr(self.owner, "hasRangedWeapon"):
+            self.owner.hasRangedWeapon = has_ranged
+            if has_ranged:
+                self.owner.isArmed = True
+
+        return has_ranged
+
+    def has_melee_weapon(self):
+        from weapons import MeleeWeapon
+        has_melee = any(isinstance(item, MeleeWeapon) for item in self.items)
+
+        if hasattr(self.owner, "hasMeleeWeapon"):
+            self.owner.hasMeleeWeapon = has_melee
+            if has_melee:
+                self.owner.isArmed = True
+
+        return has_melee
+
+    def update_weapon_flags(self):
+        #you can call inventory.update_weapon_flags() whenever an item is added, removed, or evaluated
+        from weapons import MeleeWeapon, RangedWeapon
+        has_melee = any(isinstance(item, MeleeWeapon) for item in self.items)
+        has_ranged = any(isinstance(item, RangedWeapon) for item in self.items)
+
+        if hasattr(self.owner, "hasRangedWeapon"):
+            self.owner.hasRangedWeapon = has_ranged
+        if hasattr(self.owner, "hasMeleeWeapon"):
+            self.owner.hasMeleeWeapon = has_melee
+        if hasattr(self.owner, "isArmed"):
+            self.owner.isArmed = has_melee or has_ranged
 
     def __init__(self, items=None, max_capacity=None, owner=None):
         """Initialize an inventory with optional maximum capacity."""
@@ -67,6 +98,7 @@ class Inventory:
             # Weapon logic
             if isinstance(item, Weapon) and self.owner:
                 self.weapons.append(item)
+                self.update_weapon_flags()
                 self.update_primary_weapon()
             if "weapon" in item.tags:
                 self.recently_acquired.append(item)
@@ -103,6 +135,7 @@ class Inventory:
 
     def remove_item(self, item_name, quantity=1):
         item = self.items.get(item_name)
+
         if not item:
             logging.warning(f"{item_name} not found.")
             return False
@@ -124,6 +157,7 @@ class Inventory:
         if isinstance(item, Weapon) and self.owner:
             if item in self.owner.weapons:
                 self.owner.weapons.remove(item)
+                self.update_weapon_flags()
 
             # Reevaluate primary weapon
             if self.owner.primary_weapon == item:

@@ -90,16 +90,12 @@ class Pistol(RangedWeapon):
             "size": getattr(self, "size", None),
         }
 
-        if observer is not None:
-                data["salience"] = self.compute_salience(observer)
-
         return data
 
     @property
     def tags(self):
-        return super().tags + ["pistol"]
-        
-        #return super().tags + ["weapon", "pistol", "ranged", "ranged_weapon"]
+        return super().tags + ["pistol", "weapon", "ranged", "ranged_weapon"]
+        #does this need to be called for pistol instances to have tags?
     
         
     
@@ -136,7 +132,6 @@ class SMG(RangedWeapon):
             "value": self.price,
             "tags": tags,
             "danger": self.intimidation,
-            "salience": self.compute_salience(observer),
             "size": self.size.value if hasattr(self, "size") else None
         }
     
@@ -169,7 +164,6 @@ class Rifle(RangedWeapon):
             "value": self.price,
             "tags": tags,
             "danger": self.intimidation,
-            "salience": self.compute_salience(observer),  # You can tweak this per use case
             "size": self.size.value if hasattr(self, "size") else None
         }
 
@@ -202,7 +196,6 @@ class Shotgun(RangedWeapon):
             "value": self.price,
             tags: tags,
             "danger": self.intimidation,
-            "salience": self.compute_salience(observer),  # You can tweak this per use case
             "size": self.size.value if hasattr(self, "size") else None
         }
 
@@ -232,7 +225,6 @@ class Sword(MeleeWeapon):
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
-            "salience": self.compute_salience(observer),  # You can tweak this per use case
             "size": self.size.value if hasattr(self, "size") else None
         }
 
@@ -265,7 +257,6 @@ class Knife(MeleeWeapon):
             "value": self.price,
             "danger": self.intimidation,
             "item_type": self.item_type,
-            "salience": self.compute_salience(observer),
             "size": self.size.value if hasattr(self, "size") else None
         }
 
@@ -294,7 +285,6 @@ class Club(MeleeWeapon):
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
-            "salience": self.compute_salience(observer),  # You can tweak this per use case
             "size": self.size.value if hasattr(self, "size") else None
         }
 
@@ -325,6 +315,5 @@ class Electrobaton(MeleeWeapon):
             "item_type": self.item_type,
             "value": self.price,
             "danger": self.intimidation,
-            "salience": self.compute_salience(observer),  # You can tweak this per use case
             "size": self.size.value if hasattr(self, "size") else None
         }

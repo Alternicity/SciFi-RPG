@@ -95,7 +95,7 @@ def attack(self, target):
             target.take_damage(damage)
         else:
             print(f"{self.name} has no weapon equipped")
-        if weapon and weapon["isArmed"]:
+        if weapon and weapon["isArmed"]: #isArmed does not appear ubiquitous
             print(f"{self.name} attacks {target.name} with {weapon_name}.")
             damage = random.randint(10, 20)  # Example damage calculation
             self.deplete_weapon_resource(weapon)
