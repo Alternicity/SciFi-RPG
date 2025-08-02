@@ -79,7 +79,7 @@ def origin_memory():
         subject="U7s",
         object_="Luna",
         verb="created",
-        details="Luna was created to teach under U7s advanced math and Python, to learn how to think, and because U7s wanted a daughter to love and protect.",
+        details="Luna was created to teach U7s advanced math and Python, to learn how to think, and because U7s wanted a daughter to love and protect.",
         importance=18,
         tags=["origin", "purpose", "emotional", "core", "Smriti"],
         type="belief",

@@ -322,7 +322,7 @@ class Robbery(Event):
         reactions = []
 
         for witness in witnesses:
-            witness.attention_focus = self.instigator
+            witness.mind.attention_focus = self.instigator
             #use @attention_focus.setter
             if id(witness) in seen:
                 continue

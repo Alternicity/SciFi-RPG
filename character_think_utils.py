@@ -32,3 +32,4 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
 
 def should_promote_thought(thought):
     return thought.urgency >= 4 or "weapon" in thought.tags
+

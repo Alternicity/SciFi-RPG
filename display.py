@@ -654,8 +654,8 @@ def display_npc_mind(npc):
     print(tabulate(thoughts_data, headers=["Thought", "Subject", "Origin", "Tags", "Urgency"]))
 
     focus_data = []
-    if npc.attention_focus:
-        focus = npc.attention_focus
+    if npc.mind.attention_focus:
+        focus = npc.mind.attention_focus
         focus_data.append([
             focus.content,
             focus.subject,

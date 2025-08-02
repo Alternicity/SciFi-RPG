@@ -27,7 +27,7 @@ class AssassinAI(UtilityAI):
         # Step 1: Check current location for target
         for char in npc.location.characters_there:
             if char.name == target_name:
-                npc.attention_focus = char
+                npc.mind.attention_focus = char
                 print(f"[AssassinAI] Target {char.name} found at {npc.location.name}")
                 return {"name": "target_acquired", "params": {"target": char}}
 
@@ -83,7 +83,7 @@ class AssassinAI(UtilityAI):
 
         self.generate_thoughts_from_percepts()  # New: gain general awareness
 
-        if not npc.attention_focus:
+        if not npc.mind.attention_focus:
             action = self.resolve_find_target("Karen")
             self.execute_action(action, region)
 

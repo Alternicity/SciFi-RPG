@@ -264,9 +264,7 @@ from inventory import Inventory
 from characters import Employee
 @dataclass
 class Shop(Vendor):
-
     name: str = "QQ Store"
-
     tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial"])
     #Keep tags at class level (Shop(tags=["shop"])) for static traits like economic category.
     #Use get_percept_data tags for dynamic, observer-relative info like visible weapons, open status, etc
@@ -275,6 +273,8 @@ class Shop(Vendor):
     description: str = "Some shop"
     legality: bool = True
     has_security: bool = True  # <-- For testing
+
+    owned_by: Optional[Character] = None  # New field to indicate who owns it
 
     employees_there: List['Employee'] = field(default_factory=list)
     characters_there: List['Character'] = field(default_factory=list)
@@ -359,6 +359,7 @@ class Shop(Vendor):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
     def __post_init__(self):
+        self.inventory.owner = self  # Link inventory to the shop
         super().__post_init__()
 
 

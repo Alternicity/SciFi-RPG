@@ -15,7 +15,7 @@ from anchor_utils import Anchor
 
 """ Once she use anchors, then support motivation.resolve_motivation() and
 clear_highest_priority_motivation(). 
-Always reset npc.attention_focus = None when a motivation is cleared, unless 
+Always reset npc.mind.attention_focus = None when a motivation is cleared, unless 
 there’s an immediate next focus (like a thought)."""
 
 """ ...every time you pick up the pen,

@@ -1,10 +1,14 @@
 #anchor_utils.py
+from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Literal, List, Union, Dict
+from typing import Literal, List, Union, Dict, TYPE_CHECKING
+
 import time
 from memory_entry import MemoryEntry
 
-
+if TYPE_CHECKING:
+    from character_thought import Thought
+    
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
 
 #context-aware decision filter
@@ -127,15 +131,25 @@ def create_anchor_from_motivation(motivation) -> Anchor:
     )
 
 
-
-def create_anchor_from_thought(self, npc, thought, name: str, anchor_type: str = "motivation") -> Anchor:
+#line 131
+def create_anchor_from_thought(npc, thought: "Thought", name: str = None) -> "Anchor":#Thought is stilll marked as not defined
+    from character_thought import Thought #Thought not accessed 
+    """
+    Converts a Thought into a Motivation Anchor, carrying over tags and urgency.
+    """
+    anchor_name = name or f"{thought.subject}_{int(thought.timestamp)}"
     anchor = Anchor(
-        name=name,
-        type=anchor_type,
-        weight=thought.urgency,
+        name=anchor_name,
+        type="motivation",
+        weight=thought.urgency or 1.0,
+        priority=thought.weight or 1.0,
+        tags=thought.tags,
+        desired_tags=thought.tags,  # Could filter/refine later
+        disfavored_tags=[],
+        tag_weights={tag: 1.0 for tag in thought.tags},
         source=thought,
-        tags=thought.tags
     )
+    #everything after here is structurally unreachable
     npc.motivation_manager.update_motivations(anchor.name, urgency=anchor.weight, source=thought)
 
     memory_entry = MemoryEntry(

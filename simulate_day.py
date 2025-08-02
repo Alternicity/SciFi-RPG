@@ -98,7 +98,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     print(f"\n[DEBUG] From simulate_days Thought Check 1 {npc.name} Thoughts:")
                     for t in npc.mind:
                         print(f" - {t}")
-                    print(f"[DEBUG] simulate_days Thought Check 1, debug_character attention focus is {npc.attention_focus}") """
+                    print(f"[DEBUG] simulate_days Thought Check 1, debug_character attention focus is {npc.mind.attention_focus}") """
                 
                     #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
                     #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
@@ -110,15 +110,14 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 # NEW: Let AI process thoughts
                 npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
                 
-                npc.ai.promote_thoughts()     # line 71
-
+                npc.ai.promote_thoughts()     # line 113
                 # DEBUG: Thought Check 2
 
                 """ if debug_character and npc.name == debug_character.name:
                     print(f"\n[DEBUG] from simulate_days Thought Check 2 {npc.name} Thoughts:")
                     for t in npc.mind.thoughts:
                         print(f" - {t}")
-                    print(f"[DEBUG] Attention focus: {npc.attention_focus}") """
+                    print(f"[DEBUG] Attention focus: {npc.mind.attention_focus}") """
 
                     #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
 
@@ -160,7 +159,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 for thought in npc.mind:
                     print(f" - {thought}")  # Optional again
 
-                print(f"ATTENTION: {npc.attention_focus}")
+                print(f"ATTENTION: {npc.mind.attention_focus}")
 
 
     # STEP 4: Sanity Check on Character List

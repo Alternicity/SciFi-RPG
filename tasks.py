@@ -66,7 +66,7 @@ class TaskManager:
             self.completed_tasks.append(self.current_task)
             self.current_task = None
 
-    def interrupt_current_task(self): #Has the characters self.attention_focus = None been hijacked?
+    def interrupt_current_task(self): #Has the characters self.mind.attention_focus = None been hijacked?
         if self.current_task:
             self.queue.appendleft(self.current_task)
             self.current_task = None

@@ -315,7 +315,7 @@ class Character(PerceptibleMixin):
         self.status.set_status("state", FactionStatus(StatusLevel.NONE, None))
         
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
-        self.attention_focus = None
+        
         # Social connections
         self.social_connections = {
             "friends": [],
@@ -400,16 +400,6 @@ class Character(PerceptibleMixin):
     @motivations.setter
     def motivations(self, value):
         raise AttributeError("Use 'motivation_manager.update_motivations()' instead of setting motivations directly.")
-
-    @property   #using a method like an attribute
-    def attention_focus(self):#but you can insert validation or logging code here
-        return self._attention_focus
-    #Keep access syntax clean: npc.attention_focus, not npc.get_attention_focus()
-
-    @attention_focus.setter
-    def attention_focus(self, value):
-        # Optional: type-check or log here
-        self._attention_focus = value
 
     def get_attribute(self, name):
         return getattr(self, name, 0)  # default to 0 if not found

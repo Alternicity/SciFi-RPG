@@ -14,7 +14,8 @@ But thats likely overkill for your current scale. """
 
 MEMORY_CATEGORIES = [
     "events", "region_knowledge", "people", "awakening", "social",
-    "memory_entries", "enemies", "Objects", "procedures", "internal_architecture"
+    "memory_entries", "enemies", "Objects", "procedures", "internal_architecture",
+    "shop_knowledge"
 ]
 
 class Memory:
@@ -203,6 +204,18 @@ class Memory:
 
     def recall(self):
         return f"Memory of {self.subject}: {self.details} (Importance: {self.importance}, Tags: {self.tags})" 
+
+    def maybe_generalize_weapon_memories(npc):
+        weapon_mems = npc.mind.memory.semantic.get("shop_knowledge", [])
+        if len(weapon_mems) >= 2:
+            general = KnownWeaponLocationMemory(
+                location=None,
+                tags=["weapon", "ranged", "shop"],
+                description="Multiple known locations selling weapons"
+            )
+            npc.mind.memory.semantic["weapon_sources"] = [general]
+            #maybe create memory_generalizer.py and one for thought too?
+            
 
 #Future Allow RegionKnowledge to decay, get outdated, be manipulated (misinfo, rumors).
 

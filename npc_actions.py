@@ -92,7 +92,7 @@ def steal_auto(npc, region, item=None):
             cleared = npc.motivation_manager.clear_highest_priority_motivation()
             if cleared:
                 print(f"[MOTIVATION] Cleared highest-priority motivation: {cleared.type}")
-            npc.attention_focus = None
+            npc.mind.attention_focus = None
         if npc.is_test_npc:
             print(f"[DEBUG] Primary weapon equipped: {getattr(npc.inventory.primary_weapon, 'name', None)}")
 

@@ -129,7 +129,7 @@ class UtilityAI(BaseAI):
 
         # Extract anchor from action, fallback to npc.focus
         from ai_utility_thought_tools import extract_anchor_from_action
-        anchor = extract_anchor_from_action(action) or npc.attention_focus or npc.default_focus
+        anchor = extract_anchor_from_action(action) or npc.mind.attention_focus or npc.default_focus
         if anchor is None:
             print(f"[SCORE] No anchor found for {npc.name}'s action '{action.get('name')}'")
             return 0
@@ -172,6 +172,7 @@ class UtilityAI(BaseAI):
 
 
     def create_anchor_from_thought(self, thought: Thought, name: str, type_: str = "motivation") -> Anchor:
+        #is this deprecated there is onelike it in anchor_utils.py
         return Anchor(name=name, type=type_, weight=thought.urgency, source=thought, tags=thought.tags)
 
     """ Best sequence:
@@ -187,7 +188,7 @@ class UtilityAI(BaseAI):
         anchor = None
 
         if not thoughts:
-            npc.attention_focus = None
+            npc.mind.attention_focus = None
             if self.npc.is_test_npc:
                 print(f"[UtilityAI] {npc.name} has no thoughts to promote.")
             return
@@ -228,12 +229,12 @@ class UtilityAI(BaseAI):
             #anchors are important, promte to semantic here
             #Later logic could be time passed, number of times reinforced, used successfully in decision-making
         # Set attention focus
-        npc.attention_focus = max(thoughts, key=lambda t: t.urgency)
+        npc.mind.attention_focus = max(thoughts, key=lambda t: t.urgency)
         #set npc.default_focus here as well
         self.npc.mind.remove_thought_by_content("No focus")
 
         if self.npc.is_test_npc:
-            print(f"[FOCUS] From promote_thoughts {self.npc.name}'s attention focused on: {self.npc.attention_focus}")
+            print(f"[FOCUS] From promote_thoughts {self.npc.name}'s attention focused on: {self.npc.mind.attention_focus}")
 
     def examine_episodic_memory(self, episodic_memories):
         event_counts = defaultdict(int)
@@ -257,7 +258,7 @@ class UtilityAI(BaseAI):
     def recall_location_with_tags(npc, required_tags: list, min_salience=0.5):
         memories = npc.mind.memory.query_memory_by_tags(required_tags)
         scored = []
-        anchor = npc.attention_focus or npc.default_focus
+        anchor = npc.mind.attention_focus or npc.default_focus
 
         for memory in memories:
             location = memory.source
@@ -549,6 +550,7 @@ def generate_location_visit_thought(npc, location, enabling_motivation=None):
         """
         Creates a thought suggesting visiting a specific location to satisfy a motivation.
         """
+        print(f"[THOUGHT GEN] Generating thought to visit {location.name}")
         tags = []
         reason = []
 

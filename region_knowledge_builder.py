@@ -24,7 +24,6 @@ def build_region_knowledge(region: Region, character_or_faction: Union["Characte
 
     )
 
-    print(f"[BUILD RK DEBUG] {region.name} has shops: {[loc.name for loc in region.shops]}")
 
     # Relationship tagging could be added later based on Faction/Character relations
     return knowledge

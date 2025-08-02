@@ -62,6 +62,13 @@ class ObjectInWorld(PerceptibleMixin):
     @property
     def tags(self):
         return []
+    
+    def has_tag(self, tag: str) -> bool:
+        return tag in self.tags
+    
+    def has_tags(self, required_tags: list[str]) -> bool:
+        return all(tag in self.tags for tag in required_tags)
+
 
     def get_percept_data(self, observer=None):
         return {

@@ -1,6 +1,6 @@
 #LunaMath
 import math
-import LunaMath
+
 
 class FractalRoot:
     def __init__(self, x):

@@ -13,6 +13,10 @@ class Inventory:
         from weapons import RangedWeapon
         has_ranged = any(isinstance(item, RangedWeapon) for item in self.items)
 
+        # Tag-based fallback
+        if not has_ranged:
+            has_ranged = any("weapon" in getattr(item, "tags", []) and "ranged" in item.tags for item in self.items)
+
         if hasattr(self.owner, "hasRangedWeapon"):
             self.owner.hasRangedWeapon = has_ranged
             if has_ranged:
@@ -20,7 +24,8 @@ class Inventory:
 
         return has_ranged
 
-    def has_melee_weapon(self):
+
+    def has_melee_weapon(self):#update this to align with has_ranged_weapon(self):
         from weapons import MeleeWeapon
         has_melee = any(isinstance(item, MeleeWeapon) for item in self.items)
 
@@ -160,18 +165,22 @@ class Inventory:
                 self.update_weapon_flags()
 
             # Reevaluate primary weapon
-            if self.owner.primary_weapon == item:
-                if self.owner.weapons:
-                    new_primary = max(
-                        self.owner.weapons, key=lambda w: getattr(w, "damage", 0)
-                    )
-                    self.owner.primary_weapon = new_primary
-                    print(f"{self.owner.name}'s primary weapon is now {new_primary.name}.")
-                else:
-                    self.owner.primary_weapon = None
-                    print(f"{self.owner.name} now has no primary weapon.")
+            from base_classes import Character
 
-        return True
+            
+            if isinstance(item, Weapon) and isinstance(self.owner, Character):
+                if self.owner.primary_weapon == item:
+                    if self.owner.weapons:
+                        new_primary = max(
+                            self.owner.weapons, key=lambda w: getattr(w, "damage", 0)
+                        )
+                        self.owner.primary_weapon = new_primary
+                        print(f"{self.owner.name}'s primary weapon is now {new_primary.name}.")
+                    else:
+                        self.owner.primary_weapon = None
+                        print(f"{self.owner.name} now has no primary weapon.")
+
+            return True
  
     def display_inventory(self):
         if not self.items:
@@ -192,13 +201,15 @@ class Inventory:
         return iter(self.items.values())
 
     def update_primary_weapon(self):
-        if not self.owner or not self.weapons:
-            return
+        from base_classes import Character
+        if not isinstance(self.owner, Character) or not self.weapons:
+            if not self.owner or not self.weapons:
+                return
 
-        best_weapon = max(self.weapons, key=lambda w: getattr(w, "damage", 0))
-        if self.primary_weapon != best_weapon:
-            self.primary_weapon = best_weapon
-            print(f"{self.owner.name}'s primary weapon is now {best_weapon.name}.")
+            best_weapon = max(self.weapons, key=lambda w: getattr(w, "damage", 0))
+            if self.primary_weapon != best_weapon:
+                self.primary_weapon = best_weapon
+                print(f"{self.owner.name}'s primary weapon is now {best_weapon.name}.")
             
 
 # Example Usage

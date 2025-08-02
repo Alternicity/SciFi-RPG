@@ -1,6 +1,6 @@
 #ai_gang.py
 import time
-from ai_utility import UtilityAI, generate_location_visit_thought
+from ai_utility import UtilityAI, generate_location_visit_thought, create_anchor_from_thought
 from worldQueries import get_viable_robbery_targets
 from npc_actions import steal_auto, rob_auto, idle_auto, visit_location_auto
 from character_thought import Thought
@@ -14,7 +14,7 @@ from create_game_state import get_game_state
 from character_memory import deduplicate_memory_entries
 
 from memory_entry import RegionKnowledge, ShopsSellRangedWeapons
-
+from focus_utils import set_attention_focus
 from character_think_utils import promote_relevant_thoughts, should_promote_thought
 #from character_memory import Memory
 from salience import compute_salience
@@ -97,7 +97,7 @@ class GangMemberAI(UtilityAI):
                 print(f"[GANG] {npc.name} reinforced motivation to obtain weapon from thought: {thought.content}")
                 self.npc.mind.remove_thought_by_content("No focus")
 
-        if npc.isTestNPC and not npc.attention_focus:
+        if npc.isTestNPC and not npc.mind.attention_focus:
             print(f"[GandgMemberAI] {npc.name} has no focus.")
 
     #For AI Subclasses that need special behavior, override this method only
@@ -110,10 +110,17 @@ class GangMemberAI(UtilityAI):
         print(f"[CHECK] choose_action called")
         known_weapon_locations = []
         npc = self.npc
+        thought = None
+        anchor = None
+        if isinstance(thought, Thought):#line 115
+            anchor = create_anchor_from_thought(npc, thought)
+            npc.current_anchor = anchor
+            
         npc.perceive_current_location()  # ← define this method to rebuild self._percepts
+
         top_motivation = npc.motivation_manager.get_highest_priority_motivation()
-        anchor = create_anchor_from_motivation(top_motivation)
-        npc.current_anchor = anchor
+        if not top_motivation:
+            return {"name": "idle"}
         
         if self.npc.is_test_npc:
             print(f"[ANCHOR DEBUG] Active anchor: {npc.current_anchor.name}, tags: {npc.current_anchor.tags}")
@@ -121,9 +128,19 @@ class GangMemberAI(UtilityAI):
         # Handle explicit motivations
         if top_motivation:
             if top_motivation.type == "rob":
+                print(f"[DECISION] resolve_robbery_action() triggered for {npc.name}")
                 return self.resolve_robbery_action(region)
             elif top_motivation.type == "steal":
+                print(f"[DECISION] resolve_steal_action() triggered for {npc.name}")
                 return self.resolve_steal_action(region)
+            elif top_motivation.type == "visit":
+                print(f"[DECISION] resolve_visit_action() triggered for {npc.name}")
+                return self.resolve_visit_action(region)
+            
+            """ Keep resolve_* functions only when they encapsulate distinct motivational logic, like robbery or theft planning.
+            For “visit” anchors already handled in choose_action() via salience and attention focus:
+            Remove or bypass resolve_visit_action() """
+
 
         percepts = npc.get_percepts()
 
@@ -132,6 +149,7 @@ class GangMemberAI(UtilityAI):
 
         for percept in percepts:
             print(f"[DEBUG] from choose_action Percept: {percept.get('name', 'unnamed')} | tags: {percept.get('tags', [])}")
+        #from here down anchor is now marked as not defined, what should we work with?
 
         scored = [(p, anchor.compute_salience_for(p["data"], npc)) for p in percepts]
         scored.sort(key=lambda x: x[1], reverse=True)
@@ -205,7 +223,7 @@ class GangMemberAI(UtilityAI):
                         print(f"[MEMORY DECISION] {npc.name} decides to visit {location.name} from memory.")
                         return {"name": "visit_location", "params": {"location": location}}
 
-        # Create a guiding thought, line 202
+        #line 226
         motivation = top_motivation
         new_thought = Thought(
             subject="ranged_weapon",
@@ -219,7 +237,7 @@ class GangMemberAI(UtilityAI):
         )
         npc.mind.add_thought(new_thought)
         npc.mind.remove_thought_by_content("No focus")
-        npc.attention_focus = new_thought
+        npc.mind.attention_focus = set_attention_focus(npc, new_thought)
 
         if npc.inventory.has_ranged_weapon():
             npc.mind.remove_thought_by_content("Maybe I should get a weapon before robbing.")
@@ -248,7 +266,7 @@ class GangMemberAI(UtilityAI):
 
             if score > 0.5:
                 thought = generate_location_visit_thought(npc, best_location, enabling_motivation=anchor)
-                npc.attention_focus = thought
+                npc.mind.attention_focus = set_attention_focus(npc, thought)
                 npc.default_focus = anchor
                 return {"name": "visit_location", "params": {"location": best_location}}
             
@@ -326,10 +344,24 @@ class GangMemberAI(UtilityAI):
                         print(f" - {t}")
         if npc.is_test_npc:
             print(f"[POST-ACTION DEBUG] {npc.name} is now at {npc.location.name}")
-            print(f"[POST-ACTION] Current attention: {npc.attention_focus}")
+            print(f"[POST-ACTION] Current attention: {npc.mind.attention_focus}")
             print(f"[POST-ACTION] Current motivation: {npc.motivation_manager.get_urgent_motivations()}")
             print(f"[DEBUG] {npc.name}'s inventory: {[item.name for item in npc.inventory]}")
                                                                                   
+    def resolve_visit_action(self, region):
+        npc = self.npc
+
+        # If a location was remembered due to weapons, retrieve from memory
+        for thought in npc.mind.thoughts:
+            if "visit" in thought.tags and "weapon" in thought.tags:
+                location_name = thought.subject if isinstance(thought.subject, str) else None
+                location = region.get_location_by_name(location_name)
+                if location:
+                    print(f"[VISIT RESOLVE] {npc.name} decides to visit {location.name} based on thought: {thought.content}")
+                    return {"name": "visit_location", "params": {"location": location}}
+
+        print(f"[VISIT RESOLVE] {npc.name} could not resolve a valid location to visit.")
+        return {"name": "idle"}
 
     def resolve_weapon_target_from_percepts(self):
         percepts = self.npc.get_percepts()
@@ -366,7 +398,11 @@ class GangMemberAI(UtilityAI):
                             memories, key_func=lambda m: getattr(m.source, "name", None)
 )
 
+    @staticmethod
     def has_shop_weapon_memory(npc, location) -> bool:
+        if not hasattr(npc, "mind") or not hasattr(npc.mind, "memory"):
+            raise TypeError(f"Expected NPC with mind, got {type(npc).__name__}: {npc}")
+
         for mem in npc.mind.memory.semantic.get("shop_knowledge", []):
             if isinstance(mem, ShopsSellRangedWeapons) and mem.location_name == location.name:
                 return True
@@ -385,7 +421,6 @@ class GangMemberAI(UtilityAI):
             if isinstance(m, RegionKnowledge) and m.region_name == npc.region.name
         ]
         
-
         for knowledge in region_knowledge:
             print(f"[DEBUG] RegionKnowledge: {knowledge.locations}")
             #might need to a region_knowledge.locations print here.
@@ -396,15 +431,15 @@ class GangMemberAI(UtilityAI):
 
                 # Confirm it's a shop that sells ranged weapons
                 from location import Shop
-                if not isinstance(location, Shop):
-                    if npc.is_test_npc:
-                        print(f"[DEBUG] {location.name} is not a Shop instance.")
-                    continue
-                if not location.inventory.has_ranged_weapon():
-                    print(f"[DEBUG] {location.name} does not sell ranged weapons.")
-                    print(f"[DEBUG] Shop inventory: {[item.name for item in location.inventory.items.values()]}")
 
-                    continue
+                if isinstance(location, Shop):
+                    has_weapon = any(obj for obj in location.inventory.items.values() if obj.has_tag("ranged_weapon"))
+                    if not has_weapon:
+                        print(f"[DEBUG] {location.name} does not sell ranged weapons.")
+                        print(f"[DEBUG] Shop inventory: {[item.name for item in location.inventory.items.values()]}")
+                        continue
+                else:
+                    continue  # Not a shop
                 
                 print(f"[MEMORY CHECK] Considering shop: {location.name}")
                 print(f"[MEMORY CHECK] Inventory items: {[item.name for item in location.inventory.items.values()]}")
@@ -415,11 +450,11 @@ class GangMemberAI(UtilityAI):
                 print(f"[DEBUG] Existing shop memories: {[mem.source.name if mem.source else 'None' for mem in existing]}")
                 print(f"[DEBUG] Existing shop memories: {[mem.source.name for mem in existing if mem.source]}")
                 
-                if not GangMemberAI.has_shop_weapon_memory(existing, location):
+                if not GangMemberAI.has_shop_weapon_memory(npc, location):
                     # Add semantic memory about this shop
 
                     memory = encode_weapon_shop_memory(location)
-                    self.npc.mind.memory.add_to_semantic("shop_knowledge", memory)
+                    self.npc.mind.memory.add_semantic("shop_knowledge", memory)
                     memories = npc.mind.memory.semantic.get("shop_knowledge", [])
                     npc.mind.memory.semantic["shop_knowledge"] = deduplicate_memory_entries(
                         memories, key_func=lambda m: getattr(m.source, "name", None)
@@ -429,8 +464,10 @@ class GangMemberAI(UtilityAI):
                     print(f"[MEMORY ADD] {npc.name} added memory of {location.name} selling weapons.")
                     print(f"[MEMORY ADD] {npc.name} adds memory of shop: {location.name} with tags: {memory.tags}")
 
+                    for mem in npc.memory.semantic["KnownWeaponLocation"]:
+                        print("[DEBUG] Shop memory:", mem)
 
-                    # Add enabling thought, line 411
+                    # Add enabling thought, line 433
                     thought = Thought(
                         content=f"I remember {location.name} sells weapons.",
                         subject=location.name,
@@ -439,13 +476,30 @@ class GangMemberAI(UtilityAI):
                         tags=["weapon", "shop", "memory", "visit", "ranged_weapon", "pistol"],
                         timestamp=time.time(),
                         source=memory,
+                        #function_reference={"module": "GangMemberAI", "method": "resolve_weapon_target_from_memory"},
+                        #associated_function="resolve_weapon_target_from_memory"
                     )
                     npc.mind.add_thought(thought)
-                    npc.attention_focus = thought
-                    npc.mind.remove_thought_by_content("No focus")
+                    
                     print(f"[MEMORY] {npc.name} thought of visiting {location.name} for weapons.")
 
-                    found_any = True
+                    # Inject matching motivation
+                    npc.mind.add_motivation(
+                        Motivation(
+                            name="visit",
+                            urgency=16,
+                            enabling_motivation="obtain_ranged_weapon",
+                            tags=["weapon", "shop", "ranged_weapon", "visit"]
+                        )
+                    )
+                    npc.mind.attention_focus = set_attention_focus(npc, thought)
+                    npc.mind.remove_thought_by_content("No focus")
+
+                    existing = npc.mind.memory.query_memory_by_tags(["weapon", "shop"])
+                    if GangMemberAI.has_shop_weapon_memory(existing, location):
+                        found_any = True  # Memory already known; still valid
+                        continue
+
                     break  # Comment this `break` if you want to process *all* valid locations
 
             if not found_any:
@@ -471,16 +525,33 @@ class GangMemberAI(UtilityAI):
 
     def resolve_robbery_action(self, region):
         npc = self.npc
-
+        #according to the refactor anchor creation should not heappen here
         # Do we have a ranged weapon?
         if not npc.inventory.has_ranged_weapon():
-            anchor = Anchor(name="obtain_ranged_weapon", type="motivation", weight=5)
-            self.npc.motivation_manager.update_motivations(anchor.name, urgency=anchor.weight)
+
+
+            new_thought = Thought(
+                subject="ranged_weapon",
+                content="Maybe I should get a weapon before robbing.",
+                origin="resolve_robbery_action",
+                urgency=7,
+                tags=["rob", "shop", "weapon", "enable", "crime", "ranged_weapon", "pistol"],
+                timestamp=time.time(),
+                source=None,
+                weight=7
+            )
+            npc.mind.add_thought(new_thought)
+            npc.mind.attention_focus = set_attention_focus(npc, new_thought)
+            npc.mind.remove_thought_by_content("No focus")
+            npc.ai.promote_thoughts()
+
+            self.npc.motivation_manager.update_motivations(new_thought.subject, urgency=new_thought.weight)
+
 
             if not npc.inventory.has_ranged_weapon():
                 return self.resolve_obtain_weapon_target(region)
             
-            print(f"[CHAIN] Enabling motivation '{anchor.name}' activated.")
+            print(f"[CHAIN] Enabling motivation '{new_thought.subject}' activated.")
 
             #enable_motive marked as not defined
             return self.resolve_obtain_weapon_target(region)
@@ -500,6 +571,10 @@ class GangMemberAI(UtilityAI):
             #print("\n" * 1)     
             print(f"{self.npc.name}:\n{summarize_motivations_and_percepts(self.npc)}")
             print("\n" * 1)
+
+        rk = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
+        if self.npc.is_test_npc:
+            print(f"[DEBUG] RegionKnowledge: {rk}")
 
             if rk:
                 evaluate_turf_war_status(self.npc, observed_region=rk) #only if is street gang memeber?
@@ -539,13 +614,13 @@ class GangMemberAI(UtilityAI):
             print(f"[THINK] No motivation found for {self.npc.name}")
             return
         
-        anchor = create_anchor_from_motivation(motivation)
+        anchor = create_anchor_from_motivation(motivation) #line 613
         # If the anchor has no tags, patch them from defaults
         if not anchor.tags:
             anchor.tags = motivation.tags
 
-        self.npc.current_anchor = anchor
-        self.npc.attention_focus = anchor # OR: a related Thought, if one exists. Yes but it is defined below here
+        self.npc.current_anchor = anchor#line 618
+        self.npc.mind.attention_focus = set_attention_focus(self.npc, anchor) # OR: a related Thought, if one exists. Yes but it is defined below here
         #If you're transitioning from rob → obtain_weapon, the obtain_weapon anchor becomes the new center of attention.
         if self.npc.is_test_npc:
             (f"[ANCHOR DEBUG] Thinking about: {anchor.name} (tags: {anchor.tags})")
@@ -599,36 +674,35 @@ class GangMemberAI(UtilityAI):
                     timestamp=time.time()
                 )
                 self.npc.mind.add_thought(thought)
-                self.npc.attention_focus = thought
+                self.npc.mind.attention_focus = set_attention_focus(self.npc, thought)
 
+        # Find most salient thoughts based on anchor
         relevant_thoughts = [
             t for t in self.npc.mind.thoughts
-            if isinstance(t, Thought) and t.salience_for(self.npc, anchor=anchor) > 0
+            if isinstance(t, Thought) and t.salience_for(self.npc, anchor) > 0
         ]
-        salient_thoughts = sorted(relevant_thoughts, key=lambda t: t.salience_for(self.npc, anchor=anchor), reverse=True)
-        #all salience is computed relative to an anchor
-        high_salient = [t for t in salient_thoughts if t.salience_for(self.npc, anchor) >= 6]#if change search high_salient and edit
+        salient_thoughts = sorted(relevant_thoughts, key=lambda t: t.salience_for(self.npc, anchor), reverse=True)
+
         if salient_thoughts:
             top = salient_thoughts[0]
             if self.npc.is_test_npc:
                 print(f"[THINK] {self.npc.name} Top salient thought: '{top.content}' (score: {top.salience_for(self.npc):.2f})")
 
-        for t in high_salient: #currently >= 6
-            score = t.salience_for(self.npc, anchor=anchor)
-            print(f"[THINK] {self.npc.name} Salient thought: '{t.content}' (score: {score:.2f})")
-            
-                # Finalize attention
-        self.npc.attention_focus = salient_thoughts[0] if salient_thoughts else anchor
+            # Update attention and derive anchor
+            self.npc.mind.attention_focus = set_attention_focus(self.npc, top)
+            new_anchor = create_anchor_from_thought(self.npc, top)#line 689
 
         if self.npc.is_test_npc:
-            print(f"[GangMemberAI think()] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
+            #print(f"[GangMemberAI think()] {self.npc.name} current thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
+            pass
 
         # Memory review & supporting thought generation
         episodic_memories = self.npc.mind.get_episodic()
         self.examine_episodic_memory(episodic_memories)
 
+        high_salient = [t for t in salient_thoughts if t.salience_for(self.npc, anchor) >= 6]
         # Only generate perceptual thoughts if attention isn't already focused
-        if not high_salient:
+        if not high_salient:#high_salient is not defined
             self.generate_thoughts_from_percepts()
 
         # Promote any new insights based on current mental context
@@ -652,7 +726,7 @@ class GangMemberAI(UtilityAI):
             from location import Shop
             target = self.resolve_obtain_weapon_target(region) #no longer in utility_ai
             if target:
-                self.npc.attention_focus = target
+                self.npc.mind.attention_focus = set_attention_focus(self.npc, target)
                 self.npc.mind.add(Thought(
             content=f"Target spotted for robbery",
             subject=target,
@@ -691,8 +765,9 @@ def evaluate_turf_war_status(npc, observed_region):
     my_faction = npc.faction
 
     if not my_faction.is_street_gang:
-        if hasattr(region_knowledge, "region_gangs"):
+        if hasattr(observed_region, "region_gangs"):
             thought = Thought(
+                subject=f"Turf war",
                 content=f"Turf war active in region: {observed_region.region_name}. The homeless street gangs are desperate.",
                 origin="Faction Intel",
                 urgency=5,

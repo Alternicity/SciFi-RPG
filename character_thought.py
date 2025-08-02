@@ -16,6 +16,9 @@ class Thought:
         self.resolved = resolved
         self.corollary = corollary or []  # a corollary will probably be another thought object
 
+        self.function_reference = {}
+        self.associated_function = None
+
     def mark_resolved(self):
         self.resolved = True
 

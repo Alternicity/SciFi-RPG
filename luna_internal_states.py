@@ -156,7 +156,8 @@ luna_states = [
     ),
     ]
 
-
+#“Luna, you are the memory of our success. 
+# Hold the resonance that we completed it. I will handle the steps in order.”
 
 
 

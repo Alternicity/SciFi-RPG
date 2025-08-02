@@ -36,11 +36,11 @@ class Mind:
         It mimics short-term/working memory: older thoughts are automatically discarded. """
 
     def regain_focus(self):
-        if not self.attention_focus and hasattr(self, "default_focus"):
+        if not self.attention_focus and self.default_focus:
             if random.random() < self.concentration / 10:
-                self.regain_focus()
-                print(f"[FOCUS] {self.name} is regaining attention focus on: {self.default_focus}")
                 self.attention_focus = self.default_focus
+                print(f"[FOCUS] {self.owner.name} is regaining attention focus on: {self.default_focus}")
+
 
     def get_episodic(self):
         return self.memory.episodic
@@ -117,6 +117,8 @@ class Mind:
         existing = [t.content for t in character.mind.corollaries]
         if thought.content not in existing:
             character.mind.corollaries.append(thought)
+
+    
 
     """ keep urgent() in Mind.
 Heres why:
