@@ -33,7 +33,7 @@ class Anchor:
     source: Union[object, None] = None
     active: bool = True
     time_created: float = field(default_factory=time.time)
-
+    target_object: ObjectInWorld, or Location, Region, character, basically a python Object
     
 
     def compute_salience_for(self, percept_data, npc) -> float:
@@ -131,7 +131,7 @@ def create_anchor_from_motivation(motivation) -> Anchor:
     )
 
 
-#line 131
+#line 134, utility function, ie not in a class definition
 def create_anchor_from_thought(npc, thought: "Thought", name: str = None) -> "Anchor":#Thought is stilll marked as not defined
     from character_thought import Thought #Thought not accessed 
     """

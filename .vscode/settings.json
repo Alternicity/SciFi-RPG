@@ -1,35 +1,14 @@
 {
-    "terminal.integrated.inheritEnv": true,
-    "terminal.integrated.shell.windows": "C:\\Program Files\\Git\\bin\\bash.exe",
-    "terminal.integrated.cwd": "C:/Users/Niki/Documents/scifiRPG",
-    "python.terminal.executeInFileDir": false,
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-    "terminal.integrated.profiles.windows": {
-        "PowerShell": {
-            "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
-        },
-        "Git Bash": {
-            "path": "C:\\Program Files\\Git\\bin\\bash.exe"
-        },
-        "Command Prompt": {
-            "path": "C:\\Windows\\System32\\cmd.exe"
-        }
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.terminal.activateEnvironment": true,
+    "code-runner.runInTerminal": true,
+    "code-runner.executorMap": {
+        "python": "/home/stuart/SciFi-RPG/.venv/bin/python -u"
     },
     "python.formatting.provider": "black",
-    "python.formatting.blackPath": "black",
-    "editor.formatOnSave": true,
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
-    "git.openRepositoryInParentFolders": "always",
-    "workbench.editor.enablePreview": false,
-    "python.envFile": "${workspaceFolder}/.env",
-    "code-runner.showRunIcon": true,
-    "code-runner.ignoreSelection": true,
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
-    "code-runner.executorMap": {
-        "python": "python"
-    },
-    "code-runner.runInTerminal": true,
-    "explorer.confirmDelete": false,
-    "editor.renderWhitespace": "all"
+    "editor.formatOnSave": true,
+    "editor.renderWhitespace": "all",
+    "workbench.editor.enablePreview": false
 }

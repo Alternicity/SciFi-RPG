@@ -19,6 +19,9 @@ class Thought:
         self.function_reference = {}
         self.associated_function = None
 
+    
+
+
     def mark_resolved(self):
         self.resolved = True
 

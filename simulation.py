@@ -1,13 +1,16 @@
 #simulation.py
 import random
 from characters import GangMember
-from character_memory import MemoryEntry
+from ai_utils import encode_weapon_shop_memory
+from debug_utils import debug_print
 
 def run_simulation(all_characters, num_days=10):
     from simulate_day import simulate_days
     from create_game_state import get_game_state, game_state
     from location import Shop
 
+    
+    debug_print(None, "Debug system initialised successfully.", category="simulation")
     print(f"\nRunning simulation for {num_days} days...\n")
     debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)
 
@@ -69,20 +72,8 @@ def run_simulation(all_characters, num_days=10):
         #note this is a debug_npc injection, not a general one for all_characters
         if region.shops:
             shop = region.shops[0]
-        entry = MemoryEntry(
-            subject="Shop",
-            object_="ranged_weapon",
-            details="This shop sells ranged weapons",
-            importance=3,
-            tags=["shop", "weapons"],
-            target=shop,
-            type="injection",
-            initial_memory_type="semantic",
-            function_reference=None,
-            implementation_path=None,
-            associated_function=None
-        )
-        debug_gang_npc.mind.memory.add_semantic(entry)  
+            memory_entry = encode_weapon_shop_memory(debug_gang_npc, shop)
+            debug_gang_npc.mind.memory.add_semantic_unique("shop_knowledge", memory_entry, dedupe_key="details")  
 
         region = debug_gang_npc.region
         if region:

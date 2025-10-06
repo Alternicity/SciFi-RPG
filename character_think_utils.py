@@ -33,3 +33,7 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
 def should_promote_thought(thought):
     return thought.urgency >= 4 or "weapon" in thought.tags
 
+def debug_recent_thoughts(mind, n=5):
+    recent = list(mind.thoughts)[-n:]
+    print(f"[POST] Thoughts: {[t.content for t in recent]}")
+

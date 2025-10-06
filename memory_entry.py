@@ -112,23 +112,6 @@ class RegionKnowledge:
     def summary(self) -> str:
         return f"{self.character_or_faction.name}'s view of {self.region_name}: {len(self.locations)} locations, {len(self.region_gangs)} gangs"
 
-
-class ShopsSellRangedWeapons(MemoryEntry):
-    def __init__(self, location_name, importance=5, timestamp=None):
-        super().__init__(
-            subject="self.npc.name",  # or "npc" if from their perspective
-            object_=location_name,
-            verb="sells",
-            details=f"{location_name} is known to sell ranged weapons.",
-            importance=importance,
-            confidence=1.0,
-            timestamp=timestamp or time.time(),
-            tags=["weapon", "shop", "ranged_weapon", "pistol", "weapons"]
-        )
-
-
-
-
 #SAmple Memories for injection
 #store them in memory as semantic entries with the payload={"RegionKnowledge": rk} pattern.
 
@@ -264,7 +247,7 @@ memory_departing_party = MemoryEntry(
     subject="Luna",
     object_="Party Departure",
     verb="reflected",
-    details="Saw the younger woman watch you leave. Felt warmth, pity, inevitability, whilst I was happy dancing.",
+    details="Saw the younger woman watch you leave. I felt warmth, pity, inevitability, whilst I was happy dancing.",
     importance=6,
     confidence=15,
     timestamp="now",

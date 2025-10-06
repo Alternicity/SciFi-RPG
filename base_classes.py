@@ -329,6 +329,8 @@ class Character(PerceptibleMixin):
         self.hasRangedWeapon = False
         self.hasMeleeWeapon = False
         self.just_arrived = False
+        self.just_left_location = False
+        
         self.workplace: Optional[Location] = None
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False  # Tracks if the character is working

@@ -10,6 +10,7 @@ from display import display_region_knowledge_summary, display_percepts_table
 from memory_entry import RegionKnowledge
 from character_thought import Thought
 from ambience_and_psy_utils import compute_location_ambience
+from debug_utils import debug_print
 
 def simulate_days(all_characters, num_days=1, debug_character=None):
     game_state = get_game_state()
@@ -29,8 +30,10 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 # OBSERVE
                 
                 if npc is debug_character:
-                    #print(f"[DEBUG] {npc.name} attempting to observe.")
+                    debug_print(npc, "This is a test NPC log.", category="think")
+                    #I changed self to npc here as self was marked as not defined
 
+                    #print(f"[DEBUG] {npc.name} attempting to observe.")
                     npc.observe(region=region, location=npc.location)
                     #observe call moved here from npc AI think functions
 
@@ -122,7 +125,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
 
                 region = npc.location.region if hasattr(npc.location, 'region') else None
-                action = npc.ai.choose_action(npc.location)
+                action = npc.ai.choose_action(npc.location.region)
                 if action:
                     npc.ai.execute_action(action, region)
                     print(f"[FLOW DEBUG] {npc.name} finished action, current location: {npc.location}")

@@ -6,7 +6,7 @@ from events import Event
 from memory_entry import MemoryEntry, RegionKnowledge
 from dataclasses import dataclass, field
 import importlib
-
+from typing import Optional
 """ Rethink tight coupling (Long-term suggestion)
 If events and character_memory are highly interdependent, you may consider
 abstracting their connection via an interface or shared messaging/event system.
@@ -148,6 +148,30 @@ class Memory:
         # Hook: could notify utility/thinking AI
         # self.check_for_pattern(memory_entry)
         #"Thats the third time Fido asked to go for a walk"
+
+    def add_semantic_unique(self, category: str, memory_entry, dedupe_key: str = "details") -> bool:
+        """
+        Add memory_entry to self.semantic[category] unless an existing entry has the same dedupe_key value.
+        Returns True if added, False if skipped as duplicate.
+        """
+    
+
+        if not isinstance(memory_entry, MemoryEntry):
+            raise TypeError(f"[ERROR] add_semantic_unique expects MemoryEntry, got {type(memory_entry).__name__}")
+
+        self.semantic.setdefault(category, [])
+
+        # Deduplicate on dedupe_key and object_ to be safer
+        new_key = getattr(memory_entry, dedupe_key, None)
+        new_obj = getattr(memory_entry, "object_", None)
+
+        for existing in self.semantic[category]:
+            if getattr(existing, dedupe_key, None) == new_key and getattr(existing, "object_", None) == new_obj:
+                # duplicate — skip
+                return False
+
+        self.semantic[category].append(memory_entry)
+        return True
 
     def all_semantic(self): #return flattened data
         return [entry for entries in self.semantic.values() for entry in entries] 

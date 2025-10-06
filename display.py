@@ -22,6 +22,7 @@ from base_classes import Faction, Location
 from perceptibility import extract_appearance_summary
 from shop_name_generator import format_shop_debug
 from salience import compute_salience
+from debug_utils import debug_print
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -699,4 +700,12 @@ def debug_display_all_shops(all_regions):
             all_shops.extend(region.shops)
 
     display_sellers(all_shops)
+
+
+def gameplay_print(message):
+    debug_print(None, message, category="gameplay")
+
+def sim_print(message):
+    debug_print(None, message, category="simulation")
+
 

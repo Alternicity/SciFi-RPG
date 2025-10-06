@@ -107,7 +107,7 @@ class MotivationManager:
 
     def get_highest_priority_motivation(self):
         if not self.motivations:
-            return Motivation("earn_money", 5)
+            return Motivation(type="earn_money", urgency=5)
         return max(self.motivations, key=lambda m: m.urgency)
 
     def clear_highest_priority_motivation(self):
@@ -134,6 +134,10 @@ class MotivationManager:
 
     def get_urgent_motivations(self, threshold=7):
         return [m for m in self.motivations if m.urgency >= threshold]
+
+    def has_motivation(self, motive_type: str) -> bool:
+        """Return True if a motivation of this type exists."""
+        return any(m.type == motive_type for m in self.motivations)
 
     def sorted_by_urgency(self, descending=True):
         """Returns motivations sorted by urgency."""

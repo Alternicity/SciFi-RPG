@@ -6,7 +6,7 @@ from typing import Optional, List, Any
 import random
 from character_thought import Thought
 from character_memory import Memory
-
+from debug_utils import debug_print
 
 class Mind:
     def __init__(self, owner=None, capacity=None):
@@ -20,6 +20,7 @@ class Mind:
         self.obsessions: List[Obsession] = []
         self.max_thinks_per_tick=1
         self.default_focus = None
+        self.attention_focus = None
 
         #Consider syncing Character.social_connections["enemies"] with mind.memory.semantic["enemies"] at periodic intervals
 
@@ -34,6 +35,29 @@ class Mind:
 
         """ deque prevents memory bloat. 
         It mimics short-term/working memory: older thoughts are automatically discarded. """
+
+    
+
+    def has_thought_content(self, content_substring: str) -> bool:
+        """
+        Returns True if any current thought's content matches or contains the given substring.
+        """
+        for thought in self.thoughts:
+            if content_substring in thought.content:
+                debug_print(f"[THOUGHT CHECK] {self.owner.name} checking for thought containing: '{content_substring}'", category="think")
+                return True
+        return False
+
+
+    def find_thought_by_tag(self, tag: str):
+        """
+        Returns the first thought containing a given tag.
+        Useful for debugging salience loops or repeated anchors.
+        """
+        for thought in self.thoughts:
+            if tag in thought.tags:
+                return thought
+        return None
 
     def regain_focus(self):
         if not self.attention_focus and self.default_focus:

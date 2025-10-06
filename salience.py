@@ -1,9 +1,9 @@
 #salience.py
 #Centralize all salience into salience.py, with specific helpers for object types.
 import time
-from anchor_utils import Anchor
 from events import Event
-from anchor_utils import create_anchor_from_motivation
+from anchor_utils import Anchor, create_anchor_from_motivation
+from debug_utils import debug_print
 
 """ Optional Improvements (Later)
 If compute_salience() fails often (e.g. for unexpected objects), consider:
@@ -11,6 +11,26 @@ Adding type guards or preprocessing origin_obj
 Skipping percepts with "type": "unknown" or "origin": None
 When motivations mature further, you may replace motivation objects entirely with
 anchors passed down from higher-level decision-making or goal generation. """
+
+def compute_generic_salience(obj, observer, anchor=None):
+    """
+    Legacy fallback for objects or thoughts without custom salience logic.
+    Uses tags, urgency, and anchor relevance if available.
+    """
+    base = getattr(obj, "urgency", 1)
+    tags = getattr(obj, "tags", [])
+    anchor_tags = getattr(anchor, "tags", []) if anchor else []
+
+    # Simple tag overlap weighting
+    overlap = len(set(tags) & set(anchor_tags)) if anchor_tags else 0
+    score = base + overlap * 2
+
+    if observer.is_test_npc:
+        debug_print(observer, f"Using generic fallback for {type(obj).__name__}: {score:.2f}", category="salience")
+
+    # Cap score range
+    return min(score, 10)
+
 
 def compute_salience(obj, observer, anchor=None):
     from base_classes import Character, Location
@@ -31,8 +51,12 @@ def compute_salience(obj, observer, anchor=None):
         return compute_location_salience(obj, observer, anchor)
     elif isinstance(obj, Event):
         return compute_event_salience(obj, observer, anchor)
+    
+    elif hasattr(obj, "compute_salience_for"):
+        # Delegate to object if it defines its own method
+        return obj.compute_salience_for(observer, anchor)
     else:
-        return compute_object_salience(obj, observer, anchor)
+        return compute_generic_salience(obj, observer, anchor)
 
 def generic_tag_salience_boost(obj, anchor):
     score = 0.0
@@ -85,20 +109,7 @@ def compute_location_salience(obj, observer, anchor: Anchor = None):
     return salience
 
 
-def compute_object_salience(obj, observer, anchor: Anchor = None):
-    salience = 1.0
-    salience += generic_tag_salience_boost(obj, anchor)
-    if anchor:
-        if anchor.name == "obtain_ranged_weapon":
-            if getattr(obj, "is_weapon", False):
-                salience += 1.0
-                if getattr(obj, "is_ranged", False):
-                    salience += 1.0
-
-        if anchor.name == "steal" and getattr(obj, "is_valuable", False):
-            salience += 1.5
-
-    return salience
+ 
 
 def compute_event_salience(obj, observer, anchor: Anchor = None):
     event = obj  # Optional alias for clarity

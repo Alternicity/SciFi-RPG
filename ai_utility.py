@@ -170,17 +170,6 @@ class UtilityAI(BaseAI):
         print(f"[SCORE] {npc.name} scored action '{name}' as {score:.2f} (anchor: {anchor.name})")
         return score
 
-
-    def create_anchor_from_thought(self, thought: Thought, name: str, type_: str = "motivation") -> Anchor:
-        #is this deprecated there is onelike it in anchor_utils.py
-        return Anchor(name=name, type=type_, weight=thought.urgency, source=thought, tags=thought.tags)
-
-    """ Best sequence:
-1. Anchor from Thought
-2. Add Anchor to Episodic Memory
-3. Add (or reinforce) Thought in mind
-4. Promote to Semantic later (based on usage) """
-
     def promote_thoughts(self):
         npc = self.npc
         mind = npc.mind
