@@ -16,17 +16,25 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
     game_state = get_game_state()
     all_regions = game_state.all_regions
     all_locations = game_state.all_locations
-    
+    day = game_state.day
+    tick = game_state.tick #not yet accessed here
+    #all_characters is present from paramter not game_state
+
     for _ in range(num_days):
+        game_state.advance_tick()# a tick is now 1 hour so function name is wrong
+        debug_print(f"[TIME] Tick {game_state.tick}, Day {game_state.day}", category="tick")
+
+        for location in all_locations:
+                    location.recent_arrivals.clear()
+
         # STEP 1: Perceive and Think
         for region in all_regions:
             for npc in region.characters_there:
+                begin_npc_turn(npc)
                 if npc.is_player:
                     continue
                 
-
-                for location in all_locations:
-                    location.recent_arrivals.clear()
+                
                 # OBSERVE
                 
                 if npc is debug_character:
@@ -36,12 +44,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     #print(f"[DEBUG] {npc.name} attempting to observe.")
                     npc.observe(region=region, location=npc.location)
                     #observe call moved here from npc AI think functions
-
-                    #print(f"[DEBUG] {npc.name} location: {format_location(npc.location)}")
-                    #replace with call to summary_utils.py def format_location(loc):
-
-                #print(f"[DEBUG] {npc.name} region characters: {[c.name for c in region.characters_there]}")
-                #verbose
 
                 if npc.is_test_npc or npc is debug_character:
                     display_percepts_table(npc)
@@ -95,15 +97,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                         npc.ai.think(npc.location.region)
                     npc.ai.promote_thoughts()
 
-                # DEBUG: Thought Check 1
-
-                """ if debug_character and npc.name == debug_character.name:
-                    print(f"\n[DEBUG] From simulate_days Thought Check 1 {npc.name} Thoughts:")
-                    for t in npc.mind:
-                        print(f" - {t}")
-                    print(f"[DEBUG] simulate_days Thought Check 1, debug_character attention focus is {npc.mind.attention_focus}") """
-                
-                    #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
                     #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
                     
         # STEP 2: Choose and Execute Action
@@ -113,56 +106,48 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 # NEW: Let AI process thoughts
                 npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
                 
-                npc.ai.promote_thoughts()     # line 113
-                # DEBUG: Thought Check 2
-
-                """ if debug_character and npc.name == debug_character.name:
-                    print(f"\n[DEBUG] from simulate_days Thought Check 2 {npc.name} Thoughts:")
-                    for t in npc.mind.thoughts:
-                        print(f" - {t}")
-                    print(f"[DEBUG] Attention focus: {npc.mind.attention_focus}") """
-
-                    #print(f"[DEBUG] Motivations: {npc.motivation_manager.get_motivations()}")
+                npc.ai.promote_thoughts()  #second call to this here, beware it causing motivation accumulations
 
                 region = npc.location.region if hasattr(npc.location, 'region') else None
                 action = npc.ai.choose_action(npc.location.region)
-                if action:
+                if action:#is this missleadingly simplistic to print a current location
                     npc.ai.execute_action(action, region)
-                    print(f"[FLOW DEBUG] {npc.name} finished action, current location: {npc.location}")
-                npc.just_arrived = False
+
+                    debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
+                    #finished what action? Also I must change to debug_print
+
+                #npc.just_arrived = False
+                #candidate for removal as this now exists in begin_npc_turn()
 
         # STEP 3: Post-Day DEBUG (single character)
         for npc in all_characters:
+            end_npc_turn(npc)
+
             if npc is not debug_character:
                 continue
-            #print(f"MIND: {[str(thought) for thought in npc.mind]}")
-
-            """ print("MOTIVATIONS:")
-            for m in npc.motivation_manager.get_motivations():
-                print(f" - {m}") """
-            
-            #print("MEMORY (Episodic):")
-
             for mem in npc.mind.memory.episodic:
-                print(f" - {mem}")
+                print(f" - {mem}")#This could get noisy fast
+                #also does this mean that this print will work only for non debug_character npcs?
 
-        print(f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})")
+        debug_print(npc, f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})", category="think")
+        
 
-        if npc is debug_character:
+        if npc is debug_character:#is debug_character even set? Should we instead use an npc attribute lookup?
             region_knowledges = [
                 mem for mem in npc.mind.memory.semantic.get("region_knowledge", [])
                 if isinstance(mem, RegionKnowledge) and mem.region_name == npc.region.name
             ]
             print(f"=== REGION KNOWLEDGE: {npc.region.name}, {npc.name} ===")
-            for i, rk in enumerate(region_knowledges):
+            if day == 1:
+                for i, rk in enumerate(region_knowledges):
 
-                print(display_region_knowledge_summary(region_knowledges, npc=npc))
+                    print(display_region_knowledge_summary(region_knowledges, npc=npc))
+                    #Now we have a tick counter, can we make the RegionKnowledge only get printed to output on the first tick?
+        print("THOUGHTS:")
+        for thought in npc.mind.thoughts:
+            print(f" - {thought}")  # Optional again
 
-                print("THOUGHTS:")
-                for thought in npc.mind:
-                    print(f" - {thought}")  # Optional again
-
-                print(f"ATTENTION: {npc.mind.attention_focus}")
+        print(f"ATTENTION: {npc.mind.attention_focus}")
 
 
     # STEP 4: Sanity Check on Character List
@@ -170,14 +155,21 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
         if not hasattr(c, "motivation_manager"):
             print(f"[ERROR] Non-character in all_characters: {type(c)} -> {c}")
 
-    # STEP 5: Optional Motivation Debugging CURRENTLY DOESNT DO ANYTHING
-    if debug_character:
-        for character in all_characters:
-            motivations = character.motivation_manager.get_motivations()
-            criminal_motivated = any(
-                m.type in {"rob", "steal", "obtain_ranged_weapon"} for m in motivations
-            )
-
 def begin_npc_turn(npc):
     npc.just_arrived = False
+    npc.turn_start_tick = get_game_state().tick
+    npc.mind.remove_thought_by_content("No focus")
+    debug_print(f"[TURN] Begin NPC turn: {npc.name}", category="tick")
+
+def end_npc_turn(npc):
+    npc.mind.clear_stale_percepts()
+    npc.inventory.clear_recently_acquired()
+    npc.last_action_tick = get_game_state().tick
+
+    game_state = get_game_state()#Needed for the lines below
+    debug_print(f"[TURN] Tick {game_state.tick}, Day {game_state.day}", category="tick")
+    game_state.advance_tick()#Is this the right place for this, or does it belong in begin_npc_turn(npc)
+
+    
+    
 

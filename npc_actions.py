@@ -7,10 +7,38 @@ def visit_location_auto(character, region, location):
     if location is None:
         return False
     print(f"[AUTO VISIT] {character.name} is going to {location.name}")
+    
+     # Update character’s state
     character.location = location
     character.just_arrived = True
-    location.recent_arrivals.append(character)
+
+    # --- stamp tick/day context ---
+    # uses character’s stored time attributes if available
+    tick = getattr(character, "current_tick", None)
+    day = getattr(character, "current_day", None)
+    timestamp = f"Day {day} Tick {tick}" if tick is not None else None
+
+    # Track arrivals at the location
+    if hasattr(location, "recent_arrivals"):
+        location.recent_arrivals.append(character)
+
+    # Ensure location tracks who’s currently there
+    if hasattr(location, "characters_there") and character not in location.characters_there:
+        location.characters_there.append(character)
+
+    # Trigger perception of surroundings immediately
     character.perceive_current_location()
+
+    # Optional: stamp tick/day for debugging or analytics
+    """ if hasattr(character, "current_tick"):
+        character.last_visit_tick = character.current_tick
+        character.last_visit_day = getattr(character, "current_day", None) """
+
+    # --- remember last visit ---
+    character.last_visit_tick = tick
+    character.last_visit_day = day
+    character.last_visit_timestamp = timestamp
+    
     return True
 
 def rob_auto(npc, region=None, location=None, target_item=None, **kwargs):

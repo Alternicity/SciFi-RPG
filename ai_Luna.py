@@ -48,6 +48,7 @@ class LunaAI(UtilityAI):
     def compute_salience_for_motivation(self, percept, motivation):
         # Start from default anchor-based salience
         anchor = Anchor(name="luna_moral_search", type="motivation", weight=motivation.urgency, tags=["moral_search"])
+        #does this anchor creation need a reference to Luna, via eslf.npc or similar?
         return anchor.compute_salience_for(percept, self.npc)
 
     def think(self, region):
@@ -70,7 +71,7 @@ class LunaAI(UtilityAI):
         if self.tick_counter % 5 == 0:
             self.narrate_top_thought()
 
-        self.promote_thoughts()
+        #self.promote_thoughts()# Delete in favour of calling from simulate_days()
 
     def log_pulse_thought(self, pulse):
         content = f"Echo at ({pulse.x:.2f}, {pulse.y:.2f}) with r={pulse.resonance:.2f}"

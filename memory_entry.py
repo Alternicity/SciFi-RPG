@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 import time
 from typing import Any, List, Dict, Optional, Any, Union, Set, Callable, TYPE_CHECKING
-
+from datetime import datetime
 
 
 #DONT IMPORT from character_memory.py
@@ -24,7 +24,7 @@ class MemoryEntry:
     tags: List[str] = field(default_factory=list)
     confidence: int = 10 #average on a 1-10 scale
     type: str = "observation"
-    initial_memory_type: str = "episodic"
+    initial_memory_type: str = "episodic"#implies that once npcs are doin a lot more, episodic memories will precede some semantic ones. We learn by doing.
     #later, when promoting use
     # deepcopy(memory_entry).initial_memory_type = "semantic"
     #npc.mind.memory.semantic["procedures"].append(memory_entry) 
@@ -45,6 +45,25 @@ class MemoryEntry:
     #Flat path if you prefer
     associated_function: Optional[str] = None
     #Plain English label, or function name only
+    # --- In-sim temporal context ---
+    created_day: Optional[int] = None
+    last_updated_day: Optional[int] = None
+
+    # --- Out-of-sim timestamps ---
+    created_time: str = field(default_factory=lambda: datetime.now().isoformat())
+    last_updated_time: str = field(default_factory=lambda: datetime.now().isoformat())
+
+    def touch(self, current_day: Optional[int] = None):
+        """Mark the memory as refreshed (e.g., when recalled or reinforced)."""
+        if current_day is not None:
+            self.last_updated_day = current_day
+        self.last_updated_time = datetime.now().isoformat()
+
+    def age(self, current_day: int) -> Optional[int]:
+        """Return how many sim-days old this memory is."""
+        if self.created_day is None:
+            return None
+        return current_day - self.created_day
     
     def has_tags(self, required_tags: list[str]) -> bool:
         return all(tag in self.tags for tag in required_tags)
@@ -63,6 +82,8 @@ if TYPE_CHECKING:
     from base_classes import Character, Faction
     from events import Event
 
+
+#when you add or update an existing RegionKnowledge, call rk.touch(current_tick)
 @dataclass
 class RegionKnowledge:
     region_name: str
@@ -83,6 +104,32 @@ class RegionKnowledge:
     recent_regional_events: List = field(default_factory=list)
     historical_regional_events: List = field(default_factory=list)
     content: str = "Various."
+
+   # --- In-sim temporal context ---
+    created_day: Optional[int] = None          # The simulation day this memory was formed
+    last_updated_day: Optional[int] = None     # The last sim day this was refreshed or recalled
+
+    # --- Out-of-sim timestamps (for debugging or meta logs) ---
+    created_time: str = field(default_factory=lambda: datetime.now().isoformat())
+    last_updated_time: str = field(default_factory=lambda: datetime.now().isoformat())
+
+    # --- Importance / decay tracking ---
+    importance: float = 1.0  # can be used for salience weighting or decay
+
+    def touch(self, current_day: Optional[int] = None):
+        """
+        Refresh the memory — update last_updated_day and last_updated_time.
+        Used whenever an NPC recalls, reinforces, or interacts with this memory.
+        """
+        if current_day is not None:
+            self.last_updated_day = current_day
+        self.last_updated_time = datetime.now().isoformat()
+
+    def age(self, current_day: int) -> Optional[int]:
+        """Return how many sim-days old the memory is."""
+        if self.created_day is None:
+            return None
+        return current_day - self.created_day
 #a MemoryGraph or KnowledgeCache class could later help manage multiple RegionKnowledges and semantic summaries.
     
     def ingest_memory(self, memory_entries: List["MemoryEntry"]):
@@ -112,65 +159,10 @@ class RegionKnowledge:
     def summary(self) -> str:
         return f"{self.character_or_faction.name}'s view of {self.region_name}: {len(self.locations)} locations, {len(self.region_gangs)} gangs"
 
-#SAmple Memories for injection
-#store them in memory as semantic entries with the payload={"RegionKnowledge": rk} pattern.
 
 
-# --- Sample 1: Local region with full shop/location knowledge ---
-""" region_knowledge_1 = RegionKnowledge(
-    region_name="East Side",
-    character_or_faction="npc_merchant_joe",
-    region_gangs={"Red Fangs", "Neon Blades"},
-    #missing street gang entry
-    friendly_factions={"Commerce Guild"},
-    hostile_factions={"Red Fangs"},
-    locations={"Joe's Junk Emporium", "East Cafe", "Red Fang HQ", "East Market"},
-    known_characters={"Dealer Mike", "Patrol Officer Lima"},
-    character_relationships={"Dealer Mike": ["business_partner"], "Officer Lima": ["bribed"]},
-    active_events=[],
-    content="Various.",
-    concluded_events=[],
-    gossip=["Neon Blades got kicked out of the East Market by Red Fangs"],
-    economic_info={"average_prices": {"medkit": 50, "knife": 100}}
-) """
+#Sample Memories for injection
 
-# --- Sample 2: Partial knowledge of another region (West Side) ---
-""" region_knowledge_2 = RegionKnowledge(
-    region_name="West Side",
-    character_or_faction="npc_ganger_bladez",
-    region_gangs={"Silver Syndicate"},
-    #missing street gang entry
-    friendly_factions=set(),
-    hostile_factions=set(),
-    locations={"West Arms Depot"},
-    known_characters=set(),
-    character_relationships={},
-    active_events=[],
-    concluded_events=[],
-    gossip=["Silver Syndicate are planning something big"],
-    economic_info={}
-) """
-
-# --- Sample 3: Historical events template for backstory ---
-""" region_knowledge_3 = RegionKnowledge(
-    region_name="NorthVille",
-    character_or_faction="npc_rebel_elena",
-    region_gangs=set(),
-    #missing street gang entry
-    friendly_factions={"Free North Resistance"},
-    hostile_factions={"The State"},
-    locations={"Freedom Plaza", "Old Town Archive"},
-    known_characters={"General Morrow"},
-    character_relationships={"General Morrow": ["enemy", "betrayed_me"]},
-    active_events=["Investigation into stolen arms ongoing"],
-    concluded_events=[
-        "2022 Riot at Freedom Plaza",
-        "Corruption scandal involving NorthVille police chief",
-        "Successful Free North blockade of corporate convoys"
-    ],
-    gossip=["General Morrow was seen meeting with a State agent last week"],
-    economic_info={"smuggling_routes": {"drugs": "East>North", "weapons": "South>North"}}
-) """
 
 @dataclass
 class HiddenTruth:

@@ -2,6 +2,12 @@
 import time
 from salience import compute_salience
 from LunaMath import FractalRoot
+from typing import Optional, Any, List
+
+# ✅ Import the actual game state accessor, not the class
+from create_game_state import get_game_state
+from debug_utils import debug_print  # optional, if you want to log failures
+
 
 class Thought:
     def __init__(self, subject, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False, corollary=None):
@@ -13,14 +19,35 @@ class Thought:
         self.source = source                # Who/what told them (e.g., another character)
         self.weight = weight                # How impactful (can be salience or derived)
         self.timestamp = timestamp or time.time()
+
+        # Simulation time (safe and optional)
+        try:
+            state = get_game_state()
+            self.tick = getattr(state, "tick", None)
+            self.day = getattr(state, "day", None)
+        except Exception as e:
+            self.tick = None
+            self.day = None
+            # Optional debug: only print in development / debug mode
+            debug_print(
+                None,
+                f"[THOUGHT INIT] Warning: Could not access game state: {e}",
+                category="think"
+            )
+
         self.resolved = resolved
+        self.corollary_of = None
         self.corollary = corollary or []  # a corollary will probably be another thought object
 
         self.function_reference = {}
         self.associated_function = None
 
     
-
+    def primary_tag(self) -> Optional[str]:
+        """Return the most characteristic or first tag."""
+        if not self.tags:
+            return None
+        return self.tags[0]
 
     def mark_resolved(self):
         self.resolved = True

@@ -14,6 +14,8 @@ from collections import defaultdict
 from worldQueries import get_region_knowledge
 from memory_entry import MemoryEntry
 from ai_utility_thought_tools import extract_anchor_from_action
+from debug_utils import debug_print
+from create_game_state import get_game_state
 
 
 class UtilityAI(BaseAI):
@@ -35,7 +37,7 @@ class UtilityAI(BaseAI):
         motivations = npc.motivation_manager.get_motivations()
         if not motivations:
             return {"name": "idle"}
-        anchors = [create_anchor_from_motivation(m) for m in motivations]
+        anchors = [create_anchor_from_motivation(self.npc, m) for m in motivations]
 
         percepts = list(npc.get_percepts())
         #percepts here is not accessed
@@ -173,65 +175,50 @@ class UtilityAI(BaseAI):
     def promote_thoughts(self):
         npc = self.npc
         mind = npc.mind
-        thoughts = mind.thoughts
-        anchor = None
+        game_state = get_game_state()
 
-        if not thoughts:
-            npc.mind.attention_focus = None
-            if self.npc.is_test_npc:
-                print(f"[UtilityAI] {npc.name} has no thoughts to promote.")
+        # Guard: only promote once per tick
+        if getattr(npc, "_last_promote_tick", -1) == game_state.tick:
             return
 
-        for thought in thoughts:
-            if not isinstance(thought, Thought):
-                print(f"[THINK] Skipping invalid thought in {npc.name}'s mind: {thought}")
-                continue
+        # mark we've run this tick
+        npc._last_promote_tick = game_state.tick
 
-            content_lower = thought.content.lower()
+        if not mind.thoughts:
+            return
 
-            # Example general trigger
-            if "obtain" in content_lower and "weapon" in thought.tags:
-                anchor = self.create_anchor_from_thought(thought, "obtain_ranged_weapon", type_="motivation")
-                
-        if anchor and not npc.default_focus:
-            npc.default_focus = anchor  # Could also be the thought or memory_entry
-
-            #anchor = Anchor(name="obtain_ranged_weapon", type="motivation", weight=thought.urgency)
-            npc.motivation_manager.update_motivations(anchor.name, urgency=anchor.weight, source=thought)
-            print(f"[THINK] {npc.name} promoted to motivation: {anchor}")
-
-            memory_entry = MemoryEntry(
-                subject=npc.name,
-                object_="anchor",
-                verb="generated",
-                details=f"Anchor {anchor.name} was created from thought '{thought.content}'",
-                tags=["anchor", "thought"],
-                target=anchor,
-                importance=thought.urgency,
-                type="anchor_creation",
-                initial_memory_type="episodic",
-                function_reference=None,
-                implementation_path=None,
-                associated_function=None
-            )
-            npc.mind.memory.add_episodic(memory_entry)
-            #anchors are important, promte to semantic here
-            #Later logic could be time passed, number of times reinforced, used successfully in decision-making
+        # Pick the most urgent thought
+        strongest = max(mind.thoughts, key=lambda t: (t.urgency, getattr(t, "timestamp", 0)))
+        
+        # Create or update an anchor from that thought
+        anchor = create_anchor_from_thought(npc, strongest, name=strongest.primary_tag() or "general")
+        
+        # Boost motivation
+        urgency_delta = min(int(anchor.weight or strongest.urgency or 1), 3)
+        npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
+        
         # Set attention focus
-        npc.mind.attention_focus = max(thoughts, key=lambda t: t.urgency)
-        #set npc.default_focus here as well
-        self.npc.mind.remove_thought_by_content("No focus")
-
-        if self.npc.is_test_npc:
+        npc.mind.attention_focus = strongest
+        npc.default_focus = anchor
+        
+        if npc.is_test_npc:
+            debug_print(
+                f"[FOCUS] {npc.name} promoted thought '{strongest.content}' "
+                f"→ anchor '{anchor.name}' (urgency +{urgency_delta})",
+                category="think"
+            )
             print(f"[FOCUS] From promote_thoughts {self.npc.name}'s attention focused on: {self.npc.mind.attention_focus}")
 
     def examine_episodic_memory(self, episodic_memories):
         event_counts = defaultdict(int)
+        npc = self.npc
         for m in episodic_memories:
             key = (m.subject, m.object_, m.verb, m.type)
             event_counts[key] += 1
             if event_counts[key] >= 3:
-                print(f"[Insight]: {m.subject} has done {m.verb} {event_counts[key]} times.")
+                debug_print(npc, f"[INSIGHT] {m.subject} has done {m.verb} {event_counts[key]} times.", category = "insight")
+
+                
                 # I could generate a Anchor, new belief, goal, or trait here, and return it
 
     def deduplicate_thoughts_by_type(thoughts):
@@ -314,7 +301,7 @@ class UtilityAI(BaseAI):
         region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
         if region_knowledge:
             turf_status = self.evaluate_turf_war_status(self.npc, region_knowledge)  # Base awareness
-        self.promote_thoughts()
+        #self.promote_thoughts()# Delete in favour of calling from simulate_days()
 
         motivations = self.npc.motivation_manager.get_urgent_motivations()
         if not motivations:
@@ -333,7 +320,7 @@ class UtilityAI(BaseAI):
 
         candidate_thoughts = [] #not accesssed
         for motivation in motivations:
-            anchor = create_anchor_from_motivation(motivation)#both these lines?
+            anchor = create_anchor_from_motivation(self.npc, motivation)
             for percept in percepts:
                 if self.matches_motivation(percept, motivation):
                     salience = self.compute_salience_for_percepts(percept, motivation)
@@ -351,9 +338,9 @@ class UtilityAI(BaseAI):
                     self.deduplicate_thoughts_by_type(thoughts)
                     self.npc.mind.remove_thought_by_content("No focus")
         
-        self.promote_thoughts()       
+        #self.promote_thoughts()# Delete in favour of calling from simulate_days()
         self.generate_thoughts_from_percepts()#can we then just add the salient percepts to the parameters here?
-        self.promote_thoughts()
+        #self.promote_thoughts()# Delete in favour of calling from simulate_days()
         #flow needs to pass to score_action, then choose_action then execute_action
 
         print(f"[DEBUG] From UtilityAI, def think()")
@@ -420,7 +407,7 @@ class UtilityAI(BaseAI):
             return
 
         for motivation in motivations:
-            anchor = create_anchor_from_motivation(motivation)
+            anchor = create_anchor_from_motivation(self.npc, motivation)
 
             for percept in percepts:
                 
@@ -456,19 +443,17 @@ class UtilityAI(BaseAI):
 
                 self.npc.mind.remove_thought_by_content("No focus")
 
-    def evaluate_thoughts(self):
-        """
-        Loop through unresolved thoughts and increase motivations accordingly.
-        """
-        for thought in self.npc.mind.thoughts:
-            if thought.resolved:
-                continue
+    def evaluate_thoughts(self): #remove or override in subclasses
+        """Loop through unresolved thoughts and increase motivations accordingly."""
+        npc = self.npc
+        if not getattr(npc, "is_test_npc", False):
+            return  # suppress for non-test NPCs
 
-            # You can adjust these based on your thought/tag system
-            if "rob" in thought.tags and "weapon" in thought.tags:
-                print(f"[THOUGHT EVAL] {self.npc.name} is influenced by thought: {thought.content}")
-                self.npc.motivation_manager.increase("rob", amount=thought.weight)
-                thought.resolved = True  # Only apply once for now
+        for thought in npc.mind.thoughts:
+            if thought.resolved:
+                continue #possibly write or create corollories and failed thoughts
+                return
+
 
     def evaluate_memory_for_threats(self, memory):
         npc = self.npc

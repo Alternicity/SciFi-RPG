@@ -34,7 +34,14 @@ class Memory:
     def add_memory_entry(self, entry: MemoryEntry):
         self.semantic["memory_entries"].append(entry)#deprecated In favour of specific types of semantic memory
 
-    def add_region_knowledge(self, rk: RegionKnowledge):
+    def add_region_knowledge(self, rk: RegionKnowledge, current_day: Optional[int] = None):
+        self.semantic["region_knowledge"].append(rk)
+        existing = self.find_region_knowledge(rk.region_name)
+        if existing:
+            existing.touch(current_day)
+            return
+        if current_day is not None:
+            rk.created_day = current_day
         self.semantic["region_knowledge"].append(rk)
 
     def query_memory_by_tags(self, tags: list):
@@ -142,8 +149,9 @@ class Memory:
 
         self.semantic[category].append(memory_entry)
 
-    def add_episodic(self, memory_entry: MemoryEntry):
-        # Accept all entries, but optionally tally them by key
+    def add_episodic(self, memory_entry: MemoryEntry, current_day: Optional[int] = None):
+        if current_day is not None:
+            memory_entry.created_day = current_day
         self.episodic.append(memory_entry)
         # Hook: could notify utility/thinking AI
         # self.check_for_pattern(memory_entry)

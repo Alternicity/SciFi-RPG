@@ -1,14 +1,17 @@
 #anchor_utils.py
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Literal, List, Union, Dict, TYPE_CHECKING
+from typing import Literal, List, Union, Dict, TYPE_CHECKING, Optional, Any
 
 import time
 from memory_entry import MemoryEntry
+from debug_utils import debug_print
+from create_game_state import get_game_state
 
 if TYPE_CHECKING:
     from character_thought import Thought
-    
+    from character import Character
+
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
 
 #context-aware decision filter
@@ -20,21 +23,42 @@ class Anchor:
     weight: float = 1.0  # salience amplification factor
     priority: float = 1.0  # importance to current AI thinking
     enables: List[str] = field(default_factory=list)
-
     tags: List[str] = field(default_factory=list)  # used in tag-overlap salience logic
-    
-    # NEW: what this anchor considers helpful (e.g. ["weapon", "ranged"])
+    owner: Optional[Any] = None  # populated with npc object at runtime
     desired_tags: List[str] = field(default_factory=list)
-    # NEW: what this anchor wants to avoid (e.g. ["security", "police"])
     disfavored_tags: List[str] = field(default_factory=list)
-
     tag_weights: Dict[str, float] = field(default_factory=dict)
-
     source: Union[object, None] = None
     active: bool = True
     time_created: float = field(default_factory=time.time)
-    target_object: ObjectInWorld, or Location, Region, character, basically a python Object
-    
+    target_object: Optional[Any] = None  # e.g., ObjectInWorld, Location, Region, Character
+    # Simulation timing
+    tick_created: Optional[int] = None
+    day_created: Optional[int] = None
+
+    def __post_init__(self):
+        """Stamp simulation time (tick/day) on creation if possible."""
+        try:
+            state = get_game_state()
+            self.tick_created = getattr(state, "tick", None)
+            self.day_created = getattr(state, "day", None)
+        except Exception as e:
+            self.tick_created = None
+            self.day_created = None
+            debug_print(
+                self.owner,
+                f"[ANCHOR INIT] Warning: Could not access game state for {self.name}: {e}",
+                category="anchor"
+            )
+
+        # Optional debug trace of creation context
+        if self.owner:
+            debug_print(
+                self.owner,
+                f"[ANCHOR CREATED] {self.name} (type={self.type}) "
+                f"tick={self.tick_created}, day={self.day_created}",
+                category="anchor"
+            )
 
     def compute_salience_for(self, percept_data, npc) -> float:
         tags = percept_data.get("tags", [])
@@ -96,7 +120,7 @@ class RobberyAnchor(Anchor):
         return score
         #return round(score * self.weight, 2)
 
-def create_anchor_from_motivation(motivation) -> Anchor:
+def create_anchor_from_motivation(npc, motivation) -> Anchor:
     from anchor_utils import RobberyAnchor, ObtainWeaponAnchor
 
     tags = motivation.tags
@@ -108,6 +132,7 @@ def create_anchor_from_motivation(motivation) -> Anchor:
             weight=motivation.urgency,
             priority=motivation.urgency,
             tags = tags,
+            owner=npc,
             source=motivation
         )
 
@@ -118,15 +143,17 @@ def create_anchor_from_motivation(motivation) -> Anchor:
             weight=motivation.urgency,
             priority=motivation.urgency,
             tags = tags,
+            owner=npc,
             source=motivation
         )
 
-    return Anchor(#same here
+    return Anchor(
         name=motivation.type,
         type="motivation",
         weight=motivation.urgency,
         priority=motivation.urgency,
         tags = tags,
+        owner = npc,
         source=motivation
     )
 
@@ -144,14 +171,19 @@ def create_anchor_from_thought(npc, thought: "Thought", name: str = None) -> "An
         weight=thought.urgency or 1.0,
         priority=thought.weight or 1.0,
         tags=thought.tags,
+        #add a reference to npc here?
         desired_tags=thought.tags,  # Could filter/refine later
         disfavored_tags=[],
         tag_weights={tag: 1.0 for tag in thought.tags},
-        source=thought,
+        owner=npc,
+        source=thought
     )
-    #everything after here is structurally unreachable
-    npc.motivation_manager.update_motivations(anchor.name, urgency=anchor.weight, source=thought)
+    
+    urgency_delta = min(int(anchor.weight or 1), 3)
+    npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
 
+    #the following might be up for deletion. I am not sure if creating an episodic memory every time a 
+    #anchor is created is necessary. npcs can already accesss their anchor via self.current_anchor or similiar 
     memory_entry = MemoryEntry(
         subject=npc.name,
         object_="anchor",
@@ -195,3 +227,45 @@ class ObtainWeaponAnchor(Anchor):
         print(f"[SALIENCE] Second ObtainWeaponAnchor Score: {score:.2f} for {percept_data.get('name', percept_data.get('type'))} | Anchor: {self.name}")
 
         return round(score * self.weight, 2)
+    
+#utility functions
+
+def update_saliences_for_anchor(anchor, npc, percepts):
+    """Recompute salience for all percepts relative to a given anchor."""
+    if not anchor or not percepts:
+        return []
+    
+    updated = []
+    for p in percepts:
+        score = anchor.compute_salience_for(p["data"], npc)
+        p["salience"] = score
+        updated.append(p)
+    # Use unified debug printing instead of raw print
+    debug_print(
+        npc=npc,
+        message=f"[SALIENCE REFRESH] {npc.name} rescored {len(percepts)} percepts for anchor '{anchor.name}'",
+        category="salience"
+    )
+    return updated
+            
+            
+def refresh_salience_for_anchor(npc, anchor=None):
+    """Convenience: re-observe environment and rescore percepts."""
+    anchor = anchor or getattr(npc, "current_anchor", None)
+    if not anchor:
+        return
+    npc.observe(location=npc.location, region=npc.region)
+    percepts = npc.get_percepts()
+    return update_saliences_for_anchor(anchor, npc, percepts)
+
+#example full anchor debug_print
+""" if self.npc.is_test_npc and npc.current_anchor:
+            a = npc.current_anchor
+            debug_print(
+                f"[ANCHOR DEBUG] "
+                f"name={a.name}, type={a.type}, "
+                f"weight={a.weight}, priority={a.priority}, active={a.active}\n"
+                f"tags={a.tags}, desired={a.desired_tags}, disfavored={a.disfavored_tags}\n"
+                f"owner={getattr(a.owner, 'name', None)}, source={type(a.source).__name__ if a.source else None}",
+                category="anchor"
+            ) """

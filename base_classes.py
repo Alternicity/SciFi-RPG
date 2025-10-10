@@ -243,6 +243,7 @@ class Character(PerceptibleMixin):
         self.intelligence = intelligence
         self.mind = Mind(owner=self, capacity=intelligence)
         self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)
+        self._last_promote_tick = -1 #promoting thoughts to anchor should happen only once
         self.curiosity = Curiosity(base_score=self.intelligence // 2)
         self.concentration = concentration
 
@@ -398,6 +399,11 @@ class Character(PerceptibleMixin):
     @property
     def motivations(self):
         return self.motivation_manager.get_motivations()
+
+    """ @property
+    def is_test_npc(self):
+        return self.is_test_npc """
+    #Delete
 
     @motivations.setter
     def motivations(self, value):

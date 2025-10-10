@@ -1,6 +1,7 @@
 #character_think_utils.py
 from character_thought import Thought
 from motivation import Motivation
+from debug_utils import debug_print
 
 def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought objects
     from motivation_presets import MotivationPresets
@@ -33,7 +34,27 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
 def should_promote_thought(thought):
     return thought.urgency >= 4 or "weapon" in thought.tags
 
-def debug_recent_thoughts(mind, n=5):
+def debug_recent_thoughts(npc, mind, n=5):
     recent = list(mind.thoughts)[-n:]
-    print(f"[POST] Thoughts: {[t.content for t in recent]}")
+    thought_contents = [t.content for t in recent]
+    debug_print(npc, f"[THOUGHTS] Recent thoughts: {thought_contents}", category="think")
 
+    # Show obsessions (separate objects)
+    if mind.obsessions:
+        obsessions_data = [o.content for o in mind.obsessions if not o.resolved]
+        debug_print(npc, f"[THOUGHTS] Active obsessions: {obsessions_data}", category="think")
+
+
+    # Show corollaries (either Thought.corollary_of or Mind.corollaries)
+    corollary_map = {}
+    for t in mind.thoughts:
+        if getattr(t, "corollary_of", None):
+            corollary_map.setdefault(t.corollary_of, []).append(t.content)
+
+    if mind.corollaries:
+        # Include top-level corollary set if used
+        for c in mind.corollaries:
+            corollary_map.setdefault("global", []).append(getattr(c, "content", str(c)))
+
+    if corollary_map:
+        debug_print(npc, f"[THOUGHTS] Corollary structure: {corollary_map}", category="think")

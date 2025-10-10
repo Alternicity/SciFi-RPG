@@ -18,7 +18,7 @@ class PerceptibleMixin:
     def compute_salience(self, observer=None, anchor=None):
         # Avoid circular import; override in subclasses or call global compute_salience externally
         return getattr(self, "salience", 1)
-    # this can be made smarter (e.g. based on tags, distance, traits, etc.)
+    # this is old code, but uesd in the player program flow. We prefer Anchors for salience calculation now
 
     def percept_weight(self, observer=None):
         return getattr(self, "weight", 1)

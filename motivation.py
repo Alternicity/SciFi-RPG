@@ -91,7 +91,7 @@ class MotivationManager:
         if motivation_type:
             for m in self.motivations:
                 if m.type == motivation_type:
-                    m.urgency += urgency or 1
+                    m.urgency = min(m.urgency + (urgency or 1), 10)  # cap at 10
                     return
             # If not found, create new
             new_motivation = Motivation(

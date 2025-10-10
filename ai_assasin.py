@@ -66,6 +66,7 @@ class AssassinAI(UtilityAI):
     def compute_salience_for_motivation(self, percept, motivation):
         # Create an anchor specific to the motivation or context
         anchor = Anchor(name="assassin_target", type="motivation", weight=motivation.urgency, tags=["assassin", "target_search"])
+        #Do we need to ensure this anchor is stored in assassins current_anchor, not globally?
         return anchor.compute_salience_for(percept, self.npc)
         """ Notice how create_anchor_from_motivation(top_motivation) is used to define the anchor, and anchor drives
         subsequent behavior.

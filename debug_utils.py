@@ -2,6 +2,7 @@
 from config import (
     DEBUG_MODE,
     SHOW_TEST_NPC_LOGS,
+    SHOW_TICK_LOGS,
     SHOW_NPC_THINK_LOGS,
     SHOW_NPC_ACTION_LOGS,
     SHOW_MEMORY_LOGS,
@@ -10,11 +11,14 @@ from config import (
     SHOW_GAMEPLAY_LOGS,
     SHOW_ANCHOR_LOGS,
     SHOW_RK_LOGS,
+    SHOW_DECISION_LOGS,
+    SHOW_INSIGHT_LOGS,
     DEBUG_LEVEL,
 )
 
 DEBUG_FLAGS = {
     "test_npc": SHOW_TEST_NPC_LOGS,
+    "tick": SHOW_TICK_LOGS,
     "think": SHOW_NPC_THINK_LOGS,
     "action": SHOW_NPC_ACTION_LOGS,
     "memory": SHOW_MEMORY_LOGS,
@@ -23,6 +27,8 @@ DEBUG_FLAGS = {
     "gameplay": SHOW_GAMEPLAY_LOGS,
     "anchor": SHOW_ANCHOR_LOGS,
     "rkprint": SHOW_RK_LOGS,
+    "decision": SHOW_DECISION_LOGS,
+    "insight": SHOW_INSIGHT_LOGS,
 }
 
 

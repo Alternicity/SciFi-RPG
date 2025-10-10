@@ -1,6 +1,5 @@
 #inventory.py
 
-# The Inventory class can be reused for other entities like shops, factions, or NPCs without rewriting the logic
 from weapons import Weapon
 
 import logging
@@ -56,16 +55,41 @@ class Inventory:
         self.owner = owner
         self.primary_weapon = None
         self.weapons = []
-        self.recently_acquired = [] #develop this more once the game tick/time cycle is more granular
-        #Later, during your time tick refactor, you could turn recently_acquired into a list of 
-        # (item, timestamp) tuples and prune based on age.
-        # see also character.has_recently_acquired
-        #You can let the AI treat new items with a kind of “spotlight” attention (salience boost, thought generation, etc.)
-
-        #self.has_illegal_items = False 
+        self.recently_acquired = [] 
+        #You can let the AI treat new items with a kind of “spotlight” attention ie make it their attention_focus
+        #Perhaps recently_acquired could be a dictionary of Object/Time entries, and the clear_recently_acquired can work on how many
+        #  (sim) days the object has been in inventory
+        #This might also be of eventual use in economy.py as shops use class Inventory as well.
         if items:
             for item in items:
                 self.add_item(item)
+
+    def clear_recently_acquired(self):
+        """Placeholder: future logic will remove or age out newly acquired items."""
+        if not hasattr(self, "recently_acquired"):
+            self.recently_acquired = []
+
+        # Basic placeholder behavior — just clear the list for now
+        if self.recently_acquired:
+            print(f"[INVENTORY] Clearing {len(self.recently_acquired)} recently acquired items for {getattr(self.owner, 'name', 'Unknown')}")
+            self.recently_acquired.clear()
+        else:
+            print(f"[INVENTORY] No recently acquired items to clear for {getattr(self.owner, 'name', 'Unknown')}")
+
+
+
+    #For the future:
+    """ def clear_recently_acquired(self, current_day=None):
+        Removes items from recently_acquired if they are older than 1 simulated day.
+        if current_day is None:
+            from create_game_state import get_game_state
+            current_day = get_game_state().day
+
+        self.recently_acquired = [
+            (item, day_added)
+            for (item, day_added) in self.recently_acquired
+            if current_day - day_added < 1
+        ] """
 
     def is_empty(self):
         return not bool(self.items)

@@ -135,7 +135,7 @@ def compute_event_salience(obj, observer, anchor: Anchor = None):
 
 
 def compute_salience_for_motivation(self, percept, motivation):
-    anchor = create_anchor_from_motivation(motivation)
+    anchor = create_anchor_from_motivation(motivation)#does this need a npc parameter?
     # I skipped adding generic_tag_salience_boost() here as I wonder if some circular
     #effect might result from that.
     score = compute_salience(percept, self.observer, anchor)

@@ -99,6 +99,11 @@ class Mind:
         Adds a thought to the mind, avoiding duplicates by content.
         Optionally, can be enhanced to merge/update existing thoughts.
         """
+
+        # ensure mind knows its owner
+        owner = getattr(self, "owner", None)
+        debug_print(f"[MIND] add_thought to owner={getattr(owner,'name',None)} id={id(owner)}: {thought.content}", category="think")
+
         for existing in self.thoughts:
             if existing.content == thought.content:
                 # Update urgency if new one is stronger
@@ -142,7 +147,12 @@ class Mind:
         if thought.content not in existing:
             character.mind.corollaries.append(thought)
 
-    
+    def clear_stale_percepts(self):
+        """Placeholder: future logic will remove percepts that no longer reflect the game world."""
+        debug_print(self.owner, "[MIND] clear_stale_percepts() called — no action (placeholder)", "percept")
+        # In the future, check if any percept's object no longer exists or changed region/location.
+        return
+        #Is mind the right place for this? Where are percepts stored?
 
     """ keep urgent() in Mind.
 Heres why:

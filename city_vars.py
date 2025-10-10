@@ -16,6 +16,10 @@ class GameState:
         # NEW: determines whether the game is in player mode or simulation mode
         #Later: You Can Even Add a Command-Line Flag or Menu Option
         self.game_mode = GAME_MODE_PLAYER
+
+        self.tick = 0 # 1 hour
+        self.day = 1
+
         self.state = None
         self.civilians = []
         self.all_employees =  {}
@@ -29,7 +33,7 @@ class GameState:
         self.factions = [] #is not used
         self.all_characters = [] #oof...integrate characters = []
         self.state_staff = []
-        corp_hqs = []
+        self.corp_hqs = []
         self.player_character = None
         self.orphans = []
         self.downtown_gangs = []
@@ -47,6 +51,11 @@ class GameState:
         #placeholders
         hiring  =  {} #employers with job vacancies. Employer/character class wanted
         recruiting =  {} # gangs with vacancies to fill. Gang/type character wanted
+
+    def advance_tick(self):
+        self.tick += 1
+        if self.tick % 24 == 0:# e.g., 24 ticks = 1 day
+            self.day += 1
 
     def set_state(self, state):
         self.state = state #State object is initialized as State, but that becomes undefined here
