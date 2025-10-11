@@ -541,7 +541,7 @@ class GangMember(Subordinate):
         # Enforce the primary domain (in case Character didn't get it from kwargs)
         self.primary_status_domain = "criminal"
         
-        self.isTestNPC = False
+        self.is_test_npc = False
         self.targetIsInMelee = False
         self.isAggressive = False
         #self.ai = GangMemberAI(self)

@@ -1,6 +1,7 @@
 #inventory.py
 
 from weapons import Weapon
+from debug_utils import debug_print
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -70,11 +71,21 @@ class Inventory:
             self.recently_acquired = []
 
         # Basic placeholder behavior — just clear the list for now
+        owner_name = getattr(self.owner, "name", "UnknownOwner")
+        #owner_name could be an npc, the player, or a shop or other location. Not currently accesssed below
         if self.recently_acquired:
-            print(f"[INVENTORY] Clearing {len(self.recently_acquired)} recently acquired items for {getattr(self.owner, 'name', 'Unknown')}")
+            debug_print(
+                self.owner,
+                f"Clearing {len(self.recently_acquired)} recently acquired items.",
+                category="inventory"
+            )
             self.recently_acquired.clear()
         else:
-            print(f"[INVENTORY] No recently acquired items to clear for {getattr(self.owner, 'name', 'Unknown')}")
+            debug_print(
+                self.owner,
+                f"No recently acquired items to clear.",
+                category="inventory"
+            )
 
 
 

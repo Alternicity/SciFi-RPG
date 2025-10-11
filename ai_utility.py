@@ -31,7 +31,7 @@ class UtilityAI(BaseAI):
         npc = self.npc
 
         #prevent herding
-        if not getattr(npc, "isTestNPC", False):
+        if not getattr(npc, "is_test_npc", False):
             return {"name": "idle"}
 
         motivations = npc.motivation_manager.get_motivations()
@@ -130,6 +130,7 @@ class UtilityAI(BaseAI):
         context = context or {}
 
         # Extract anchor from action, fallback to npc.focus
+        #REVISIT VALIDITY OF THIS
         from ai_utility_thought_tools import extract_anchor_from_action
         anchor = extract_anchor_from_action(action) or npc.mind.attention_focus or npc.default_focus
         if anchor is None:
@@ -433,7 +434,7 @@ class UtilityAI(BaseAI):
                     content=description,
                     origin=origin_obj,
                     urgency=urgency,
-                    tags=tags,
+                    tags=tags,#check!
                     source=anchor  # useful for later motivation tracking
                 )
 
@@ -521,39 +522,62 @@ class UtilityAI(BaseAI):
             npc.utility_ai.evaluate_thought_for_threats(appraise_rival)
 
 def generate_location_visit_thought(npc, location, enabling_motivation=None):
-        """
-        Creates a thought suggesting visiting a specific location to satisfy a motivation.
-        """
-        print(f"[THOUGHT GEN] Generating thought to visit {location.name}")
-        tags = []
-        reason = []
+    """
+    Creates a thought suggesting visiting a specific location to satisfy a motivation.
+    Designed for general-purpose NPCs (non-criminal).
+    """
+    print(f"[THOUGHT GEN] Generating thought to visit {location.name}")
+    tags = []
+    reasons = []
 
-        if hasattr(location, "tags"):
-            tags.extend(location.tags)
-        if getattr(location, "is_robbable", False):
-            tags.append("robbable")
-            reason.append("it's robbable")
-        if getattr(location, "contains_weapons", False):
-            tags.append("weapon")
-            reason.append("it has weapons")
-        if "shop" in location.name.lower():
-            tags.append("shop")
-            reason.append("it's a shop")
+    # Collect location tags if available
+    if hasattr(location, "tags"):
+        tags.extend(location.tags)
 
-        thought = Thought(
-            subject="visit_location",
-            content=f"Maybe I should go to {location.name} because {' and '.join(reason)}.",
-            origin="generate_location_visit_thought",
-            urgency=6,
-            tags=tags + ["location", "move", "travel"],
-            source=enabling_motivation,
-            weight=6
-        )
+    # General contextual logic (non-criminal)
+    # Expand this as your world adds more location attributes.
+    if getattr(location, "serves_food", False):
+        tags.append("food")
+        reasons.append("they serve food")
+    if getattr(location, "provides_rest", False):
+        tags.append("rest")
+        reasons.append("it’s a place to rest")
+    if getattr(location, "is_social_spot", False):
+        tags.append("social")
+        reasons.append("people gather there")
+    if getattr(location, "sells_items", False):
+        tags.append("shop")
+        reasons.append("it’s a shop")
+    if getattr(location, "offers_work", False):
+        tags.append("work")
+        reasons.append("there might be work opportunities")
+    if getattr(location, "teaches_skills", False):
+        tags.append("learning")
+        reasons.append("I could learn something there")
+    if getattr(location, "provides_entertainment", False):
+        tags.append("fun")
+        reasons.append("it sounds enjoyable")
+    if getattr(location, "is_safe_spot", False):
+        tags.append("safe")
+        reasons.append("it feels safe there")
 
-        npc.mind.add_thought(thought)
-        npc.mind.remove_thought_by_content("No focus")
+    # Default reason if none found
+    if not reasons:
+        reasons.append("it seems interesting")
 
-        # Optional: Remove “No focus” placeholder
-        npc.mind.remove_thought_by_content("No focus")
+    thought = Thought(
+        subject="visit_location",
+        content=f"Maybe I should go to {location.name} because {' and '.join(reasons)}.",
+        origin="generate_location_visit_thought",
+        urgency=6,
+        tags=tags + ["location", "move", "travel", "intention"],
+        source=enabling_motivation,
+        weight=6,
+    )
 
-        return thought
+    npc.mind.add_thought(thought)
+
+    # Remove placeholder “No focus” thoughts if present
+    npc.mind.remove_thought_by_content("No focus")
+
+    return thought

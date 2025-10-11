@@ -10,7 +10,7 @@ from create_game_state import get_game_state
 
 if TYPE_CHECKING:
     from character_thought import Thought
-    from character import Character
+    from base_classes import Character
 
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
 
@@ -202,7 +202,7 @@ def create_anchor_from_thought(npc, thought: "Thought", name: str = None) -> "An
 
     return anchor
 
-class ObtainWeaponAnchor(Anchor):
+class ObtainWeaponAnchor(Anchor):#Potentially unused!
     def compute_salience_for(self, percept_data, npc) -> float:
         origin = percept_data.get("origin", None)
 

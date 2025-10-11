@@ -101,6 +101,8 @@ class GangMemberAI(UtilityAI):
                     weight=thought.urgency,
                     source=thought,
                     tags=thought.tags,
+                    desired_tags = ["ranged_weapon"],
+                    disfavored_tags = ["security"],
                     owner=npc
                     )
 
@@ -114,7 +116,7 @@ class GangMemberAI(UtilityAI):
         for r in to_remove:
             npc.mind.remove_thought_by_content(r)
 
-        if npc.isTestNPC and not npc.mind.attention_focus:
+        if npc.is_test_npc and not npc.mind.attention_focus:
             debug_print(npc, f"[GangMemberAI] {npc.name} has no attention focus.", "FOCUS")
 
     #For AI Subclasses that need special behavior, override this method only
@@ -131,9 +133,14 @@ class GangMemberAI(UtilityAI):
         # Resolve or create the current anchor
         anchor = getattr(npc, "current_anchor", None)
         if not anchor and npc.mind.attention_focus:
-            anchor = create_anchor_from_thought(npc, npc.mind.attention_focus)
+            anchor = create_anchor_from_thought(npc, npc.mind.attention_focus)#doesnt pass in a thought unless it is also attention_focus
         if not anchor and npc.motivation_manager.get_highest_priority_motivation():
-            anchor = create_anchor_from_motivation(npc, npc.motivation_manager.get_highest_priority_motivation())
+            anchor = create_anchor_from_motivation(
+                npc, npc.motivation_manager.get_highest_priority_motivation()
+            )
+            #Do these motivations have anchor definitions available?
+
+            #The following anchor needs to be valid
         npc.current_anchor = anchor
             
         # Ensure percepts are up to date before we score them
@@ -183,8 +190,13 @@ class GangMemberAI(UtilityAI):
         # REMOVE SELF from percepts before scoring
         percepts = [p for p in percepts if p["origin"] is not npc]
 
+
         for percept in percepts:
-            print(f"[DEBUG] from choose_action Percept: {percept.get('name', 'unnamed')} | tags: {percept.get('tags', [])}")
+            debug_print(
+                npc,
+                f"[PERCEPT] {percept.get('name', 'unnamed')} | tags={percept.get('tags', [])}",
+                category="percept"
+            )
 
         if not anchor:
             print(f"[ANCHOR WARNING] {npc.name} has no active anchor, skipping salience computation.")
@@ -276,7 +288,7 @@ class GangMemberAI(UtilityAI):
                 content="Maybe I should get a weapon before robbing.",
                 origin="resolve_robbery_action",#should this be choose_action or GanagMemberAI.choose_action() here? This block is inside that
                 urgency=7,
-                tags=["rob", "shop", "weapon", "enable", "crime", "ranged_weapon", "pistol"],
+                tags=["rob", "shop", "weapon", "enable", "crime", "ranged_weapon", "pistol", "intention"],
                 timestamp=time.time(),
                 source=motivation,
                 weight=7
@@ -322,9 +334,17 @@ class GangMemberAI(UtilityAI):
                     return {"name": "visit_location", "params": {"location": best_location}}
             
 
-        print(f"[POST-Visit thought gen] Thoughts: {[t.summary() for t in npc.mind.thoughts]}")
+        debug_print(
+            npc,
+            f"[POST-VISIT] Thoughts: {[t.summary() for t in npc.mind.thoughts]}",
+            category="think"
+        )
         for m in npc.mind.memory.semantic.get("shop_knowledge", []):
-            print(f"[DEBUG] Semantic memory: {m.description} tags: {m.tags} source: {getattr(m, 'source', None)}")
+            debug_print(
+                npc,
+                f"[SEMANTIC] {m.description} | tags={m.tags} | src={getattr(m, 'source', None)}",
+                category="memory"
+            )
         
         if weapon:#should the test npc want a ranged_weapon here?
             print(f"[CHOOSE ACTION] {npc.name} returns Steal with item: {weapon.name}")
@@ -437,8 +457,12 @@ class GangMemberAI(UtilityAI):
             display_npc_mind(npc)
 
         
-        else:
-            print(f"[GangMemberAI] Unknown action name: {name}")
+        else:#not indented under the if statement
+            if npc.is_test_npc:
+                debug_print(npc, f"[Unknown action: {name}]", category="action")
+            else:
+                # Non-test NPCs idling — suppress spam
+                debug_print(npc, "is idling.", category="simulation")
             
         if npc.is_test_npc:
             #print(f"[MIND DUMP] from GangMemberAI execute_action {npc.name} current thoughts: {[str(t) for t in npc.mind]}")
@@ -450,7 +474,45 @@ class GangMemberAI(UtilityAI):
             print(f"[POST-ACTION] Current attention: {npc.mind.attention_focus}")
             print(f"[POST-ACTION] Current motivation: {npc.motivation_manager.get_urgent_motivations()}")
             print(f"[DEBUG] {npc.name}'s inventory: {[item.name for item in npc.inventory]}")
-                                                                                  
+
+
+    def generate_location_visit_thought(npc, location, enabling_motivation=None):
+        """
+        Creates a thought suggesting visiting a specific location to satisfy a motivation GangMember edition
+        """
+        print(f"[THOUGHT GEN] Generating thought to visit {location.name} GangMember version")
+        tags = []
+        reason = []
+
+        if hasattr(location, "tags"):
+            tags.extend(location.tags)
+        if getattr(location, "is_robbable", False):
+            tags.append("robbable")
+            reason.append("it's robbable")
+        if getattr(location, "contains_weapons", False):
+            tags.append("weapon")
+            reason.append("it has weapons")
+        if "shop" in location.name.lower():
+            tags.append("shop")
+            reason.append("it's a shop")
+
+        thought = Thought(
+            subject="visit_location",
+            content=f"Maybe I should go to {location.name} because {' and '.join(reason)}.",
+            origin="generate_location_visit_thought",
+            urgency=6,
+            tags=tags + ["location", "move", "travel", "intention"],
+            source=enabling_motivation,
+            weight=6
+        )
+
+        npc.mind.add_thought(thought)
+
+        # Optional: Remove “No focus” placeholder
+        npc.mind.remove_thought_by_content("No focus")
+
+        return thought
+    
     def resolve_visit_action(self, region):
         npc = self.npc
 
@@ -468,7 +530,7 @@ class GangMemberAI(UtilityAI):
 
     def resolve_weapon_target_from_percepts(self):
         percepts = self.npc.get_percepts()
-        
+        #get a weapon target from weapon objects are npcs current location
         #this function should also contain stub code pertaining to multiple weapon choices, ie if a future npc
         #is in an aromoury with several perceivable weapon types, or a shop with several.
 
@@ -645,7 +707,7 @@ class GangMemberAI(UtilityAI):
                     content="Maybe I should get a weapon before robbing.",
                     origin="resolve_robbery_action",
                     urgency=7,
-                    tags=["rob", "shop", "weapon", "enable", "crime", "ranged_weapon", "pistol"],
+                    tags=["rob", "shop", "weapon", "enable", "crime", "ranged_weapon", "pistol", "intention"],
                     timestamp=time.time(),
                     source=None,
                     weight=7
@@ -712,7 +774,7 @@ class GangMemberAI(UtilityAI):
                         content="Target spotted for robbery",
                         subject=None,
                         origin="ai_gang.robbery_decision",
-                        tags=["robbery", "shop", "weapon"],
+                        tags=["robbery", "shop", "weapon", "intention"],
                         urgency=3,
                         timestamp=time.time()
                     )
@@ -802,7 +864,7 @@ class GangMemberAI(UtilityAI):
                             subject=loc_obj.name,
                             origin="RegionKnowledge",
                             urgency=7,
-                            tags=["rob", "shop"],
+                            tags=["rob", "shop", "intention"],
                             timestamp=time.time()
                         )
                         mind.add_thought(thought)
@@ -815,22 +877,23 @@ class GangMemberAI(UtilityAI):
                     content="Now that I'm armed, I could rob this shop.",
                     origin="post_theft",
                     urgency=8,
-                    tags=["rob", "crime", "weapon", "opportunity"],
+                    tags=["rob", "crime", "weapon", "opportunity", "intention"],
                     timestamp=time.time()
                 )
                 mind.add_thought(thought)
                 mind.attention_focus = set_attention_focus(npc, thought)
 
         # ─────────────────────────────
-        # SALIENCE EVALUATION
+        # PERTINENCE EVALUATION
         # ─────────────────────────────
         relevant_thoughts = [t for t in mind.thoughts if isinstance(t, Thought)]
         for t in relevant_thoughts:
             t._salience_cache = t.salience_for(npc, anchor)
-        salient_thoughts = sorted(relevant_thoughts, key=lambda t: getattr(t, "_salience_cache", 0), reverse=True)
+        pertinent_thoughts = sorted(relevant_thoughts, key=lambda t: getattr(t, "_salience_cache", 0), reverse=True)
 
-        if salient_thoughts:
-            top = salient_thoughts[0]
+        if pertinent_thoughts:#pertinent used here, to avoid confusion with object salience, in anchors
+            #Like pertinent
+            top = pertinent_thoughts[0]
             print(f"[THINK] Top salient thought: '{top.content}' (salience={top._salience_cache:.2f})")
             mind.attention_focus = set_attention_focus(npc, top)
             new_anchor = create_anchor_from_thought(npc, top)
@@ -842,8 +905,8 @@ class GangMemberAI(UtilityAI):
         # ─────────────────────────────
         episodic_memories = mind.get_episodic()
         self.examine_episodic_memory(episodic_memories)
-        high_salient = [t for t in salient_thoughts if t._salience_cache >= 6]
-        if not high_salient:
+        high_pertinent = [t for t in pertinent_thoughts if t._salience_cache >= 6]
+        if not high_pertinent:
             self.generate_thoughts_from_percepts()
 
         # ─────────────────────────────
@@ -923,7 +986,7 @@ class GangMemberAI(UtilityAI):
                         content=f"Target spotted for robbery",
                         subject=target,
                         origin="Memory",
-                        tags=["explore", "shop"],
+                        tags=["explore", "shop", "intention"],
                         urgency=2,
                         timestamp=time.time()
                     )

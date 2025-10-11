@@ -13,6 +13,11 @@ from config import (
     SHOW_RK_LOGS,
     SHOW_DECISION_LOGS,
     SHOW_INSIGHT_LOGS,
+    SHOW_PERCEPT_LOGS,
+    SHOW_INVENTORY_LOGS,
+    SHOW_VISIT_LOGS,
+    SHOW_FOCUS_LOGS,
+    SHOW_MOTIVE_LOGS,
     DEBUG_LEVEL,
 )
 
@@ -29,6 +34,11 @@ DEBUG_FLAGS = {
     "rkprint": SHOW_RK_LOGS,
     "decision": SHOW_DECISION_LOGS,
     "insight": SHOW_INSIGHT_LOGS,
+    "percept": SHOW_PERCEPT_LOGS,
+    "inventory": SHOW_INVENTORY_LOGS,
+    "visit": SHOW_VISIT_LOGS,
+    "focus": SHOW_FOCUS_LOGS,
+    "motive": SHOW_MOTIVE_LOGS,
 }
 
 
@@ -39,6 +49,10 @@ def debug_print(npc=None, message="", category="general", level="DEBUG"):
     - category: one of DEBUG_FLAGS keys
     - level: string for severity ("DEBUG", "INFO", "WARNING", "ERROR")
     """
+
+    if npc and not getattr(npc, "is_test_npc", False):
+        return
+
     if not DEBUG_MODE:
         return
 
