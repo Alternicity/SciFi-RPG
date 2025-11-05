@@ -120,7 +120,8 @@ def create_gang_characters(faction, all_regions):
         
         sex = random.choice(Character.VALID_SEXES)
         name = create_name(race, sex)
-        
+        inventory = Inventory()
+
         member = GangMember(
         name=name,
         race=faction.race,
@@ -130,9 +131,12 @@ def create_gang_characters(faction, all_regions):
         location=None,
         origin=faction.region,
         motivations=[("idle", 1)],
-        inventory=Inventory([Knife(owner_name=name)]),
+        inventory=inventory,
         status=status
     )
+        knife = Knife(owner_name=member.name)
+        member.inventory.add_item(knife)
+        member.inventory.owner = member  # ensure ownership linkage
 
         faction.members.append(member)
         
@@ -152,7 +156,7 @@ def create_gang_characters(faction, all_regions):
                 importance=6,
                 tags=["weapon", "shop"],
                 type=("streetwise"),
-                initial_memory_type="episodic",
+                initial_memory_type="semantic",
                 function_reference=None,
                 implementation_path=None,
                 associated_function=None

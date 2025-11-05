@@ -616,13 +616,12 @@ def display_percepts_table(npc):
                 salience = f"ERR: {e}"#salience not accessed
 
         origin = v.get("origin") or data.get("origin")
-        if origin and not isinstance(origin, dict):
-            if origin is not None:
-                salience_score = compute_salience(origin, npc, anchor)
-        elif data:
-            salience_score = compute_salience(data, npc, anchor)  # fallback
-        else:
-            salience_score = 1
+        # --- Unified, safe salience computation ---
+        # Display is now anchor-centric: salience depends on the current anchor only.
+        try:
+            salience_score = anchor.compute_salience_for(origin, npc) if anchor else 0.0
+        except Exception:
+            salience_score = 0.0
 
         table_data.append([
             i,
@@ -630,12 +629,11 @@ def display_percepts_table(npc):
             type_,
             appearance,
             n_keys,
-            f"{salience_score:.2f}"
         ])
 
     print(tabulate(
         table_data,
-        headers=["#", "Description", "Type", "Appearance", "#Keys", "Salience"],
+        headers=["#", "Description", "Type", "Appearance", "#Keys"],
         tablefmt="rounded_outline"
     ))
 

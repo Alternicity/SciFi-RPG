@@ -17,16 +17,16 @@ from weapons import Weapon, RangedWeapon
 #needed for execute_actions
 from events import Robbery
 from worldQueries import get_viable_robbery_targets
+from debug_utils import debug_print
 
 def execute_action(npc, action, region):
+    """Fallback to the NPC's AI execute_action if available."""
     if hasattr(npc, 'ai') and hasattr(npc.ai, 'execute_action'):
+        #can we put a debug print here telling us if this runs and what action with please?
         return npc.ai.execute_action(action, region)
+    #should there be a else here?
+    debug_print(npc, f"[WARN] {npc.name} has no AI to execute action: {action}", category="action")
 
-    # fallback basic behaviors
-    if action == "Visit":
-        print(f"{npc.name} is wandering around.")
-    elif action == "Idle":
-        print(f"{npc.name} is standing idle.")
 
 def handle_actions(character):
     from menu_utils import get_menu_choice

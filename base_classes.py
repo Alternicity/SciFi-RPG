@@ -153,9 +153,12 @@ class Factionless(Faction):
 
 class Character(PerceptibleMixin):
     #keep PerceptibleMixin at the start of the base class list
-
+    
+    
     VALID_SEXES = ("male", "female")  # Class-level constant
     VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "Irish", "French", "Chinese", "German", "BlackAmerican", "Indian", "IndoAryan", "IranianPersian", "Japanese", "WhiteAryanNordic")  # Class-level constant
+
+    
 
     is_concrete = False
     def __init__(
@@ -189,41 +192,53 @@ class Character(PerceptibleMixin):
         loyalties=None,# Default is None; initializes as a dictionary later
         custom_skills=None,
         **kwargs,
-        
+        #here?
     ):
+        #assert hasattr(self, "region"), "region must be set by end of Character.__init__"
         super().__init__()
         #PerceptibleMixin.__init__(self)  # Explicit call instead of super()
+        
+        from utils import get_region_by_name
+        from create_game_state import get_game_state
+        from location import Region
 
+        # --- Load global regions early ---
+        game_state = get_game_state()
+        all_regions = game_state.all_regions
+
+    # --- Assign region first ---
+        self.region = get_region_by_name(region, all_regions) if isinstance(region, str) else region
+        if not isinstance(self.region, Region):
+            raise ValueError(f"Invalid region assigned to character: {region}")
 
         #print(f"[Character Init] name={name}, race={race}, sex={sex}")
         #verbose, prints all characters
 
         #initialization code
+        
+
+        # --- Assign location and home region ---
+        self.location = location
+        self.current_destination = location
+        self.home_region = self.region
+
         self.name = name
         self.is_player = False
         self.is_test_npc = False  # Default to False
         self.is_peaceful_npc = False
         self.has_plot_armour = False# characters should perceive this but not print it to user
 
-        if not self.is_player:
-            
-            self.ai = ai or UtilityAI(self)
-        else:
-            self.ai = None
+        # --- AI initialization (after region is defined) ---
 
-        from utils import get_region_by_name #line 150
-        from create_game_state import get_game_state
-        game_state = get_game_state()
-        all_regions = game_state.all_regions
+        self.ai = ai  # only assign if provided, don’t auto-create here
 
-        from location import Region
-        self.region = get_region_by_name(region, all_regions) if isinstance(region, str) else region
-        if not isinstance(self.region, Region):
-            raise ValueError(f"Invalid region assigned to character: {region}")
         
-        self.location = location
-        self.home_region = self.region
+
         self.residences: List[Location] = []
+
+        # --- Validation ---
+        assert isinstance(self.region, Region), \
+            f"[DEV] {self.name if hasattr(self, 'name') else '?'} region must be a valid Region at end of Character.__init__"
         
         # Default preferred actions (subclasses can extend this)
         self.base_preferred_actions = {}
@@ -289,6 +304,7 @@ class Character(PerceptibleMixin):
             self.appearance["faction_semiotics"] = []
 
         self.current_anchor = None
+        self.anchors = []
         from motivation import MotivationManager, Motivation
 
         self.motivation_manager = MotivationManager(self)
@@ -299,8 +315,6 @@ class Character(PerceptibleMixin):
                 else:
                     # assume tuple (type, urgency)
                     self.motivation_manager.update_motivations(m[0], m[1])
-
-        
 
         self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
         #status loss, or lack of money, or tasks failed, or baf personal events
@@ -390,6 +404,24 @@ class Character(PerceptibleMixin):
     # Assign faction HQ if applicable
         if self.faction and hasattr(self.faction, "HQ"):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
+
+        
+    def register_anchor(self, anchor):
+        """
+        Registers an Anchor with this character.
+        """
+        if not hasattr(self, "anchors"):
+            self.anchors = []
+
+        # filter out None anchors
+        if anchor is None:
+            return
+
+        if anchor not in self.anchors:
+            self.anchors.append(anchor)
+            from debug_utils import debug_print
+            debug_print(self, f"[ANCHOR] Registered anchor: {anchor.name}", category="anchor")
+
     def get_preferred_actions(self):
         """Return combined preferences (base + individual)."""
         combined = self.base_preferred_actions.copy()
@@ -544,7 +576,66 @@ class Character(PerceptibleMixin):
             "has_security": getattr(self, "has_security", lambda: False)()
         }
 
-    def observe_region(self, region, include_memory_check=True, include_inventory_check=False):
+    def add_percept_from(self, obj):
+        """
+        Convert an observed object (Character, Item, Location, etc.)
+        into a percept entry and add it to this character's percept list.
+        """
+
+        # Avoid self-perception (handled separately)
+        if obj is self:
+            return
+
+        
+
+        # Ask the object for its perceptual data
+        percept_data = None
+        if hasattr(obj, "get_percept_data"):
+            percept_data = obj.get_percept_data(observer=self)
+        else:
+            # Fallback for non-perceptible objects
+            percept_data = {
+                "name": getattr(obj, "name", str(obj)),
+                "type": obj.__class__.__name__,
+                "description": f"{obj.__class__.__name__} (unclassified)",
+                "origin": obj,
+                "salience": 1.0,
+                "tags": [],
+                "urgency": 1,
+                "source": None,
+                "menu_options": [],
+            }
+
+        if "name" not in percept_data:
+            print(f"[BUG] Object {obj} returned percept with NO name: {percept_data}")
+            
+        if not percept_data:
+            return
+
+        # Store percept by name (unique key)
+        # Defensive ensure-name
+        name = percept_data.get("name") or getattr(obj, "name", None) or str(obj)
+
+        key = name
+
+        # Initialize percept dict if missing
+        if not hasattr(self, "_percepts"):
+            self._percepts = {}
+
+        # Add/update percept data
+        self._percepts[key] = {
+            "data": percept_data,
+            "origin": obj
+        }
+
+        #from debug_utils import debug_print
+        #debug_print(self, f"[PERCEPT ADDED] {self.name} perceived {obj.name} ({obj.__class__.__name__})", category = "percept")
+        #verbose
+
+        # Mark percepts as updated
+        self.percepts_updated = True
+
+    def observe_region(self, region, include_memory_check=True):
         from location import Region
         #assert isinstance(region, Region), f"[BUG] {self.name} was passed a non-Region as a region: {region} ({type(region)})"
         assert isinstance(region, Region), f"[DEV] {self.name} observe_region got {type(region)} — {region}"
@@ -553,26 +644,12 @@ class Character(PerceptibleMixin):
             print(f"[BUG] {self.name} was passed {region} of type {type(region).__name__} to observe_region().")
             return
 
-        for loc in region.locations:  #line530
-            pass  # observe_location(self, loc)
+        for loc in region.locations:
+            pass
 
         for char in region.characters_there:
             if char is not self:
                 self.perceive_object(char)
-
-        #should not be inside observe_region() unless you want memory injection to
-        #  happen every time the region is observed.
-        #Move to character instantiation, later add a lesser version for child or stupid characters
-        #a one-time call like initialize_knowledge() during startup / setup.
-            from memory_entry import RegionKnowledge
-            rk = RegionKnowledge(
-                region_name=region.name,
-                character_or_faction=self,
-                tags = ["gangs", "region", "street_gang"],
-                region_gangs={g.name for g in region.region_gangs},
-                is_street_gang=any(getattr(g, "is_street_gang", False) for g in region.region_gangs),
-            )
-            self.mind.memory.semantic.setdefault("region_knowledge", []).append(rk)
 
             for gang in region.region_gangs: #line 534
                 self.mind.memory.semantic.setdefault("factions", []).append(gang)
@@ -588,67 +665,121 @@ class Character(PerceptibleMixin):
         # Trigger subclass reaction if it exists
         if hasattr(self, "handle_observation"):
             self.handle_observation(region)
-
-        if include_inventory_check and self.location and hasattr(self.location, "inventory"):#line 587
-            #include_inventory_check is marked as not defined, it needs to be passed in from the call
-            for item in self.location.inventory.items.values():
-                if isinstance(item, PerceptibleMixin):
-                    percept = item.get_percept_data(observer=self)
-                    if percept:
-                        self._percepts[item.id] = {
-                            "data": percept,
-                            "origin": item
-                    }
         
     def observe(self, *, nearby_objects=None, target=None, region=None, location=None):
-        from location import Region, Location#line 609
-        if isinstance(region, Location):
-            region = region.region
-        if not isinstance(region, Region):
-            raise TypeError(f"[DEV] {self.name} observe_region got invalid region type {type(region)} — {region}")
-            #will this block exclude nearby_objects from the subsequent call to observe_objects()?
-        if self.is_test_npc:
-            simple_list = [f"{c.name}, {c.__class__.__name__}" for c in location.characters_there]
-            #print(f"[DEBUG] {self.name} observe() called, count these: {simple_list}")
-        
-        self.observe_region(region, include_memory_check=True, include_inventory_check=True)
-        self.observe_objects(nearby_objects=nearby_objects, location=location, include_inventory_check=True)
+        """
+        Main observation routine for NPCs — clears percepts and gathers new ones from
+        characters, objects, and the surrounding region.
+        """
+        from location import Region, Location
+        from debug_utils import debug_print
+        from create_game_state import get_game_state
+        import inspect
+        game_state = get_game_state()
+        npc = self
 
-        # Main perception logic for a character NPC.
-        region = region or self.region
-        location = location or getattr(self, "location", None) 
-        
-        # Observe specific location if provided
-        if location:
-            observe_location(self, location)
+        # caller info for diagnostics
+        caller = inspect.stack()[1].function
 
-            # Perceive self
-            self_percept = self.get_percept_data(observer=self)
-            if self_percept:
-                new_percepts = {}
-                new_percepts["self"] = {
-                    "data": self_percept,
-                    "origin": self
-                }
-                self._percepts.update(new_percepts)
-                self.percepts_updated = True
+        # Ensure only runs once per tick
+        if getattr(self, "_observed_this_tick", False):
+            debug_print(npc, f"[OBSERVE SKIP] already observed this tick={game_state.tick} (caller={caller})", "percept")
+            return
+        self._observed_this_tick = True
 
-            #print(f"[Observe] {self.name} now has {len(self._percepts)} percepts.")
+        debug_print(npc, f"[OBSERVE TRACE] {self.name} observing at tick {game_state.tick} (caller={caller})", category="obervation")
+        debug_print(npc, f"[OBSERVE TRACE] npc.location={npc.location}, region={npc.region}", category="perception")
+        debug_print(npc, f"[OBSERVE] RAW location param={location} (type={type(location)})", "perception")
+
+        # --- show before/after counts for easier debugging ---
+
+        try:
+            before_count = len(self.percepts)
+        except Exception:
+            before_count = 0
+        debug_print(npc, f"[OBSERVE] Before clearing percepts, count={before_count}, location param={(location.name if location else None)}", "percept")
+
+        # --- clear percepts for new observation cycle ---
+        self.percepts.clear()
+        self.percepts_update = False
+
+        # --- perceive self (always included) ---
+        self_percept = self.get_percept_data(observer=self)
+        if self_percept:
+            self._percepts["self"] = {
+                "data": self_percept,
+                "origin": self
+            }
+            self.percepts_updated = True
+
+        debug_print(self, f"[OBSERVE] Final percept count from oberve() ={len(self.percepts)} at {location.name}", "percept")
+
+        # --- determine current location if not passed ---
+        if location is None:
+            location = getattr(self, "location", None)
+
+        # If someone passed a Region (bad), fallback to npc.location
+        if isinstance(location, Region):
+            debug_print(npc, "[BUGFIX] observe() received Region instead of Location; switching to npc.location", "percept")
+            location = npc.location
+
+        if not location:
+            debug_print(npc, f"[OBSERVE WARNING] {self.name} has no valid location.", "percept")
+            return
+
+        # --- perceive other characters in the same location ---
+        for char in getattr(location, "characters_there", []):
+            if char is self:
+                continue
+            self.add_percept_from(char)
+
+            debug_print(
+            npc,
+            f"[OBSERVE TRACE] Seeing {other.name} because source={source}",
+            category="perception"
+            )#other and source not defined here
+
+        # --- perceive additional objects if any (location-provided list preferred) ---
+        if nearby_objects:
+            for obj in nearby_objects:#is this nearby_objects even populated?
+                self.add_percept_from(obj)
+        else:
+            # If caller didn't provide nearby_objects, ask the location for perceptibles.
+            if hasattr(location, "list_perceptibles"):
+                for obj in location.list_perceptibles():
+                    self.add_percept_from(obj)
+            else:
+                # fallback to worldQueries
+                from worldQueries import get_nearby_objects
+                for obj in get_nearby_objects(self, region=region, location=location):
+                    self.add_percept_from(obj)
+
+        # --- perceive a specific target if requested ---
+        if target:
+            self.add_percept_from(target)#not used
+
+        # --- mark update complete ---
+        self.percepts_updated = True
+        final_count = len(self._percepts)
+        debug_print(npc, f"[OBSERVE COMPLETE] {self.name} perceived {final_count} entities at {location.name} (tick={game_state.tick})", category="percept")
 
     def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
         """
         Gathers percepts from nearby Perceptible objects and optionally from the location's inventory.
         Updates self._percepts.
         """
+        from debug_utils import debug_print
+        debug_print(self, f"[OBSERVE] Before clearing percepts, from observe_objects() object count={len(self.percepts)}", "percept")
+
         self._percepts.clear()
         new_percepts = {}
 
         # Auto-fetch nearby objects if not provided
-        if nearby_objects is None and location:
-            from worldQueries import get_nearby_objects
-            nearby_objects = get_nearby_objects(self, region=self.region, location=location)
+        if hasattr(location, "list_perceptibles"):
+            nearby_objects = location.list_perceptibles()
         else:
-            nearby_objects = nearby_objects or []
+            nearby_objects = get_nearby_objects(self, region=self.region, location=self.location)
+
 
         # Perceive items from the location's inventory (if enabled)
         if include_inventory_check and location and hasattr(location, "inventory"):
@@ -673,35 +804,28 @@ class Character(PerceptibleMixin):
                 else:
                     print(f"[BUG] {obj.name} ({type(obj).__name__}) returned None from get_percept_data.")
 
+        if not any("shop" in p["data"]["tags"] for p in self._percepts.values()):
+            print(f"[DEBUG] {self.name}: No shop percepts detected in {self.location.name}")
+
+
         self._percepts.update(new_percepts)
         self.percepts_updated = True
+        debug_print(self, f"[OBSERVE] Final percept count from observe_objects ={len(self.percepts)} at {location.name}", "percept")
 
     def perceive_current_location(self):
-        if self.location:
-            self.observe(
-                nearby_objects=self.location.characters_there,
-                location=self.location,
-                region=self.region
-                #You can extend it later to trigger memory, thoughts, logging, or other perception mechanics
-            )
+        """
+        Compatibility wrapper: the canonical perception entrypoint is observe().
+        Keep this small so code that calls perceive_current_location() still works.
+        """
+        from debug_utils import debug_print
+        if not self.location:
+            debug_print(self, f"[WARN] {self.name} tried to perceive with no valid location.", "percept")
+            return
 
-    def _remember_hostile_faction(self, gang, region):
-        hostile_thought = Thought(
-            content=f"Enemy gang {gang.name} is here...",
-            subject=gang,
-            origin=region.name,
-            urgency=5,
-            tags=["gang", "hostile"],
-            source="ThreatDetection",
-            timestamp=time.time()
-        )
+        # Delegate entirely to observe(). Do not compute or mutate percept lists here.
+        # Pass location and prefer the location's perceptible list if available.
+        self.observe(location=self.location, region=self.region)
 
-        #self.mind.add(hostile_thought)
-        self.mind.memory.semantic.setdefault("enemies", []).append(hostile_thought)
-        self.is_alert = True
-
-        if hasattr(self, 'utility_ai'):
-            self.utility_ai.evaluate_thought_for_threats(hostile_thought)
 
     @property
     def percepts(self):
@@ -808,12 +932,26 @@ class Character(PerceptibleMixin):
             self._percepts = dict(sorted_items[:self.observation])
 
     def get_percepts(self, sort_by_salience=True) -> list[dict]:
-        """
-        Returns a list of percept dictionaries, optionally sorted by salience (descending).
-        """
+        #The type hint means: the function returns a list
+        #Each item in the list is a dictionary representing a single percept
+
+        #Returns a list of percept dictionaries, optionally sorted by salience (descending).
+
         percepts = list(self._percepts.values())
         if sort_by_salience:
             percepts.sort(key=lambda p: p.get("salience", 1.0), reverse=True)
+
+        """ sort_by_salience is a legacy pre-anchor system where percepts had a static salience.
+            Today, anchor-centric salience has replaced that.
+            What should be done?
+            Either remove salience values from percepts entirely,
+            or keep sort_by_salience=False everywhere (which you already do).
+            This part of the system is effectively deprecated. """
+
+        """ keep the list format.
+            The dictionary-of-percepts (self._percepts) is an internal store.
+            The public API returns a list.
+            This is good design: the internal representation may change, the external API does not expose it. """
 
         return percepts
     
@@ -1025,6 +1163,32 @@ class Location(PerceptibleMixin):
             "has_security": self.has_security(),
             "security_level": self.security_level
         }
+
+    def list_perceptibles(self):
+        items = []
+
+        # Characters
+        if hasattr(self, "characters_there"):
+            items.extend(self.characters_there)
+
+        # Employees
+        if hasattr(self, "employees_there"):
+            items.extend(self.employees_there)
+
+        # Loose objects in the world
+        if hasattr(self, "objects_present"):
+            items.extend(self.objects_present)
+
+        # Shop inventory items
+        if hasattr(self, "inventory"):
+            for item in getattr(self.inventory, "items", {}).values():
+                items.append(item)
+
+        # Cash register
+        if hasattr(self, "cash_register"):
+            items.append(self.cash_register)
+
+        return [o for o in items if o is not None]
 
     def get_menu_options(self, character):
         """Returns only the static menu options defined in a location."""

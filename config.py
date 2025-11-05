@@ -16,19 +16,20 @@ SHOW_TICK_LOGS = True
 SHOW_TEST_NPC_LOGS = True   # keep this True so test NPCs still show
 # ^ only relevant when npc.is_test_npc == True
 
-SHOW_NPC_THINK_LOGS = False
-SHOW_NPC_ACTION_LOGS = False
-SHOW_MEMORY_LOGS = False
-SHOW_SALIENCE_LOGS = False
+SHOW_NPC_THINK_LOGS = True
+SHOW_NPC_ACTION_LOGS = True
+SHOW_MEMORY_LOGS = False #some of the follwoing shold be set back to True if non test npc are filtered in debug_print
+SHOW_SALIENCE_LOGS = True
 SHOW_SIMULATION_LOGS = False
 SHOW_GAMEPLAY_LOGS = False
 SHOW_ANCHOR_LOGS = False
 SHOW_RK_LOGS = False
-SHOW_DECISION_LOGS = False
+SHOW_DECISION_LOGS = True
 SHOW_INSIGHT_LOGS = False
-SHOW_PERCEPT_LOGS = False
+SHOW_PERCEPT_LOGS = True
 SHOW_INVENTORY_LOGS = True
-SHOW_INVENTORY_LOGS = True
+SHOW_OBSERVATION_LOGS =True
+
 SHOW_VISIT_LOGS = True
 SHOW_FOCUS_LOGS = True
 SHOW_MOTIVE_LOGS = True

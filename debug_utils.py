@@ -18,6 +18,7 @@ from config import (
     SHOW_VISIT_LOGS,
     SHOW_FOCUS_LOGS,
     SHOW_MOTIVE_LOGS,
+    SHOW_OBSERVATION_LOGS,
     DEBUG_LEVEL,
 )
 
@@ -39,30 +40,20 @@ DEBUG_FLAGS = {
     "visit": SHOW_VISIT_LOGS,
     "focus": SHOW_FOCUS_LOGS,
     "motive": SHOW_MOTIVE_LOGS,
+    "observation": SHOW_OBSERVATION_LOGS,
 }
 
 
 def debug_print(npc=None, message="", category="general", level="DEBUG"):
-    """
-    Centralized debug printing system.
-    - npc: optional NPC object, used to filter test NPC logs
-    - category: one of DEBUG_FLAGS keys
-    - level: string for severity ("DEBUG", "INFO", "WARNING", "ERROR")
-    """
-
-    if npc and not getattr(npc, "is_test_npc", False):
-        return
-
     if not DEBUG_MODE:
         return
 
-    # Respect category toggles
+    # Filter out non-test NPCs (except system logs)
+    if npc and not getattr(npc, "is_test_npc", False):
+        return
+
     if category in DEBUG_FLAGS and not DEBUG_FLAGS[category]:
         return
 
-    # Filter out test NPCs if not requested
-    if npc and getattr(npc, "is_test_npc", False) and not SHOW_TEST_NPC_LOGS:
-        return
-
     npc_name = getattr(npc, "name", "System")
-    print(f"[{level:<7}] [{category:<10}] {npc_name}: {message}")
+    print(f"[{category:<2}] {npc_name}: {message}")

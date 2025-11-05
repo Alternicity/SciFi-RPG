@@ -4,6 +4,7 @@
 from memory_entry import RegionKnowledge
 from typing import Dict, List, Optional
 
+#essentially redundant now that Im doing salience computation directly via anchors.
 def get_viable_robbery_targets(region):
     return [
         loc for loc in region.locations
@@ -11,8 +12,14 @@ def get_viable_robbery_targets(region):
         and getattr(loc, "is_open", False)
         and not getattr(loc, "has_security", lambda: False)()
     ]
+    #Keep get_viable_robbery_targets() in worldQueries for that purpose, 
+    # but remove direct imports/uses from ai_gang.py or characterActions.py
+
+    #If an NPC lacks personal region knowledge, VisitToRobAnchor
+    #  could call get_viable_robbery_targets(region) as a fallback list of possible targets.
 
 def get_nearby_objects(npc, region=None, location=None):
+    #Currently obsolete for npc flow
     if location is None:
         print(f"[DEBUG] {npc.name} has no valid location. No objects to observe.")
         return []

@@ -15,7 +15,7 @@ But thats likely overkill for your current scale. """
 MEMORY_CATEGORIES = [
     "events", "region_knowledge", "people", "awakening", "social",
     "memory_entries", "enemies", "Objects", "procedures", "internal_architecture",
-    "shop_knowledge"
+    "shop_knowledge"#we can add categories
 ]
 
 class Memory:
@@ -27,9 +27,12 @@ class Memory:
     """ Suggestion: Semantic Memory API Addition
     If you want to store different memory types cleanly, you could eventually split the list: """
     
-
-        #class Memory and class MemoryEntry perhaps overlap and classs memory should be more a container and handler,
-        #for both types of memory, handling decay and promotion of episodic to semantic.
+    def add_entry_if_new(self, entry: MemoryEntry):
+        """Avoid duplicate memory entries of same type+target."""
+        for e in self.episodic:
+            if e.type == entry.type and e.object_ == entry.object_:
+                return  # duplicate
+        self.episodic.append(entry)
 
     def add_memory_entry(self, entry: MemoryEntry):
         self.semantic["memory_entries"].append(entry)#deprecated In favour of specific types of semantic memory
@@ -145,7 +148,7 @@ class Memory:
                 mem.verb == memory_entry.verb and
                 set(mem.tags) == set(memory_entry.tags)
             ):
-                return  # Duplicate
+                return
 
         self.semantic[category].append(memory_entry)
 

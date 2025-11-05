@@ -8,7 +8,7 @@ from character_thought import Thought
 from npc_actions import rob_auto, steal_auto, visit_location_auto, idle_auto
 from character_memory import Memory
 from time import time
-from salience import compute_salience, compute_character_salience, compute_salience_for_percept_with_anchor
+from salience import compute_salience, normalize_salience
 from anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation
 from collections import defaultdict
 from worldQueries import get_region_knowledge
@@ -22,10 +22,17 @@ class UtilityAI(BaseAI):
     def __init__(self, npc):
     #Core cognitive pipeline.
         self.npc = npc
+        self._region_cache = getattr(npc, "region", None)
 
     """ Filtering episodic memories and tagging/promoting important ones into thoughts.
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
+
+    @property
+    def region(self):
+        if self._region_cache is None:
+            self._region_cache = getattr(self.npc, "region", None)
+        return self._region_cache
 
     def choose_action(self, region):
         npc = self.npc
@@ -33,11 +40,18 @@ class UtilityAI(BaseAI):
         #prevent herding
         if not getattr(npc, "is_test_npc", False):
             return {"name": "idle"}
+        #this one seems like an unlikey culprit, but we can add a debug_print
 
         motivations = npc.motivation_manager.get_motivations()
         if not motivations:
+            debug_print(npc,
+                "[UTILITYAI] No motivations found; defaulting to idle.",
+                category="action"
+            )
             return {"name": "idle"}
+        #This one seems impossible, but lets add a print
         anchors = [create_anchor_from_motivation(self.npc, m) for m in motivations]
+        anchors = [a for a in anchors if a]  # filter out None
 
         percepts = list(npc.get_percepts())
         #percepts here is not accessed
@@ -69,6 +83,10 @@ class UtilityAI(BaseAI):
                         possible_actions.append(action)
 
         if not possible_actions:
+            debug_print(npc,
+                "[UTILITYAI] No possible actions generated from anchors; defaulting to idle.",
+                category="action"
+            )
             return {"name": "idle"}
     
         from ai_utility_thought_tools import extract_anchor_from_action
@@ -89,9 +107,9 @@ class UtilityAI(BaseAI):
         Dispatch NPC actions to npc_actions.py functions.
         """
         npc = self.npc
-
+        debug_print(npc, f"[MOTIVES BEFORE] {npc.motivation_manager.get_motivations()}", "DEBUG")
         if not isinstance(action, dict):
-            print(f"[ERROR] Action must be a dict, got: {action}")
+            print(f"[ERROR] From UtilityAI Action must be a dict, got: {action}")
             return
 
         action_name = action.get("name")
@@ -100,8 +118,6 @@ class UtilityAI(BaseAI):
         # Action routing for NPCs (clean, lowercase names)
         from npc_actions import (
             visit_location_auto,
-            steal_auto,
-            rob_auto,
             exit_location_auto,
             eat_auto,
             idle_auto
@@ -109,21 +125,54 @@ class UtilityAI(BaseAI):
 
         action_map = {
             "visit_location": visit_location_auto,
-            "steal": steal_auto,
             "exit_location": exit_location_auto,
             "eat": eat_auto,
             "idle": idle_auto
         }
 
         action_func = action_map.get(action_name.lower())
+        #is something wrong with this line?
 
-        if action_func:
-            try:
-                action_func(npc, **params)
-            except Exception as e:
-                print(f"[ERROR] Executing action {action_name}: {e}")
-        else:
-            print(f"[UtilityAI] {npc.name} has no valid action to execute ({action_name}).")
+        if not action_func:
+            debug_print(npc,
+                f"[EXECUTE] Unknown action '{action_name}' — cannot dispatch; skipping.",
+                category="action"
+            )
+            return
+        debug_print(npc, f"[EXECUTE UTILITYAI] Dispatching {action_name} with params={params}", category="action")
+
+        try:
+            result = action_func(npc, region, **params)#is the shop or relevant location target passed into here?
+
+            debug_print(
+                npc,
+                f"[EXECUTE] Calling {action_name} with params={params} (region={region.name if region else 'None'})",
+                category="action"
+            )
+
+            if action_name.lower() == "visit_location" and "destination" not in params:
+                debug_print(npc, "[VISIT] visit_location called without a location param; defaulting to current location", category="visit")
+
+            # --- Motivation resolution ---
+            if action_name.lower() == "visit_location":
+                # A call needs to go here to visit_location_auto I think, using destination as a parameter
+                npc.motivation_manager.resolve_motivation("visit")
+                debug_print(npc, f"[MOTIVES AFTER] {npc.motivation_manager.get_urgent_motivations()}", "DEBUG")
+
+            # --- Optional test NPC debug ---
+            if getattr(npc, "is_test_npc", False):
+                #does this print need another condition to see if the location has changed?
+                
+                #debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
+
+
+                debug_print(npc, f"[UtilityAI MOTIVE] Current motivations: {npc.motivation_manager.get_urgent_motivations()}", category="motive")
+                debug_print(npc, f"[UtilityAI] Inventory: {[item.name for item in npc.inventory]}", category="inventory")
+
+            return result
+
+        except Exception as e:
+            print(f"[ERROR] Executing action {action_name}: {e}")
 
     def score_action(self, action: dict, context: dict = None) -> float:
         npc = self.npc
@@ -134,7 +183,7 @@ class UtilityAI(BaseAI):
         from ai_utility_thought_tools import extract_anchor_from_action
         anchor = extract_anchor_from_action(action) or npc.mind.attention_focus or npc.default_focus
         if anchor is None:
-            print(f"[SCORE] No anchor found for {npc.name}'s action '{action.get('name')}'")
+            debug_print(npc, f"[ANCHOR] No anchor found for {npc.name}'s action '{action.get('name')}'", category="ANCHOR")
             return 0
 
         score = 0
@@ -143,9 +192,12 @@ class UtilityAI(BaseAI):
 
         # === Core Action Types ===
         if name == "visit_location":
-            location = action.get("params", {}).get("location")
+            location = (
+                action.get("params", {}).get("destination")
+                or action.get("params", {}).get("location")
+            )
             if location:
-                salience = compute_salience(location, npc, anchor)
+                salience = compute_salience(location, npc, anchor)#not the visit_location_auto compute salience, which it should be
                 score += salience
                 if "shop" in getattr(location, "tags", []):
                     score += 1
@@ -163,14 +215,17 @@ class UtilityAI(BaseAI):
                 score += salience
 
         elif name == "idle":
-            # Lowest priority fallback
             score = 0.1
-
+            debug_print(npc,
+                f"[ACTION] {npc.name} idle action scored trivially ({score}) — placeholder branch.",
+                category="action"
+            )
+            
         else:
-            print(f"[SCORE] Unknown action type '{name}' for {npc.name}")
+            debug_print(npc, f"[ACTION] Unknown action type '{name}' for {npc.name}", category="action")
             score = 0.1
 
-        print(f"[SCORE] {npc.name} scored action '{name}' as {score:.2f} (anchor: {anchor.name})")
+        debug_print(npc, f"[ACTION] {npc.name} scored action '{name}' as {score:.2f} (anchor: {anchor.name})", category="action")
         return score
 
     def promote_thoughts(self):
@@ -193,9 +248,49 @@ class UtilityAI(BaseAI):
         
         # Create or update an anchor from that thought
         anchor = create_anchor_from_thought(npc, strongest, name=strongest.primary_tag() or "general")
-        
+        #and here
+
+        if not anchor:
+            # Could happen if thought already anchored or duplicate detected
+            return
+
+        # --- Check enabler relationships for debug awareness ---
+        #tells me if, say, a rob anchor is being promoted before obtain_ranged_weapon exists - or vice versa
+        has_enabler = False
+        for a in getattr(npc, "anchors", []):
+            if getattr(a, "enables", None) and anchor.name in a.enables:
+                has_enabler = True
+                break
+
+        if not has_enabler:
+            debug_print(
+                npc,
+                f"[ANCHOR-PROMOTE] '{anchor.name}' promoted without enabler relationship. "
+                f"Existing anchors: {[a.name for a in npc.anchors]}",
+                category="anchor"
+            )
+        else:
+            debug_print(
+                npc,
+                f"[ANCHOR-PROMOTE] '{anchor.name}' promoted WITH enabler(s).",
+                category="anchor"
+            )
+
         # Boost motivation
-        urgency_delta = min(int(anchor.weight or strongest.urgency or 1), 3)
+        anchor_weight = getattr(anchor, "weight", 1.0)
+        top_motive = getattr(self.npc.motivation_manager, "top_motivation", None)
+        top_urgency = getattr(top_motive, "urgency", 1) if top_motive else 1
+        strongest_urgency = getattr(strongest, "urgency", 1)
+
+        urgency_base = max(top_urgency, strongest_urgency)
+        #Take whichever is greater
+        """ top_urgency comes from the motivation manager, e.g., how strongly the NPC already feels about "rob" or "obtain_ranged_weapon".
+        strongest_urgency comes from the new thought being promoted """
+
+        urgency_delta = min(int(anchor_weight * urgency_base), 3)
+        #Scale urgency by the anchor’s weight, but clamp it to a maximum of 3
+        #int() → converts it to an integer.
+
         npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
         
         # Set attention focus
@@ -224,14 +319,27 @@ class UtilityAI(BaseAI):
 
     def deduplicate_thoughts_by_type(thoughts):
         #call it: After thoughts are generated from percepts, before promotions happen
-
+        #do we want all thoghts of the same type to get de duped?
         seen = {}
         for t in thoughts:
             if t.type not in seen or t.urgency > seen[t.type].urgency:
                 seen[t.type] = t
         return list(seen.values())
 
-    
+    def evaluate_candidates_with_anchor(npc, region):
+        candidates = npc.mind.memory.get_candidate_locations(region)
+        for loc in candidates:
+            #score = visit_to_xyz_anchor.compute_salience_for(loc, npc)
+            pass 
+            #to get region to be defined here.
+            #I added npc and region to the parameters.
+            #visit_to_rob_anchor remains marked an not defined.
+            #If I import that here is there a risk of circular import problems?
+            #can we get it via npc.current_anchor.visit_to_rob_anchor ?
+
+
+
+
     def recall_location_with_tags(npc, required_tags: list, min_salience=0.5):
         memories = npc.mind.memory.query_memory_by_tags(required_tags)
         scored = []
@@ -351,11 +459,26 @@ class UtilityAI(BaseAI):
 
     def resolve_percept_target_for_anchor(self, anchor, required_tags=None):
         """
-        Utility function to return the best percept matching an anchor.
+        Attempts to resolve a concrete target object for this anchor.
+        Preference order:
+        1. anchor.target_object or anchor.target
+        2. anchor.source (if perceptible)
+        3. highest-salience percept matching tags
         """
+        if not anchor:
+            return None
+
+        # 1️⃣ Directly linked targets
+        if getattr(anchor, "target_object", None):
+            return anchor.target_object
+        if getattr(anchor, "target", None):
+            return anchor.target
+        if getattr(anchor, "source", None):
+            return anchor.source
+
+        # 2️⃣ Fallback: scan percepts
         percepts = self.npc.get_percepts()
         scored = []
-
         for p in percepts:
             data = p["data"]
             origin = p["origin"]
@@ -368,8 +491,9 @@ class UtilityAI(BaseAI):
 
         if scored:
             scored.sort(key=lambda x: x[1], reverse=True)
-            return scored[0][0]  # return best match origin
+            return scored[0][0]  # best origin
         return None
+
 
     def evaluate_turf_war_status(self, region_knowledge):
         # Basic version — maybe no-op or minimal response
@@ -415,12 +539,27 @@ class UtilityAI(BaseAI):
                 origin_obj = percept.get("origin")
                 if origin_obj is None:
                     continue
+                from events import Event
+                if isinstance(origin_obj, Event):
+                    continue
 
                 try:
-                    salience = compute_salience(origin_obj, npc, anchor)
+                    # if 'origin' is an object, normalize
+                    from anchor_utils import _normalize_percept
+                    normalized = _normalize_percept(percept.get("data", percept), npc)
+
+
+                    salience = normalize_salience(compute_salience(normalized, npc, anchor))
+
+                    # Guarantee salience is numeric
+                    """ if not isinstance(salience, (int, float)):
+                        salience = 0.0 """
+                    #deprecated block in favour of normalize_salience()
+
                 except Exception as e:
-                    print(f"[SALIENCE ERROR] {npc.name} computing salience for {origin_obj}: {e}")
-                    continue
+                    # While developing: surface these errors
+                    print(f"[THOUGHT GEN ERROR] {npc.name} failed to normalize percept {origin_obj}: {e}")
+                    salience = 0.0  # fallback to non-crash behavior
 
                 if salience < 5:
                     continue
@@ -440,12 +579,15 @@ class UtilityAI(BaseAI):
 
                 if not npc.mind.has_similar_thought(thought):
                     npc.mind.add_thought(thought)
+                    if percept.object is npc:
+                        return 0.0  # skip self
                     print(f"[THOUGHT GEN] {npc.name} thought about {description} (salience={salience}, anchor={anchor.name})")
 
                 self.npc.mind.remove_thought_by_content("No focus")
 
     def evaluate_thoughts(self): #remove or override in subclasses
         """Loop through unresolved thoughts and increase motivations accordingly."""
+        #Eventually this should evolve into a utility-based appraisal. I think
         npc = self.npc
         if not getattr(npc, "is_test_npc", False):
             return  # suppress for non-test NPCs

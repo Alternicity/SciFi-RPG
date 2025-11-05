@@ -20,9 +20,16 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
     tick = game_state.tick #not yet accessed here
     #all_characters is present from paramter not game_state
 
+    #tmp. Prints what character are in what region
+    """     for r in all_regions:
+        should we print here the tick
+        print(f"[DEBUG REGION LIST] {r.name}: {[c.name for c in r.characters_there]}") """
+
     for _ in range(num_days):
         game_state.advance_tick()# a tick is now 1 hour so function name is wrong
         debug_print(f"[TIME] Tick {game_state.tick}, Day {game_state.day}", category="tick")
+
+    #and replicate the tmp block above here?
 
         for location in all_locations:
                     location.recent_arrivals.clear()
@@ -30,6 +37,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
         # STEP 1: Perceive and Think
         for region in all_regions:
             for npc in region.characters_there:
+                npc._observed_this_tick = False  # reset observation guard
                 begin_npc_turn(npc)
                 if npc.is_player:
                     continue
@@ -39,9 +47,8 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 
                 if npc is debug_character:
                     debug_print(npc, "This is a test NPC log.", category="think")
-                    #I changed self to npc here as self was marked as not defined
+                    #or here?
 
-                    #print(f"[DEBUG] {npc.name} attempting to observe.")
                     npc.observe(region=region, location=npc.location)
                     #observe call moved here from npc AI think functions
 
@@ -106,8 +113,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 # NEW: Let AI process thoughts
                 npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
                 
-                npc.ai.promote_thoughts()  #second call to this here, beware it causing motivation accumulations
-
                 region = npc.location.region if hasattr(npc.location, 'region') else None
                 action = npc.ai.choose_action(npc.location.region)
                 if action:#is this missleadingly simplistic to print a current location
@@ -126,7 +131,8 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
             if npc is not debug_character:
                 continue
             for mem in npc.mind.memory.episodic:
-                print(f" - {mem}")#This could get noisy fast
+                pass
+                #print(f" - {mem}")#This could get noisy fast
                 #also does this mean that this print will work only for non debug_character npcs?
 
         debug_print(npc, f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})", category="think")
@@ -165,6 +171,10 @@ def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()
     npc.inventory.clear_recently_acquired()
     npc.last_action_tick = get_game_state().tick
+
+    # reset observation flag so next tick will allow a fresh observation
+    if hasattr(npc, "_observed_this_tick"):
+        npc._observed_this_tick = False
 
     game_state = get_game_state()#Needed for the lines below
     debug_print(f"[TURN] Tick {game_state.tick}, Day {game_state.day}", category="tick")

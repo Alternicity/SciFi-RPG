@@ -10,13 +10,14 @@ from debug_utils import debug_print  # optional, if you want to log failures
 
 
 class Thought:
-    def __init__(self, subject, content, origin=None, urgency=1, tags=None, source=None, weight=0, timestamp=None, resolved=False, corollary=None):
+    def __init__(self, subject, content, origin=None, urgency=1, tags=None, source=None, anchored=False, weight=0, timestamp=None, resolved=False, corollary=None):
         self.subject = subject              #The object the thought is about. Character, faction, event, ObjectInWorld etc
         self.content = content              # Description of the thought (str or object)
         self.origin = origin                # What caused it (e.g., percept source)
         self.urgency = urgency              # How pressing it is
         self.tags = tags or []              # Useful for filtering (e.g., ["crime", "money"])
         self.source = source                # Who/what told them (e.g., another character)
+        self.anchored = anchored
         self.weight = weight                # How impactful (can be salience or derived)
         self.timestamp = timestamp or time.time()
 

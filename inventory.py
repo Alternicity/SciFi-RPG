@@ -2,7 +2,8 @@
 
 from weapons import Weapon
 from debug_utils import debug_print
-
+import gc, traceback
+import traceback
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -61,9 +62,26 @@ class Inventory:
         #Perhaps recently_acquired could be a dictionary of Object/Time entries, and the clear_recently_acquired can work on how many
         #  (sim) days the object has been in inventory
         #This might also be of eventual use in economy.py as shops use class Inventory as well.
+        
+        # Debug hook: store stack trace where this Inventory was created
+        # (temporary; remove after you fix origin)
+        try:
+            self._creation_stack = traceback.format_stack(limit=6)
+        except Exception:
+            self._creation_stack = ["<no stack available>"]
+        
         if items:
             for item in items:
                 self.add_item(item)
+
+    def ensure_owner(self, fallback=None):
+        if not getattr(self, "owner", None):
+            if fallback:
+                self.owner = fallback
+            elif hasattr(self, "_owner_name"):
+                self.owner = self._owner_name
+            else:
+                print(f"[inventory] Warning: Inventory {id(self)} still ownerless after ensure_owner()")
 
     def clear_recently_acquired(self):
         """Placeholder: future logic will remove or age out newly acquired items."""
@@ -72,20 +90,35 @@ class Inventory:
 
         # Basic placeholder behavior — just clear the list for now
         owner_name = getattr(self.owner, "name", "UnknownOwner")
-        #owner_name could be an npc, the player, or a shop or other location. Not currently accesssed below
+
+        if self.owner is None:
+            debug_print(
+                None,
+                f"[Inventory Warning] Inventory without owner detected: class={self.__class__.__name__} id={id(self)}",
+                category="inventory"
+            )
+
+        # then continue with the existing clear logic
         if self.recently_acquired:
             debug_print(
                 self.owner,
-                f"Clearing {len(self.recently_acquired)} recently acquired items.",
+                f"[{owner_name}] Clearing {len(self.recently_acquired)} recently acquired items.",
                 category="inventory"
             )
             self.recently_acquired.clear()
         else:
-            debug_print(
-                self.owner,
-                f"No recently acquired items to clear.",
-                category="inventory"
-            )
+            if self.owner is None:
+                debug_print(
+                    None,
+                    f"[Inventory Warning] Inventory without owner detected: class={self.__class__.__name__} id={id(self)} repr={repr(self)}",
+                    category="inventory"
+                )
+
+                debug_print(
+                    self.owner,
+                    f"[{owner_name}] No recently acquired items to clear.",
+                    category="inventory"
+                )
 
 
 
@@ -193,29 +226,23 @@ class Inventory:
         else:
             del self.items[item_name]
 
-        # Clean up from owner's weapon list if it's a weapon
-        if isinstance(item, Weapon) and self.owner:
-            if item in self.owner.weapons:
-                self.owner.weapons.remove(item)
-                self.update_weapon_flags()
+        # Reevaluate primary weapon
+        from base_classes import Character
 
-            # Reevaluate primary weapon
-            from base_classes import Character
+        
+        if isinstance(item, Weapon) and isinstance(self.owner, Character):
+            if self.owner.primary_weapon == item:
+                if self.owner.weapons:
+                    new_primary = max(
+                        self.owner.weapons, key=lambda w: getattr(w, "damage", 0)
+                    )
+                    self.owner.primary_weapon = new_primary
+                    print(f"{self.owner.name}'s primary weapon is now {new_primary.name}.")
+                else:
+                    self.owner.primary_weapon = None
+                    print(f"{self.owner.name} now has no primary weapon.")
 
-            
-            if isinstance(item, Weapon) and isinstance(self.owner, Character):
-                if self.owner.primary_weapon == item:
-                    if self.owner.weapons:
-                        new_primary = max(
-                            self.owner.weapons, key=lambda w: getattr(w, "damage", 0)
-                        )
-                        self.owner.primary_weapon = new_primary
-                        print(f"{self.owner.name}'s primary weapon is now {new_primary.name}.")
-                    else:
-                        self.owner.primary_weapon = None
-                        print(f"{self.owner.name} now has no primary weapon.")
-
-            return True
+        return True
  
     def display_inventory(self):
         if not self.items:
@@ -236,15 +263,26 @@ class Inventory:
         return iter(self.items.values())
 
     def update_primary_weapon(self):
-        from base_classes import Character
-        if not isinstance(self.owner, Character) or not self.weapons:
-            if not self.owner or not self.weapons:
-                return
+        from base_classes import Character, Location
 
-            best_weapon = max(self.weapons, key=lambda w: getattr(w, "damage", 0))
+        # If owner is not a Character OR there are no weapons → nothing to do
+        if not isinstance(self.owner, Character) or not self.weapons:
+            return
+
+        # Pick the best weapon by damage (default 0 if missing)
+        best_weapon = max(self.weapons, key=lambda w: getattr(w, "damage", 0))
+
+        # Skip printing if the owner is a Location/Vendor/Shop
+        if isinstance(self.owner, Location):
+            # Still update the primary weapon silently if needed
             if self.primary_weapon != best_weapon:
                 self.primary_weapon = best_weapon
-                print(f"{self.owner.name}'s primary weapon is now {best_weapon.name}.")
+            return
+
+        # If the owner is a Character → update and print
+        if self.primary_weapon != best_weapon:
+            self.primary_weapon = best_weapon
+            print(f"{self.owner.name}'s primary weapon is now {best_weapon.name}.")
             
 
 # Example Usage

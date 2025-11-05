@@ -91,7 +91,7 @@ class MotivationManager:
         if motivation_type:
             for m in self.motivations:
                 if m.type == motivation_type:
-                    m.urgency = min(m.urgency + (urgency or 1), 10)  # cap at 10
+                    m.urgency = min(m.urgency + (urgency or 1), 30)  # cap at 30
                     return
             # If not found, create new
             new_motivation = Motivation(
@@ -128,7 +128,7 @@ class MotivationManager:
             max(self.motivations, key=lambda m: m.urgency)
 
         return  """
-
+        #i am not sure why this is commented out
     def get_motivations(self):
         return sorted(self.motivations, key=lambda m: m.urgency, reverse=True)
 

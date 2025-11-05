@@ -1,45 +1,96 @@
 # npc_actions.py
 from memory_entry import MemoryEntry
+from debug_utils import debug_print
 import copy
-from motivation import MotivationManager
 
-def visit_location_auto(character, region, location):
-    if location is None:
+def visit_location_auto(character, region=None, destination=None, destination_name=None, **kwargs):
+    npc = character
+
+    import inspect
+    caller = inspect.stack()[1]
+    caller_info = f"{caller.function} @ {caller.filename}:{caller.lineno}"
+
+    debug_print(
+        npc,
+        f"[VISIT TRACE] visit_location_auto invoked by {caller_info}",
+        category="visit"
+    )
+
+    #debug_print(npc, f"[AUTO VISIT] {character.name} is going to {location.name}", category="visit")
+
+    search_region = region or npc.region #search_region is not accessed
+    debug_print(npc, f"[VISIT] visit_location_auto called with destination={destination}, destination_name={destination_name}", category="visit")
+
+    # Resolve destination by name if needed
+    if destination is None and destination_name:
+        destination = search_region.get_location_by_name(destination_name)
+        debug_print(npc, f"[VISIT] Resolved destination_name='{destination_name}' to {destination}", category="visit")
+    elif destination is None and "destination_name" in kwargs:
+        destination = search_region.get_location_by_name(kwargs["destination_name"])
+        debug_print(npc, f"[VISIT] Resolved from kwargs destination_name='{kwargs['destination_name']}' to {destination}", category="visit")
+
+    if destination is None:
+        debug_print(npc, f"[VISIT] {npc.name} has no valid destination to visit (lookup failed).", category="visit")
         return False
-    print(f"[AUTO VISIT] {character.name} is going to {location.name}")
     
-     # Update character’s state
-    character.location = location
-    character.just_arrived = True
 
-    # --- stamp tick/day context ---
-    # uses character’s stored time attributes if available
+    # --- Core movement ---
+    npc.location = destination
+    npc.just_arrived = True#line 29
+    #this is the only place in the code base where  npc.just_arrived is set to true
+
+    debug_print(npc, f"[VISIT] {npc.name} arrived at {npc.location.name}", category="visit")
+
+    # --- Track presence ---
+    if hasattr(destination, "characters_there") and npc not in destination.characters_there:
+        destination.characters_there.append(npc)
+    if hasattr(destination, "recent_arrivals"):
+        destination.recent_arrivals.append(npc)
+
+    # --- Optional tick/day stamp ---
     tick = getattr(character, "current_tick", None)
     day = getattr(character, "current_day", None)
-    timestamp = f"Day {day} Tick {tick}" if tick is not None else None
-
-    # Track arrivals at the location
-    if hasattr(location, "recent_arrivals"):
-        location.recent_arrivals.append(character)
-
-    # Ensure location tracks who’s currently there
-    if hasattr(location, "characters_there") and character not in location.characters_there:
-        location.characters_there.append(character)
-
-    # Trigger perception of surroundings immediately
-    character.perceive_current_location()
-
-    # Optional: stamp tick/day for debugging or analytics
-    """ if hasattr(character, "current_tick"):
-        character.last_visit_tick = character.current_tick
-        character.last_visit_day = getattr(character, "current_day", None) """
-
-    # --- remember last visit ---
-    character.last_visit_tick = tick
-    character.last_visit_day = day
+    timestamp = f"Day {day} Tick {tick}" if (day is not None and tick is not None) else None
     character.last_visit_timestamp = timestamp
-    
+
+    # --- Observation ---
+    if hasattr(character, "perceive_current_location"):
+        character.perceive_current_location()#line 48
+
+    # --- Episodic memory ---
+    if hasattr(character, "mind") and hasattr(character.mind, "memory"):
+        memory_entry = MemoryEntry(
+            subject=character.name,
+            verb="arrived_at",
+            object_=destination.name,
+            details=f"{character.name} arrived at {destination.name}.",
+            tags=["arrival", "travel", "location_entry"],
+            type="event",
+            initial_memory_type="episodic",
+            timestamp=timestamp or "Unknown time"
+        )
+        character.mind.memory.episodic.append(memory_entry)
+
+        # Clear thoughts related to this destination
+        if hasattr(character, "mind"):
+            to_remove = []
+            for t in list(character.mind.thoughts):
+                # if thought source is the location or content references the location name, remove/resolve it
+                if getattr(t, "source", None) is destination or str(destination.name) in str(getattr(t, "content", "")):
+                    t.resolved = True
+                    to_remove.append(t)
+            for t in to_remove:
+                try:
+                    character.mind.thoughts.remove(t)
+                except ValueError:
+                    pass
+            # Clear attention focus if it pointed at that thought
+            af = getattr(character.mind, "attention_focus", None)
+            if af and (getattr(af, "source", None) is destination or getattr(af, "content", "") and destination.name in getattr(af, "content", "")):
+                character.mind.attention_focus = None
+
     return True
+
 
 def rob_auto(npc, region=None, location=None, target_item=None, **kwargs):
     from events import Robbery
@@ -105,7 +156,7 @@ def steal_auto(npc, region, item=None):
     )
     from weapons import Weapon
     if success:
-        stolen_item = copy.deepcopy(item)
+        stolen_item = copy.deepcopy(item)#cop not defined
         location.inventory.remove_item(item.name)
         npc.inventory.add_item(stolen_item)
         npc.inventory.recently_acquired.append(stolen_item)

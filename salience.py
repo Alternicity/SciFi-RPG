@@ -33,30 +33,36 @@ def compute_generic_salience(obj, observer, anchor=None):
 
 
 def compute_salience(obj, observer, anchor=None):
-    from base_classes import Character, Location
+    import inspect
+    stack = inspect.stack()
+    caller_info = f"{stack[1].function} @ {stack[1].filename}:{stack[1].lineno}"
 
-    # Optional: warn if anchor is None in test mode
-    if anchor is None and getattr(observer, "is_test_observer", False):
-        label = getattr(obj, "name", str(obj))
-        print(f"[SALIENCE COMPUTE] No anchor provided. Defaulting salience to 1 for: {label}")
-        if isinstance(obj, dict):
-            print(f"[WARNING] compute_salience() received a dict instead of an object.")
-            import traceback
-            traceback.print_stack(limit=3)
+    try:
+        if anchor:
+            return anchor.compute_salience_for(obj, observer)
+        return getattr(obj, "salience", 0.5)
 
-    # Dispatch to specific salience calculator
-    if isinstance(obj, Character):
-        return compute_character_salience(obj, observer, anchor)
-    elif isinstance(obj, Location):
-        return compute_location_salience(obj, observer, anchor)
-    elif isinstance(obj, Event):
-        return compute_event_salience(obj, observer, anchor)
-    
-    elif hasattr(obj, "compute_salience_for"):
-        # Delegate to object if it defines its own method
-        return obj.compute_salience_for(observer, anchor)
-    else:
-        return compute_generic_salience(obj, observer, anchor)
+    except Exception as e:
+        if getattr(observer, "is_test_npc", False):
+            print(f"[ERROR] {type(anchor).__name__} failed: {e} | from {caller_info} | obj={type(obj).__name__}")
+        return 0.0
+
+    finally:
+        return
+    #trace for above. Replace the return with this
+        """ if getattr(observer, "is_test_npc", False) or getattr(observer, "is_test_observer", False):
+            label = getattr(obj, "name", str(obj))
+            obj_type = type(obj).__name__
+            anchor_name = type(anchor).__name__ if anchor else "None"
+            npc=observer
+            debug_print(
+                npc,
+                f"[SALIENCE TRACE] obj={obj_type}('{label}'), anchor={anchor_name}, from {caller_info}",
+                category="salience"
+            ) """
+
+def normalize_salience(value):
+    return value if isinstance(value, (int, float)) else 0.0
 
 def generic_tag_salience_boost(obj, anchor):
     score = 0.0
@@ -68,26 +74,33 @@ def generic_tag_salience_boost(obj, anchor):
             score += 1.2 + 0.1 * len(matches)
     return score
 
-def compute_character_salience(obj, observer, anchor: Anchor = None):
-    character = obj  # Optional alias for clarity
-    if character is observer:#character marked as not defined
-        return 0  # Ignore self
+def compute_character_salience(obj, observer, anchor=None):
+    # ignore self
+    if obj is observer:
+        return 0.0
 
     salience = 1.0
-    salience += generic_tag_salience_boost(obj, anchor)
-    if getattr(character, "bloodstained", False):#character marked as not defined
-        salience += 0.4
 
-    if getattr(character, "is_visibly_wounded", False):#character marked as not defined
+    # tag-based adjustments
+    salience += generic_tag_salience_boost(obj, anchor)
+
+    if getattr(obj, "bloodstained", False):
+        salience += 0.4
+    if getattr(obj, "is_visibly_wounded", False):
         salience += 0.3
 
+    # anchor-aware adjustments
     if anchor:
-        if anchor.name == "violence":
-            salience += 0.5
-        if "enemy" in anchor.tags and hasattr(observer, "enemies") and character in observer.enemies:
+        if "enemy" in getattr(anchor, "tags", []) and hasattr(observer, "enemies") and obj in observer.enemies:
             salience += 0.6
-        if "friend" in anchor.tags and hasattr(observer, "friends") and character in observer.friends:
+        if "friend" in getattr(anchor, "tags", []) and hasattr(observer, "friends") and obj in observer.friends:
             salience += 0.3
+
+    # simple, safe trace
+    if getattr(observer, "is_test_npc", False):
+        print(
+            f"[TRACE] compute_character_salience obj={obj} anchor={type(anchor).__name__ if anchor else 'None'}"
+        )
 
     return salience
 
@@ -135,9 +148,9 @@ def compute_event_salience(obj, observer, anchor: Anchor = None):
 
 
 def compute_salience_for_motivation(self, percept, motivation):
-    anchor = create_anchor_from_motivation(motivation)#does this need a npc parameter?
-    # I skipped adding generic_tag_salience_boost() here as I wonder if some circular
-    #effect might result from that.
+    anchor = create_anchor_from_motivation(motivation)#This module is just helper, fallback functions
+    #salience is preferably calculated inside anchors
+    #this function might even be a candidate for deletion
     score = compute_salience(percept, self.observer, anchor)
     print(f"[SALIENCE] {self.observer.name} sees {percept.get('description', str(percept))} for {motivation.type}: {score:.2f}")
     return score

@@ -7,6 +7,7 @@ from InWorldObjects import ObjectInWorld, Wallet
 from wallet import generate_wallet
 from base_classes import Character, Location, Faction
 from ai_gang import GangMemberAI, GangCaptainAI, BossAI, gang_observation_logic
+from ai_utility import UtilityAI
 
 #Method overriding is used sparingly (e.g., issue_directive in 
 # Boss and CEO). Consider leveraging polymorphism more to reduce 
@@ -285,74 +286,89 @@ class Manager(Character):
         return f"{base}, Faction: {self.faction or 'None'}"
     
 class Subordinate(Character):
-    is_concrete = False
-    default_motivations = [("earn_money", 2)]
-    def __init__(self, name, race, sex, faction, strength, agility, intelligence, luck, psy, toughness, morale, position="Subordinate", loyalties=None, status=None, ai=None, motivations=None, **kwargs):
-        
-        
-        """ if race is None:
-            race = "Terran" """
-        if status is None:
-            status = CharacterStatus()
-            status.set_status(faction.name, FactionStatus(StatusLevel.LOW, position))
-        
-        default_loyalties = {
-            faction: 20 if faction else 0,  # Avoid issues if faction is None
-            "Law": 20,  # Meh, whatever
-        }
-        # Merge defaults with provided loyalties
-        default_loyalties.update(loyalties or {})
+    """Intermediate class for characters with a superior (e.g. gang members, guards, etc.)"""
+    def __init__(self, name, race, sex, region, location,
+                 superior=None, loyalty=50, morale=5,
+                 wallet=None, ai=None, **kwargs):
 
-        super().__init__(name, race=race, sex=sex, faction=faction,  strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale,  loyalties=loyalties, position=position,
-                         status=status, ai=ai, motivations=motivations or self.default_motivations, **kwargs)
-        self.tasks = []# Explicitly initialize task list
+        # Ensure wallet & ai are defined early
+        wallet = wallet or generate_wallet("Subordinate")
+        ai = ai or UtilityAI(self) if not getattr(self, "is_player", False) else None
+
+        super().__init__(
+            name=name, race=race, sex=sex, region=region, location=location,
+            wallet=wallet, ai=ai, morale=morale, **kwargs
+        )
+
+        self.superior = superior
+        self.loyalty = loyalty
         
 
 class Employee(Subordinate):
+    """Represents a corporate or organizational worker."""
     is_concrete = True
     default_motivations = [("earn_money", 5)]
 
-    def __init__(self, name, race, sex, region, location, faction,  strength=9, agility=8, intelligence=8, luck=9, psy=1, toughness=7, morale=5, position="An employee", loyalties=None, motivations=None, status=None, **kwargs):
-        
+    def __init__(
+        self,
+        name, race, sex, region, location, faction,
+        strength=9, agility=8, intelligence=8, luck=9,
+        psy=1, toughness=7, morale=5, position="Employee",
+        loyalties=None, motivations=None, status=None,
+        wallet=None, ai=None, **kwargs
+    ):
+        # --- Early wallet/AI setup ---
+        wallet = wallet or generate_wallet("Employee")
+        ai = ai or UtilityAI(self)
 
-        # Default loyalty setup for Employee
-        default_loyalties = {
-            faction: 15 if faction else 0,  # Avoid issues if faction is None
-            "Law": 15,  # Distrust of the law by default
-        }
-        # Merge defaults with provided loyalties
-        default_loyalties.update(loyalties or {})
-
-        kwargs["primary_status_domain"] = "corporate"
-
+        # --- Status setup ---
         if status is None:
             status = CharacterStatus()
             status.set_status("corporate", FactionStatus(StatusLevel.LOW, position))
             status.set_status("public", FactionStatus(StatusLevel.LOW, "Employee"))
-            status.set_status("criminal", FactionStatus(StatusLevel.NONE, None))
+            status.set_status("criminal", FactionStatus(StatusLevel.NONE, "Uninvolved"))
             status.set_status("state", FactionStatus(StatusLevel.LOW, "Registered"))
-            
-        wallet = kwargs.pop("wallet", generate_wallet("CorporateSecurity"))
-        super().__init__(
-            name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location, strength=strength, agility=agility, intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, morale=morale, position=position, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs
-        )
-        
-    def __repr__(self):
-        base = super().__repr__()  # Will call Character.__repr__
-        return f"{base}, Faction: {self.faction or 'None'}"
 
+        kwargs["primary_status_domain"] = "corporate"
+
+        # --- Loyalties ---
+        default_loyalties = {
+            "Law": 15,
+            faction.name if faction else "UnknownFaction": 15,
+        }
+        if loyalties:
+            default_loyalties.update(loyalties)
+        kwargs["loyalties"] = default_loyalties
+
+        # --- Call parent constructor ---
+        super().__init__(
+            name=name, race=race, sex=sex, faction=faction, region=region,
+            location=location, strength=strength, agility=agility,
+            intelligence=intelligence, luck=luck, psy=psy, toughness=toughness,
+            morale=morale, position=position, status=status, wallet=wallet,
+            ai=ai, motivations=motivations or self.default_motivations, **kwargs
+        )
+
+        # --- Post-super setup ---
+        self.is_employee = True
+
+    def __repr__(self):
+        base = super().__repr__()
+        return f"{base}, Faction: {self.faction.name if self.faction else 'None'}"
 
     def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)
-        data["description"] = f"{self.name}, Employee of {self.faction.name}"
+        desc_faction = self.faction.name if self.faction else "unknown faction"
+        data["description"] = f"{self.name}, Employee of {desc_faction}"
         data["tags"].extend(["worker", "lowtier"])
         return data
 
     @property
     def whereabouts(self):
-        
-        return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
+        parts = [self.region, self.location]
+        if hasattr(self, "sublocation"):
+            parts.append(self.sublocation)
+        return ", ".join(str(p) for p in parts)
 
     
 class CorporateSecurity(Subordinate):
@@ -504,10 +520,47 @@ class GangMember(Subordinate):
                 luck=9, psy=2, toughness=14, morale=12,
                 position="Gangster", loyalties=None, status=None, motivations=None, **kwargs):
         
+        # ✅ Pop or generate wallet before calling super
+        wallet = kwargs.pop("wallet", generate_wallet("GangMember"))
+
+        # Always set the primary status domain explicitly
+        kwargs["primary_status_domain"] = "criminal"
+        
+        # Default loyalty setup for GangMember
+        # ✅ Prepare any defaults before super
+        default_loyalties = {
+            faction: 20 if faction else 0,
+            "Law": 20,
+        }
+        default_loyalties.update(loyalties or {})
+
+        # ✅ Create AI later — after Character initialization (region etc.)
+        ai = kwargs.pop("ai", None)
+
+        # ✅ Ensure primary domain available pre-init
+        kwargs.setdefault("primary_status_domain", "criminal")
+
+        super().__init__(
+                name=name, race=race, sex=sex, faction=faction, region=region,
+                location=location, wallet=wallet, strength=strength, agility=agility, #line 545
+                intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
+                morale=morale, position=position, 
+                loyalties=default_loyalties, status=status, ai=ai, motivations=motivations or self.default_motivations, **kwargs
+        )
+    
+        # ✅ Post-init AI (now region exists)
+        from ai_gang import GangMemberAI
+        if ai is None:
+            from importlib import import_module
+            GangMemberAI = import_module("ai_gang").GangMemberAI
+            self.ai = GangMemberAI(self)
+        else:
+            self.ai = ai
 
          # Ensure status has a "criminal" domain, regardless of what Subordinate set
         if status is None:
-            status = CharacterStatus()
+            self.status = CharacterStatus()
+
 
         if "criminal" not in status.status_by_domain:
             status.set_status("criminal", FactionStatus(StatusLevel.LOW, position))
@@ -516,43 +569,19 @@ class GangMember(Subordinate):
             status.set_status("public", FactionStatus(StatusLevel.LOW, "Street Thug"))
         if "state" not in status.status_by_domain:
             status.set_status("state", FactionStatus(StatusLevel.LOW, "Suspect"))
-
-        # Always set the primary domain explicitly
-        kwargs["primary_status_domain"] = "criminal"
-
-        wallet = kwargs.pop("wallet", generate_wallet("GangMember"))
-
-    # Default loyalty setup for GangMember
-        default_loyalties = {}
-        if faction:
-            default_loyalties[faction] = 15
-        default_loyalties["Law"] = 0
-        # Merge defaults with provided loyalties
-        default_loyalties.update(loyalties or {})
-        ai = GangMemberAI(self)
-        super().__init__(
-            name=name, race=race, sex=sex, faction=faction,  region=region,
-            location=location, wallet=wallet, strength=strength, agility=agility, 
-            intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
-            morale=morale, position=position, 
-            loyalties=default_loyalties, status=status, ai=ai, motivations=motivations or self.default_motivations, **kwargs
-        )
         
+
         # Enforce the primary domain (in case Character didn't get it from kwargs)
         self.primary_status_domain = "criminal"
-        
         self.is_test_npc = False
         self.targetIsInMelee = False
         self.isAggressive = False
-        #self.ai = GangMemberAI(self)
-        #deprecated?
 
-        """ self.cash = 50
-        self.bankCardCash = 20 """
+        # Behavior and data methods
 
     def handle_observation(self, region):
         #set deafults here?
-        gang_observation_logic(self, region)        #all new parameters after regions are marked as not defined
+        gang_observation_logic(self, region)
 
     def default_skills(self):
         base = super().default_skills()
@@ -663,52 +692,49 @@ class RiotCop(Character):
 
 class Civilian(Character):
     default_motivations = [("have_fun", 2), ("earn_money", 4)]
-    is_concrete = True # but it is also an intermediarz class for VIP
+    is_concrete = True  # but also serves as an intermediary for VIP etc.
 
-    def __init__(self, name, race, sex, region, location, strength=12, agility=10, intelligence=10, luck=0, psy=0, toughness=3, morale=2, position="Normie", loyalties=None, status=None, motivations=None, **kwargs):
-        #print(f"Civilian created: {name}, Region: {region}, Location: {location}")
-        
-        
+    def __init__(self, name, race, sex, region, location,
+                 strength=12, agility=10, intelligence=10,
+                 luck=0, psy=0, toughness=3, morale=2,
+                 position="Normie", loyalties=None, status=None,
+                 motivations=None, wallet=None, ai=None, **kwargs):
+
+        # --- Early wallet/AI setup ---
+        wallet = wallet or generate_wallet("Civilian")
+        ai = ai or UtilityAI(self)
+
+        # --- Status setup ---
         if status is None:
             status = CharacterStatus()
 
-        # Primary domain — public
-        if "public" not in status.status_by_domain:
-            status.set_status("public", FactionStatus(StatusLevel.LOW, position))
-
-        # Placeholder domains
-        if "state" not in status.status_by_domain:
-            status.set_status("state", FactionStatus(StatusLevel.NONE, "Unknown"))
-        if "corporate" not in status.status_by_domain:
-            status.set_status("corporate", FactionStatus(StatusLevel.NONE, "Unaffiliated"))
-        if "criminal" not in status.status_by_domain:
-            status.set_status("criminal", FactionStatus(StatusLevel.NONE, "Uninvolved"))
+        for domain in ("public", "state", "corporate", "criminal"):
+            if domain not in status.status_by_domain:
+                level = StatusLevel.LOW if domain == "public" else StatusLevel.NONE
+                position_label = position if domain == "public" else "Unaffiliated"
+                status.set_status(domain, FactionStatus(level, position_label))
 
         kwargs["primary_status_domain"] = "public"
 
-        
+        # --- Loyalties ---
+        default_loyalties = {"Law": 45}
+        loyalties = kwargs.pop("loyalties", loyalties) or {}
+        default_loyalties.update(loyalties)
+        kwargs["loyalties"] = default_loyalties
+        kwargs.setdefault("faction", Faction)
 
-   # Default loyalty setup for Civilian
-        default_loyalties = {
-            "Law": 45,  # Neutral stance on law
-        }
-        # Merge defaults with provided loyalties if given
-        loyalties = kwargs.pop("loyalties", None)  # Extract if present
-        if loyalties:
-            default_loyalties.update(loyalties)
-
-        kwargs["loyalties"] = default_loyalties  # Inject updated loyalties
-        kwargs.setdefault("faction", Faction)  # Avoids multiple faction values issue
-        # Explicitly define primary domain
-        
-        wallet = kwargs.pop("wallet", generate_wallet("Civilian"))
-
-        #You should not hardcode status in Civilian, because it serves multiple roles, intermediary and concrete
         super().__init__(
-            name=name, race=race, sex=sex, region=region, location=location, strength=strength, agility=agility, intelligence=intelligence, 
-            luck=luck, psy=psy, toughness=toughness, morale=morale, wallet=wallet, position=position, status=status, motivations=motivations or self.default_motivations,
-            **kwargs
+            name=name, race=race, sex=sex, region=region, location=location,
+            strength=strength, agility=agility, intelligence=intelligence,
+            luck=luck, psy=psy, toughness=toughness, morale=morale,
+            position=position, status=status, motivations=motivations or self.default_motivations,
+            wallet=wallet, ai=ai, **kwargs
         )
+
+        # --- Post-super setup ---
+        self.targetIsInMelee = False
+        self.is_employee = False
+        self.inventory = kwargs.get("inventory", Inventory(owner=self))
 
         # Weapon & Combat Attributes
         
@@ -718,8 +744,6 @@ class Civilian(Character):
         self.region
         self.is_employee = False
 
-        """ self.cash = 50
-        self.bankCardCash = 50 """
 
         # Inventory Initialization
         self.inventory = kwargs.get("inventory", Inventory(owner=self))

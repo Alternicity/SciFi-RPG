@@ -36,6 +36,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     for shop in [loc for loc in locations if isinstance(loc, Shop)]:
         specialization = guess_specialization_from_inventory(shop.inventory)
         shop.name = generate_shop_name(specialization=specialization, ownership="family")
+        shop.inventory.owner = shop
         shop.inventory.add_item(SmartPhone(price=200, quantity=5))
         shop.inventory.add_item(Pistol(price=500, quantity=2))
 

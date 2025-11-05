@@ -13,6 +13,4 @@ def get_game_state():
         else:
             pass
 
-        #print(f"🚀 DEBUG: get_game_state() is now returning {game_state}")
-
         return game_state

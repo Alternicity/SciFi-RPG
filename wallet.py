@@ -23,6 +23,7 @@ BASE_AMOUNTS = {
     "Civilian": 100,
     "Child": 5,
     "Influencer": 1500,
+    "Adepta": 200,
 }
 
 def generate_wallet(character_type="civilian", cash_ratio=0.2, variance=0.5):

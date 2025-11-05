@@ -2,6 +2,9 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal, List, Union, Dict, TYPE_CHECKING, Optional, Any
+import re
+
+from events import Event #maybe risky import
 
 import time
 from memory_entry import MemoryEntry
@@ -12,10 +15,53 @@ if TYPE_CHECKING:
     from character_thought import Thought
     from base_classes import Character
 
+
+#canonical coercion helper
+def _normalize_percept(percept_data, npc):
+    """
+    Return a safe percept dict with keys:
+    { 'object', 'name', 'tags', 'origin', 'salience', 'details' }
+    """
+    #use _normalize_percept() in anchor methods
+
+    # dict already
+    if isinstance(percept_data, dict):
+        p = dict(percept_data)  # shallow copy
+        p.setdefault("object", p.get("origin", p.get("object")))
+        p.setdefault("name", p.get("name", str(p.get('object', '<unknown>'))))
+        p.setdefault("tags", p.get("tags", []))
+        p.setdefault("salience", p.get("salience", 1.0))
+        p.setdefault("origin", p.get("origin", p.get("object")))
+        return p
+
+    # objects that implement get_percept_data(observer=)
+    if hasattr(percept_data, "get_percept_data"):
+        try:
+            p = percept_data.get_percept_data(observer=npc) or {}
+            p.setdefault("object", percept_data)
+            p.setdefault("name", getattr(percept_data, "name", str(percept_data)))
+            p.setdefault("tags", getattr(percept_data, "tags", []))
+            p.setdefault("salience", getattr(percept_data, "salience", 1.0))
+            p.setdefault("origin", percept_data)
+            return p
+        except Exception:
+            pass
+
+    # fallback synthesis
+    tags = list(getattr(percept_data, "tags", []) or [])
+    name = getattr(percept_data, "name", None) or str(percept_data)
+    return {
+        "object": percept_data,
+        "name": str(name),
+        "tags": tags,
+        "origin": getattr(percept_data, "origin", percept_data),
+        "salience": getattr(percept_data, "salience", 1.0),
+    }
+    #rhis print is structureally unreachable
+    #debug_print(npc, f"([ANCHOR DEBUG]  normalize_percept fallback activated, catagory = "anchor"))
+
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
-
 #context-aware decision filter
-
 @dataclass
 class Anchor:
     name: str  # e.g., "rob", "join_faction"
@@ -23,6 +69,7 @@ class Anchor:
     weight: float = 1.0  # salience amplification factor
     priority: float = 1.0  # importance to current AI thinking
     enables: List[str] = field(default_factory=list)
+    #requires: List[str] = field(default_factory=list)  # Introduces a hard gate, which goes angainst utility AI, Dont use.
     tags: List[str] = field(default_factory=list)  # used in tag-overlap salience logic
     owner: Optional[Any] = None  # populated with npc object at runtime
     desired_tags: List[str] = field(default_factory=list)
@@ -60,24 +107,169 @@ class Anchor:
                 category="anchor"
             )
 
+    def _coerce_to_percept(self, percept_data, npc) -> dict:
+        """
+        Normalize any input (dict, object, or string) into a percept-like dict.
+        Handles dicts, PerceptibleMixin objects, Characters, Weapons, Locations, etc.
+        """
+
+        # --- 1. Already a percept dict ---
+        if isinstance(percept_data, dict):
+            return percept_data
+
+        # --- 2. Try get_percept_data(observer=) if available ---
+        if hasattr(percept_data, "get_percept_data"):
+            try:
+                p = percept_data.get_percept_data(observer=npc) or {}
+                p.setdefault("object", percept_data)
+                p.setdefault("name", getattr(percept_data, "name", str(percept_data)))
+                p.setdefault("tags", getattr(percept_data, "tags", []))
+                p.setdefault("salience", p.get("salience", 1.0))
+                return p
+            except Exception:
+                pass  # fall through to synthesis
+
+        # --- 3. Synthesize percept dict based on type introspection ---
+        tags = list(getattr(percept_data, "tags", []) or [])
+        details = {}
+
+        # Handle Character-like objects
+        if hasattr(percept_data, "race") and hasattr(percept_data, "sex"):
+            tags += ["character", percept_data.sex.lower()]
+            details.update({
+                "race": getattr(percept_data, "race", None),
+                "sex": getattr(percept_data, "sex", None),
+                "faction": getattr(percept_data, "faction", None),
+                "status": getattr(percept_data, "status", None),
+            })
+
+        # Handle Weapon-like objects
+        if hasattr(percept_data, "damage") and hasattr(percept_data, "intimidation"):
+            tags += ["weapon"]
+            if hasattr(percept_data, "ammo"):
+                tags.append("ranged")
+            if getattr(percept_data, "bloodstained", False):
+                tags.append("bloodstained")
+
+            details.update({
+                "damage": getattr(percept_data, "damage", None),
+                "intimidation": getattr(percept_data, "intimidation", None),
+                "owner": getattr(percept_data, "owner_name", None),
+                "range": getattr(percept_data, "range", None),
+                "ammo": getattr(percept_data, "ammo", None),
+            })
+
+        # Handle Location-like objects
+        if hasattr(percept_data, "is_shop") or hasattr(percept_data, "robbable"):
+            tags += ["location"]
+            if getattr(percept_data, "is_shop", False):
+                tags.append("shop")
+            if getattr(percept_data, "robbable", False):
+                tags.append("robbable")
+
+            details.update({
+                "region": getattr(percept_data, "region", None),
+                "robbable": getattr(percept_data, "robbable", None),
+            })
+
+        # Fallback name
+        name = getattr(percept_data, "name", None) or (
+            percept_data if isinstance(percept_data, str) else percept_data.__class__.__name__
+        )
+
+        # --- 4. Final percept structure ---
+        """
+        Return a canonical percept dict:
+        { object, name, tags, salience, origin, details }
+        """
+        # use the helper to normalize
+        try:
+            percept = _normalize_percept(percept_data, npc)
+        except Exception:
+            percept = {
+                "object": percept_data,
+                "name": str(percept_data),
+                "tags": getattr(percept_data, "tags", []),
+                "salience": 0.5,
+                "origin": percept_data
+            }
+        return percept
+
     def compute_salience_for(self, percept_data, npc) -> float:
-        tags = percept_data.get("tags", [])
-        score = 1.0
+        """
+        Generic anchor salience computation.
+        Always uses safe percept dict from _coerce_to_percept.
+        """
 
-        if not any(tag in tags for tag in self.desired_tags):
-            score += 0.5  # Penalize irrelevant
-        if any(tag in tags for tag in self.disfavored_tags):
-            score += 0.5  # Penalize unwanted traits
+        # --- normalize percept safely ---
+        percept = self._coerce_to_percept(percept_data, npc)
 
-        for tag in tags:
-            score += self.tag_weights.get(tag, 0)
+        obj   = percept.get("object")
+        name  = percept.get("name", "<unnamed>")
+        tags  = percept.get("tags", []) or []
 
-        return round(score * self.weight, 2)
+        # --- base score ---
+        score = float(getattr(self, "base_salience", 0.0))
 
-    def is_percept_useful(self, percept_data: dict) -> bool:
-        tags = percept_data.get("tags", [])
-        return any(tag in tags for tag in self.desired_tags)
+        # --- tag-based boosts ---
+        if "weapon" in tags:
+            score += 0.4
+        if "shop" in tags:
+            score += 0.3
 
+        # --- reduce score if NPC already has a ranged weapon ---
+        has_ranged_weapon = False
+        try:
+            has_ranged_weapon = npc.inventory.has_ranged_weapon() \
+                if callable(npc.inventory.has_ranged_weapon) \
+                else bool(npc.inventory.has_ranged_weapon)
+        except Exception:
+            pass
+
+        if has_ranged_weapon:
+            score *= 0.5
+
+        # --- attempt to extract a robbery target name from textual content ---
+        target_name = None
+        content = getattr(obj, "content", None)
+
+        if isinstance(content, str):
+            import re
+            m = re.search(r"rob\s+([A-Za-z0-9_'\-]+)", content, flags=re.IGNORECASE)
+            if m:
+                target_name = m.group(1)
+
+        # --- debug output (safe; never touches obj.content directly) ---
+        """ debug_print(
+            npc,
+            f"[ANCHOR-SALIENCE] {type(self).__name__} score={score:.2f} for {name}"
+            + (f" (target={target_name})" if target_name else "")
+            + f" (tags={tags})",
+            category="salience",
+        ) """
+        #verbose
+
+        return round(score, 2)
+
+
+
+    def is_percept_useful(self, percept_data: Any, npc=None) -> bool:
+        """
+        Lightweight filter: returns True if percept shares any tags with this anchor's desired_tags.
+        Salience handles deeper context; this is just an early short-circuit.
+        """
+        percept = self._coerce_to_percept(percept_data, npc)
+        tags = percept.get("tags", []) or []
+        if not self.desired_tags:
+            return True
+        for tag in self.desired_tags:
+            if tag in tags:
+                return True
+        return False
+    
+    @property
+    def motivation_type(self):
+        return self.name or self.type
 
 class RobberyAnchor(Anchor):
     def __init__(self, **kwargs):
@@ -93,140 +285,301 @@ class RobberyAnchor(Anchor):
         # Set default tag_weights if not already defined
         kwargs.setdefault("tag_weights", {
             "weapon": 0.5,
-            "ranged_weapon": 0.7,
+            "ranged_weapon": 0.7,#it’s a weighting factor, not a subtraction, 0.7 adds to total salience.
             "shop": 0.3,
             "security": -0.4,
             "police": -0.6,
             "alert_employee": -0.5,
         })
+
+        
+
         super().__init__(**kwargs)
 
 
-
     def compute_salience_for(self, percept_data, npc) -> float:
-        score = super().compute_salience_for(percept_data, npc)
+        percept = self._coerce_to_percept(percept_data, npc)
+        obj = percept.get("object")
+        tags  = percept.get("tags", []) or []
+        name = percept.get("name", "<unnamed>")
 
-        # Penalize already-armed NPCs
+        # Ignore NPCs, events, etc.
+        from events import Event
+        if obj is npc or isinstance(obj, Event) or isinstance(obj, npc.__class__):
+            return 0.0
+
+        # base score from Anchor
+        score = super().compute_salience_for(percept, npc)
+
+        # Weapon-based adjustments
         if npc.inventory.has_ranged_weapon():
             score -= 0.4
-        elif npc.inventory.has_melee_weapon():
-            score -= 0.2
-        else:
-            if "ranged_weapon" in percept_data.get("tags", []):
-                score += 0.3
-            elif "melee_weapon" in percept_data.get("tags", []):
-                score += 0.1
+        elif "ranged_weapon" in tags:
+            score += 0.3
+        elif "melee_weapon" in tags:
+            score += 0.1
 
-        return score
-        #return round(score * self.weight, 2)
+        # Extract robbery target name
+        target_name = None
+        content = getattr(obj, "content", None)
+        if isinstance(content, str):
+            import re
+            m = re.search(r"rob\s+([A-Za-z0-9_'\-]+)", content, flags=re.IGNORECASE)
+            if m:
+                target_name = m.group(1)
+                
+        npc.motivation_manager.update_motivations("obtain_ranged_weapon", urgency=3)
+        # Suppress turf-war salience logs
+        if tags and "turf_war" in tags:
+            return
 
-def create_anchor_from_motivation(npc, motivation) -> Anchor:
-    from anchor_utils import RobberyAnchor, ObtainWeaponAnchor
-
-    tags = motivation.tags
-
-    if motivation.type == "rob":
-        return RobberyAnchor(
-            name="rob",
-            type="motivation",
-            weight=motivation.urgency,
-            priority=motivation.urgency,
-            tags = tags,
-            owner=npc,
-            source=motivation
+        debug_print(
+            npc,
+            f"[ANCHOR-SALIENCE] RobberyAnchor final={score:.2f} for {name}"
+            + (f" (target={target_name})" if target_name else "")
+            + f" (tags={tags})",
+            category="salience",
         )
 
-    if motivation.type == "obtain_ranged_weapon":
-        return ObtainWeaponAnchor(
-            name="obtain_ranged_weapon",
+        return round(score, 2)
+
+        
+
+def create_anchor_from_motivation(npc, motivation) -> "Anchor":
+    """
+    Converts a Motivation into a Motivation Anchor.
+    Handles automatic naming, deduplication, memory logging,
+    and specialized subclasses (RobberyAnchor, ObtainWeaponAnchor).
+    """
+
+    from memory_entry import MemoryEntry
+    import time
+    from anchor_utils import ObtainWeaponAnchor, RobberyAnchor, Anchor
+
+    # --- Guard invalid inputs ---
+    if motivation is None:
+        return None
+
+    if not hasattr(npc, "anchors") or npc.anchors is None:
+        npc.anchors = []
+
+    # --- Auto naming fallback ---
+    base_name = getattr(motivation, "type", None) or getattr(motivation, "name", None) or "UnnamedMotivation"
+    base_name = str(base_name).strip()
+
+    # --- Deduplicate by existing anchors ---
+    if hasattr(npc, "anchors"):
+        for existing in npc.anchors:
+            if getattr(existing, "source", None) is motivation:
+                return existing
+
+    # --- Deduplicate by memory (avoid spam) ---
+    existing_memory = [
+        m for m in npc.mind.memory.episodic
+        if m.type == "anchor_creation"
+        and base_name in (m.details or "")
+    ]
+    if existing_memory:
+        return None
+
+    tags = getattr(motivation, "tags", []) or []
+
+    # --- Create specialized anchors ---
+    if base_name == "rob":
+        anchor = RobberyAnchor(
+            name=base_name,
             type="motivation",
-            weight=motivation.urgency,
-            priority=motivation.urgency,
-            tags = tags,
+            weight=getattr(motivation, "urgency", 1.0),
+            priority=getattr(motivation, "urgency", 1.0),
+            tags=tags,
             owner=npc,
-            source=motivation
+            source=motivation,
+        )
+        anchor.desired_tags = anchor.desired_tags or ["ranged_weapon"]#added
+
+    elif base_name == "obtain_ranged_weapon":
+        anchor = ObtainWeaponAnchor(
+            name=base_name,
+            type="motivation",
+            weight=getattr(motivation, "urgency", 1.0),
+            priority=getattr(motivation, "urgency", 1.0),
+            tags=tags,
+            owner=npc,
+            source=motivation,
+        )
+        anchor.enables = getattr(anchor, "enables", []) + ["rob"]#added
+    else:
+        anchor = Anchor(
+            name=base_name,
+            type="motivation",
+            weight=getattr(motivation, "urgency", 1.0),
+            priority=getattr(motivation, "urgency", 1.0),
+            tags=tags,
+            owner=npc,
+            source=motivation,
         )
 
-    return Anchor(
-        name=motivation.type,
-        type="motivation",
-        weight=motivation.urgency,
-        priority=motivation.urgency,
-        tags = tags,
-        owner = npc,
-        source=motivation
-    )
+        npc.anchors.append(anchor)
+
+        # See when a thought-anchor or motivation-anchor is created without an expected partner
+        related = [a.name for a in npc.anchors if a is not anchor]
+        if base_name == "rob" and not any("obtain_ranged_weapon" in r for r in related):
+            debug_print(npc, f"[ANCHOR] Created '{base_name}' with NO obtain_ranged_weapon enabler", category="anchor")
+        elif base_name == "obtain_ranged_weapon" and not any("rob" in r for r in related):
+            debug_print(npc, f"[ANCHOR] Created '{base_name}' with NO rob anchor partner", category="anchor")
 
 
-#line 134, utility function, ie not in a class definition
-def create_anchor_from_thought(npc, thought: "Thought", name: str = None) -> "Anchor":#Thought is stilll marked as not defined
-    from character_thought import Thought #Thought not accessed 
-    """
-    Converts a Thought into a Motivation Anchor, carrying over tags and urgency.
-    """
-    anchor_name = name or f"{thought.subject}_{int(thought.timestamp)}"
-    anchor = Anchor(
-        name=anchor_name,
-        type="motivation",
-        weight=thought.urgency or 1.0,
-        priority=thought.weight or 1.0,
-        tags=thought.tags,
-        #add a reference to npc here?
-        desired_tags=thought.tags,  # Could filter/refine later
-        disfavored_tags=[],
-        tag_weights={tag: 1.0 for tag in thought.tags},
-        owner=npc,
-        source=thought
-    )
-    
+    # --- Update motivation manager ---
     urgency_delta = min(int(anchor.weight or 1), 3)
     npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
 
-    #the following might be up for deletion. I am not sure if creating an episodic memory every time a 
-    #anchor is created is necessary. npcs can already accesss their anchor via self.current_anchor or similiar 
+    # --- Register anchor in NPC memory once ---
     memory_entry = MemoryEntry(
         subject=npc.name,
         object_="anchor",
         verb="generated",
-        details=f"Anchor {anchor.name} from thought '{thought.content}'",
-        tags=["anchor", "thought"],
+        details=f"Anchor {anchor.name} from motivation '{base_name}'",
+        tags=["anchor", "motivation"],
         target=anchor,
-        importance=thought.urgency,
+        importance=getattr(motivation, "urgency", 0.0),
         type="anchor_creation",
         initial_memory_type="episodic",
         function_reference=None,
         implementation_path=None,
-        associated_function=None
+        associated_function=None,
     )
     npc.mind.memory.add_episodic(memory_entry)
 
+    # --- Attach to NPC anchors (always) ---
+    if not hasattr(npc, "anchors") or npc.anchors is None:
+        npc.anchors = []
+    if anchor not in npc.anchors:
+        npc.anchors.append(anchor)
+
     return anchor
 
-class ObtainWeaponAnchor(Anchor):#Potentially unused!
+
+
+def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = None) -> Optional["Anchor"]:
+    """
+    Converts a Thought into an Anchor, carrying over tags and urgency,
+    with automatic naming, duplicate prevention, and anchoring flag.
+    """
+
+    from character_thought import Thought
+    from memory_entry import MemoryEntry
+    import time
+
+    # --- Guard: skip invalid or already anchored thoughts ---
+    if thought is None:
+        return None #is this suggested block meant to replace the subsequent one?
+
+    # Ensure the NPC has an anchors list
+    if not hasattr(npc, "anchors"):
+        npc.anchors = []
+
+    # If thought already anchored, try to return the existing anchor if present
+    if getattr(thought, "anchored", False):#does class thought need an anchored attribute? "anchored" is relatively new to the codebase
+        for a in getattr(npc, "anchors", []):
+            if getattr(a, "source", None) is thought:
+                return a
+        return None
+
+    # Build a safe anchor name
+    base_name = name or getattr(thought, "name", None) or getattr(thought, "subject", None) or thought.__class__.__name__
+    safe_name = str(getattr(thought, "content", base_name)).strip()
+    safe_name = safe_name.replace(" ", "_").replace("'", "")
+    anchor_name = f"{safe_name}_{int(time.time())}"
+
+    # --- Deduplicate via memory ---
+    existing_memory = [
+        m for m in npc.mind.memory.episodic
+        if m.type == "anchor_creation"
+        and (m.details and str(getattr(thought, "content", "")).strip() in m.details)
+    ]
+    if existing_memory:
+        for a in npc.anchors:
+            if getattr(a, "source", None) is thought or a.name in existing_memory[0].details:
+                return a
+
+    # --- Create the anchor ---
+    anchor = Anchor(
+        name=anchor_name,
+        type="thought",
+        weight=getattr(thought, "weight", 1.0),
+        priority=getattr(thought, "urgency", 1.0),
+        tags=list(getattr(thought, "tags", []) or []),
+        owner=npc,
+        source=thought,
+    )
+
+     #--- Assign target if thought has an origin ---
+    origin = getattr(thought, "origin", None)
+    anchor.target = getattr(origin, "location", None) if origin else None
+
+    # --- Register the new anchor ---
+    npc.anchors.append(anchor)
+    thought.anchored = True
+
+    #defensive
+    if not hasattr(npc, "anchors") or npc.anchors is None:
+        npc.anchors = []
+
+    # Add memory entry with explicit target (prefer anchor.target, fallback to anchor.name)
+    target_value = getattr(anchor, "target", None) or anchor.name
+    npc.mind.memory.add_entry_if_new(
+        MemoryEntry(
+            subject=npc.name,
+            object_=anchor.name,
+            details=f"Anchor {anchor.name} from thought '{getattr(thought, 'content', '')}'",
+            type="anchor_creation",
+            tags=["anchor", "thought"],
+            target=target_value
+        )
+    )
+    if thought and not thought.anchored:
+        thought.anchored = True
+        debug_print(npc, f"[ANCHOR] Thought '{thought.content}' anchored as {anchor.__class__.__name__}", category="anchor")
+
+    return anchor
+
+class ObtainWeaponAnchor(Anchor):
+
     def compute_salience_for(self, percept_data, npc) -> float:
-        origin = percept_data.get("origin", None)
+        percept = self._coerce_to_percept(percept_data, npc)
+        obj = percept.get("object")
+        tags = percept.get("tags", [])
+        name = percept.get("name", "<unnamed>")
 
-        # Don't consider self or owned items as salient
-        if origin is npc:
-            return 0
-        #possibly check self.inventory here, I'm not sure origin is reliable for this
+        from events import Event
+        if obj is npc:
+            return 0.0
+        if isinstance(obj, Event):
+            return 0.0
+        if isinstance(obj, npc.__class__):
+            return 0.0
 
-        score = 1.5  # Base score
-        print(f"[SALIENCE] First ObtainWeaponAnchor Score: {score:.2f} for {percept_data.get('name', percept_data.get('type'))} | Anchor: {self.name}")
+        score = super().compute_salience_for(percept, npc)
 
-        tags = percept_data.get("tags", [])
+        # boosts
         if "weapon" in tags:
-            score += 0.3  # more relevant. HIGHER salience is more salience, ie more useful to the npc
-        if "ranged" in tags:
-            score += 0.6  # even better
-        if getattr(origin, "location", None) == npc.location:
-            score += 0.3  # boost for being right here
-        if "has_security" in percept_data and percept_data["has_security"]:
-            score -= 1.0  #location is less attractive
+            score += 0.3
+        if "ranged_weapon" in tags:
+            score += 0.6
+        if getattr(obj, "location", None) == npc.location:
+            score += 0.3
+        if percept.get("has_security", False):
+            score -= 1.0
 
-        print(f"[SALIENCE] Second ObtainWeaponAnchor Score: {score:.2f} for {percept_data.get('name', percept_data.get('type'))} | Anchor: {self.name}")
+        debug_print(
+            npc,
+            f"[ANCHOR-SALIENCE] ObtainWeaponAnchor score={score:.2f} for {name} (tags={tags})",
+            category="salience",
+        )
 
-        return round(score * self.weight, 2)
+        return round(score, 2)
+
+
     
 #utility functions
 
@@ -257,6 +610,13 @@ def refresh_salience_for_anchor(npc, anchor=None):
     npc.observe(location=npc.location, region=npc.region)
     percepts = npc.get_percepts()
     return update_saliences_for_anchor(anchor, npc, percepts)
+
+
+def _safe_percept_label(percept_data):
+    if isinstance(percept_data, dict):
+        return percept_data.get("description") or percept_data.get("name") or "<unnamed>"
+    return getattr(percept_data, "content", None) or getattr(percept_data, "name", "<unnamed>")
+
 
 #example full anchor debug_print
 """ if self.npc.is_test_npc and npc.current_anchor:

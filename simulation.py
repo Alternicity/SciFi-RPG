@@ -35,17 +35,6 @@ def run_simulation(all_characters, num_days=10):
     from weapons import Pistol
     from InWorldObjects import CashWad
 
-    # Add perceptible objects to that location for testing perception
-    # if hasattr(test_location, "objects_present"):
-    #     pistol = Pistol()
-    #     cash = CashWad(amount=60)
-    #     if hasattr(test_location, "objects_present"):
-    #         test_location.objects_present.extend([pistol, cash])
-    #         print(f"[Simulation] Placed Pistol and CashWad at {test_location.name}")
-    #     else:
-    #         print(f"[Simulation] ERROR: {test_location.name} has no 'objects_present' list.")
-
-
     if debug_gang_npc:
         print(f"[Simulation] Selected DEBUG NPC: {debug_gang_npc.name}, {debug_gang_npc.race}")
         print(f"[INIT] Placed debug gang NPC at {start_location.name}")
@@ -101,3 +90,4 @@ def run_simulation(all_characters, num_days=10):
     simulate_days(all_characters, num_days=num_days, debug_character=debug_gang_npc)
     print("\nSimulation complete.")
     return debug_gang_npc  # useful for debugging
+    #Actually, is it?

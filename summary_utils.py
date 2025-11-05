@@ -2,11 +2,9 @@
 from tabulate import tabulate
 import textwrap
 
-def summarize_motivations_and_percepts(character) -> str:
-    """
-    Returns a readable summary of a character's percepts using tabulate.
-    Includes a summary table and a percept-type salience breakdown.
-    """
+#deprecated table print
+""" def summarize_motivations_and_percepts(character) -> str:
+    
 
     if not hasattr(character, 'motivation_manager'):
         raise TypeError(f"summarize_percepts expected a Character, got {type(character)}: {character}")
@@ -89,7 +87,7 @@ def summarize_motivations_and_percepts(character) -> str:
     else:
         output += "\n— No percepts available —\n"
 
-    return output
+    return output """
 
 def format_location(loc):
     if hasattr(loc, 'name') and hasattr(loc, 'region'):

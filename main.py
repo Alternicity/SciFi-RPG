@@ -22,6 +22,7 @@ def setup_game():
     from base_classes import Location
     from display import compare_locations
 
+
     all_regions = create_regions()
     game_state.all_regions = all_regions
 

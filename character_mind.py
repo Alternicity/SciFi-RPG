@@ -38,6 +38,19 @@ class Mind:
 
     
 
+    def deduplicate_thoughts(self, npc):#eventually ditch the npc
+        seen = {}
+        unique_thoughts = []
+        for t in npc.mind.thoughts:
+            if t.content not in seen:
+                seen[t.content] = t
+                unique_thoughts.append(t)
+            else:
+                # Optionally increment a counter
+                seen[t.content].repetition_count = getattr(seen[t.content], "repetition_count", 1) + 1
+        from collections import deque
+        npc.mind.thoughts = deque(unique_thoughts, maxlen=getattr(npc.mind.thoughts, "maxlen", 10))
+
     def has_thought_content(self, content_substring: str) -> bool:
         """
         Returns True if any current thought's content matches or contains the given substring.
@@ -76,10 +89,10 @@ class Mind:
         self.thoughts.clear()
 
     def remove_thought_by_content(self, content: str):
-        self.thoughts = deque(
-            [t for t in self.thoughts if t.content.lower() != content.lower()],
-            maxlen=self.thoughts.maxlen
-    )
+        # Determine capacity safely (if list, fall back to default)
+        maxlen = getattr(self.thoughts, "maxlen", None) or 10  # or your default capacity
+        filtered = [t for t in self.thoughts if t.content.lower() != content.lower()]
+        self.thoughts = deque(filtered, maxlen=maxlen)
 
     def __iter__(self):
         return iter(self.thoughts)

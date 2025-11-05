@@ -81,6 +81,7 @@ class Pistol(RangedWeapon):
 
     def get_percept_data(self, observer=None):
         data = {
+            "name": self.human_readable_id or self.name,
             "description": self.human_readable_id or "Pistol",
             "type": self.__class__.__name__,
             "origin": self,

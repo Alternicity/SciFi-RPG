@@ -96,7 +96,7 @@ def gather_perceptible_objects(obj):
     if hasattr(obj, "inventory"):
         for item in obj.inventory.items.values():
             found.extend(gather_perceptible_objects(item))
-    return found
+    return found #intersting but not used at all
 #call this from observe_objects() for cleaner recursive visibility.
 
 #Optional: Enums or constants (like percept categories: VISUAL, AUDIO, ITEM, etc.)

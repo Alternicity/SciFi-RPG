@@ -237,6 +237,7 @@ class Vendor(Location):
             "type": self.__class__.__name__,
             "robbable": True,
             "origin": self,
+            "object": self,
             "urgency": 2,
             "tags": ["location", "intermediary"],
             "source": None,
@@ -264,8 +265,8 @@ from inventory import Inventory
 from characters import Employee
 @dataclass
 class Shop(Vendor):
-    name: str = "QQ Store"
-    tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial"])
+    name: str = "QQ Store"#placeholder/default
+    tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial", "weapon", "ranged_weapon","pistol", "weapons"])
     #Keep tags at class level (Shop(tags=["shop"])) for static traits like economic category.
     #Use get_percept_data tags for dynamic, observer-relative info like visible weapons, open status, etc
     #these  won't be automatically included in memory — only what’s passed into the MemoryEntry.tags
@@ -314,6 +315,7 @@ class Shop(Vendor):
             "robbable": True,
             "origin": self,
             "urgency": 1,
+            "object": self,
             "tags": ["location", "weapons", "weapon", "pistol", "ranged_weapon"],#not used by query_memory_by_tags() 
             #unless you create a memory entry that inherits those tags.
 
@@ -394,31 +396,20 @@ class CorporateStore(Vendor):
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
-        "type": "FIXME",
-        "origin": "FIXME",
-        "tags": "FIXME",
-        "salience": "FIXME",
-        "urgency": "FIXME",
-        "source": "FIXME",
-        "security": "FIXME",
-        "is_open": "FIXME",
-        "has_security": "FIXME",
-            "description": f"CorporateStore: {self.name}",
+            "description": f"Corporate Store: {self.name}",
             "type": self.__class__.__name__,
             "robbable": True,
-            "name": self.name,
-            "region": self.region.name if self.region else None,
             "origin": self,
             "urgency": 1,
-            "tags": ["location", "weapons"],
+            "tags": ["location", "corporate", "store"],#no ranged_weapon etc to make shop preferable in test case 1
             "source": None,
-            
-            "security": self.security_level,
-            "is_open": self.is_open,
+            "security": getattr(self.security, "level", 1),
+            "is_open": getattr(self, "is_open", True),
             "has_security": self.has_security(),
             "faction": self.faction.name if self.faction else None,
+            "region": self.region.name if self.region else None,
         }
-    
+
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
