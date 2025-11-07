@@ -19,6 +19,7 @@ from config import (
     SHOW_FOCUS_LOGS,
     SHOW_MOTIVE_LOGS,
     SHOW_OBSERVATION_LOGS,
+    SHOW_THOUGHT_LOGS,
     DEBUG_LEVEL,
 )
 
@@ -41,6 +42,7 @@ DEBUG_FLAGS = {
     "focus": SHOW_FOCUS_LOGS,
     "motive": SHOW_MOTIVE_LOGS,
     "observation": SHOW_OBSERVATION_LOGS,
+    "thought": SHOW_THOUGHT_LOGS,
 }
 
 

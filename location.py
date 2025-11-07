@@ -56,6 +56,10 @@ class Region(PerceptibleMixin):
             "danger_level": str(self.danger_level) if self.danger_level else "Unknown"
         }
 
+    def list_perceptibles(self):
+        # Regions should NOT expose characters_there for perception
+        return []
+
     def get_all_locations(self):
         return self.locations
     

@@ -4,7 +4,6 @@ import time
 from typing import Any, List, Dict, Optional, Any, Union, Set, Callable, TYPE_CHECKING
 from datetime import datetime
 
-
 #DONT IMPORT from character_memory.py
 
 """ you should leave the quotation marks for types like "Character" and "Faction".
@@ -14,7 +13,7 @@ available at runtime (like when using TYPE_CHECKING or avoiding circular import 
 @dataclass
 class MemoryEntry:
     subject: str #"subject does something to object_"
-    object_: str #underscore to differentiate from reserve term object
+    object_: str #underscore to differentiate from reserved term object
     #Do memory entries need to capture bidirectional or dyadic info? BIDIRECTIONAL
     details: str
     source: Optional[Any] = None
@@ -313,3 +312,5 @@ MemoryEntry(
     tags=["compassion", "sacrifice", "focus", "energy", "friendship", "entropy"],
     description="The sacrifice of personal energy to assist another in need, encoded not as loss—but alignment with core values.",
 )
+
+

@@ -2,6 +2,9 @@
 from memory_entry import MemoryEntry
 from debug_utils import debug_print
 import copy
+from character_thought import Thought
+from create_game_state import get_game_state
+
 
 def visit_location_auto(character, region=None, destination=None, destination_name=None, **kwargs):
     npc = character
@@ -19,7 +22,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     #debug_print(npc, f"[AUTO VISIT] {character.name} is going to {location.name}", category="visit")
 
     search_region = region or npc.region #search_region is not accessed
-    debug_print(npc, f"[VISIT] visit_location_auto called with destination={destination}, destination_name={destination_name}", category="visit")
+    debug_print(npc, f"[VISIT] Arrived at {destination.name}", "visit")
 
     # Resolve destination by name if needed
     if destination is None and destination_name:
@@ -33,11 +36,23 @@ def visit_location_auto(character, region=None, destination=None, destination_na
         debug_print(npc, f"[VISIT] {npc.name} has no valid destination to visit (lookup failed).", category="visit")
         return False
     
+    if npc.just_arrived:
+        return True   # Already here, don't re-visit
 
     # --- Core movement ---
+    old_location = npc.location
+    # Remove NPC from old location
+    if old_location and hasattr(old_location, "characters_there"):
+        if npc in old_location.characters_there:
+            old_location.characters_there.remove(npc)
+
     npc.location = destination
-    npc.just_arrived = True#line 29
+    npc.just_arrived = True
     #this is the only place in the code base where  npc.just_arrived is set to true
+    # --- Clear visit-related thoughts ---
+    npc.mind.remove_thoughts_with_tag("visit")
+    # Clear visit motivation if it was active
+    npc.motivation_manager.remove_motivation("visit")
 
     debug_print(npc, f"[VISIT] {npc.name} arrived at {npc.location.name}", category="visit")
 
@@ -82,6 +97,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
             for t in to_remove:
                 try:
                     character.mind.thoughts.remove(t)
+                    #perhaps add it to memory.forgotten
                 except ValueError:
                     pass
             # Clear attention focus if it pointed at that thought
@@ -175,21 +191,40 @@ def steal_auto(npc, region, item=None):
         if npc.is_test_npc:
             print(f"[DEBUG] Primary weapon equipped: {getattr(npc.inventory.primary_weapon, 'name', None)}")
 
-        # Optional memory entry
-        memory_entry = MemoryEntry(
+        from memory_entry import MemoryEntry
+        state = get_game_state()
+        memory = MemoryEntry(
             subject=npc.name,
-            object_=stolen_item.name,
+            object_="pistol",
             verb="stole",
-            details=f"Stole {stolen_item.name} from {location.name}",
-            importance=7,
+            details=f"I stole a pistol from {location.name}.",
             type="theft",
-            tags=["theft", "weapon", "crime"],
             initial_memory_type="episodic",
-            function_reference=None,
-            implementation_path=None,
-            associated_function=None
+            description="Theft of a ranged weapon enabling robbery.",
+            tags=["theft", "weapon", "ranged_weapon", "enabling"],
+            target=location.name,
+            payload={"item": item, "location": location},
+            source="steal_auto",
+            created_day=state.day,
+            last_updated_day=state.day,
         )
-        npc.mind.memory.add_episodic(memory_entry)
+
+        npc.mind.memory.add_episodic(memory, current_day=state.day)
+        npc.inventory.add_recently_acquired(item, state)#can this call simply change to has_recently_acquired?
+
+        npc.mind.add_thought(
+            Thought(
+                subject=npc.name,
+                content="I stole a pistol.",
+                origin="episodic_memory",
+                urgency=7,
+                tags=["theft", "self", "weapon", "ranged_weapon", "enabling"],
+                source=memory,
+                weight=3.0
+            )
+        )
+        # Mark the pistol as newly acquired
+        #I added this, it might need to change based on final edits to inventory.py
 
         print(f"[STEAL] {npc.name} successfully stole {stolen_item.name} from {location.name}")
 

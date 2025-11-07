@@ -220,8 +220,11 @@ class Character(PerceptibleMixin):
         # --- Assign location and home region ---
         self.location = location
         self.current_destination = location
+        self.previous_location = None
         self.home_region = self.region
-
+        self.just_arrived = False
+        self.just_left_location = False
+        
         self.name = name
         self.is_player = False
         self.is_test_npc = False  # Default to False
@@ -343,8 +346,7 @@ class Character(PerceptibleMixin):
         self.isArmed = False
         self.hasRangedWeapon = False
         self.hasMeleeWeapon = False
-        self.just_arrived = False
-        self.just_left_location = False
+        
         
         self.workplace: Optional[Location] = None
         self.shift = 'day'  # Can be 'day' or 'night'
@@ -687,9 +689,11 @@ class Character(PerceptibleMixin):
             return
         self._observed_this_tick = True
 
-        debug_print(npc, f"[OBSERVE TRACE] {self.name} observing at tick {game_state.tick} (caller={caller})", category="obervation")
+        debug_print(npc, f"[OBSERVE TRACE] {self.name} observing at tick {game_state.tick} (caller={caller})", category="observation")
         debug_print(npc, f"[OBSERVE TRACE] npc.location={npc.location}, region={npc.region}", category="perception")
         debug_print(npc, f"[OBSERVE] RAW location param={location} (type={type(location)})", "perception")
+        if region is not None and location is None:
+            print(f"[BUG] observe() called with region but no location! Caller={caller}")
 
         # --- show before/after counts for easier debugging ---
 
@@ -720,24 +724,27 @@ class Character(PerceptibleMixin):
 
         # If someone passed a Region (bad), fallback to npc.location
         if isinstance(location, Region):
-            debug_print(npc, "[BUGFIX] observe() received Region instead of Location; switching to npc.location", "percept")
+            debug_print(self, "[BUGFIX] observe() received Region instead of Location; switching to self.location", "percept")
             location = npc.location
 
         if not location:
             debug_print(npc, f"[OBSERVE WARNING] {self.name} has no valid location.", "percept")
             return
 
-        # --- perceive other characters in the same location ---
-        for char in getattr(location, "characters_there", []):
-            if char is self:
-                continue
-            self.add_percept_from(char)
+        if isinstance(location, Location):
 
-            debug_print(
-            npc,
-            f"[OBSERVE TRACE] Seeing {other.name} because source={source}",
-            category="perception"
-            )#other and source not defined here
+            # --- perceive other characters in the same location ---
+            for char in getattr(location, "characters_there", []):
+                if char is self:
+                    continue
+                self.add_percept_from(char)
+
+                """ debug_print(
+                npc,
+                f"[OBSERVE TRACE] Seeing {other.name} because source={source}",
+                category="perception"
+                ) """
+                #other and source still not defined here
 
         # --- perceive additional objects if any (location-provided list preferred) ---
         if nearby_objects:

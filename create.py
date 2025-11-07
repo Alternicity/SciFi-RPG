@@ -287,6 +287,17 @@ def assign_hq(faction, region):
     from create_game_state import get_game_state
     game_state = get_game_state()
 
+    #Not all gang factions successfully get an HQ
+    """ Members of street gangs have a randomised location…
+    non street gang, non test npc GangMembers are perhaps not placed with precision """
+
+    """ Some regions do not create HQs
+    Some HQs are created but never added to region.locations
+    Some factions fail the HQ assignment logic and fallback to street gang logic
+    Some factions are not marked is_street_gang correctly
+    Some factions have no starting location assigned at all
+    In these cases, the fallback system randomly assigns locations, including shops. """
+
     if faction.HQ is not None:  # ✅ Prevent multiple HQ assignments
         #print(f"{faction.name} already has an HQ in {faction.HQ.region.name}.")
         return  # Exit the function early

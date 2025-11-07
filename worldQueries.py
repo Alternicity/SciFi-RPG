@@ -20,6 +20,10 @@ def get_viable_robbery_targets(region):
 
 def get_nearby_objects(npc, region=None, location=None):
     #Currently obsolete for npc flow
+    if isinstance(location, Region):
+        # Region is NOT a perceptible container
+        return []
+    
     if location is None:
         print(f"[DEBUG] {npc.name} has no valid location. No objects to observe.")
         return []

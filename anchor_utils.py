@@ -343,7 +343,53 @@ class RobberyAnchor(Anchor):
 
         return round(score, 2)
 
-        
+#utility functions
+def create_robbery_anchor(npc, source=None, urgency=None, desired_tags=None, disfavored_tags=None, tag_weights=None,):
+    """
+    General-purpose factory for RobberyAnchor.
+
+    `source` may be:
+       - a Motivation
+       - a Thought
+       - an episodic MemoryEntry
+       - None (defaults)
+    """
+
+    # Determine urgency and weight from whatever the source is
+    u = getattr(source, "urgency", urgency if urgency is not None else 1.0)
+    w = getattr(source, "weight", u)
+
+    # construct kwargs to override defaults if desired
+    kwargs = {
+        "name": "rob",
+        "type": "motivation",
+        "owner": npc,
+        "source": source,
+        "priority": u,
+        "weight": w,
+    }
+
+    # Optional future overrides — only applied if provided
+    if desired_tags is not None:
+        kwargs["desired_tags"] = desired_tags
+
+    if disfavored_tags is not None:
+        kwargs["disfavored_tags"] = disfavored_tags
+
+    if tag_weights is not None:
+        kwargs["tag_weights"] = tag_weights
+
+    anchor = RobberyAnchor(**kwargs)
+
+    debug_print(
+        npc,
+        f"[ANCHOR] Created RobberyAnchor(priority={u}, desired_tags={anchor.desired_tags}) "
+        f"from source={type(source).__name__ if source else None}",
+        category="anchor",
+    )
+
+    return anchor
+
 
 def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     """
@@ -395,7 +441,7 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
             owner=npc,
             source=motivation,
         )
-        anchor.desired_tags = anchor.desired_tags or ["ranged_weapon"]#added
+        anchor.desired_tags = anchor.desired_tags or ["ranged_weapon"]
 
     elif base_name == "obtain_ranged_weapon":
         anchor = ObtainWeaponAnchor(

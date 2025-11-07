@@ -86,6 +86,10 @@ class MotivationManager:
         self.character = character
         self.motivations = []  # Now a list of Motivation instances
 
+    def remove_motivation(self, motivation_type):
+        """Remove a motivation by type name."""
+        self.motivations = [m for m in self.motivations if m.type != motivation_type]
+
     def update_motivations(self, motivation_type=None, urgency=None, **kwargs):
         """Add or boost a motivation."""
         if motivation_type:
@@ -104,6 +108,15 @@ class MotivationManager:
         # Ensure at least one default
         if not self.motivations:
             self.motivations.append(Motivation("earn_money", 5))
+
+    def get_motivation(self, motivation_type):
+        """
+        Return the Motivation object matching the given type, or None.
+        """
+        for m in self.motivations:
+            if m.type == motivation_type:
+                return m
+        return None
 
     def get_highest_priority_motivation(self):
         if not self.motivations:

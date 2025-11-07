@@ -36,7 +36,8 @@ class Mind:
         """ deque prevents memory bloat. 
         It mimics short-term/working memory: older thoughts are automatically discarded. """
 
-    
+    def remove_thoughts_with_tag(self, tag):
+        self.thoughts = [t for t in self.thoughts if tag not in t.tags]
 
     def deduplicate_thoughts(self, npc):#eventually ditch the npc
         seen = {}

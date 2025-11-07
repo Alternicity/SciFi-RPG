@@ -103,6 +103,13 @@ class UtilityAI(BaseAI):
 
     
     def execute_action(self, action, region):
+        # Action routing for NPCs (clean, lowercase names)
+        from npc_actions import (
+            visit_location_auto,
+            exit_location_auto,
+            eat_auto,
+            idle_auto
+        )
         """
         Dispatch NPC actions to npc_actions.py functions.
         """
@@ -115,13 +122,18 @@ class UtilityAI(BaseAI):
         action_name = action.get("name")
         params = action.get("params", {})
 
-        # Action routing for NPCs (clean, lowercase names)
-        from npc_actions import (
-            visit_location_auto,
-            exit_location_auto,
-            eat_auto,
-            idle_auto
-        )
+        if action_name.lower() == "visit_location":
+            # Avoid duplicate dispatch:
+            # Call visit_location_auto ONLY once — here.
+
+            result = visit_location_auto(npc, region, **params)#line 122
+
+            # Once location was changed, clear the visit motivation
+            npc.motivation_manager.remove_motivation("visit")
+
+            # ✅ Remove stale visit thoughts
+            npc.mind.remove_thoughts_with_tag("visit")
+            return result # VERY IMPORTANT — stops super() call
 
         action_map = {
             "visit_location": visit_location_auto,
@@ -131,8 +143,7 @@ class UtilityAI(BaseAI):
         }
 
         action_func = action_map.get(action_name.lower())
-        #is something wrong with this line?
-
+    
         if not action_func:
             debug_print(npc,
                 f"[EXECUTE] Unknown action '{action_name}' — cannot dispatch; skipping.",

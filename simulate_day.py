@@ -149,11 +149,11 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
                     print(display_region_knowledge_summary(region_knowledges, npc=npc))
                     #Now we have a tick counter, can we make the RegionKnowledge only get printed to output on the first tick?
-        print("THOUGHTS:")
+        debug_print(npc, "[THOUGHTS — filtered]", "think")
         for thought in npc.mind.thoughts:
-            print(f" - {thought}")  # Optional again
+            if thought.urgency > 1:
+                debug_print(npc, f" - {thought.content} (urgency {thought.urgency})", "think")
 
-        print(f"ATTENTION: {npc.mind.attention_focus}")
 
 
     # STEP 4: Sanity Check on Character List
@@ -169,7 +169,9 @@ def begin_npc_turn(npc):
 
 def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()
+
     npc.inventory.clear_recently_acquired()
+
     npc.last_action_tick = get_game_state().tick
 
     # reset observation flag so next tick will allow a fresh observation

@@ -83,57 +83,25 @@ class Inventory:
             else:
                 print(f"[inventory] Warning: Inventory {id(self)} still ownerless after ensure_owner()")
 
-    def clear_recently_acquired(self):
-        """Placeholder: future logic will remove or age out newly acquired items."""
-        if not hasattr(self, "recently_acquired"):
-            self.recently_acquired = []
 
-        # Basic placeholder behavior — just clear the list for now
-        owner_name = getattr(self.owner, "name", "UnknownOwner")
-
-        if self.owner is None:
-            debug_print(
-                None,
-                f"[Inventory Warning] Inventory without owner detected: class={self.__class__.__name__} id={id(self)}",
-                category="inventory"
-            )
-
-        # then continue with the existing clear logic
-        if self.recently_acquired:
-            debug_print(
-                self.owner,
-                f"[{owner_name}] Clearing {len(self.recently_acquired)} recently acquired items.",
-                category="inventory"
-            )
-            self.recently_acquired.clear()
-        else:
-            if self.owner is None:
-                debug_print(
-                    None,
-                    f"[Inventory Warning] Inventory without owner detected: class={self.__class__.__name__} id={id(self)} repr={repr(self)}",
-                    category="inventory"
-                )
-
-                debug_print(
-                    self.owner,
-                    f"[{owner_name}] No recently acquired items to clear.",
-                    category="inventory"
-                )
-
-
-
-    #For the future:
-    """ def clear_recently_acquired(self, current_day=None):
-        Removes items from recently_acquired if they are older than 1 simulated day.
+    def clear_recently_acquired(self, current_day=None):
         if current_day is None:
             from create_game_state import get_game_state
             current_day = get_game_state().day
 
-        self.recently_acquired = [
-            (item, day_added)
-            for (item, day_added) in self.recently_acquired
-            if current_day - day_added < 1
-        ] """
+        cleaned = []
+        for entry in self.recently_acquired:
+            # New format: (item, day_added)
+            if isinstance(entry, tuple) and len(entry) == 2:
+                item, day_added = entry
+                if current_day - day_added < 1:
+                    cleaned.append((item, day_added))
+
+            # Old format: just the item (keep it one more day so nothing breaks)
+            else:
+                cleaned.append((entry, current_day))  # normalize it
+
+        self.recently_acquired = cleaned
 
     def is_empty(self):
         return not bool(self.items)
@@ -194,6 +162,9 @@ class Inventory:
         """ def has_item(self, item) -> bool:
             return item.name in self.items """
 
+    def add_recently_acquired(self, item, state):
+        # Always insert in canonical (item, day) format
+        self.recently_acquired.append((item, state.day))
 
     def has_recently_acquired(self, item_type_or_tag: str) -> bool:
         for item in self.recently_acquired:
