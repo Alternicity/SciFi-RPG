@@ -532,10 +532,18 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
         return None
 
     # Build a safe anchor name
-    base_name = name or getattr(thought, "name", None) or getattr(thought, "subject", None) or thought.__class__.__name__
-    safe_name = str(getattr(thought, "content", base_name)).strip()
-    safe_name = safe_name.replace(" ", "_").replace("'", "")
-    anchor_name = f"{safe_name}_{int(time.time())}"
+    # Preserve canonical motivation names ONLY
+    base_name = (
+        name
+        or thought.primary_tag()              # e.g. "rob", "visit", "explore"
+        or getattr(thought, "subject", None)
+        or "thought"
+    )
+
+    # Force safe canonical form
+    canonical = str(base_name).strip().lower()
+
+    anchor_name = canonical  # <-- NO timestamp, NO content slug
 
     # --- Deduplicate via memory ---
     existing_memory = [

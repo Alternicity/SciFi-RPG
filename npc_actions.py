@@ -172,7 +172,7 @@ def steal_auto(npc, region, item=None):
     )
     from weapons import Weapon
     if success:
-        stolen_item = copy.deepcopy(item)#cop not defined
+        stolen_item = copy.deepcopy(item)
         location.inventory.remove_item(item.name)
         npc.inventory.add_item(stolen_item)
         npc.inventory.recently_acquired.append(stolen_item)
@@ -181,7 +181,7 @@ def steal_auto(npc, region, item=None):
         print(f"[STEAL SUCCESS] {npc.name} stole {stolen_item.name}!")
         print(f"[DEBUG] Primary weapon equipped: {npc.inventory.primary_weapon}")
         
-        if isinstance(stolen_item, Weapon):
+        if isinstance(stolen_item, Weapon):#is this failing?
             npc.inventory.update_primary_weapon()
             npc.motivation_manager.resolve_motivation("obtain_ranged_weapon")
             cleared = npc.motivation_manager.clear_highest_priority_motivation()
@@ -215,7 +215,7 @@ def steal_auto(npc, region, item=None):
         npc.mind.add_thought(
             Thought(
                 subject=npc.name,
-                content="I stole a pistol.",
+                content="I stole a pistol.",#to change to {stolen_item.name}
                 origin="episodic_memory",
                 urgency=7,
                 tags=["theft", "self", "weapon", "ranged_weapon", "enabling"],
@@ -223,8 +223,8 @@ def steal_auto(npc, region, item=None):
                 weight=3.0
             )
         )
+        # leave motivation cleanup to GangMemberAI.think() on next tick (arrival handler)
         # Mark the pistol as newly acquired
-        #I added this, it might need to change based on final edits to inventory.py
 
         print(f"[STEAL] {npc.name} successfully stole {stolen_item.name} from {location.name}")
 

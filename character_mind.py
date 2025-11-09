@@ -52,6 +52,17 @@ class Mind:
         from collections import deque
         npc.mind.thoughts = deque(unique_thoughts, maxlen=getattr(npc.mind.thoughts, "maxlen", 10))
 
+    def remove_thought_by_predicate(self, predicate):
+        removed = []
+        for t in list(self.thoughts):
+            if predicate(t):
+                self.thoughts.remove(t)
+                removed.append(t)
+
+        for t in removed:
+            debug_print(self.owner, f"[MIND] Removed thought: {t.content}", "think")
+
+
     def has_thought_content(self, content_substring: str) -> bool:
         """
         Returns True if any current thought's content matches or contains the given substring.
@@ -113,6 +124,8 @@ class Mind:
         Adds a thought to the mind, avoiding duplicates by content.
         Optionally, can be enhanced to merge/update existing thoughts.
         """
+
+        print("[DEBUG] add_thought called; content repr:", repr(thought.content))
 
         # ensure mind knows its owner
         owner = getattr(self, "owner", None)

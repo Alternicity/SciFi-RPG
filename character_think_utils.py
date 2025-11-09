@@ -26,8 +26,6 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
                 npc.motivation_manager.update_motivations(
                     motivation.type,
                     motivation.urgency,
-                    target=motivation.target,
-                    source=motivation.source,
                 )
 
 

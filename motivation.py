@@ -2,9 +2,9 @@
 from status import StatusLevel
 
 class Motivation:
-    def __init__(self, type, urgency, target=None, status_type=None, source=None):
+    def __init__(self, type, urgency=1, target=None, status_type=None, source=None):
         self.type = type  #  "join_gang"
-        self.urgency = urgency  # integer
+        self.urgency = float(urgency)  # integer
         self.target = target  #  "e.g. Red Fangs"
         self.status_type = status_type  #  "criminal"
         self.source = source  #  memory, event, etc.
@@ -86,35 +86,71 @@ class MotivationManager:
         self.character = character
         self.motivations = []  # Now a list of Motivation instances
 
+    def _coerce_motivation_type(self, motivation_type):
+        """Safely coerce various inputs into a string motivation type."""
+        if isinstance(motivation_type, str):
+            return motivation_type
+        # If a Motivation-like object
+        if hasattr(motivation_type, "type"):
+            return str(getattr(motivation_type, "type"))
+        # If a Thought-like object with 'content'
+        if hasattr(motivation_type, "content"):
+            # keep it short
+            return str(motivation_type.content)[:120]
+        # Memory or other objects
+        return str(motivation_type)
+
     def remove_motivation(self, motivation_type):
-        """Remove a motivation by type name."""
-        self.motivations = [m for m in self.motivations if m.type != motivation_type]
+        mtype = self._coerce_motivation_type(motivation_type)
+        before = len(self.motivations)
+        self.motivations = [m for m in self.motivations if m.type != mtype]
+        return (before != len(self.motivations))
 
-    def update_motivations(self, motivation_type=None, urgency=None, **kwargs):
-        """Add or boost a motivation."""
-        if motivation_type:
-            for m in self.motivations:
-                if m.type == motivation_type:
-                    m.urgency = min(m.urgency + (urgency or 1), 30)  # cap at 30
-                    return
-            # If not found, create new
-            new_motivation = Motivation(
-                type=motivation_type,
-                urgency=urgency or VALID_MOTIVATIONS.get(motivation_type, 5),
-                **kwargs
-            )
-            self.motivations.append(new_motivation)
+    def update_motivations(self, motivation_type, urgency=1, target=None, source=None, status_type=None):
+        mtype = self._coerce_motivation_type(motivation_type)
 
-        # Ensure at least one default
-        if not self.motivations:
-            self.motivations.append(Motivation("earn_money", 5))
+        existing = self.get_motivation(mtype)
+        if existing:
+            existing.urgency = max(existing.urgency, float(urgency))
+
+            # If new target is provided, update it
+            if target is not None:
+                existing.target = target
+
+            if source is not None:
+                existing.source = source
+
+            if status_type is not None:
+                existing.status_type = status_type
+
+            return existing
+
+        #Should the Motivation instantiation below be in a separate function?
+        # Create NEW motivation with target intact
+        new = Motivation(
+            type=mtype,
+            urgency=float(urgency),
+            target=target,
+            source=source,
+            status_type=status_type
+        )
+        self.motivations.append(new)
+        return new
+
+
+    def get_motivations_display(self):
+        """Return a readable, safe list for debugging."""
+        out = []
+        for m in self.motivations:
+            t = getattr(m, "type", str(m))
+            u = getattr(m, "urgency", 0)
+            out.append(f"{t} (urgency {u:.1f})")
+        return out
 
     def get_motivation(self, motivation_type):
-        """
-        Return the Motivation object matching the given type, or None.
-        """
+        mtype = self._coerce_motivation_type(motivation_type)
         for m in self.motivations:
-            if m.type == motivation_type:
+            if m.type == mtype:
                 return m
         return None
 
@@ -131,6 +167,16 @@ class MotivationManager:
         top = max(self.motivations, key=lambda m: m.urgency)
         self.motivations.remove(top)
         return top
+
+    def deboost_others(self, except_type: str, amount: float = 3):
+        """
+        Reduce urgency of all motivations except the named one.
+        Never goes below 0.
+        """
+        for m in self.motivations:
+            if m.type != except_type:
+                m.urgency = max(0, m.urgency - amount)
+
 
     def resolve_motivation(self, type_name: str):
         self.motivations = [m for m in self.motivations if m.type != type_name]
@@ -164,8 +210,13 @@ class MotivationManager:
             if m.type == type_name:
                 m.urgency = max(0, m.urgency - amount)
 
-    def increase(self, motivation_type, amount=1):
+    def increment(self, motivation_type, amount=1):
         self.update_motivations(motivation_type, urgency=amount)
+
+    def boost(self, motivation_type, amount):
+        m = self.update_motivations(motivation_type, urgency=0)
+        m.urgency += amount
+        return m
 
     def get_urgency(self, motivation_type):
         for m in self.motivations:

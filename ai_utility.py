@@ -103,87 +103,61 @@ class UtilityAI(BaseAI):
 
     
     def execute_action(self, action, region):
-        # Action routing for NPCs (clean, lowercase names)
+        """
+        Dispatch NPC actions to npc_actions.py functions.
+        """
+        npc = self.npc
+        # Ensure action is a dict
+        if not isinstance(action, dict):
+            print(f"[ERROR] From UtilityAI Action must be a dict, got: {action}")
+            return
+
+        action_name = action.get("name", "")
+        params = action.get("params", {})
+
+        # Import action implementations once, before use (prevents UnboundLocalError)
         from npc_actions import (
             visit_location_auto,
             exit_location_auto,
             eat_auto,
             idle_auto
         )
-        """
-        Dispatch NPC actions to npc_actions.py functions.
-        """
-        npc = self.npc
-        debug_print(npc, f"[MOTIVES BEFORE] {npc.motivation_manager.get_motivations()}", "DEBUG")
-        if not isinstance(action, dict):
-            print(f"[ERROR] From UtilityAI Action must be a dict, got: {action}")
-            return
 
-        action_name = action.get("name")
-        params = action.get("params", {})
-
+        # Special-case visit_location so it runs exactly once here
         if action_name.lower() == "visit_location":
-            # Avoid duplicate dispatch:
-            # Call visit_location_auto ONLY once — here.
+            # Call visit auto directly
+            try:
+                result = visit_location_auto(npc, region, **params)
+            except Exception as e:
+                print(f"[ERROR] visit_location_auto failed: {e}")
+                result = None
 
-            result = visit_location_auto(npc, region, **params)#line 122
-
-            # Once location was changed, clear the visit motivation
+            # After visiting, remove the visit motivation and stale visit thoughts
             npc.motivation_manager.remove_motivation("visit")
-
-            # ✅ Remove stale visit thoughts
             npc.mind.remove_thoughts_with_tag("visit")
-            return result # VERY IMPORTANT — stops super() call
+            debug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location}", category="visit")
+            return result
+        
 
+
+        # --- fallback routing for other actions ---
         action_map = {
-            "visit_location": visit_location_auto,
             "exit_location": exit_location_auto,
             "eat": eat_auto,
             "idle": idle_auto
         }
 
         action_func = action_map.get(action_name.lower())
-    
         if not action_func:
-            debug_print(npc,
-                f"[EXECUTE] Unknown action '{action_name}' — cannot dispatch; skipping.",
-                category="action"
-            )
+            debug_print(npc, f"[EXECUTE] Unknown action '{action_name}' — cannot dispatch; skipping.", category="action")
             return
+
         debug_print(npc, f"[EXECUTE UTILITYAI] Dispatching {action_name} with params={params}", category="action")
-
         try:
-            result = action_func(npc, region, **params)#is the shop or relevant location target passed into here?
-
-            debug_print(
-                npc,
-                f"[EXECUTE] Calling {action_name} with params={params} (region={region.name if region else 'None'})",
-                category="action"
-            )
-
-            if action_name.lower() == "visit_location" and "destination" not in params:
-                debug_print(npc, "[VISIT] visit_location called without a location param; defaulting to current location", category="visit")
-
-            # --- Motivation resolution ---
-            if action_name.lower() == "visit_location":
-                # A call needs to go here to visit_location_auto I think, using destination as a parameter
-                npc.motivation_manager.resolve_motivation("visit")
-                debug_print(npc, f"[MOTIVES AFTER] {npc.motivation_manager.get_urgent_motivations()}", "DEBUG")
-
-            # --- Optional test NPC debug ---
-            if getattr(npc, "is_test_npc", False):
-                #does this print need another condition to see if the location has changed?
-                
-                #debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
-
-
-                debug_print(npc, f"[UtilityAI MOTIVE] Current motivations: {npc.motivation_manager.get_urgent_motivations()}", category="motive")
-                debug_print(npc, f"[UtilityAI] Inventory: {[item.name for item in npc.inventory]}", category="inventory")
-
-            return result
-
+            return action_func(npc, region, **params)
         except Exception as e:
             print(f"[ERROR] Executing action {action_name}: {e}")
+
 
     def score_action(self, action: dict, context: dict = None) -> float:
         npc = self.npc
@@ -555,21 +529,19 @@ class UtilityAI(BaseAI):
                     continue
 
                 try:
-                    # if 'origin' is an object, normalize
                     from anchor_utils import _normalize_percept
                     normalized = _normalize_percept(percept.get("data", percept), npc)
 
-
-                    salience = normalize_salience(compute_salience(normalized, npc, anchor))
-
-                    # Guarantee salience is numeric
-                    """ if not isinstance(salience, (int, float)):
-                        salience = 0.0 """
-                    #deprecated block in favour of normalize_salience()
+                    # compute_salience may return None or a number — normalize and guarantee numeric
+                    raw_sal = compute_salience(normalized, npc, anchor)
+                    salience = normalize_salience(raw_sal)
+                    if not isinstance(salience, (int, float)):
+                        # Fallback to zero salience to prevent TypeErrors downstream
+                        salience = 0.0
 
                 except Exception as e:
-                    # While developing: surface these errors
-                    print(f"[THOUGHT GEN ERROR] {npc.name} failed to normalize percept {origin_obj}: {e}")
+                    # surface the error but keep the loop running — treat as zero salience
+                    debug_print(npc, f"[THINK ERROR] {npc.name} failed to normalize/compute salience for {origin_obj}: {e}", category="think")
                     salience = 0.0  # fallback to non-crash behavior
 
                 if salience < 5:
@@ -590,9 +562,12 @@ class UtilityAI(BaseAI):
 
                 if not npc.mind.has_similar_thought(thought):
                     npc.mind.add_thought(thought)
+                    debug_print(npc, f"[THINK] {npc.name} -> thought: {thought.content} (tags={thought.tags}, urgency={thought.urgency})", category="think")
+
                     if percept.object is npc:
                         return 0.0  # skip self
-                    print(f"[THOUGHT GEN] {npc.name} thought about {description} (salience={salience}, anchor={anchor.name})")
+                    debug_print(npc, f"[THINK] {npc.name} thought about {description} (salience={salience}, anchor={anchor.name})", category="think")
+                    
 
                 self.npc.mind.remove_thought_by_content("No focus")
 
@@ -679,7 +654,8 @@ def generate_location_visit_thought(npc, location, enabling_motivation=None):
     Creates a thought suggesting visiting a specific location to satisfy a motivation.
     Designed for general-purpose NPCs (non-criminal).
     """
-    print(f"[THOUGHT GEN] Generating thought to visit {location.name}")
+    debug_print(npc, f"[THINK] Generating thought to visit {location.name}", category="think")
+    
     tags = []
     reasons = []
 
