@@ -51,8 +51,7 @@ def observe_location(self, loc):
     #print(f"[Observe] {self.name} observes {loc.name}")
     perceptibles = getattr(loc, "list_perceptibles", lambda exclude=None: [])(exclude=[self])
     for obj in perceptibles:
-        #add to self._percepts?
-        #perhaps just hand this off to UtilityAI compute_salience_for_percepts()
+        #obj is not accessed
         return
     
 def get_region_knowledge(semantic_memory: Dict[str, List], region_name: str) -> Optional[RegionKnowledge]:

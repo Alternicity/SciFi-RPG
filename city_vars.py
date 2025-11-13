@@ -8,6 +8,13 @@
 #"Resolve core references like region inside constructors using get_game_state() — but make sure upstream code
 #  never hands it None accidentally."
 
+#Should this be inside class GameState? It is more of a init config
+#Should it be encapsualted somehow for easier impotr to other files?
+MAX_CIVILIANS_PER_LOCATION = 5
+CIVILIANS_PER_REGION = 15
+SHOP_PATRONS_MIN = 2
+SHOP_PATRONS_MAX = 4
+
 class GameState:
     def __init__(self):
         GAME_MODE_PLAYER = "player"
@@ -16,12 +23,12 @@ class GameState:
         # NEW: determines whether the game is in player mode or simulation mode
         #Later: You Can Even Add a Command-Line Flag or Menu Option
         self.game_mode = GAME_MODE_PLAYER
-
         self.tick = 0 # 1 hour
         self.day = 1
 
         self.state = None
         self.civilians = []
+        self.families = []
         self.all_employees =  {}
         self.gangs = []
         self.all_street_gangs = []
@@ -47,7 +54,7 @@ class GameState:
         self.westborough_corps = []
         self.southville_corps = []
         self.municipal_buildings = {}  # Format: {region_name: MunicipalBuilding}
-
+        self.all_shops = []
         #placeholders
         hiring  =  {} #employers with job vacancies. Employer/character class wanted
         recruiting =  {} # gangs with vacancies to fill. Gang/type character wanted

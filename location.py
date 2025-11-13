@@ -278,7 +278,7 @@ class Shop(Vendor):
     description: str = "Some shop"
     legality: bool = True
     has_security: bool = True  # <-- For testing
-
+    is_shop: bool = True
     owned_by: Optional[Character] = None  # New field to indicate who owns it
 
     employees_there: List['Employee'] = field(default_factory=list)
@@ -579,7 +579,7 @@ class Stash(Location):
     secret_entrance: bool = True
     is_powered: bool = False
     energy_cost: int = 0
-    categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "public"])
+    categories: List[str] = field(default_factory=lambda: ["residential", "workplace", "Gang"])
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1716,7 +1716,7 @@ class ApartmentBlock(Location):
 
 @dataclass
 class House(Location):
-    name: str = "Fam House"
+    name: str = "Family House"
     tags: list[str] = field(default_factory=lambda: ["home", "family"])
     description: str = "A House"
     categories: List[str] = field(default_factory=lambda: ["residential"])

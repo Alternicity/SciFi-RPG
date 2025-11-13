@@ -107,6 +107,7 @@ class MotivationManager:
         return (before != len(self.motivations))
 
     def update_motivations(self, motivation_type, urgency=1, target=None, source=None, status_type=None):
+
         mtype = self._coerce_motivation_type(motivation_type)
 
         existing = self.get_motivation(mtype)

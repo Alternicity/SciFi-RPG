@@ -182,11 +182,11 @@ class GangMemberAI(UtilityAI):
             #tmp. wrong place
 
         # ✅ 1 — STEAL OVERRIDE CHECK (anchor-aware)
-        debug_print(npc, "[TRACE] Entering STEAL OVERRIDE CHECK", "steal")
+        debug_print(npc, "[TRACE] Entering STEAL OVERRIDE CHECK", "choice")
 
         # Highest motivation
         motivation = npc.motivation_manager.get_highest_priority_motivation()
-        debug_print(npc, f"[TRACE] Highest motivation = {motivation}", "steal")
+        debug_print(npc, f"[TRACE] Highest motivation = {motivation}", "motive")
 
         # List weapon percepts
         for p in npc.percepts.values():
@@ -209,12 +209,39 @@ class GangMemberAI(UtilityAI):
 
         debug_print(npc, "[TRACE] Skipping steal override — NO target OR wrong top motivation", "steal")
 
+        # ✅ ROB OVERRIDE CHECK (NPC)
+        debug_print(npc, "[TRACE] Entering ROB OVERRIDE CHECK", "rob")
+
+        # ✅ MUST compute this here (otherwise has_gun is undefined)
+        has_gun = npc.inventory.has_ranged_weapon()
+
+        #tmp prints 
+        # ✅ MUST compute this here (otherwise has_gun is undefined)
+
+        has_gun = npc.inventory.has_ranged_weapon()
+
+        # Conditions:
+        #  1. Top motivation must be "rob"
+        #  2. NPC must have a ranged weapon
+        #  3. Current location must be robbable
+        if motivation and motivation.type == "rob" and has_gun:
+            if getattr(npc.location, "robbable", False):
+                debug_print(
+                    npc,
+                    f"[TRACE] ROB OVERRIDE TRIGGERED: robbing {npc.location.name}",
+                    "rob"
+                )
+                return {
+                    "name": "rob",
+                    "params": {"location": npc.location}
+                }
+
+        debug_print(npc, "[TRACE] Skipping rob override — conditions not met", "rob")
 
         # Ensure current anchor
         anchor = getattr(npc, "current_anchor", None)
         if not anchor and npc.mind.attention_focus:
             anchor = create_anchor_from_thought(npc, npc.mind.attention_focus)
-            #here
             debug_print(npc, f"[ANCHOR] Created from attention focus: {anchor.name}", category="anchor")
         elif not anchor:
             motive = npc.motivation_manager.get_highest_priority_motivation()
@@ -243,7 +270,7 @@ class GangMemberAI(UtilityAI):
                 sal = anchor.compute_salience_for(data, npc)
 
             scored.append((loc, sal))
-            #debug_print(npc, f"[SALIENCE] {loc.name}: {sal}", category="salience")
+
 
         if not scored:
             debug_print(npc,
@@ -344,7 +371,7 @@ class GangMemberAI(UtilityAI):
 
         if hasattr(location, "tags"):
             tags.extend(location.tags)
-        if getattr(location, "is_robbable", False):
+        if getattr(location, "robbable", False):
             tags.append("robbable")
             reason.append("it's robbable")
         if getattr(location, "contains_weapons", False):
@@ -632,21 +659,44 @@ class GangMemberAI(UtilityAI):
                 f"[MOTIVE] Current motivations: {npc.motivation_manager.get_motivations_display()}",
                 "motive"
             )
-        debug_print(npc, f"[FOCUS] Current focus: {getattr(mind.attention_focus, 'content', None)}", "focus")
-       
-        # ---------- REPLACEMENT: arrival handling block ----------
-        if npc.just_arrived:
+        debug_print(npc, f"[FOCUS] Current focus: {getattr(mind.attention_focus, 'content', None)}", "focus")#what good does this do here?
 
-            # 1) Observe (already done by caller but keep safe)
-            npc.observe(location=npc.location, region=npc.region)
-            
-            # 2) Generate thoughts from fresh percepts so percept-driven thoughts
-            #    (e.g. "Maybe I should steal X") have a chance to exist before salience recomputation.
+        try:
+            ranged_weapons = [
+                p["origin"] for p in npc.percepts.values()
+                if "ranged_weapon" in p.get("data", {}).get("tags", [])
+            ]
+        except Exception as e:
+            ranged_weapons = []
+            debug_print(npc, f"[ERROR] reading npc.percepts for ranged_weapons: {e}", category="ERROR")
+
+        if ranged_weapons:#line 653
+            pistol = ranged_weapons[0]  # the weapon item object
+
+            # update_motivations should be called BEFORE salience recompute/anchor refresh so
+            # obtain_ranged_weapon can become the top motivation in this tick.
+            updated = npc.motivation_manager.update_motivations(
+                "obtain_ranged_weapon",
+                urgency=25,
+                target=pistol,
+                source="percept"
+            )
+
+            # Deboost rivals so this becomes clearly dominant
+            npc.motivation_manager.deboost_others("obtain_ranged_weapon", amount=5)
+
+            debug_print(
+                npc,
+                f"[STEAL DETECT] Weapon seen on arrival — obtain_ranged_weapon requested (urgency=25) target={getattr(pistol,'name', pistol)} updated={updated}",
+                category="steal"
+            )
+
+
+        if npc.just_arrived:
+            npc.observe(location=npc.location, region=npc.region)#does this need to be here?
+        #neither of these prints are in the current output
             try:
-                # UtilityAI method — generates thoughts from npc._percepts for active motivations.
-                # Use self.generate_thoughts_from_percepts() so thought creation happens
-                # in the Anchor-aware path.
-                self.generate_thoughts_from_percepts()
+                self.generate_thoughts_from_percepts()#Is this actually working well?
                 debug_print(
                     npc,
                     f"[ARRIVAL] After thought-gen: {[t.content for t in npc.mind.thoughts][-5:]}",
@@ -656,10 +706,10 @@ class GangMemberAI(UtilityAI):
                 debug_print(
                     npc,
                     f"[ERROR] generate_thoughts_from_percepts() failed on arrival: {e}",
-                    category="ERROR"
-                )
+                    category="error"#edited to lower case, and error added to config.py and debug_print filter
+                )#maybe on the next test this one will now show up.
 
-            # 3) Now refresh salience for the current anchor (if any)
+            #refresh salience for the current anchor (if any)
             from anchor_utils import refresh_salience_for_anchor
             try:
                 refresh_salience_for_anchor(npc)
@@ -670,28 +720,27 @@ class GangMemberAI(UtilityAI):
                     category="ERROR"
                 )
 
-            # 4) Look for ranged weapons in percepts (redundant safety check)
-            ranged_weapons = [
-                p["origin"] for p in npc.percepts.values()
-                if "ranged_weapon" in p["data"].get("tags", [])
-            ]
-
-            if ranged_weapons:
-                pistol = ranged_weapons[0]  # the weapon item object
-
-                npc.motivation_manager.update_motivations(
-                    "obtain_ranged_weapon",
-                    urgency=25,
-                    target=pistol,
-                    source="percept"
-                )
-
                 # Deboost rivals
                 npc.motivation_manager.deboost_others("obtain_ranged_weapon", amount=5)
 
                 debug_print(npc, f"[STEAL] Weapon seen — obtain_ranged_weapon set to 25, target={pistol.name}", "steal")
 
-            # 5) Episodic enablement: check if the NPC recently stole a ranged weapon
+                if not npc.mind.has_thought_content("Now that I'm armed, I could rob"):
+                    npc.mind.add_thought(Thought(
+                        subject="robbery",
+                        content="Now that I'm armed, I could rob this shop.",
+                        origin="episodic_enable",
+                        urgency=9,
+                        tags=["rob", "crime", "weapon", "intention"]
+                    ))
+                    npc.mind.attention_focus = set_attention_focus(npc, npc.mind.thoughts[-1])
+
+                #break
+                #this break doesnt fit right any more at any indentation so I commented it
+
+            npc.just_arrived = False
+
+            # Episodic enablement: check if the NPC recently stole a ranged weapon
             episodics = npc.mind.get_episodic()
             for mem in episodics:
                 if "theft" in getattr(mem, "tags", []) and "ranged_weapon" in getattr(mem, "tags", []):
@@ -699,69 +748,29 @@ class GangMemberAI(UtilityAI):
                     npc.motivation_manager.remove_motivation("obtain_ranged_weapon")
                     npc.motivation_manager.remove_motivation("visit")
                     npc.mind.remove_thoughts_with_tag("visit")
+                    npc.mind.remove_thoughts_with_tag("obtain_ranged_weapon")
+                    npc.mind.remove_thoughts_with_tag("robbery_prereq")
 
-            # 5) Episodic enablement: check if the NPC recently stole a ranged weapon (episodic memories)
-            episodics = npc.mind.get_episodic()
-            for mem in episodics:
-                if "theft" in getattr(mem, "tags", []) and "ranged_weapon" in getattr(mem, "tags", []):
-                    # Post-theft flow: clean up obsolete motives & create post-theft robbery thought
-                    npc.motivation_manager.remove_motivation("obtain_ranged_weapon")
-                    npc.motivation_manager.remove_motivation("visit")
-                    npc.mind.remove_thoughts_with_tag("visit")
-
-                    
-
-                    if not npc.mind.has_thought_content("Now that I'm armed, I could rob"):
-                        npc.mind.add_thought(Thought(
-                            subject="robbery",
-                            content="Now that I'm armed, I could rob this shop.",
-                            origin="episodic_enable",
-                            urgency=9,
-                            tags=["rob", "crime", "weapon", "intention"]
-                        ))
-                        npc.mind.attention_focus = set_attention_focus(npc, npc.mind.thoughts[-1])
-
-                    break
-
-            # 6) If a ranged weapon is present in inventory, remove only visit-related motivations/thoughts.
+            # If a ranged weapon is present in inventory, remove only visit-related motivations/thoughts.
             if npc.inventory.has_ranged_weapon():
-                npc.motivation_manager.remove_motivation("visit")
+                npc.motivation_manager.remove_motivation("visit")#duplicate command
                 # remove any stale visit/obtain_ranged_weapon thoughts but DO NOT remove 'steal' or existing theft memories.
-                npc.mind.remove_thoughts_with_tag("visit")
-                npc.mind.remove_thoughts_with_tag("obtain_ranged_weapon")
+                npc.mind.remove_thoughts_with_tag("visit")#duplicate command
+                npc.mind.remove_thoughts_with_tag("obtain_ranged_weapon")#duplicate command
+                npc.motivation_manager.remove_motivation("obtain_ranged_weapon")
                 npc.motivation_manager.update_motivations("rob", urgency=20)
                 npc.motivation_manager.deboost_others("rob", amount=7)
 
-                """ # ensure a robbery motive exists and is prominent
-                if npc.motivation_manager.has_motivation("rob"):
-                    npc.motivation_manager.boost("rob", amount=10) """
-
-            # 7) Clear the just_arrived flag so we don't repeat this logic until next move
-            npc.just_arrived = False
-        # ---------- END replacement ----------
-
-            if npc.inventory.has_ranged_weapon():#very specific to test case 1
-                # === POST-THEFT LOGIC: NPC NOW HAS RANGED WEAPON ===
-
-                # 1. Remove stale motivations
-                npc.motivation_manager.remove_motivation("visit")
-                npc.motivation_manager.remove_motivation("obtain_ranged_weapon")
-
-                # 2. Remove stale thoughts
-                npc.mind.remove_thoughts_with_tag("visit")
-                npc.mind.remove_thoughts_with_tag("robbery_prereq")
-                npc.mind.remove_thoughts_with_tag("obtain_ranged_weapon")
-
                 # ensure a robbery motive exists and is prominent
-                if npc.motivation_manager.has_motivation("rob"):
-                    npc.motivation_manager.boost("rob", amount=10)
+                if npc.motivation_manager.has_motivation("rob"):#we know this exists
+                    npc.motivation_manager.boost("rob", amount=10)#We just called update_motivations a few lines above
 
                 # Also remove pre-theft "Should visit or rob XYZ"
                 npc.mind.remove_thought_by_predicate(
                     lambda t: "visit" in t.tags or "steal" in t.tags
                 )
 
-                # 3. Add new post-theft robbery thought (if not present)
+                # Add new post-theft robbery thought (if not present)
                 if not npc.mind.has_thought_content("Now that I'm armed"):
                     rob_thought = Thought(
                         subject="robbery",
@@ -774,10 +783,10 @@ class GangMemberAI(UtilityAI):
                     npc.mind.add_thought(rob_thought)
                     npc.mind.attention_focus = rob_thought
 
-                # 4. Ensure robbery motivation is active
+                #. Ensure robbery motivation is active
                 npc.motivation_manager.boost("rob", amount=5)
 
-                # 5. Ensure rob becomes top anchor pathway
+                #. Ensure rob becomes top anchor pathway
                 npc.current_anchor = create_robbery_anchor(npc)
 
 
@@ -812,7 +821,7 @@ class GangMemberAI(UtilityAI):
                     )
                     npc.mind.add_thought(thought)
 
-        if not npc.mind.thoughts:
+        if not npc.mind.thoughts:#is this worth keeping? Wouldnt a confusion print be more useful?
             npc.mind.add_thought(Thought(
                 subject="confusion",
                 content="No focus",
@@ -870,14 +879,19 @@ class GangMemberAI(UtilityAI):
         # Also show which anchor the NPC is currently thinking through
         debug_print(npc, f"[ANCHOR DEBUG] Thinking about anchor: {anchor.name} (tags={anchor.tags})", "anchor")
         
-        # ROBBERY CHAIN LOGIC
-
+        # ROB CHAIN (only activates when rob is top motive)
         if motivation.type == "rob":
-            if not npc.inventory.find_item("ranged_weapon"):
-                enable_motive = "obtain_ranged_weapon"
-                if not motives.has_motivation(enable_motive):
-                    motives.update_motivations(enable_motive, urgency=15)
-                    print(f"[CHAIN] Promoting enabling motivation: {enable_motive}")
+
+            # ✅ GUARD: Do NOT create 'obtain_ranged_weapon' if already armed
+            if npc.inventory.has_ranged_weapon():
+                pass  # do nothing — already armed
+
+            else:
+                if not npc.inventory.find_item("ranged_weapon"):
+                    enable_motive = "obtain_ranged_weapon"
+                    if not motives.has_motivation(enable_motive):
+                        motives.update_motivations(enable_motive, urgency=15)
+                        print(f"[CHAIN] Promoting enabling motivation: {enable_motive}")
 
             if region_knowledge:
                 for loc_name in region_knowledge.locations or set():

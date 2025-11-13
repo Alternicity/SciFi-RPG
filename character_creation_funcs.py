@@ -14,6 +14,10 @@ from create_TheState_characters import create_TheState_characters
 from motivation_presets import MotivationPresets
 from status import FactionStatus, StatusLevel, CharacterStatus
 from base_classes import Character
+from Family import assign_families_and_homes, link_family_shops
+from create_game_state import get_game_state
+
+game_state = get_game_state()
 
 def create_faction_characters(faction, all_regions, factions=None):
     from faction import Gang, Corporation, State
@@ -37,6 +41,10 @@ def create_all_characters(factions, all_locations, all_regions):
     print("\n" * 3)  # Line breaks for clarity
     print("Creating characters for factions...")
     print(f"Received {len(factions)} factions")
+        # Extract all shops from the location list
+    from location import Shop
+    shops = [loc for loc in all_locations if isinstance(loc, Shop)]
+
 
     all_characters = []
    
@@ -47,12 +55,19 @@ def create_all_characters(factions, all_locations, all_regions):
         else:
             print(f"[ERROR] create_faction_characters() returned None for faction: {faction.name}")
 
-    from createCivilians import create_civilian_population, assign_workplaces
+    from createCivilians import create_civilian_population, assign_workplaces, place_civilians_in_homes
 
     factionless = next(f for f in factions if f.name == "Factionless")
     civilians = create_civilian_population(all_locations, all_regions, factionless)
-    assign_workplaces(civilians, all_locations)
+    
     all_characters.extend(civilians)
+
+    # After all civilians and locations exist:
+    families = assign_families_and_homes(game_state)
+    shops = [loc for loc in all_locations if getattr(loc, "is_shop", False)]
+    place_civilians_in_homes(civilians, families, all_locations, shops, populate_shops_after_worldgen=True)
+
+    link_family_shops(game_state)
     
     from game_logic import assign_random_civilians_to_random_shops
     assign_random_civilians_to_random_shops(all_regions)  # Now regions are ready
@@ -66,7 +81,7 @@ def player_character_options(all_regions, factions):
     from InWorldObjects import Wallet
     from weapons import Knife
     from inventory import Inventory
-    from base_classes import Factionless #foes this need adding to factions and game_state
+    from base_classes import Factionless
     
     character_data = [
     {

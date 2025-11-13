@@ -7,36 +7,49 @@ import traceback
 import logging
 logging.basicConfig(level=logging.INFO)
 
+
+
+
 class Inventory:
     """Manages a collection of items for characters, shops, or other entities."""
 
     def has_ranged_weapon(self):
         from weapons import RangedWeapon
-        has_ranged = any(isinstance(item, RangedWeapon) for item in self.items)
 
-        # Tag-based fallback
-        if not has_ranged:
-            has_ranged = any("weapon" in getattr(item, "tags", []) and "ranged" in item.tags for item in self.items)
+        # Must iterate values, not keys
+        for item in self.items.values():
+            if isinstance(item, RangedWeapon):
+                return True
 
-        if hasattr(self.owner, "hasRangedWeapon"):
-            self.owner.hasRangedWeapon = has_ranged
-            if has_ranged:
-                self.owner.isArmed = True
+        # Tag fallback
+        for item in self.items.values():
+            tags = getattr(item, "tags", [])
+            if "ranged_weapon" in tags or ("weapon" in tags and "ranged" in tags):
+                return True
 
-        return has_ranged
+        return False
 
 
-    def has_melee_weapon(self):#update this to align with has_ranged_weapon(self):
+    #code doesnt use recent npc attributes
+    def has_melee_weapon(self):
         from weapons import MeleeWeapon
-        has_melee = any(isinstance(item, MeleeWeapon) for item in self.items)
 
-        if hasattr(self.owner, "hasMeleeWeapon"):
-            self.owner.hasMeleeWeapon = has_melee
-            if has_melee:
-                self.owner.isArmed = True
+        items = list(self.items.values())
 
-        return has_melee
+        # ✅ Direct type check
+        for item in items:
+            if isinstance(item, MeleeWeapon):
+                return True
 
+        # ✅ Tag fallback (if you use tags for melee items)
+        for item in items:
+            tags = getattr(item, "tags", [])
+            if "melee_weapon" in tags or ("weapon" in tags and "melee" in tags):
+                return True
+
+        return False
+
+    
     def update_weapon_flags(self):
         #you can call inventory.update_weapon_flags() whenever an item is added, removed, or evaluated
         from weapons import MeleeWeapon, RangedWeapon
@@ -52,7 +65,12 @@ class Inventory:
 
     def __init__(self, items=None, max_capacity=None, owner=None):
         """Initialize an inventory with optional maximum capacity."""
+
         self.items = {}  # key: item.name, value: item object
+        """ self.items = ValidatingDict()
+        self.items._is_inventory_dict = True """
+
+        #self.items._is_inventory_dict = True
         self.max_capacity = max_capacity
         self.owner = owner
         self.primary_weapon = None
@@ -75,13 +93,14 @@ class Inventory:
                 self.add_item(item)
 
     def ensure_owner(self, fallback=None):
+        npc =self.owner.npc
         if not getattr(self, "owner", None):
             if fallback:
                 self.owner = fallback
             elif hasattr(self, "_owner_name"):
                 self.owner = self._owner_name
             else:
-                print(f"[inventory] Warning: Inventory {id(self)} still ownerless after ensure_owner()")
+                debug_print(npc, f"[inventory] Warning: Inventory {id(self)} still ownerless after ensure_owner()", category ="inventory")
 
 
     def clear_recently_acquired(self, current_day=None):
@@ -110,8 +129,12 @@ class Inventory:
         """Validate an item before adding or updating it."""
         if item is None:
             raise ValueError("Item cannot be None.")
+        if isinstance(item, (str, int, float, bool)):
+            raise ValueError(f"Invalid item type {type(item).__name__} — inventory items must be objects.")
+
         if not hasattr(item, "name"):
             raise ValueError("Item must have a 'name' attribute.")
+
 
     def find_item(self, item_name):
         """Find an item in the inventory by name."""
@@ -121,17 +144,33 @@ class Inventory:
         return None
 
     def add_item(self, item, quantity=1):
-        self._validate_item(item)
 
         if self.max_capacity and len(self.items) >= self.max_capacity:
             logging.warning(f"Inventory full. Can't add {item.name}")
             return False
+        
+        if not hasattr(item, "name"):
+            raise ValueError("Inventory.add_item expects an object with a 'name' attribute.")
+
+        if isinstance(item, str):
+            raise TypeError("Inventory ERROR: attempted to add string into inventory.")
+
+        """ if isinstance(item, dict):
+            raise TypeError("Raw dict inserted into inventory.") """
 
         if item.name in self.items:
             existing_item = self.items[item.name]
 
-            if hasattr(existing_item, "quantity"):
-                existing_item.quantity += quantity
+            # ✅ If item is a weapon, NEVER stack quantities
+            if isinstance(item, Weapon):
+                # Treat each weapon as a separate object
+                new_item = item
+                self.items[f"{item.name}_{id(new_item)}"] = new_item
+                self.weapons.append(new_item)
+                if self.owner:
+                    self.update_primary_weapon()
+                    return True
+
                 logging.info(f"Updated {item.name} to quantity {existing_item.quantity}")
             else:
                 logging.warning(f"{item.name} does not support quantity.")
@@ -178,43 +217,26 @@ class Inventory:
         return any(not item.legality for item in self.items.values())
 
     def remove_item(self, item_name, quantity=1):
+    
         item = self.items.get(item_name)
-
         if not item:
-            logging.warning(f"{item_name} not found.")
-            return False
+            return None
 
-        # Handle items with quantity
-        if hasattr(item, "quantity"):
-            if item.quantity > quantity:
-                item.quantity -= quantity
-                return True
-            elif item.quantity == quantity:
-                del self.items[item_name]
+        # For weapons / non-stackable, remove exact key
+        if isinstance(item, Weapon):
+            key_to_remove = next((k for k, v in self.items.items() if v is item), None)
+            if key_to_remove:
+                return self.items.pop(key_to_remove)
             else:
-                logging.warning(f"Not enough {item_name}.")
-                return False
+                return None
         else:
-            del self.items[item_name]
+            # For stackable items
+            removed_quantity = min(quantity, getattr(item, "quantity", 1))
+            item.quantity -= removed_quantity
+            if item.quantity <= 0:
+                self.items.pop(item_name)
+            return item
 
-        # Reevaluate primary weapon
-        from base_classes import Character
-
-        
-        if isinstance(item, Weapon) and isinstance(self.owner, Character):
-            if self.owner.primary_weapon == item:
-                if self.owner.weapons:
-                    new_primary = max(
-                        self.owner.weapons, key=lambda w: getattr(w, "damage", 0)
-                    )
-                    self.owner.primary_weapon = new_primary
-                    print(f"{self.owner.name}'s primary weapon is now {new_primary.name}.")
-                else:
-                    self.owner.primary_weapon = None
-                    print(f"{self.owner.name} now has no primary weapon.")
-
-        return True
- 
     def display_inventory(self):
         if not self.items:
             print("Inventory is empty.")
@@ -236,25 +258,51 @@ class Inventory:
     def update_primary_weapon(self):
         from base_classes import Character, Location
 
-        # If owner is not a Character OR there are no weapons → nothing to do
-        if not isinstance(self.owner, Character) or not self.weapons:
+        # If  there are no weapons → nothing to do
+        if not self.weapons:
             return
 
         # Pick the best weapon by damage (default 0 if missing)
         best_weapon = max(self.weapons, key=lambda w: getattr(w, "damage", 0))
 
-        # Skip printing if the owner is a Location/Vendor/Shop
+        # If the owner is a Location → update and print
         if isinstance(self.owner, Location):
-            # Still update the primary weapon silently if needed
-            if self.primary_weapon != best_weapon:
+            # update the primary weapon silently if needed
+            
                 self.primary_weapon = best_weapon
-            return
+                #possibly illogical
+                #self.owner.primary_weapon = best_weapon
+                #possibly illogical
+
+                #so which of the preceding loines is correct. A Shop has an inventory
+
+                #debug_print(self.owner, f"{self.owner.name}'s primary weapon is now {best_weapon.name}.", category="inventory")
+                return
 
         # If the owner is a Character → update and print
-        if self.primary_weapon != best_weapon:
-            self.primary_weapon = best_weapon
-            print(f"{self.owner.name}'s primary weapon is now {best_weapon.name}.")
+        if isinstance(self.owner, Character):
+            if self.primary_weapon != best_weapon:
+                self.primary_weapon = best_weapon
+                # ✅ FIX: write back into the Character object
+                self.owner.primary_weapon = best_weapon
+                debug_print(self.owner, f"[INV] Primary weapon now {best_weapon.name}", category="inventory")
             
+#inventory.py
+#added as a utility function after class Inventory
+# --- DEBUG LAYER FOR add_item() ---
+_old_add_item = Inventory.add_item
+
+def debug_add_item(self, item, quantity=1):
+    if isinstance(item, str):
+        import traceback
+        print("\n***** STRING DETECTED IN add_item *****")
+        print(f"Bad value: {item!r}")
+        print("STACK:")
+        print("".join(traceback.format_stack()))
+        print("**************************************\n")
+    return _old_add_item(self, item, quantity)
+
+Inventory.add_item = debug_add_item
 
 # Example Usage
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-#augmentObjectInWorld
+#augmentObjectInWorld.py
 from weapons import Pistol
 from location import Nightclub
 from augmentObjectInWorld import Laptop

@@ -211,12 +211,6 @@ class Character(PerceptibleMixin):
         if not isinstance(self.region, Region):
             raise ValueError(f"Invalid region assigned to character: {region}")
 
-        #print(f"[Character Init] name={name}, race={race}, sex={sex}")
-        #verbose, prints all characters
-
-        #initialization code
-        
-
         # --- Assign location and home region ---
         self.location = location
         self.current_destination = location
@@ -446,7 +440,7 @@ class Character(PerceptibleMixin):
     def get_attribute(self, name):
         return getattr(self, name, 0)  # default to 0 if not found
 
-    def has_recently_acquired(self, tag: str):
+    def has_recently_acquired(self, tag: str):#probably deprecated
         return self.inventory and any(tag in item.tags for item in self.inventory.recently_acquired)
 
     def add_preferred_action(self, action: Callable, target: Any):
@@ -691,7 +685,7 @@ class Character(PerceptibleMixin):
 
         debug_print(npc, f"[OBSERVE TRACE] {self.name} observing at tick {game_state.tick} (caller={caller})", category="observation")
         debug_print(npc, f"[OBSERVE TRACE] npc.location={npc.location}, region={npc.region}", category="perception")
-        debug_print(npc, f"[OBSERVE] RAW location param={location} (type={type(location)})", "perception")
+        #debug_print(npc, f"[OBSERVE] RAW location param={location} (type={type(location)})", "perception")
         if region is not None and location is None:
             print(f"[BUG] observe() called with region but no location! Caller={caller}")
 
@@ -932,6 +926,7 @@ class Character(PerceptibleMixin):
                 self._percepts[key] = {"data": data, "origin": origin}
 
         # Prune by salience to observation capacity
+        #this block commented out cos it caps observation
         if len(self._percepts) > self.observation:
             sorted_items = sorted(
                 self._percepts.items(), key=lambda kv: kv[1]["data"].get("salience", 0.0), reverse=True
@@ -1081,9 +1076,6 @@ class Character(PerceptibleMixin):
         Signal “dont touch this unless you know what youre doing”
         Work nicely with @property decorators """
 
-
-
-        
 
 class SelfAwarenessLevel:
     ANIMAL = 0        # Instinctual

@@ -1,14 +1,17 @@
 #createLocations.py
-from location import MunicipalBuilding, Shop, Region
+from location import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock
 from base_classes import Location
 from typing import List
 from create_game_state import get_game_state
 from utils import get_region_by_name
 from location_types_by_wealth import LocationTypes
+from location_types import RESIDENTIAL
 from InWorldObjects import SmartPhone, Size, Item
 from weapons import Pistol
 from shop_name_generator import generate_shop_name, guess_specialization_from_inventory
 from create_game_state import get_game_state
+from debug_utils import debug_print
+import random
 
 def create_locations(region: Region, wealth: str) -> List[Location]:
     """Creates and returns a list of location objects for a region based on its wealth level."""
@@ -21,54 +24,97 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     for location_class, count in location_types:
         for _ in range(count):
             try:
-                location_obj = location_class(
-                    region=region,
-                    name=location_class.__name__
-                )
-                #print(f"🧪 Creating {location_class.__name__} with region = {type(region)}")
-
-                locations.append(location_obj)
-                #region.add_location(location_obj)  # 👈Commenting out this line removes the problem
+                loc = location_class(region=region, name=location_class.__name__)
+                locations.append(loc)
             except Exception as e:
-                print(f"⚠️ Error creating location {location_class.__name__} in {region.name}: {e}")
+                debug_print(
+                    npc=None,
+                    message=(
+                        f"⚠️ Failed to instantiate {location_class.__name__} "
+                        f"in region '{region.name}': {e}"
+                    ),
+                    category="create"
+                )
 
-    # 🏪 Handle shops and add inventory + names
-    for shop in [loc for loc in locations if isinstance(loc, Shop)]:
+        # -------------------------
+        # 2. RESIDENTIAL SAFETY PASS
+        # Ensures every region has enough homes for civilian placement
+        # -------------------------
+        residential_locs = [loc for loc in locations if isinstance(loc, RESIDENTIAL)]
+
+        # Minimum basic housing
+        MIN_HOUSES = 4
+        MIN_APARTMENTS = 2
+
+        houses_needed = max(0, MIN_HOUSES - sum(isinstance(l, House) for l in residential_locs))
+        apartments_needed = max(0, MIN_APARTMENTS - sum(isinstance(l, ApartmentBlock) for l in residential_locs))
+
+        for _ in range(houses_needed):
+            try:
+                h = House(region=region, name="Family House")
+                locations.append(h)
+            except Exception as e:
+                debug_print(None, f"⚠️ Error creating House in {region.name}: {e}", "create")
+
+        for _ in range(apartments_needed):
+            try:
+                block = ApartmentBlock(region=region, name="Mass Housing")
+                locations.append(block)
+            except Exception as e:
+                debug_print(None, f"⚠️ Error creating ApartmentBlock in {region.name}: {e}", "create")
+
+
+    # 3. Shop naming + inventory injection
+    # -------------------------
+    shops = [loc for loc in locations if hasattr(loc, "inventory") and hasattr(loc, "is_shop")]
+
+    for shop in shops:
         specialization = guess_specialization_from_inventory(shop.inventory)
         shop.name = generate_shop_name(specialization=specialization, ownership="family")
         shop.inventory.owner = shop
-        shop.inventory.add_item(SmartPhone(price=200, quantity=5))
-        shop.inventory.add_item(Pistol(price=500, quantity=2))
 
-    # 🏛️ Add one Municipal Building per region
+        # Default shop stock
+        try:
+            shop.inventory.add_item(SmartPhone(price=200, quantity=5))
+            shop.inventory.add_item(Pistol(price=500, quantity=2))
+            debug_print(shop, f"[DEBUG] Stocked {shop.name} with SmartPhones and Pistols.", category="create")
+            debug_print(shop, f"[VERIFY] {shop.name} inventory: {shop.inventory.list_items()}", category="verify")
+        except Exception as e:
+            debug_print(None, f"⚠️ Error stocking shop '{shop.name}': {e}", "create")
+
+    # -------------------------
+    # 4. Add Municipal Building
+    # -------------------------
+    from location import MunicipalBuilding
+
     try:
-        municipal_building = MunicipalBuilding(
+        municipal = MunicipalBuilding(
             region=region,
-            name=f"Municipal Building",
+            name="Municipal Building",
             tags=["government", "law", "tax"]
         )
-        locations.append(municipal_building)
-        region.add_location(municipal_building)
+        locations.append(municipal)
+        region.add_location(municipal)
 
-        game_state = get_game_state()
-        #game_state.all_locations.append(municipal_building) # ← legacy
-        game_state.municipal_buildings[region.name] = municipal_building
-
+        game_state.municipal_buildings[region.name] = municipal
 
     except Exception as e:
-        print(f"⚠️ Error creating MunicipalBuilding in {region.name}: {e}")
-    
-    # ✅ Add region-level shop list
-    region.shops = [loc for loc in locations if isinstance(loc, Shop)]
+        debug_print(None, f"⚠️ Error creating MunicipalBuilding in {region.name}: {e}", "create")
 
-    # 🔍 Optional: Insert auditing hook for dev tools
-    # if DEV_MODE:
-    #     audit_game_state()  # ← Could compare region.locations vs game_state.all_locations, etc.
+    # -------------------------
+    # 5. Final bookkeeping
+    # -------------------------
+    region.locations = locations
+    region.shops = [loc for loc in locations if hasattr(loc, "is_shop")]
 
-    # ✅ Optional: Update all_shops in game_state if you want centralized access
+    # Maintain global lists
     if not hasattr(game_state, "all_shops"):
         game_state.all_shops = []
     game_state.all_shops.extend(region.shops)
+
+    if not hasattr(game_state, "all_locations"):
+        game_state.all_locations = []
+    game_state.all_locations.extend(locations)
 
     return locations
 

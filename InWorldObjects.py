@@ -58,7 +58,7 @@ class ObjectInWorld(PerceptibleMixin):
         self.owner_name = owner_name
         self.quantity = quantity
         self.bloodstained = None  # Can be a character reference or ID string
-
+        self.is_stolen =False
     @property
     def tags(self):
         return []
@@ -69,6 +69,11 @@ class ObjectInWorld(PerceptibleMixin):
     def has_tags(self, required_tags: list[str]) -> bool:
         return all(tag in self.tags for tag in required_tags)
 
+    def clone(self):
+        """Return a new item with identical data but preserved class type."""
+        new_item = type(self).__new__(type(self))
+        new_item.__dict__.update(self.__dict__.copy())
+        return new_item
 
     def get_percept_data(self, observer=None):
         return {
@@ -169,6 +174,15 @@ class Wallet:
             "description": f"{self.name} ({self.item_type})"
             
         }
+
+    @property
+    def balance(self):
+        return self.cash + self.bankCardCash
+
+    @balance.setter
+    def balance(self, value):
+        # Optional: split evenly, or just dump it all into cash
+        self.cash = value
 
     def get_values(self):
         return self.cash, self.bankCardCash

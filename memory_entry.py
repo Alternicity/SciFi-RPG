@@ -27,6 +27,7 @@ class MemoryEntry:
     #later, when promoting use
     # deepcopy(memory_entry).initial_memory_type = "semantic"
     #npc.mind.memory.semantic["procedures"].append(memory_entry) 
+    #DEEPCOPY IS UNRELIABLE
 
     target: Optional[Union[str, Any]] = None #possible over engineering, possible conceptual overlap with object_
     #Let me know if you'd like target to be restricted to a specific interface

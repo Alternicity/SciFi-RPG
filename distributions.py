@@ -1,3 +1,4 @@
+#distributions.py
 import random
 
 def generate_normal(mean, std_dev):

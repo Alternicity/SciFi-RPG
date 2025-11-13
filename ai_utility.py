@@ -22,7 +22,7 @@ class UtilityAI(BaseAI):
     def __init__(self, npc):
     #Core cognitive pipeline.
         self.npc = npc
-        self._region_cache = getattr(npc, "region", None)
+        self._region_cache = getattr(npc, "region", None)#why does this exist?
 
     """ Filtering episodic memories and tagging/promoting important ones into thoughts.
         Generating motivations from urgent thoughts.

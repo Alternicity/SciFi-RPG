@@ -6,7 +6,7 @@ from characterActionTests import IntimidationTest
 from InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
-
+from debug_utils import debug_print
 
 from output_utils import group_reactions
 
@@ -215,11 +215,9 @@ class OutsideContextProblem(Event):
 #combatAftermath
 
 class Robbery(Event):
-    def __init__(self, instigator, location, weapon_used=False):
-        """
-        A Robbery event. Can be armed or unarmed.
-        The event creates a Shop-like object to provide dynamic menu options and may involve intimidation.
-        """
+    def __init__(self, instigator, location, weapon_used=False, mode="player"):
+
+        
         super().__init__(
             name="Robbery",
             event_type="character",
@@ -228,6 +226,7 @@ class Robbery(Event):
             impact={"criminal_status": 2},
             weapon_used=weapon_used
         )
+        self.mode = mode#npc or player
         self.instigator = instigator
         self.location = location
         self.weapon_used = weapon_used
@@ -261,6 +260,8 @@ class Robbery(Event):
         print(f"\n[Event]: {self.description}")
         self.apply(self.instigator)
 
+        
+
         if not self.shopkeeper:
             print("No shopkeeper present. Robbery proceeds unopposed.")
             self.success = True
@@ -272,7 +273,17 @@ class Robbery(Event):
 
         # Step 1: Attempt Intimidation
 
+        # force-scan inventory
+        if hasattr(self.instigator, "inventory"):
+            self.instigator.inventory.update_primary_weapon()
+
+        # Ensure weapon status is up-to-date
+        if hasattr(self.instigator, "inventory"):
+            self.instigator.inventory.update_weapon_flags()
+            self.instigator.inventory.update_primary_weapon()
+
         weapon = getattr(self.instigator, "primary_weapon", None)
+
         weapon_name = weapon.name if weapon else "bare hands"
         
         intimidation_test = IntimidationTest(self.instigator, self.shopkeeper, wildcard_bonus=5)
@@ -300,15 +311,33 @@ class Robbery(Event):
                 self.instigator.inventory.add_item(self.target_item)
                 print(f"{self.instigator.name} steals the targeted {self.target_item.name}!")
 
-            for item in self.location.inventory.items.copy():
-                if item is self.target_item:
-                    continue  # Already taken
+            # ✅ Iterate over *item objects*, not dictionary keys
+            items = list(self.location.inventory.items.values())
+
+            for item in items:
+
+                # Skip the targeted item if we already took it
+                if hasattr(self, "target_item") and self.target_item and item.name == self.target_item.name:
+                    continue
+
+                # ✅ ObjectInWorld items can be stolen
                 if isinstance(item, ObjectInWorld):
-                    self.location.inventory.remove(item)
+
+                    # Safe removal by name (Inventory guarantees name-keyed dict)
+                    self.location.inventory.remove_item(item.name)
+
+                    # Give to robber
                     self.instigator.inventory.add_item(item)
                     print(f"{self.instigator.name} also steals a {item.name}!")
+
                 else:
+                    # ✅ Non-ObjectInWorld items trigger resistance
                     print(f"{self.shopkeeper.name} resists the robbery attempt!")
+
+                    if hasattr(self.shopkeeper, "alert"):
+                        self.shopkeeper.alert(self.instigator)
+                    else:
+                        print("Shopkeeper is panicking or shouting!")
                     # Trigger response
                     if hasattr(self.shopkeeper, "alert"):
                         self.shopkeeper.alert(self.instigator)
@@ -360,7 +389,7 @@ class Robbery(Event):
         #Should the below witness memory and thought go through the percept setter?
 
         appearance = self.instigator.get_appearance_description()
-        witness.memory.add_entry(MemoryEntry(
+        witness.mind.memory.add_episodic(MemoryEntry(#line 363
             subject=self.instigator,
             object_="Robbery",
             details="Robbery witnessed",
@@ -375,8 +404,8 @@ class Robbery(Event):
             associated_function=None
         ))
 
-        print(f"[MEMORY] {witness.name} will remember this episode involving {self.instigator.name} at {self.location.name}.")
-        #todo, do they know his name though?
+        debug_print(self.instigator, f"[MEMORY] {witness.name} will remember this episode involving {self.instigator.name} at {self.location.name}.", category = "event")
+
 
         if getattr(witness, "observation", 0) >= 2:
             witness.alert = True
@@ -407,12 +436,12 @@ class Robbery(Event):
 
         # Step 5: Return ArmedRobbery object
         if self.weapon_used:
-            return ArmedRobbery(self, self.instigator, self.location, weapon)
+            return ArmedRobbery(self.instigator, self.location, weapon)
 
         
     def conclude(self):
-        print(f"[DEBUG] Robbery at {self.location.name} is over. Returning to normal.")
-        # This is a good hook to trigger narrative objects or AI response
+        debug_print(self.instigator, f"[DEBUG] Robbery at {self.location.name} is over. Returning to normal.", category ="event")
+        # instigator in not present and marked as not defined
 
     def record_observation(self, observer, instigator, region, location):
         """
@@ -459,11 +488,19 @@ class Riot(Event):
     pass
 
 class ArmedRobbery(Event):
+    """
+    Placeholder subclass used only to distinguish armed robberies later (police logic).
+    It currently does nothing except store metadata.
+    """
     def __init__(self, instigator, location, weapon=None):
-        super().__init__()
-        self.instigator = instigator
-        self.location = location
-        self.weapon = weapon
+
+        super().__init__(
+            name="ArmedRobbery",
+            event_type="character",
+            description=f"{instigator.name} commits an armed robbery at {location.name}.",
+            effect=None,
+            impact=None
+        )
 
     def get_percept(self):
         """Return a basic percept for the robbery event."""
@@ -479,13 +516,14 @@ class ArmedRobbery(Event):
             }
         }
     
-    def resolve(self):
-        #needed to satisify ABC upstream
-        # This could return a result or just log that it's a resolved object.
-        print(f"[INFO] ArmedRobbery at {self.location.name} already resolved.")
-        return "resolved"
+    def resolve(self, *args, **kwargs):
+        """
+        Placeholder: do nothing — Robbery.resolve() already handled the logic.
+        Just return self so the caller doesn't break.
+        """
+        return self
 
-    def handle_event(event_name, character, location):
+    """ def handle_event(event_name, character, location):
         if event_name == "Rob":
             robbery = Robbery(character, location, weapon_used=True)
             incident = robbery.resolve()
@@ -500,7 +538,7 @@ class ArmedRobbery(Event):
         for event in events:
             target = targets.get(event.effect.get("resource") or event.effect.get("attribute"))
             if target:
-                event.apply(target)
+                event.apply(target) """
 
 class TurfWar(Event):
 

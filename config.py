@@ -16,8 +16,9 @@ SHOW_TICK_LOGS = True
 SHOW_TEST_NPC_LOGS = True   # keep this True so test NPCs still show
 # ^ only relevant when npc.is_test_npc == True
 
+SHOW_CREATE_LOGS = True
 SHOW_NPC_THINK_LOGS = True
-SHOW_NPC_ACTION_LOGS = True
+SHOW_ACTION_LOGS = True
 SHOW_MEMORY_LOGS = True
 SHOW_SALIENCE_LOGS = False
 SHOW_SIMULATION_LOGS = False
@@ -33,6 +34,16 @@ SHOW_THOUGHT_LOGS = True
 SHOW_VISIT_LOGS = True
 SHOW_FOCUS_LOGS = True
 SHOW_MOTIVE_LOGS = True
+SHOW_ERROR_LOGS = True
+SHOW_WEAPON_LOGS =True
+SHOW_ACTION_LOGS = True
+SHOW_EVENT_LOGS = True
+SHOW_FAMILY_LOGS = True
+SHOW_PLACEMENT_LOGS = True
+SHOW_VERIFY_LOGS = True
+
+
+SHOW_CHOICE_LOGS = True
 """ In the long term:
 SHOW_SALIENCE_LOGS → replace with "salience" in ENABLED_DEBUG_CATEGORIES
 SHOW_NPC_ACTION_LOGS → replace with "action" in ENABLED_DEBUG_CATEGORIES """

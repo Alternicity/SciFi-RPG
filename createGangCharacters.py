@@ -9,6 +9,7 @@ from base_classes import Character
 from weapons import Knife
 from inventory import Inventory
 from character_memory import MemoryEntry
+from debug_utils import debug_print
 #no ai import here
 def create_gang_characters(faction, all_regions):
 
@@ -27,8 +28,8 @@ def create_gang_characters(faction, all_regions):
         faction.street_gang_start_location = start_location
 
         # Optional dramatic print
-        print(f"[INIT] Members of street gang '{faction.name}' will start at '{start_location.name}' in region '{region.name}'")
-    
+        debug_print(npc=None, message=f"[INIT] Members of street gang '{faction.name}' will start at '{start_location.name}' in region '{region.name}'", category="create")
+
         # Add to region's street gang list
         if faction not in region.region_street_gangs:
             region.region_street_gangs.append(faction)
@@ -149,7 +150,7 @@ def create_gang_characters(faction, all_regions):
     
     for char in characters:
         if hasattr(char, "memory"):
-            char.mind.memory.add_entry(MemoryEntry(
+            char.mind.memory.add_entry(MemoryEntry(#should this use add_episodcic or semantic?
                 subject="Shop",
                 object_="ranged_weapon",
                 details="Shops usually have weapons",
@@ -163,7 +164,7 @@ def create_gang_characters(faction, all_regions):
             ))
             
     if char.race != faction.race:
-        print(f"[WARNING] {char.name} has race {char.race} but gang {faction.name} is {faction.race}")
+        debug_print(npc=None, message=f"[WARNING] {char.name} has race {char.race} but gang {faction.name} is {faction.race}", category="create")
 
         print_gang_densities(all_regions)
 
@@ -180,6 +181,6 @@ def print_gang_densities(all_regions):
                 if key not in already_logged:
                     count = sum(1 for c in region.characters_there if getattr(c, "faction", None) == gang)
                     if count > 0:
-                        print(f"[DENSITY] {count} members of street gang '{gang.name}' are starting at '{loc}' in region '{region.name}'")
+                        debug_print(npc=None, message=f"[DENSITY] {count} members of street gang '{gang.name}' are starting at '{loc}' in region '{region.name}'", category="create")
                         already_logged.add(key)
 

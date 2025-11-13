@@ -581,7 +581,7 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
 
     # Add memory entry with explicit target (prefer anchor.target, fallback to anchor.name)
     target_value = getattr(anchor, "target", None) or anchor.name
-    npc.mind.memory.add_entry_if_new(
+    npc.mind.memory.add_entry_if_new( #should this use add_episodcic or semantic?
         MemoryEntry(
             subject=npc.name,
             object_=anchor.name,

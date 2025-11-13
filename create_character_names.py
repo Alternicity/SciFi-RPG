@@ -1,4 +1,4 @@
-#create_character_names
+#create_character_names.py
 from common import BASE_CHARACTERNAMES_DIR
 import random
 import os

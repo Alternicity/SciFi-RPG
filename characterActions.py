@@ -221,7 +221,7 @@ def buy(character, shop, item):
 
     # Deepcopy item before giving it to character
     #Is origin is being stripped when a deep copy is made? ATTN
-    item_copy = copy.deepcopy(item_obj)
+    item_copy = item_obj.clone()  # Use new clone() method, never deepcopy
     item_copy.quantity = 1  # Important: avoid giving full stock amount
     character.inventory.add_item(item_copy)
 
@@ -305,33 +305,84 @@ def enjoy(character, location, object, otherCharacter):
     #might also raise their health and maybe morale
 
 def steal(character, location, target_item=None, simulate=False, verbose=True):
-    print(f"\n>>> {character.name} is attempting to steal at {location.name} <<<")
+    import copy
+    from attribute_tests import adversarial_attribute_test
+    from weapons import RangedWeapon, Weapon
+
     
-    if not hasattr(location, 'inventory') or not location.inventory.items:
-        print(f"{location.name} has no items to steal.")
+    debug_print(character, f"\n>>> {character.name} is attempting to steal at {location.name} <<<", category="action")
+
+    # Quick guard
+    if not hasattr(location, 'inventory') or not getattr(location.inventory, "items", None):
+        debug_print(character, f"{location.name} has no items to steal.", category="action")
         return
 
-    if not target_item:
-        target_item = next(iter(location.inventory.items.values()))
-        print(f"No target item specified. {character.name} will attempt to steal {target_item.name}.")
+    # Resolve target_item to an item object and a name
+    item_obj = None
+    item_name = None
 
-    if target_item.name not in location.inventory.items:
-        print(f"{target_item.name} not found in {location.name}'s inventory.")
+    # If target_item given as a name (string)
+    if isinstance(target_item, str):
+        item_name = target_item
+        # try dictionary lookup if inventory stores by name
+        if item_name in location.inventory.items:
+            # If items is dict of name -> item or name -> quantity/object
+            maybe = location.inventory.items[item_name]
+            # assume it's an item object or a container; try to normalize to an object
+            item_obj = maybe if hasattr(maybe, "name") else None
+    else:
+        # target_item is likely an object
+        item_obj = target_item
+
+    # If still no item_obj, pick first available item object from inventory
+    if item_obj is None:
+        # Try common patterns: dict of name->item OR dict of id->item OR list
+        items = location.inventory.items
+        # if values() exists, prefer first value
+        try:
+            first_val = next(iter(items.values()))
+            # if the value is an item container or quantity object, try to find an item with .name
+            if hasattr(first_val, "name"):
+                item_obj = first_val
+                item_name = first_val.name
+            else:
+                # maybe items keyed by name and value is quantity - search for item object elsewhere
+                # fallback: loop values and find first object with .name
+                for v in items.values():
+                    if hasattr(v, "name"):
+                        item_obj = v
+                        item_name = v.name
+                        break
+        except Exception:
+            # fallback: iterate keys and try to get by name
+            for k in items:
+                v = items[k]
+                if hasattr(v, "name"):
+                    item_obj = v
+                    item_name = v.name
+                    break
+
+    if item_obj is None:
+        print("No suitable target item could be resolved from the shop inventory.")
         return
 
-    print(f"{character.name} is attempting to steal {target_item.name} from {location.name}.")
+    if item_name is None:
+        item_name = getattr(item_obj, "name", None)
 
-    stealth = character.skills.get("stealth", 0)
-    employees = getattr(location, 'employees_there', [])
+    debug_print(character, f"{character.name} is attempting to steal {item_name} from {location.name}.", category="action")
+
+    # Calculate observer / resistance
+    employees = getattr(location, 'employees_there', []) or []
     observation = max([e.skills.get("observation", 0) for e in employees]) if employees else 0
-
+    stealth = character.skills.get("stealth", 0)
     resistance_mod = getattr(location, "security_level", 0)
     attempt_mod = getattr(character, "criminal_modifier", 0)
 
-    print(f"Skills - Stealth: {stealth}, Max Observation: {observation}")
-    print(f"Modifiers - Attempt: {attempt_mod}, Resistance: {resistance_mod}")
+    if verbose:
+        debug_print(character, f"Skills - Stealth: {stealth}, Max Observation: {observation}", category="action")
+        debug_print(character, f"Modifiers - Attempt: {attempt_mod}, Resistance: {resistance_mod}", category="action")
 
-    from attribute_tests import adversarial_attribute_test
+    # Run the adversarial test ONCE
     success = adversarial_attribute_test(
         attempt_value=stealth,
         resistance_value=observation,
@@ -342,77 +393,59 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
         verbose=verbose
     )
 
-    if success:
-        stolen_item = copy.deepcopy(target_item)
-        location.inventory.remove_item(target_item.name)
-        print(f"{character.name} SUCCESSFULLY steals {stolen_item.name} from {location.name}.")
-        character.inventory.add_item(stolen_item)
-
-        if isinstance(stolen_item, RangedWeapon):
-            character.inventory.update_primary_weapon()
+    if not success:
+        debug_print(character, f"{character.name} FAILED to steal the {item_name} from {location.name}.", "category = action")
         
+        return
+
+    # Success path: remove item safely and transfer
+    # Prefer an inventory API method if present (remove_item or pop_item)
+    removed = None
+    inv = location.inventory
+    # Try a few removal idioms gracefully
+    if hasattr(inv, "remove_item"):
+        try:
+            removed = inv.remove_item(item_name)
+
+            
+            # Some implementations return the removed object, others None.
+        except Exception as e:
+            # If remove_item raised, try fallback below
+            print(f"[WARNING] inventory.remove_item raised: {e}")
+            removed = None
+
+            if removed:
+                stolen_item = removed
+            else:
+                stolen_item = item_obj.clone()
+
+    # give to character
+    character.inventory.add_item(stolen_item)
+    print(f"{character.name} steals a {stolen_item.name} from {location.name}.")
+
+    #After any weapon is added or removed, always call:
+    character.inventory.update_weapon_flags()
+    character.inventory.update_primary_weapon()
+
+    stolen_item.is_stolen = True
+
+    # Weapon handling and motivation updates
+    if isinstance(stolen_item, (RangedWeapon, Weapon)):
+        character.inventory.update_primary_weapon()
+        character.motivation_manager.resolve_motivation("obtain_ranged_weapon")
+    else:
         character.motivation_manager.resolve_motivation("steal_object")
 
-        if hasattr(stolen_item, "intimidate"):
-            character.skill["intimidation"] = character.skill.get("intimidation", 0) + stolen_item.intimidate
-            print(f"{character.name}'s intimidation increased by {stolen_item.intimidate} due to the {stolen_item.name}.")
-        loading_bar()
-    else:
-        print(f"{character.name} FAILED to steal the {target_item.name} from {location.name}.")
 
-    # -- STEP 1: Prepare for adversarial test --
 
-    # --- Verbose debug info ---
-    if verbose:
-        print(f"[Verbose] Attempting to steal {target_item.name} from {location.name}")
+    # Update intimidation from item if applicable
+    if hasattr(stolen_item, "intimidate"):
+        character.skills["intimidation"] = character.skills.get("intimidation", 0) + getattr(stolen_item, "intimidate", 0)
+        if verbose:
+            print(f"{character.name}'s intimidation increased by {getattr(stolen_item, 'intimidate', 0)} due to the {stolen_item.name}.")
 
-    # Attempt: Character's stealth
-    stealth = character.skills.get("stealth", 0)
+    loading_bar()
 
-    # Resistance: Employees' observation (average, max, or total)
-    employees = getattr(location, 'employees_there', [])
-    if not employees:
-        observation = 0  # Nobody watching!
-    else:
-        # Could use max, sum, or average depending on desired difficulty
-        observation = max([e.skills.get("observation", 0) for e in employees])
-
-    # Optional modifiers/hooks (for future)
-    resistance_mod = getattr(location, "security_level", 0)  # placeholder
-    attempt_mod = getattr(character, "criminal_modifier", 0)  # placeholder
-
-    if verbose:
-        print(f"[Verbose] Stealth: {stealth} | Observation: {observation}")
-        print(f"[Verbose] Modifiers - Attempt: {attempt_mod}, Resistance: {resistance_mod}")
-    from attribute_tests import adversarial_attribute_test
-    success = adversarial_attribute_test(
-        attempt_value=stealth,
-        resistance_value=observation,
-        attempt_mod=attempt_mod,
-        resistance_mod=resistance_mod,
-        wildcard_mod=0,
-        simulate=simulate,
-        verbose=verbose
-    )
-
-    if success:
-        stolen_item = copy.deepcopy(target_item)
-        location.inventory.remove_item(target_item.name)
-        print(f"{character.name} {color_text('steals', RED)} a {stolen_item.name} from {location.name}.")
-        character.inventory.add_item(stolen_item)
-        
-        if isinstance(stolen_item, Weapon):
-            character.inventory.update_primary_weapon()
-        character.motivation_manager.resolve_motivation("obtain_ranged_weapon")
-
-        # Update intimidation if item has intimidate attribute
-        if hasattr(stolen_item, "intimidate"):
-            character.skill["intimidation"] = character.skill.get("intimidation", 0) + stolen_item.intimidate
-            if verbose:
-                print(f"[Verbose] {character.name}'s intimidation increased by {stolen_item.intimidate} due to the {stolen_item.name}.")        
-        loading_bar()
-    else:
-        print(f"{character.name} failed to steal the {target_item.name} from {location.name}.")
         # Optional: consequences or alerts go here (e.g., witnesses, reputation drop, security alert)
 
 def issue_task(issuer, recipient, task):
@@ -594,7 +627,9 @@ def offerFauxTruce(Boss, rivals):
     #think(Until I know which one of you organized the hit, and then...)
 
 def rob(character, location, target_item=None):
-    print(f"\n>>> {character.name} is attempting to ROB {location.name} <<<")
+    debug_print(character, f"\n>>> {character.name} is attempting to ROB {location.name} <<<", category="action")
+    debug_print(character, f"[ROB] Target location: {location.name}", category="action")
+
     from events import Robbery
     from InWorldObjects import CashWad
 
@@ -609,8 +644,9 @@ def rob(character, location, target_item=None):
 
     robbery_event.target_item = target_item
 
-    print(f"{character.name} is using a weapon: {robbery_event.weapon_used}")
-    print(f"Robbery Target: {target_item.name if target_item else 'Unknown item'}")
+    debug_print(character, f"{character.name} is using a weapon: {robbery_event.weapon_used}", category="action")
+    debug_print(character, f"[ROB] Target location: {location.name}", category="action")
+
 
     #outcome = robbery_event.resolve()
     """ if outcome == "success":
@@ -687,7 +723,7 @@ def gossip(self):
     gossip_items = [m for m in self.mind.memory.semantic if "gossip" in m.tags]
     if gossip_items:
         gossip_item = random.choice(gossip_items)
-        self.partner.mind.memory.add_semantic(copy.deepcopy(gossip_item))
+        self.partner.mind.memory.add_semantic(copy.deepcopy(gossip_item))#replace all remaining deepcopy calls with clone.
         print(f"{self.name} gossips to {self.partner.name} about: {gossip_item.subject}")
     #a form of conversation that spawns a gossip(Meme)
     #which as knowledge (true or false) that has its own logic

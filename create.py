@@ -18,6 +18,7 @@ import os
 from display import display_sellers
 from character_creation_funcs import create_all_characters
 import random
+from debug_utils import debug_print
 
 logging.basicConfig(
     level=logging.INFO,
@@ -79,7 +80,12 @@ def create_regions():
                 loc.region = region
 
         except Exception as e:
-            print(f"❌ Error creating locations for region '{region.name}': {e}")
+            debug_print(
+                npc=None,
+                message=f"⚠️ Error creating locations for region '{region.name}': {e}",
+                category="create"
+            )
+
     
     debug_display_all_shops(all_regions)
 

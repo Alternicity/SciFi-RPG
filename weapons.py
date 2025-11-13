@@ -67,6 +67,7 @@ class Pistol(RangedWeapon):
             name="Pistol",
             toughness=Toughness.NORMAL,
             price=price,
+
             size=Size.ONE_HANDED,
             blackmarket_value=150,
             damage_points=10,
@@ -87,6 +88,7 @@ class Pistol(RangedWeapon):
             "origin": self,
             "urgency": 1,
             "source": None,
+            "salience": 8,#high
             "tags": self.tags,
             "size": getattr(self, "size", None),
         }

@@ -29,7 +29,7 @@ def gameplay(selected_character, region):
     display_selected_character_current_region(character, region)
 
     # Update motivations before displaying
-    character.motivation_manager.update_motivations()
+    character.motivation_manager.update_motivations("idle")
 
     
 

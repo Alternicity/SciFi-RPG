@@ -13,13 +13,16 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     caller = inspect.stack()[1]
     caller_info = f"{caller.function} @ {caller.filename}:{caller.lineno}"
 
+    # inside visit_auto() or the movement routine where you actually change civ.location
+    debug_print(npc, f"[MOVE] {npc.name} -> {getattr(destination,'name',destination)} triggered_by={caller_info}", category="movement")
+
+
     debug_print(
         npc,
         f"[VISIT TRACE] visit_location_auto invoked by {caller_info}",
         category="visit"
-    )
+    )#is this print superfluous now?
 
-    #debug_print(npc, f"[AUTO VISIT] {character.name} is going to {location.name}", category="visit")
 
     search_region = region or npc.region #search_region is not accessed
     debug_print(npc, f"[VISIT] Arrived at {destination.name}", "visit")
@@ -36,7 +39,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
         debug_print(npc, f"[VISIT] {npc.name} has no valid destination to visit (lookup failed).", category="visit")
         return False
     
-    if npc.just_arrived:
+    if npc.just_arrived:#line 39
         return True   # Already here, don't re-visit
 
     # --- Core movement ---
@@ -115,14 +118,17 @@ def rob_auto(npc, region=None, location=None, target_item=None, **kwargs):
     if not location:
         location = npc.location
 
-    print(f"[NPC ACTION] {npc.name} attempts to rob {location.name}")
+    #debug_print(npc, f"[DEBUG] from rob_auto, robbable={getattr(npc.location, 'robbable', None)}", "rob")
+
+    debug_print(npc, f"[NPC ACTION] {npc.name} attempts to rob {location.name}", category = "action")
     npc.motivation_manager.resolve_motivation("obtain_ranged_weapon")
     has_weapon = hasattr(npc, "primary_weapon") and npc.primary_weapon is not None
 
     robbery_event = Robbery(
         instigator=npc,
         location=location,
-        weapon_used=has_weapon
+        weapon_used=has_weapon,
+        mode="npc"
     )
 
     robbery_event.target_item = target_item  # Optional, like a high-value item from percepts
@@ -144,20 +150,19 @@ def steal_auto(npc, region, item=None):
 
     if not item:
         print("[STEAL] No item specified.")
-        return
+        return False
 
     location = npc.location
 
-    # Check if the location has the item in its inventory
+    # Ensure location has inventory and that item exists
     if not hasattr(location, "inventory") or item.name not in location.inventory.items:
         print(f"[STEAL FAIL] {item.name} not found in {location.name}'s inventory.")
-        return
+        return False
 
-    # Skill-based theft logic
+    # Theft difficulty setup
     employees = getattr(location, 'employees_there', [])
-    observation = max([e.skills.get("observation", 0) for e in employees]) if employees else 0
+    observation = max((e.skills.get("observation", 0) for e in employees), default=0)
     stealth = npc.skills.get("stealth", 0)
-
     resistance_mod = getattr(location, "security_level", 0)
     attempt_mod = getattr(npc, "criminal_modifier", 0)
 
@@ -170,77 +175,94 @@ def steal_auto(npc, region, item=None):
         simulate=False,
         verbose=npc.is_test_npc
     )
-    from weapons import Weapon
-    if success:
-        stolen_item = copy.deepcopy(item)
-        location.inventory.remove_item(item.name)
-        npc.inventory.add_item(stolen_item)
-        npc.inventory.recently_acquired.append(stolen_item)
-        npc.inventory.update_weapon_flags()
-        npc.inventory.update_primary_weapon()
-        print(f"[STEAL SUCCESS] {npc.name} stole {stolen_item.name}!")
-        print(f"[DEBUG] Primary weapon equipped: {npc.inventory.primary_weapon}")
-        
-        if isinstance(stolen_item, Weapon):#is this failing?
-            npc.inventory.update_primary_weapon()
-            npc.motivation_manager.resolve_motivation("obtain_ranged_weapon")
-            cleared = npc.motivation_manager.clear_highest_priority_motivation()
-            if cleared:
-                print(f"[MOTIVATION] Cleared highest-priority motivation: {cleared.type}")
-            npc.mind.attention_focus = None
-        if npc.is_test_npc:
-            print(f"[DEBUG] Primary weapon equipped: {getattr(npc.inventory.primary_weapon, 'name', None)}")
 
-        from memory_entry import MemoryEntry
-        state = get_game_state()
-        memory = MemoryEntry(
-            subject=npc.name,
-            object_="pistol",
-            verb="stole",
-            details=f"I stole a pistol from {location.name}.",
-            type="theft",
-            initial_memory_type="episodic",
-            description="Theft of a ranged weapon enabling robbery.",
-            tags=["theft", "weapon", "ranged_weapon", "enabling"],
-            target=location.name,
-            payload={"item": item, "location": location},
-            source="steal_auto",
-            created_day=state.day,
-            last_updated_day=state.day,
-        )
-
-        npc.mind.memory.add_episodic(memory, current_day=state.day)
-        npc.inventory.add_recently_acquired(item, state)#can this call simply change to has_recently_acquired?
-
-        npc.mind.add_thought(
-            Thought(
-                subject=npc.name,
-                content="I stole a pistol.",#to change to {stolen_item.name}
-                origin="episodic_memory",
-                urgency=7,
-                tags=["theft", "self", "weapon", "ranged_weapon", "enabling"],
-                source=memory,
-                weight=3.0
-            )
-        )
-        # leave motivation cleanup to GangMemberAI.think() on next tick (arrival handler)
-        # Mark the pistol as newly acquired
-
-        print(f"[STEAL] {npc.name} successfully stole {stolen_item.name} from {location.name}")
-
-        # Reduce related motivation
-        npc.motivation_manager.resolve_motivation("obtain_ranged_weapon")
-
-        # Update intimidation stat if relevant
-        if hasattr(stolen_item, "intimidate"):
-            npc.skills["intimidation"] = npc.skills.get("intimidation", 0) + stolen_item.intimidate
-            print(f"[STEAL] {npc.name}'s intimidation increased due to {stolen_item.name}.")
-
-    else:
+    if not success:
         print(f"[STEAL FAIL] {npc.name} failed to steal {item.name} from {location.name}.")
+        return False
 
-        #You could generalize this further later by checking containers within containers, 
-        #or using location.get_all_items() if you add that kind of method
+    # ============================
+    # ✅ SUCCESSFUL STEAL BEGINS
+    # ============================
+
+    # Remove real item and give NPC a copy
+    stolen_item = item.clone()
+    location.inventory.remove_item(item.name)
+    npc.inventory.add_item(stolen_item)
+    npc.inventory.recently_acquired.append(stolen_item)
+
+    # Update weapon state
+    npc.inventory.update_weapon_flags()
+    npc.inventory.update_primary_weapon()
+
+    # ✅ Remove weapon-fetching motives
+    npc.motivation_manager.remove_motivation("obtain_ranged_weapon")
+    npc.mind.remove_thoughts_with_tag("obtain_ranged_weapon")
+
+    # ✅ Raise robbery motive cleanly (exactly once)
+    npc.motivation_manager.update_motivations("rob", urgency=20)
+    npc.motivation_manager.deboost_others("rob", amount=7)
+
+    # ✅ (Optional) Set a robbery thought
+    if npc.is_test_npc:
+        npc.mind.add_thought(Thought(
+            subject="robbery",
+            content=f"Now that I'm armed, I could rob {location.name}.",
+            origin="steal_auto_post",
+            urgency=9,
+            tags=["rob"]
+        ))
+
+    # ✅ DO NOT wipe attention_focus here
+    # npc.mind.attention_focus must be set by the salience system afterwards
+
+    # -----------------------------------------------
+    # ✅ EPISODIC MEMORY ENTRY
+    # -----------------------------------------------
+    from memory_entry import MemoryEntry
+    state = get_game_state()
+
+    memory = MemoryEntry(
+        subject=npc.name,
+        object_=stolen_item.name,
+        verb="stole",
+        details=f"I stole a {stolen_item.name} from {location.name}.",
+        type="theft",
+        initial_memory_type="episodic",
+        description="Theft of a ranged weapon enabling robbery.",
+        tags=["theft", "weapon", "ranged_weapon", "enabling"],
+        target=location.name,
+        payload={"item": stolen_item, "location": location},
+        source="steal_auto",
+        created_day=state.day,
+        last_updated_day=state.day,
+    )
+
+    npc.mind.memory.add_episodic(memory, current_day=state.day)
+
+    # -----------------------------------------------
+    # ✅ THOUGHT FROM MEMORY
+    # -----------------------------------------------
+    npc.mind.add_thought(
+        Thought(
+            subject=npc.name,
+            content=f"I stole a {stolen_item.name}.",
+            origin="episodic_memory",
+            urgency=7,
+            tags=["theft", "self", "weapon", "ranged_weapon", "enabling"],
+            source=memory,
+            weight=3.0
+        )
+    )
+
+    # -----------------------------------------------
+    # ✅ SKILL INCREASE (optional but realistic)
+    # -----------------------------------------------
+    if hasattr(stolen_item, "intimidate"):
+        npc.skills["intimidation"] = npc.skills.get("intimidation", 0) + stolen_item.intimidate
+        print(f"[STEAL] {npc.name}'s intimidation increased due to {stolen_item.name}.")
+
+    print(f"[STEAL] {npc.name} successfully stole {stolen_item.name} from {location.name}")
+    return True
 
 def exit_location_auto():
     print (f"npc exit location called")

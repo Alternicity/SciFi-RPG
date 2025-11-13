@@ -8,10 +8,12 @@ from menu_utils import main_menu
 from game import game
 from create_game_state import get_game_state
 
+
 # Only define these globals once
 game_state = None
 all_regions = None
 factions = None
+
 
 def setup_game():
     global game_state, factions, all_regions
