@@ -81,3 +81,29 @@ def debug_print(npc=None, message="", category="general", level="DEBUG"):
 
     print(f"[{category:<7}] {npc_name}: {message}")
 
+
+def diagnose_civilian_location_integrity(region_civilians, all_civilians):
+    """
+    Checks for duplicates and mismatched location references across civilians.
+    """
+    from collections import defaultdict
+    location_map = defaultdict(list)
+
+    for civ in all_civilians:
+        loc_name = getattr(getattr(civ, "location", None), "name", None)
+        if loc_name:
+            location_map[civ.name].append(loc_name)
+
+    duplicates = [(n, locs) for n, locs in location_map.items() if len(set(locs)) > 1]
+    mismatches = []
+
+    for civ in all_civilians:
+        loc = getattr(civ, "location", None)
+        if loc and civ not in getattr(loc, "characters_there", []):
+            mismatches.append((civ.name, getattr(loc, "name", "?"), "not listed in location.characters_there"))
+
+    if duplicates:
+        print(f"[WARNING] Civilians appear in multiple locations: {duplicates}")
+    if mismatches:
+        print(f"[WARNING] Civilians with mismatched location references: {mismatches}")
+

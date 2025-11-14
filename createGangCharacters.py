@@ -170,7 +170,7 @@ def create_gang_characters(faction, all_regions):
 
     return characters
     
-def print_gang_densities(all_regions):
+def print_gang_densities(all_regions):#ONLY PRINTS STREET GANGS I THINK
     already_logged = set()
 
     for region in all_regions:

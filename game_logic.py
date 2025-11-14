@@ -31,16 +31,12 @@ def gameplay(selected_character, region):
     # Update motivations before displaying
     character.motivation_manager.update_motivations("idle")
 
-    
-
-
     #tmp
     from location import Location
     if isinstance(character.region, str):
         print(f"[ERROR] {character.name} has region set as a string: {character.region}")
     if isinstance(character.location, Location) and isinstance(character.location.region, str):
         print(f"[ERROR] {character.name} has location.region set as a string: {character.location.region}")
-
 
     # Get the most urgent motivations
     urgent_motivations = character.motivation_manager.get_urgent_motivations()
@@ -161,50 +157,60 @@ def view_characters(all_characters, region): #this should be moved to display
         all_characters = [all_characters]  # Wrap single object in a list
     display_filtered_character_summary(all_characters)
 
-def assign_random_civilians_to_random_shops(regions, count: int = 15):
-    #print("[Debug] assign_random_civilians_to_random_shops() was called.")
+def assign_random_civilians_to_random_shops(regions, all_characters, count: int = 4):
+    print(f"[TRACE] assign_random_civilians_to_random_shops() called with count={count}")
     from location import Shop
     from characters import Civilian
     all_civilians = []
     all_shops = []
+    
+    
+    # Gather civilians and shops
+    all_civilians = [c for c in all_characters if getattr(c, "is_civilian", False)]
+    all_shops = [loc for region in regions for loc in getattr(region, "shops", []) if loc]
 
+    region_civilians = []#local diagnostic variable
     for region in regions:
-        #print(f"[Debug] Checking region: {region.name}")
-        pass
-        for loc in region.locations:
-            #print(f"    [Debug] Found location: {loc.name} ({type(loc).__name__})")
-            pass
-            if isinstance(loc, Shop):
-                #print(f"        [Debug] --> This is a Shop.")
-                all_shops.append(loc)
-            for char in loc.characters_there:
-                #print(f"        [Debug] Has character: {char.name} ({type(char).__name__})")
-                if isinstance(char, Civilian):
-                    #print(f"            [Debug] --> This is a Civilian.")
-                    all_civilians.append((char, loc))  # track original location too
-    print(f"Total Civilians found: {len(all_civilians)}")
-    print(f"Total Shops found: {len(all_shops)}")
+        region_civilians.extend([c for c in getattr(region, "characters", []) if getattr(c, "is_civilian", False)])
 
-    if not all_civilians or not all_shops:
-        print("No civilians or shops available to assign.")
-        return
 
-    random.shuffle(all_civilians)
-    civilians_to_assign = all_civilians[:count]
+    # Ensure we don’t exceed available civilians
+    civilians_to_assign = random.sample(all_civilians, min(count, len(all_civilians)))
 
-    for (civilian, original_location) in civilians_to_assign:
+    # Track movement records for diagnostics
+    moved_records = []
+
+    for civilian in civilians_to_assign:
+        original_location = getattr(civilian, "location", None)
         shop = random.choice(all_shops)
 
-        # Remove from current location
-        if civilian in original_location.characters_there:
-            original_location.characters_there.remove(civilian)
+        # Record where they came from for later analysis
+        moved_records.append((civilian, original_location, shop))
 
-        # Assign to shop
-        shop.characters_there.append(civilian)
+        # --- Update continuity state ---
+        civilian.previous_location = civilian.location
         civilian.location = shop
 
-        #print(f"[Test] Moved {civilian.name} to shop: {shop.name}")
-        
+        # --- Remove from prior location if necessary ---
+        if original_location and hasattr(original_location, "characters_there"):
+            if civilian in original_location.characters_there:
+                original_location.characters_there.remove(civilian)
+
+        # --- Add to new shop ---
+        if hasattr(shop, "characters_there"):
+            if civilian not in shop.characters_there:
+                shop.characters_there.append(civilian)
+
+        # Optional: update region character listing if needed
+        if hasattr(shop, "region") and civilian not in shop.region.characters:
+            shop.region.characters.append(civilian)
+
+
+    # --- Run diagnostics ---
+    from debug_utils import diagnose_civilian_location_integrity
+    diagnose_civilian_location_integrity(region_civilians, all_civilians)
+    print(f"[TRACE] Diagnostic scan complete.\nTotal characters created: {len(all_characters)}")
+
 
 
 def display_factions():

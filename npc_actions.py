@@ -28,27 +28,30 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     debug_print(npc, f"[VISIT] Arrived at {destination.name}", "visit")
 
     # Resolve destination by name if needed
+    #This code seems odd. If this function is called there should a priori be a destination location
     if destination is None and destination_name:
         destination = search_region.get_location_by_name(destination_name)
         debug_print(npc, f"[VISIT] Resolved destination_name='{destination_name}' to {destination}", category="visit")
     elif destination is None and "destination_name" in kwargs:
         destination = search_region.get_location_by_name(kwargs["destination_name"])
         debug_print(npc, f"[VISIT] Resolved from kwargs destination_name='{kwargs['destination_name']}' to {destination}", category="visit")
+        #so this block marked for possible deprecation
 
     if destination is None:
         debug_print(npc, f"[VISIT] {npc.name} has no valid destination to visit (lookup failed).", category="visit")
         return False
     
-    if npc.just_arrived:#line 39
+    if npc.just_arrived:#but where is just_arrived set? This function would be ideal I think. It is set below, so this block ismaybe superfluous
         return True   # Already here, don't re-visit
 
     # --- Core movement ---
-    old_location = npc.location
+    
     # Remove NPC from old location
-    if old_location and hasattr(old_location, "characters_there"):
-        if npc in old_location.characters_there:
-            old_location.characters_there.remove(npc)
+    if npc.previous_location and hasattr(npc.previous_location, "characters_there"):
+        if npc in npc.previous_location.characters_there:
+            npc.previous_location.characters_there.remove(npc)
 
+    npc.previous_location = npc.location
     npc.location = destination
     npc.just_arrived = True
     #this is the only place in the code base where  npc.just_arrived is set to true

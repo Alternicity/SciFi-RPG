@@ -67,20 +67,21 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     # 3. Shop naming + inventory injection
     # -------------------------
     shops = [loc for loc in locations if hasattr(loc, "inventory") and hasattr(loc, "is_shop")]
-
+    
     for shop in shops:
         specialization = guess_specialization_from_inventory(shop.inventory)
         shop.name = generate_shop_name(specialization=specialization, ownership="family")
         shop.inventory.owner = shop
+        debug_print(None, "[TRACE] About to run shop stocking block", "create")#added
 
-        # Default shop stock
         try:
             shop.inventory.add_item(SmartPhone(price=200, quantity=5))
             shop.inventory.add_item(Pistol(price=500, quantity=2))
-            debug_print(shop, f"[DEBUG] Stocked {shop.name} with SmartPhones and Pistols.", category="create")
-            debug_print(shop, f"[VERIFY] {shop.name} inventory: {shop.inventory.list_items()}", category="verify")
+            debug_print(None, f"[DEBUG] Stocked {shop.name} with SmartPhones and Pistols.", category="create")
+            debug_print(None, f"[VERIFY] {shop.name} inventory: {shop.inventory.get_inventory_summary()}", category="verify")
         except Exception as e:
             debug_print(None, f"⚠️ Error stocking shop '{shop.name}': {e}", "create")
+
 
     # -------------------------
     # 4. Add Municipal Building

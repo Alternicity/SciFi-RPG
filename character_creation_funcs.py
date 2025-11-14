@@ -70,8 +70,8 @@ def create_all_characters(factions, all_locations, all_regions):
     link_family_shops(game_state)
     
     from game_logic import assign_random_civilians_to_random_shops
-    assign_random_civilians_to_random_shops(all_regions)  # Now regions are ready
-    
+    assign_random_civilians_to_random_shops(all_regions, all_characters, count=3)
+
     print(f"Total characters created: {len(all_characters)}")
     return all_characters
 

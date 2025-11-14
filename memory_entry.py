@@ -89,7 +89,7 @@ class RegionKnowledge:
     region_name: str
     character_or_faction: Union["Character", "Faction"]
     region_gangs: Set[str] = field(default_factory=set)
-    is_street_gang: bool = False
+    is_street_gang: bool = False#odd, no reference to particular gang, possibly depreacte this.
     tags: List[str] = field(default_factory=list)
     friendly_factions: Set[str] = field(default_factory=set)
     hostile_factions: Set[str] = field(default_factory=set)

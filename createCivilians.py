@@ -28,7 +28,6 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     civilians = []
     valid_races = Character.VALID_RACES
     race_pool = ["Terran"] * 5 + [race for race in valid_races if race != "Terran"]
-    #Will race?pool work, as VALID?RACES is not being imported here
 
     # Categorize locations
     homes = [loc for loc in all_locations if isinstance(loc, RESIDENTIAL)]
@@ -91,7 +90,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
 
     # --- Assign logical start locations ---
     for civ in civilians:
-        if civ.is_employee and civ.workplace:
+        if civ.is_employee and civ.workplace:#few civilians have a workplace set
             civ.location = civ.workplace
         else:
             civ.location = civ.home
