@@ -1,6 +1,6 @@
 #region_knowledge_builder.py
 from location import Region
-from character_memory import RegionKnowledge
+from character_memory import RegionKnowledge, FoodSources
 from base_classes import Character,Faction
 from typing import Union
 
@@ -27,4 +27,3 @@ def build_region_knowledge(region: Region, character_or_faction: Union["Characte
 
     # Relationship tagging could be added later based on Faction/Character relations
     return knowledge
-

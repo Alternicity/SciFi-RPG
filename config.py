@@ -16,7 +16,13 @@ SHOW_TICK_LOGS = True
 SHOW_TEST_NPC_LOGS = True   # keep this True so test NPCs still show
 # ^ only relevant when npc.is_test_npc == True
 
-SHOW_CREATE_LOGS = True
+SHOW_CREATE_LOGS = False
+SHOW_FUN_LOGS = True
+SHOW_EAT_LOGS = True
+SHOW_ROLE_FLAGS = True
+SHOW_PRIMARY_LOGS = True
+SHOW_SECONDARY_LOGS = True
+
 SHOW_NPC_THINK_LOGS = True
 SHOW_ACTION_LOGS = True
 SHOW_MEMORY_LOGS = True
@@ -41,7 +47,7 @@ SHOW_EVENT_LOGS = True
 SHOW_FAMILY_LOGS = True
 SHOW_PLACEMENT_LOGS = True
 SHOW_VERIFY_LOGS = True
-
+SHOW_ECONOMY_LOGS = True
 
 SHOW_CHOICE_LOGS = True
 """ In the long term:

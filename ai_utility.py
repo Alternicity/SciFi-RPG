@@ -22,84 +22,109 @@ class UtilityAI(BaseAI):
     def __init__(self, npc):
     #Core cognitive pipeline.
         self.npc = npc
-        self._region_cache = getattr(npc, "region", None)#why does this exist?
-
+        
     """ Filtering episodic memories and tagging/promoting important ones into thoughts.
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
-
-    @property
+    
+    #self._region_cache = getattr(npc, "region", None)#why does this exist?
+    """ @property
     def region(self):
         if self._region_cache is None:
             self._region_cache = getattr(self.npc, "region", None)
-        return self._region_cache
+        return self._region_cache """
 
     def choose_action(self, region):
         npc = self.npc
-
-        #prevent herding
-        if not getattr(npc, "is_test_npc", False):
-            return {"name": "idle"}
-        #this one seems like an unlikey culprit, but we can add a debug_print
-
+    
         motivations = npc.motivation_manager.get_motivations()
         if not motivations:
-            debug_print(npc,
-                "[UTILITYAI] No motivations found; defaulting to idle.",
-                category="action"
-            )
             return {"name": "idle"}
-        #This one seems impossible, but lets add a print
-        anchors = [create_anchor_from_motivation(self.npc, m) for m in motivations]
-        anchors = [a for a in anchors if a]  # filter out None
 
-        percepts = list(npc.get_percepts())
-        #percepts here is not accessed
+        top = npc.motivation_manager.get_highest_priority_motivation()
+        mtype = top.type
 
-        possible_actions = []
+        # === 2. Basic Need: Procure Food ===
+        if mtype == "procure_food" or mtype == "eat":
+            return self._choose_procure_food(npc)
 
-        # Basic needs fallback
-        if npc.hunger > 7:
-            possible_actions.append({
-            "name": "eat",
-            "params": {},
-            "motivation": "satisfy_hunger"
-        })
+        # === 3. Basic Need: Earn Money ===
+        if mtype == "earn_money":
+            return self._choose_earn_money(npc)
 
-        
-        # Add salience-informed actions based on memory
-        for anchor in anchors:
-            if anchor.name == "obtain_ranged_weapon":
-                known_weapon_locations = npc.mind.memory.query_memory_by_tags(["weapons", "shop"])
+        # === 4. Fun / Social / Recreation ===
+        if mtype == "have_fun":
+            return self._choose_have_fun(npc)
 
-                for memory in known_weapon_locations:
-                    location = memory.target
-                    if location:
-                        action = {
-                            "name": "visit_location",
-                            "params": {"location": location},
-                            "anchor": anchor
-                        }
-                        possible_actions.append(action)
+        # === 5. Unknown → idle fallback ===
+        return {"name": "idle"}
 
-        if not possible_actions:
-            debug_print(npc,
-                "[UTILITYAI] No possible actions generated from anchors; defaulting to idle.",
-                category="action"
-            )
-            return {"name": "idle"}
+    def _choose_procure_food(self, npc):
+
+        # 1. Eat snack if available
+        snack = npc.inventory.get_item_with_tag("snack")
+        if snack:
+            return {"name": "eat_auto", "params": {"item": snack}}
+
+        # 2. Use semantic knowledge
+        food_sources = npc.mind.memory.food_sources
+        if food_sources:
+            best = food_sources.best_source()
+            if best and best.location_ref:
+                return {
+                    "name": "visit_location_auto",
+                    "params": {"destination": best.location_ref}
+                }
+
+        # 3. No food source → fallback
+        return {"name": "idle"}
+
+    def _choose_earn_money(self, npc):
+        if npc.workplace:
+            return {
+                "name": "visit_location_auto",
+                "params": {"destination": npc.workplace}
+            }
+
+        # fallback — no workplace assigned
+        return {"name": "idle"}
     
-        from ai_utility_thought_tools import extract_anchor_from_action
+    def _choose_have_fun(self, npc):
+        prefs = npc.fun_prefs or {}
 
-        scored = [(self.score_action(a), a) for a in possible_actions]
-        scored.sort(key=lambda x: x[0], reverse=True)
+        # 1. Social fun: meet a friend
+        if prefs.get("social", 0) > 5:
+            friend = npc.get_close_friend()
+            if friend:
+                return {
+                    "name": "visit_location_auto",
+                    "params": {"destination": friend.location}
+                }
 
-        best_score, best_action = scored[0]
+        # 2. Location-based fun
+        fav_loc = npc.world.find_location_matching_fun_prefs(prefs)
+        if fav_loc:
+            return {
+                "name": "visit_location_auto",
+                "params": {"destination": fav_loc}
+            }
 
-        if npc.is_test_npc:
-            print(f"[UtilityAI] {npc.name} chose {best_action['name']} with score {best_score:.2f}")
+        # 3. Object-based fun (retail therapy)
+        if prefs.get("shopping", 0) > 5:
+            shop = npc.world.find_nearest_location_with_tag(npc.location, "shop")
+            if shop:
+                return {
+                    "name": "visit_location_auto",
+                    "params": {"destination": shop}
+                }
 
-        return best_action
+        return {"name": "idle"}
+
+
+
+
+            
+
 
     
     def execute_action(self, action, region):
@@ -160,6 +185,7 @@ class UtilityAI(BaseAI):
 
 
     def score_action(self, action: dict, context: dict = None) -> float:
+        #Score_action should be simplified later — but we keep it for now
         npc = self.npc
         context = context or {}
 

@@ -18,9 +18,10 @@ def main_menu(all_locations, all_characters):
         print("1: Play/Test Game")
         print("2: Show world")
         print("3: Run Simulation")
-        print("6: Exit")
+        print("4: Exit")
 
-        choice = get_user_choice(6)
+        #numbers offset by 1
+        choice = get_user_choice(4)
         if choice == 0:  # User chose "Play/Test Game"
             selected_character, region = select_character_menu()
             if selected_character:
@@ -29,12 +30,12 @@ def main_menu(all_locations, all_characters):
 
         elif choice == 1:  # User chose "Show World"
             from create import all_regions
-            display_world(all_regions)
-        elif choice == 2:  # Simulation mode
+            display_world(all_regions)#We should inspect and update htis function
+        elif choice == 2:  # 
             from simulation import run_simulation
             run_simulation(all_characters, num_days=int(input("How many days to simulate? ")))
 
-        elif choice == 5:  # User chose "Exit"
+        elif choice == 4:  # User chose "Exit"
             print("Exiting game...")
             break  # Exit the loop and end the program
         else:

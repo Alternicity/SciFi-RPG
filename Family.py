@@ -31,6 +31,8 @@ class Family:
                 civilian.social_connections["family"] = []
             civilian.social_connections["family"].append(self)
 
+    "add update npc.loyalties code here"
+
 
 def assign_families_and_homes(game_state):
     """

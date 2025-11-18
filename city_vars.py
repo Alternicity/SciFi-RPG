@@ -1,15 +1,11 @@
 #city_vars.py
 
-
 #File to hold a class and object creation code to make accesible variables for other files to easily access
-#get_game_state() is not a hack in a negative sense — it’s a valid service locator pattern
-
+#get_game_state() is not a hack in a negative sense — it’s a service locator pattern
 
 #"Resolve core references like region inside constructors using get_game_state() — but make sure upstream code
 #  never hands it None accidentally."
 
-#Should this be inside class GameState? It is more of a init config
-#Should it be encapsualted somehow for easier impotr to other files?
 MAX_CIVILIANS_PER_LOCATION = 5
 CIVILIANS_PER_REGION = 15
 SHOP_PATRONS_MIN = 2
@@ -20,8 +16,6 @@ class GameState:
         GAME_MODE_PLAYER = "player"
         GAME_MODE_SIMULATION = "simulation"
 
-        # NEW: determines whether the game is in player mode or simulation mode
-        #Later: You Can Even Add a Command-Line Flag or Menu Option
         self.game_mode = GAME_MODE_PLAYER
         self.tick = 0 # 1 hour
         self.day = 1
@@ -33,8 +27,8 @@ class GameState:
         self.gangs = []
         self.all_street_gangs = []
         self.corporations = []
-        self.homes = [] #needs populating
-        self.public_places = [] #needs populating
+        self.homes = [] #might need populating
+        self.public_places = [] #might need populating
         self.all_regions = []
         self.all_locations = []
         self.factions = [] #is not used

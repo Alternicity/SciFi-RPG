@@ -3,6 +3,8 @@ from tabulate import tabulate
 import logging
 from textwrap import wrap
 
+from base_classes import Character
+
 import loader
 import os
 from collections import defaultdict
@@ -254,6 +256,32 @@ def display_gangs(game_state):
 
         # Add a space between gang entries for clarity
         print("\n" + "-" * 50 + "\n")
+
+def debug_list_gang_hqs(game_state):
+    """
+    Lightweight diagnostic to show:
+    - Gang name
+    - Whether it is a street gang
+    - HQ name (or MISSING)
+    - Member count
+    """
+    print("\n[DEBUG] ===== GANG HQ DIAGNOSTICS =====\n")
+    
+    gangs = game_state.gangs if hasattr(game_state, "gangs") else []
+    street_gangs = set(game_state.all_street_gangs) if hasattr(game_state, "all_street_gangs") else set()
+
+    if not gangs:
+        print("No gangs found in game_state.")
+        return
+
+    for gang in gangs:
+        is_street = "Street Gang" if gang in street_gangs else "Non-Street Gang"
+
+        hq_name = gang.HQ.name if getattr(gang, "HQ", None) else "❌ NO HQ ASSIGNED"
+
+        member_count = len(getattr(gang, "members", []))
+
+        print(f"• {gang.name:<25} | {is_street:<15} | HQ: {hq_name:<25} | Members: {member_count}")
 
 
 def display_state(state):
@@ -623,17 +651,47 @@ def display_percepts_table(npc):
         except Exception:
             salience_score = 0.0
 
+                # --- Build Info Column ---
+        info = "—"
+
+        # Origin objects may be Location, Character, Item, etc.
+        origin_obj = origin
+
+        # Civilians
+        if isinstance(origin_obj, Civilian):
+            if getattr(origin_obj, "workplace", None) == npc.location:
+                info = "Employee"
+            else:
+                info = "Civilian"
+
+        # Gang Members
+        elif isinstance(origin_obj, GangMember):
+            fac = getattr(origin_obj, "faction", None)
+
+            if fac:
+                # Check if faction is a Gang object
+                if getattr(fac, "type", None) == "gang":
+                    if getattr(fac, "is_street_gang", False):
+                        info = f"{fac.name} (street gang)"
+                    else:
+                        info = f"{fac.name} (gang)"
+                else:
+                    info = "GangMember (unknown faction)"
+            else:
+                info = "GangMember (unaffiliated)"
+        # Append row
         table_data.append([
             i,
             desc,
             type_,
             appearance,
-            n_keys,
+            info,
         ])
+
 
     print(tabulate(
         table_data,
-        headers=["#", "Description", "Type", "Appearance", "#Keys"],
+        headers=["#", "Description", "Type", "Appearance", "Info"],
         tablefmt="rounded_outline"
     ))
 

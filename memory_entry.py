@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 import time
 from typing import Any, List, Dict, Optional, Any, Union, Set, Callable, TYPE_CHECKING
 from datetime import datetime
+from base_classes import Location
 
 #DONT IMPORT from character_memory.py
 
@@ -39,6 +40,14 @@ class MemoryEntry:
     similarMemories: List[Any] = field(default_factory=list)
     verb: str = ""
     cost_to_owner: Optional[int] = 0  # From 0 (neutral) to 10 (deeply costly)
+
+    #npc movement
+    """ left: Optional["Location"] = None  # previous location name
+    arrived_at: Optional["Location"] = None    # new destination name """
+
+    left: Optional[str] = None  # previous location name
+    arrived_at: Optional[str] = None # new destination name
+
     function_reference: Optional[Dict[str, str]] = field(default_factory=dict)
     #Structured mapping (e.g., class/method/module) for introspection.
     implementation_path: Optional[str] = None
@@ -159,8 +168,38 @@ class RegionKnowledge:
     def summary(self) -> str:
         return f"{self.character_or_faction.name}'s view of {self.region_name}: {len(self.locations)} locations, {len(self.region_gangs)} gangs"
 
+@dataclass
+class FoodSourceMemory(MemoryEntry):#subclass of MemoryEntry
+    location_ref: Optional["Location"] = None
+    
+    base_preference: int = 0
+    fun_factor: int = 0
+    ambience_factor: int = 0
+    nutrition_value: int = 0
+    
+    considers_fun: bool = False
+    considers_ambience: bool = False
+    considers_nutrition: bool = True
 
+    is_home_option: bool = False
+    is_shop_option: bool = False
+    partner_present: bool = False
+    can_expect_partner: bool = False
 
+@dataclass
+class FoodSources:
+    entries: Dict[str, FoodSourceMemory] = field(default_factory=dict)
+
+    def best_source(self):
+        if not self.entries:
+            return None
+        # simple scoring now, replace later
+        return max(self.entries.values(), key=lambda e: (
+            e.base_preference +
+            (e.fun_factor if e.considers_fun else 0) +
+            (e.ambience_factor if e.considers_ambience else 0) +
+            (e.nutrition_value if e.considers_nutrition else 0)
+        ))
 #Sample Memories for injection
 
 

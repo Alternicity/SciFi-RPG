@@ -7,6 +7,8 @@ from InWorldObjects import Wallet
 
 logging.basicConfig(level=logging.INFO)
 
+#this is one of the first two places i want to incorporate scalar fields
+
 class EconomyManager:
     def __init__(self):
         self.power_stations = []

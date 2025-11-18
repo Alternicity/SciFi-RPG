@@ -9,7 +9,7 @@ from base_classes import Character
 from weapons import Knife
 from inventory import Inventory
 from character_memory import MemoryEntry
-from debug_utils import debug_print
+from debug_utils import debug_print, add_character
 #no ai import here
 def create_gang_characters(faction, all_regions):
 
@@ -32,7 +32,7 @@ def create_gang_characters(faction, all_regions):
 
         # Add to region's street gang list
         if faction not in region.region_street_gangs:
-            region.region_street_gangs.append(faction)
+            region.region_street_gangs.append(faction)#doesnt appear to update gamestate variables
 
     #print(f"Creating Boss for {faction.name}...")
 
@@ -145,6 +145,26 @@ def create_gang_characters(faction, all_regions):
             member.location = faction.street_gang_start_location
         elif faction.HQ:
             member.location = faction.HQ
+            add_character(faction.HQ, member)#I only just added this
+        else:
+            member.location = None#New. Why? Does this line break street gang random placement?
+
+        # *** Ensure the location object records the member ***
+        #Note : does this block just replicate the add_character call above?
+        if getattr(member, "location", None):
+            loc = member.location
+            # defensive: ensure characters_there exists and avoid duplicates
+            if not hasattr(loc, "characters_there"):
+                loc.characters_there = []
+            if member not in loc.characters_there:
+                loc.characters_there.append(member)
+                # optional debug
+                debug_print(member, f"[INIT] Registered {member.name} in {loc.name}.", category="placement")
+        else:
+            debug_print(member, f"[INIT] {member.name} created with no location (faction={faction.name}).", category="placement")
+
+
+
         characters.append(member)
         faction.region.characters_there.append(member)
     

@@ -1,6 +1,10 @@
 # debug_utils.py
 from config import (
     DEBUG_MODE,
+    SHOW_FUN_LOGS,
+    SHOW_EAT_FLAGS,
+    SHOW_PRIMARY_LOGS,
+    SHOW_SECONDARY_LOGS,
     SHOW_CREATE_LOGS,
     SHOW_TEST_NPC_LOGS,
     SHOW_TICK_LOGS,
@@ -28,11 +32,17 @@ from config import (
     SHOW_FAMILY_LOGS,
     SHOW_PLACEMENT_LOGS,
     SHOW_VERIFY_LOGS,
+    SHOW_ECONOMY_LOGS,
+    SHOW_ROLE_FLAGS,
     DEBUG_LEVEL,
 )
 
 DEBUG_FLAGS = {
+    "fun": SHOW_FUN_LOGS,
+    "eat": SHOW_EAT_FLAGS,
     "create": SHOW_CREATE_LOGS,
+    "primary": SHOW_PRIMARY_LOGS,
+    "secondary": SHOW_SECONDARY_LOGS,
     "placement": SHOW_PLACEMENT_LOGS,
     "test_npc": SHOW_TEST_NPC_LOGS,
     "tick": SHOW_TICK_LOGS,
@@ -59,27 +69,56 @@ DEBUG_FLAGS = {
     "choice": SHOW_CHOICE_LOGS,
     "family": SHOW_FAMILY_LOGS,
     "verify": SHOW_VERIFY_LOGS,
+    "economy": SHOW_ECONOMY_LOGS,
+    # NEW — role filtering is a **parallel system**, not inside DEBUG_FLAGS
 }
-
+    
+# A second parallel dict for role filtering:
+ROLE_FILTERS = {
+    "primary": True,
+    "secondary": True,
+    "civilian_test": True,
+    "test_npc": False,
+}
 
 def debug_print(npc=None, message="", category="general", level="DEBUG"):
     if not DEBUG_MODE:
         return
 
-    # Allow system logs before NPCs exist
-    if npc is None:
-        npc_name = "System"
+    # ----- Resolve categories -----
+    if isinstance(category, str):
+        categories = [category]
     else:
-        # Filter out non-test NPCs
-        if not getattr(npc, "is_test_npc", False):
-            return
-        npc_name = getattr(npc, "name", "Unknown")
+        categories = list(category)
 
-    # Category filtering
+    # ----- Category filtering -----
+    for cat in categories:
+        if cat in DEBUG_FLAGS and not DEBUG_FLAGS[cat]:
+            return
+
+    # 1 — NPC filter
+    if npc is not None:
+        role = getattr(npc, "debug_role", None)
+        if role is not None:
+            if not ROLE_FILTERS.get(role, False):
+                return  # suppressed because of NPC’s role
+
+    # 2 — category filter
     if category in DEBUG_FLAGS and not DEBUG_FLAGS[category]:
         return
 
-    print(f"[{category:<7}] {npc_name}: {message}")
+    # ----- Message formatting -----
+    npc_name = getattr(npc, "name", "System")
+    print(f"[{','.join(categories):<20}] {npc_name}: {message}")
+
+
+def add_character(location, char):
+    #Add a debug print to every place characters are added to a location, the ONLY legal way to place someone inside a location.
+    location.characters_there.append(char)
+    debug_print(char, f"PLACED at {location.name} from add_character", category="placement")
+    """ Correct Safe Ordering (prevents ghost placement):
+    1. Set new location on the character
+    2. Call add_character() """
 
 
 def diagnose_civilian_location_integrity(region_civilians, all_civilians):

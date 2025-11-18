@@ -251,7 +251,8 @@ class Manager(Character):
         self.HQ = None
         if self.faction and hasattr(self.faction, "HQ") and self.faction.HQ:
             self.HQ = self.faction.HQ
-            self.location = self.HQ
+            self.location = self.HQ        #ATTN npcs are placed with add_character() now
+
             #print(f"Manager {self.name} starts at: {self.HQ.name} + has {self.wallet.bankCardCash}")
         else:
             print(f"⚠️ Manager {self.name} has no HQ assigned!")
@@ -794,6 +795,8 @@ class VIP(Civilian):
 
         municipal_buildings = [loc for loc in region.locations if isinstance(loc, MunicipalBuilding)]
         location = municipal_buildings[0] if municipal_buildings else None  # Pick first available or None
+        #ATTN npcs are placed with add_character() now
+
 
         # Default loyalty setup for VIP
         default_loyalties = {
@@ -946,7 +949,7 @@ class Child(Civilian):
 
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", Inventory(owner=self))
-  # List to store items in the character's inventory
+        # List to store items in the character's inventory
         self.position = position
 
     def __repr__(self):
@@ -1163,7 +1166,7 @@ class Babe(Civilian):
 
         self.health = 120 + toughness
         self.inventory = kwargs.get("inventory", Inventory(owner=self))
-  # List to store items in the character's inventory
+        # List to store items in the character's inventory
         self.position = position
         self.partner = Character
 

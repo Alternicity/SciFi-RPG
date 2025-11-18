@@ -1,17 +1,16 @@
 #ai_gang.py
 import time
 from ai_utility import UtilityAI, generate_location_visit_thought, create_anchor_from_thought
-from worldQueries import get_viable_robbery_targets
+
 from npc_actions import steal_auto, rob_auto
 from character_thought import Thought
-from worldQueries import get_viable_robbery_targets, get_region_knowledge
+from worldQueries import get_region_knowledge
 from motivation import Motivation
 
 #deprecated
 #from summary_utils import summarize_motivations_and_percepts
 
-import random
-from city_vars import GameState
+
 from create_game_state import get_game_state
 from character_thought import Thought
 from character_memory import deduplicate_memory_entries

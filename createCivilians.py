@@ -1,5 +1,7 @@
 #createCivilians.py
 import random
+import collections
+import math
 from base_classes import Character, Factionless
 from location import Shop, Region, Park
 from location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
@@ -10,18 +12,13 @@ from status import CharacterStatus, FactionStatus, StatusLevel
 from ai_civilian import AdeptaAI
 from utils import normalize_location_regions, get_region_for_location, find_location_by_type
 from city_vars import CIVILIANS_PER_REGION, SHOP_PATRONS_MIN, SHOP_PATRONS_MAX, MAX_CIVILIANS_PER_LOCATION
-from debug_utils import debug_print
+from debug_utils import debug_print, add_character
 
 def create_civilian_population(all_locations, all_regions, factionless, num_civilians=None):#30
     """Generate civilians and assign them logical locations."""
     from create_character_names import create_name
     from create_game_state import get_game_state
     game_state = get_game_state()
-
-    """ print("DEBUG: Number of locations passed in:", len(all_locations))
-    print("DEBUG: Regions passed in:", [r.name for r in all_regions])
-    print("DEBUG: Sample location:", all_locations[0] if all_locations else "No locations")
-    print("DEBUG: Sample location region:", all_locations[0].region if all_locations else "N/A") """
 
     normalize_location_regions(all_locations, all_regions)  # 🧹 Ensure valid region refs
 
@@ -88,12 +85,41 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     # --- Assign workplaces for employees ---
     assign_workplaces(civilians, workplaces, shops)
 
+    #verbose
+    debug_print(npc=None, message=f"[ECONOMY INIT] Civ {civilian.name} home={civilian.home.name} is_employee={civilian.is_employee}", category="economy")
+    for civ in civilians[:10]:  # sample first 10 to avoid flood
+        debug_print(npc=None, message=f"[ECONOMY ASSIGN] Civ {civ.name} workplace={getattr(civ.workplace,'name',None)} is_employee={civ.is_employee}", category="economy")
+
+    # Print global constants so we can verify they aren't being overridden
+    debug_print(npc=None, message=f"[ECONOMY VARS] SHOP_PATRONS_MIN={SHOP_PATRONS_MIN} SHOP_PATRONS_MAX={SHOP_PATRONS_MAX} MAX_CIVILIANS_PER_LOCATION={MAX_CIVILIANS_PER_LOCATION}", category="economy")
+
+    # --- Assign logical start locations ---
     # --- Assign logical start locations ---
     for civ in civilians:
-        if civ.is_employee and civ.workplace:#few civilians have a workplace set
-            civ.location = civ.workplace
+        # RULE:
+        # 1) If employee in a NON-SHOP workplace → start at home 80% of time, workplace 20% of time.
+        # 2) If employee in a SHOP → ALWAYS start at home.
+        # 3) Non-employees → start at home only.
+
+        if civ.is_employee and civ.workplace and not isinstance(civ.workplace, Shop):
+            if random.random() < 0.2:  # 20% chance they start at work
+                civ.location = civ.workplace
+                add_character(civ.workplace, civ)
+            else:
+                civ.location = civ.home
+                add_character(civ.home, civ)
         else:
             civ.location = civ.home
+            add_character(civ.home, civ)
+            
+
+        #civ.location.characters_there.append(civ)
+        #I just commented this out as it is duplicated below
+
+        """ Shops no longer get employees at worldgen
+        But civilians still have a workplace for later simulation
+        Shops will only get patrons from later systems, not 3 pipelines at once """
+
 
         if civ.location:
             civ.location.characters_there.append(civ)
@@ -123,7 +149,8 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
         sex="female",
         faction=factionless,
         region=factionless.region,
-        location=location,
+        location=location,        #ATTN npcs are placed with add_character() now
+
         motivations=motivations,
         status=status,
         intelligence=20,  # Override default
@@ -223,35 +250,29 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
 
     return civilians
 
-def assign_workplaces(civilians, workplaces, shops):
-    """Assign workplaces fairly among civilians flagged as employees."""
+def assign_workplaces(civilians, workplaces, shops):#line 253
+    """Assign workplaces to civilians who are employees.
+    - workplaces: list of location objects (excludes shops if you prefer)
+    - shops: list of Shop objects (kept separate so we can treat employees vs patrons)
+    """
 
     shop_index = 0
-    workplace_counts = {id(wp): 0 for wp in workplaces}
+    for civ in civilians:
+        if civ.is_employee:
+            # 80% employee assignment probability exists, but assignment should be broad.
+            available_wp = workplaces  # includes shops
+            if not available_wp:
+                continue
 
-    for i, civ in enumerate(civilians):
-        if civ.is_employee and workplaces:
-            chosen = None
-            if shops:
-                chosen = shops[shop_index % len(shops)]
-                shop_index += 1
-            else:
-                chosen = random.choice(workplaces)
+            # Balanced distribution
+            chosen = available_wp[shop_index % len(available_wp)]
+            shop_index += 1
 
-            if chosen:
-                civ.workplace = chosen
-                chosen.employees_there.append(civ)
-                workplace_counts[id(chosen)] = workplace_counts.get(id(chosen), 0) + 1
-
-        # --- Controlled debug output ---
-        if i < 10:  # only print for first 10 civilians
-            loc_name = getattr(civ.location, "name", "None")
-            debug_print(civ, f"[SPAWN] Location: {loc_name}", category="placement")
-
-            top_motive = civ.motivation_manager.get_highest_priority_motivation()
-            debug_print(civ, f"[MOTIVE] Initial: {top_motive}", category="placement")
-
-    return civilians
+            civ.workplace = chosen
+            chosen.employees_there.append(civ)
+            """ Employees now have the workplace assigned
+            But are not placed inside it yet """
+            #no need for a return here
 
 
 from debug_utils import debug_print
@@ -280,10 +301,8 @@ def place_civilians_in_homes(civilians, families, all_locations, shops=None, pop
                 home = random.choice(all_locations) if all_locations else None
 
         civ.location = home
-
         # Track them in the location list so observe() sees them
-        if civ.location:
-            civ.location.characters_there.append(civ)
+        add_character(home, civ)
 
         # Debug
         debug_print(
@@ -297,27 +316,49 @@ def place_civilians_in_homes(civilians, families, all_locations, shops=None, pop
 
 
 def populate_shops_with_patrons(civilians, shops):
-    """Ensure each shop has a few civilian patrons to maintain realism for robbery tests."""
+    """Populate each shop with a small number of patrons (non-employees), capped by MAX_CIVILIANS_PER_LOCATION."""
     if not shops or not civilians:
         return
 
+    # free_civilians = non-employees who are at home (not already at workplace)
     free_civilians = [c for c in civilians
-                    if getattr(c, "home", None) is not None and c.location and isinstance(c.location, tuple(RESIDENTIAL))
-    ]
+                      if (not getattr(c, "is_employee", False)) and getattr(c, "home", None) is not None and (c.location is None or isinstance(c.location, tuple(RESIDENTIAL)))]
+    if not free_civilians:
+        debug_print(npc=None, message="[CIVILIAN PATRONS] No free civilians found for patrons", category="economy")
+        return
+
     for shop in shops:
+        # determine target patron count but clamp to sensible ranges
         target_count = random.randint(SHOP_PATRONS_MIN, SHOP_PATRONS_MAX)
+        target_count = min(target_count, MAX_CIVILIANS_PER_LOCATION - len(shop.characters_there))
+        if target_count <= 0:
+            continue
+
         patrons = random.sample(free_civilians, min(target_count, len(free_civilians)))
+
+        # DEBUG: sanity-check free_civilians
+        non_civs = [c for c in free_civilians if c.faction and hasattr(c.faction, "is_gang") and c.faction.is_gang]
+        if non_civs:
+            debug_print(None,
+                f"[ANOMALY] Gang members detected in free_civilians BEFORE patron placement: {[c.name for c in non_civs]}",
+                "placement")
+
         for civ in patrons:
-            if len(shop.characters_there) >= MAX_CIVILIANS_PER_LOCATION:
-                break
-            # Move the civilian
-            if civ.location and civ in civ.location.characters_there:#maybe this!
-                civ.location.characters_there.remove(civ)
-            civ.location = shop#maybe this!
-            shop.characters_there.append(civ)
+            # Remove from old location safely
+            if civ.faction and hasattr(civ.faction, "is_gang") and civ.faction.is_gang:
+                debug_print(civ, f"[ANOMALY] GANG MEMBER SELECTED AS SHOP PATRON", "placement")
+
+            old = civ.location
+            if old and civ in getattr(old, "characters_there", []):
+                old.characters_there.remove(civ)
+
+            civ.location = shop
+            add_character(shop, civ)
             free_civilians.remove(civ)
 
-    print(f"[CIVILIANS] Populated {len(shops)} shops with civilian patrons.")
+    debug_print(npc=None, message=f"[CIVILIANS] Populated {len(shops)} shops with civilian patrons (non-employees).", category="economy")
+    debug_print(npc=None, message=f"[INIT VARS] SHOP_PATRONS_MIN={SHOP_PATRONS_MIN} SHOP_PATRONS_MAX={SHOP_PATRONS_MAX} MAX_CIVILIANS_PER_LOCATION={MAX_CIVILIANS_PER_LOCATION} CIVILIANS_PER_REGION={CIVILIANS_PER_REGION}", category="economy")
+
 
 def get_playground_location(all_locations):
     for loc in all_locations:

@@ -157,13 +157,12 @@ def view_characters(all_characters, region): #this should be moved to display
         all_characters = [all_characters]  # Wrap single object in a list
     display_filtered_character_summary(all_characters)
 
-def assign_random_civilians_to_random_shops(regions, all_characters, count: int = 4):
+""" def assign_random_civilians_to_random_shops(regions, all_characters, count: int = 4):
     print(f"[TRACE] assign_random_civilians_to_random_shops() called with count={count}")
     from location import Shop
     from characters import Civilian
     all_civilians = []
     all_shops = []
-    
     
     # Gather civilians and shops
     all_civilians = [c for c in all_characters if getattr(c, "is_civilian", False)]
@@ -172,7 +171,6 @@ def assign_random_civilians_to_random_shops(regions, all_characters, count: int 
     region_civilians = []#local diagnostic variable
     for region in regions:
         region_civilians.extend([c for c in getattr(region, "characters", []) if getattr(c, "is_civilian", False)])
-
 
     # Ensure we don’t exceed available civilians
     civilians_to_assign = random.sample(all_civilians, min(count, len(all_civilians)))
@@ -209,7 +207,7 @@ def assign_random_civilians_to_random_shops(regions, all_characters, count: int 
     # --- Run diagnostics ---
     from debug_utils import diagnose_civilian_location_integrity
     diagnose_civilian_location_integrity(region_civilians, all_civilians)
-    print(f"[TRACE] Diagnostic scan complete.\nTotal characters created: {len(all_characters)}")
+    print(f"[TRACE] Diagnostic scan complete.\nTotal characters created: {len(all_characters)}") """
 
 
 

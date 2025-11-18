@@ -64,7 +64,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
 
     # --- Track presence ---
     if hasattr(destination, "characters_there") and npc not in destination.characters_there:
-        destination.characters_there.append(npc)
+        destination.characters_there.append(npc)#is this still valid, or should we use add_character here?
     if hasattr(destination, "recent_arrivals"):
         destination.recent_arrivals.append(npc)
 
@@ -80,17 +80,34 @@ def visit_location_auto(character, region=None, destination=None, destination_na
 
     # --- Episodic memory ---
     if hasattr(character, "mind") and hasattr(character.mind, "memory"):
-        memory_entry = MemoryEntry(
+        prev_loc_name = getattr(character.previous_location, "name", None)
+        dest_name = destination.name
+
+        movement_memory = MemoryEntry(
             subject=character.name,
             verb="arrived_at",
-            object_=destination.name,
-            details=f"{character.name} arrived at {destination.name}.",
-            tags=["arrival", "travel", "location_entry"],
-            type="event",
+            left=prev_loc_name,
+            arrived_at=dest_name,
+            object_=dest_name,
+            details=f"{character.name} moved from {prev_loc_name} to {dest_name}.",
+            tags=["movement", "travel", "arrival", "location_entry"],
+            type="movement",
             initial_memory_type="episodic",
-            timestamp=timestamp or "Unknown time"
+            timestamp=timestamp or "Unknown time",
+            description=f"Movement event: {character.name} → {dest_name}",
+            target=destination,
+            payload={
+                "previous_location": prev_loc_name,
+                "destination": dest_name,
+                "day": day,
+                "tick": tick
+            },
+            associated_function="visit_location_auto",
+            implementation_path="npc_actions.visit_location_auto"
         )
-        character.mind.memory.episodic.append(memory_entry)
+
+        character.mind.memory.episodic.append(movement_memory)
+
 
         # Clear thoughts related to this destination
         if hasattr(character, "mind"):
@@ -270,9 +287,21 @@ def steal_auto(npc, region, item=None):
 def exit_location_auto():
     print (f"npc exit location called")
 
-def eat_auto():
-    pass
-    print (f"npc eat called")
+def eat_auto(self):
+    npc = self
+    name = self.name
+    #what exactly is self for an npc action function?
+    debug_print(npc, f"[EATING] eat_auto called for npc.{name}", category="eat")
+    
+
+def procure_food_auto(self):
+    npc = self
+    debug_print(npc, f"[EATING] procure_food_auto called for {npc.name}", category="eat")
+    
+
+def have_fun_auto(self):
+    npc = self
+    debug_print(npc, f"[FUN] have_fun_auto called for {npc.name}", category="fun")
 
 def idle_auto(npc, region=None, **kwargs):
     pass

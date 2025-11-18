@@ -72,7 +72,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         specialization = guess_specialization_from_inventory(shop.inventory)
         shop.name = generate_shop_name(specialization=specialization, ownership="family")
         shop.inventory.owner = shop
-        debug_print(None, "[TRACE] About to run shop stocking block", "create")#added
+        #debug_print(None, "[TRACE] About to run shop stocking block", "create")#added
 
         try:
             shop.inventory.add_item(SmartPhone(price=200, quantity=5))
@@ -120,7 +120,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     return locations
 
 def add_location(self, location: Location):
-    location.region = self
+    location.region = self#what is this?
     self.locations.append(location)
     #dont forget to add to region and RegionKnowledge (perhaps via gossip)
     game_state = get_game_state()

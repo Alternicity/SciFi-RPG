@@ -16,6 +16,7 @@ from status import FactionStatus, StatusLevel, CharacterStatus
 from base_classes import Character
 from Family import assign_families_and_homes, link_family_shops
 from create_game_state import get_game_state
+from debug_utils import debug_print
 
 game_state = get_game_state()
 
@@ -55,7 +56,7 @@ def create_all_characters(factions, all_locations, all_regions):
         else:
             print(f"[ERROR] create_faction_characters() returned None for faction: {faction.name}")
 
-    from createCivilians import create_civilian_population, assign_workplaces, place_civilians_in_homes
+    from createCivilians import create_civilian_population, place_civilians_in_homes
 
     factionless = next(f for f in factions if f.name == "Factionless")
     civilians = create_civilian_population(all_locations, all_regions, factionless)
@@ -67,10 +68,25 @@ def create_all_characters(factions, all_locations, all_regions):
     shops = [loc for loc in all_locations if getattr(loc, "is_shop", False)]
     place_civilians_in_homes(civilians, families, all_locations, shops, populate_shops_after_worldgen=True)
 
+    # --- DIAGNOSTIC CHECK: After homes + shop patron placement ---
+    debug_print(None, "[DIAG] Checking all major faction HQs just after shop population...", "placement")
+
+    for faction in factions:
+        hq = getattr(faction, "hq", None)
+        if hq:
+            occupants = [c.name for c in getattr(hq, "characters_there", [])]
+            debug_print(None, f"[DIAG] HQ {hq.name} occupants: {occupants}", "placement")
+
+    debug_print(None, "[DIAG] Checking shop occupants after shop population...", "placement")
+    for shop in shops:
+        occupants = [c.name for c in shop.characters_there]
+        debug_print(None, f"[DIAG] SHOP {shop.name} occupants: {occupants}", "placement")
+    # --------------------------------------------------------------
+
     link_family_shops(game_state)
     
-    from game_logic import assign_random_civilians_to_random_shops
-    assign_random_civilians_to_random_shops(all_regions, all_characters, count=3)
+    """from game_logic import assign_random_civilians_to_random_shops
+    assign_random_civilians_to_random_shops(all_regions, all_characters, count=3) """
 
     print(f"Total characters created: {len(all_characters)}")
     return all_characters
@@ -128,7 +144,8 @@ def player_character_options(all_regions, factions):
         "race": "Irish",
         "faction_name": "Factionless",
         "region_name": "Northville",
-        "location_name": "Park",
+        "location_name": "Park",        #ATTN npcs are placed with add_character() now
+
         "wallet": Wallet(bankCardCash=500),
         "preferred_actions": {"charm", "heal", "flirt"},
         "motivations": MotivationPresets.for_class("Adepta"),  # new
@@ -184,7 +201,8 @@ def instantiate_character(char_data, all_regions, factions):
     else:
         print(f"[DEBUG] Region found: {region.name}")
 
-
+    #ATTN npcs are placed with add_character() now
+    #not sure if that is relevant here, look at it"
     location = get_location_by_name(location_name, all_regions)
     #tmp block below
     if location is None:

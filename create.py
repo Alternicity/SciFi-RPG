@@ -70,7 +70,7 @@ def create_regions():
     # 🔁 Now populate each region with locations
     for region in all_regions:
         try:
-            location_list = create_locations(region_obj, wealth)
+            location_list = create_locations(region, wealth)
 
             region.locations = location_list
             region.shops = [loc for loc in location_list if isinstance(loc, Shop)]
@@ -78,6 +78,12 @@ def create_regions():
             # 🔗 Set the region reference on each location
             for loc in location_list:
                 loc.region = region
+
+            # 🔍 INSERT DIAGNOSTICS HERE
+            debug_print("system", f"\n[DEBUG] Region {region.name} locations (identity check):", category = "create")
+            for loc in location_list:
+                debug_print("system", f"  id={id(loc)}  name={loc.name}  region={loc.region.name}", category = "create")
+
 
         except Exception as e:
             debug_print(
@@ -279,6 +285,20 @@ def create_factions(all_regions, all_locations):
 
     all_characters = create_all_characters(factions, all_locations, all_regions)
 
+    #tmp
+    print("[DEBUG] Gang Member Spawn Check:")
+    for gang in game_state.gangs:
+        hq = gang.HQ
+        hq_list = [c.name for c in getattr(hq, "characters_there", [])] if hq else []
+        print(f"\nGang: {gang.name}")
+        print(f"  HQ: {hq.name if hq else 'None'}")
+        print(f"  HQ.characters_there: {hq_list}")
+
+        for m in gang.members:
+            print(f"    Member: {m.name}  | location={m.location.name if m.location else None}")
+
+
+
     return factions, all_characters
 
 def create_HQ(region, faction_type="gang"):
@@ -294,15 +314,7 @@ def assign_hq(faction, region):
     game_state = get_game_state()
 
     #Not all gang factions successfully get an HQ
-    """ Members of street gangs have a randomised location…
-    non street gang, non test npc GangMembers are perhaps not placed with precision """
-
-    """ Some regions do not create HQs
-    Some HQs are created but never added to region.locations
-    Some factions fail the HQ assignment logic and fallback to street gang logic
-    Some factions are not marked is_street_gang correctly
-    Some factions have no starting location assigned at all
-    In these cases, the fallback system randomly assigns locations, including shops. """
+    
 
     if faction.HQ is not None:  # ✅ Prevent multiple HQ assignments
         #print(f"{faction.name} already has an HQ in {faction.HQ.region.name}.")
@@ -323,16 +335,15 @@ def assign_hq(faction, region):
         #the problem with adding it to these lists is they are not named yet
         #add it to all_locations, which is not yet present here
         #add it to game_state.all_locations
-        #add it to -
-        #game_state.location_registry.register()# ← new
+
         available_hqs.append(new_hq)
 
     if available_hqs: 
         hq = random.choice(available_hqs)
         hq.faction = faction
-        hq.name = f"{faction.name} HQ"  # Update HQ name
-        faction.HQ = hq  # Update faction's HQ attribute
-        #print(f"{faction.name} HQ assigned: in {region.name}")
+        hq.name = f"{faction.name} HQ"
+        faction.HQ = hq
+
         #so appending to lists/register should happen here?
     else:
         faction.is_street_gang = True

@@ -184,15 +184,15 @@ class Character(PerceptibleMixin):
         concentration = 10,
         luck=10,
         psy=10,
-        charisma=10, #1-20
+        charisma=10,
         toughness=10,
         observation=10, #1-20 scale
         morale=10,
         status=None,
-        loyalties=None,# Default is None; initializes as a dictionary later
+        loyalties=None,
         custom_skills=None,
         **kwargs,
-        #here?
+        
     ):
         #assert hasattr(self, "region"), "region must be set by end of Character.__init__"
         super().__init__()
@@ -213,6 +213,11 @@ class Character(PerceptibleMixin):
 
         # --- Assign location and home region ---
         self.location = location
+
+        #new. line 217
+        #self._location = None
+        #for debugging npc placement/movement, deprecated unless movement debugging needed again, but also see visit_location_auto
+
         self.current_destination = location
         self.previous_location = None
         self.home_region = self.region
@@ -220,6 +225,7 @@ class Character(PerceptibleMixin):
         self.just_left_location = False
         
         self.name = name
+        self.debug_role = None   # "primary" | "secondary" | "civilian_test" | etc.
         self.is_player = False
         self.is_test_npc = False  # Default to False
         self.is_peaceful_npc = False
@@ -330,11 +336,11 @@ class Character(PerceptibleMixin):
         
         # Social connections
         self.social_connections = {
-            "friends": [],
+            "friends": [],#no code yet exists  to populate this
             "enemies": [],
             "allies": [],
             "neutral": [],
-            "partners": [partner] if partner else [],
+            "partners": [partner] if partner else [],#partners exists
         }
 
         self.isArmed = False
@@ -344,11 +350,12 @@ class Character(PerceptibleMixin):
         
         self.workplace: Optional[Location] = None
         self.shift = 'day'  # Can be 'day' or 'night'
-        self.is_working = False  # Tracks if the character is working
+        self.is_working = False  # Tracks if the character is working, in world, at a job, or "off duty"
         self.partner = partner
         self.faction = faction
         # Use kwargs to allow overrides, but default to constructor values
         self.fun = kwargs.get("fun", fun)
+        self.fun_prefs = None
         self.hunger = kwargs.get("hunger", hunger)
         self.strength = strength
         self.agility = agility
@@ -401,7 +408,39 @@ class Character(PerceptibleMixin):
         if self.faction and hasattr(self.faction, "HQ"):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
 
+    #new
+    #This block for debugging npc location/placement, deprecated, but see visit_location_auto
+    """ @property
+    def location(self):
+        return self._location
+
+    @location.setter
+    def location(self, new_loc):
+        from debug_utils import debug_print
+        import inspect
+        caller = inspect.stack()[1]
+        caller_info = f"{caller.function} @ {caller.filename}:{caller.lineno}"
+
+        old = getattr(self, "_location", None)
+        # safe name retrieval: object may not yet have .name during __init__
+        obj_name = getattr(self, "name", None) or getattr(self, "id", None) or repr(self)
+        old_name = getattr(old, "name", None) or (old.__class__.__name__ if old else None)
+        new_name = getattr(new_loc, "name", None) or (new_loc.__class__.__name__ if new_loc else None)
+
         
+        try:
+            debug_print(self,
+                f"[LOCATION-SET] {obj_name}: {old_name} -> {new_name}  triggered_by={caller_info}",
+                category="movement")
+        except Exception:
+            # swallow any debug errors (keeps init robust); optionally print minimal fallback
+            try:
+                print(f"[LOCATION-SET-ERR] {obj_name}: {old_name} -> {new_name}  triggered_by={caller_info}")
+            except Exception:
+                pass
+        self._location = new_loc """
+
+
     def register_anchor(self, anchor):
         """
         Registers an Anchor with this character.

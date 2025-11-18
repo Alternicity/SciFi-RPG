@@ -78,6 +78,7 @@ VALID_MOTIVATIONS = {
         "use_advanced_python_features": 8,
         "stimulate_programmer": 8,
         "charm U7s": 20,
+        "work": 12,
     }
     
 
@@ -88,6 +89,7 @@ class MotivationManager:
 
     def _coerce_motivation_type(self, motivation_type):
         """Safely coerce various inputs into a string motivation type."""
+        #not neccesary butis harmless and prevents a LOT of small bugs.
         if isinstance(motivation_type, str):
             return motivation_type
         # If a Motivation-like object

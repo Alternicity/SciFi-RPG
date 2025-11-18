@@ -47,6 +47,16 @@ class Region(PerceptibleMixin):
     def __post_init__(self):
         PerceptibleMixin.__init__(self)
 
+    def add_character(self, character):
+        if character not in self.characters_there:
+            self.characters_there.append(character)
+            """ You should register the NPC to a Region once
+            After that, their movement between locations should not change Region membership """
+
+    def remove_character(self, character):
+        if character in self.characters_there:
+            self.characters_there.remove(character)
+
     def get_percept_data(self, observer=None):
         return {
             "name": self.name,
@@ -69,14 +79,14 @@ class Region(PerceptibleMixin):
                 return loc
         return None
         
-#Each region will contain a list of Shop and other Location objects
+
     def add_location(self, location: Location):
         """Adds a location to this region and updates the location's region reference."""
         location.region = self
         self.locations.append(location)
         from create_game_state import get_game_state
         get_game_state().all_locations.append(location)
-        #HERE get_game_state is marked as not defined
+
 
     def trigger_event(self, event_type: str):
         print(f"Event triggered: {event_type} in {self.name}")
