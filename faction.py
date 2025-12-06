@@ -1,8 +1,10 @@
 from characters import Boss, CEO, Captain, Manager, Employee, GangMember
 from goals import Goal
-from tasks import Task
+from tasks.tasks import Task
 
-from base_classes import Character, Location, Faction
+from base.character import Character
+from base.location import Location
+from base.faction import Faction
 
 
 class Corporation(Faction):

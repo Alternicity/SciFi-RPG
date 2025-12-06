@@ -1,3 +1,4 @@
+#status.py
 from enum import IntEnum
 from visual_effects import color_codes, color_text, RED
 class StatusLevel(IntEnum):

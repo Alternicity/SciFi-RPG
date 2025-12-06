@@ -35,7 +35,7 @@ Factions\The State:
 Locations:
   folders: []
   files:
-  - Southville.json
+  - southville.json
   - locations.json
   - test_city.json
 Loyalties:

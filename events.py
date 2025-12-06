@@ -3,7 +3,7 @@ import uuid
 from distributions import generate_normal, generate_black_swan
 from combat import calculate_intimidation_score, calculate_resistance_score
 from characterActionTests import IntimidationTest
-from InWorldObjects import ObjectInWorld
+from objects.InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
 from debug_utils import debug_print

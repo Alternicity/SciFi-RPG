@@ -3,7 +3,7 @@
 from typing import List, Optional, Union, field
 from dataclasses import dataclass
 
-from base_classes import Character
+from base.character import Character
 from dream import Dream
 
 @dataclass

@@ -1,23 +1,32 @@
 #character_creation_funcs.py
 import logging
 import random
-from characters import (Boss, Captain, Employee, VIP, RiotCop,
+from characters import (Boss, Captain, Employee, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian, Child, Influencer,
                            Babe, Detective, Accountant, Taxman, Adepta)
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 from utils import get_faction_by_name, get_location_by_name, get_region_by_name
-from createGangCharacters import create_gang_characters
-from createCorporateCharacters import create_corporation_characters
-from create_TheState_characters import create_TheState_characters
-from motivation_presets import MotivationPresets
+from create.createGangCharacters import create_gang_characters
+from create.createCorporateCharacters import create_corporation_characters
+from create.create_TheState_characters import create_TheState_characters
+from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
+from motivation.motivation_presets import MotivationPresets
+from motivation.motivation_init import initialize_motivations
 from status import FactionStatus, StatusLevel, CharacterStatus
-from base_classes import Character
+from base.character import Character
 from Family import assign_families_and_homes, link_family_shops
-from create_game_state import get_game_state
+from create.create_game_state import get_game_state
 from debug_utils import debug_print
-
+from character_components.observation_component import ObservationComponent
+from character_components.inventory_component import InventoryComponent
+from character_components.self_awareness_component import SelfAwarenessComponent
+from character_components.wallet_component import WalletComponent
+from character_mind import Mind, Curiosity
+from tasks.tasks import TaskManager
+from employment.employee import EmployeeProfile
+from weapons import Knife
 game_state = get_game_state()
 
 def create_faction_characters(faction, all_regions, factions=None):
@@ -26,7 +35,10 @@ def create_faction_characters(faction, all_regions, factions=None):
         return create_gang_characters(faction, all_regions)
     elif isinstance(faction, Corporation):
         #return create_corporation_characters(faction, factions)
-        pass
+        #uncomment to create corp characters
+        
+        return []  # corporations intentionally have no characters (yet)
+    
     elif isinstance(faction, State):
         return create_TheState_characters(faction)
     elif faction.name == "Factionless":
@@ -38,14 +50,13 @@ def create_faction_characters(faction, all_regions, factions=None):
     return []
 
 def create_all_characters(factions, all_locations, all_regions):
-    # TODO: Update NPC instantiation to support Inventory objects
+
     print("\n" * 3)  # Line breaks for clarity
     print("Creating characters for factions...")
     print(f"Received {len(factions)} factions")
         # Extract all shops from the location list
-    from location import Shop
+    from location.locations import Shop
     shops = [loc for loc in all_locations if isinstance(loc, Shop)]
-
 
     all_characters = []
    
@@ -54,14 +65,17 @@ def create_all_characters(factions, all_locations, all_regions):
         if faction_characters:
             all_characters.extend(faction_characters)
         else:
-            print(f"[ERROR] create_faction_characters() returned None for faction: {faction.name}")
+            pass
+            #print(f"[ERROR] create_faction_characters() returned None for faction: {faction.name}")
+            #uncomment this when populating corporation factions fully
 
-    from createCivilians import create_civilian_population, place_civilians_in_homes
+    from create.createCivilians import create_civilian_population, place_civilians_in_homes
 
     factionless = next(f for f in factions if f.name == "Factionless")
     civilians = create_civilian_population(all_locations, all_regions, factionless)
     
     all_characters.extend(civilians)
+
 
     # After all civilians and locations exist:
     families = assign_families_and_homes(game_state)
@@ -69,7 +83,7 @@ def create_all_characters(factions, all_locations, all_regions):
     place_civilians_in_homes(civilians, families, all_locations, shops, populate_shops_after_worldgen=True)
 
     # --- DIAGNOSTIC CHECK: After homes + shop patron placement ---
-    debug_print(None, "[DIAG] Checking all major faction HQs just after shop population...", "placement")
+    #debug_print(None, "[DIAG] Checking all major faction HQs just after shop population...", "placement")
 
     for faction in factions:
         hq = getattr(faction, "hq", None)
@@ -80,8 +94,7 @@ def create_all_characters(factions, all_locations, all_regions):
     debug_print(None, "[DIAG] Checking shop occupants after shop population...", "placement")
     for shop in shops:
         occupants = [c.name for c in shop.characters_there]
-        debug_print(None, f"[DIAG] SHOP {shop.name} occupants: {occupants}", "placement")
-    # --------------------------------------------------------------
+        #debug_print(None, f"[DIAG] SHOP (Currently) {shop.name} occupants: {occupants}",category=["placement", "economy"])
 
     link_family_shops(game_state)
     
@@ -94,64 +107,103 @@ def create_all_characters(factions, all_locations, all_regions):
 def player_character_options(all_regions, factions):
     """Return a list of dictionaries with character DATA instead of full objects."""
     # Define character options as data dictionaries
-    from InWorldObjects import Wallet
-    from weapons import Knife
+    #from objects.InWorldObjects import Wallet
+    
     from inventory import Inventory
-    from base_classes import Factionless
+    from base.faction import Factionless
     
     character_data = [
     {
         "class": Manager,
         "name": "Karen",
         "sex": "female",
+        "is_player": True,
         "race": "Terran",
         "faction_name": "Hannival",
-        "region_name": "Downtown",
+        "region_name": "downtown",
         "location_name": "Hannival HQ",
-        "wallet": Wallet(bankCardCash=500),
+        #"wallet": Wallet(bankCardCash=500),
+        "wallet": {"bankCardCash": 500, "cash": 0},
         "preferred_actions": {},
-        "motivations": MotivationPresets.for_class("Manager"),  # new
+        "motivations": [
+            {"type": "buy_object", "urgency": 9, "target": "SmartPhone"},
+            {"type": "work", "urgency": 5},
+            {"type": "earn_money", "urgency": 8},
+            {"type": "virtue_signal", "urgency": 6},
+            {"type": "increase_status", "urgency": 8, "status_type": "corporate"},
+            {"type": "unwind", "urgency": 5},
+            {"type": "have_fun", "urgency": 5}
+        ],
+        "primary_status_domain": "corporate",
         "status_data": {
             "corporate": {"level": StatusLevel.MID, "title": "Manager"},
             "public": {"level": StatusLevel.LOW, "title": "Suit"}
-    },
+            },
+        "self_awareness": {
+                "override_level": None,     # Or SelfAwarenessLevel.PERSONAL
+                "override_score": None
+            }
     },
 
     {
         "class": GangMember,
         "name": "Swiz",
         "sex": "male",
+        "is_player": True,
         "race": "French",
         "faction_name": "Factionless",
-        "region_name": "Easternhole",
+        "region_name": "easternhole",
         "location_name": "None",
-        "inventory": Inventory([Knife(owner_name="Swiz")]),
-        "wallet": Wallet(bankCardCash=50),
+        "inventory": Inventory([Knife(owner="Swiz")]),
+        #"wallet": Wallet(bankCardCash=50),
+        "wallet": {"bankCardCash": 50, "cash": 0},
         "preferred_actions": {"Rob": 1, "Steal": 2},
-        "motivations": MotivationPresets.for_class("GangMember"),
+        "motivations": [
+            {"type": "join_gang", "urgency": 6},
+            {"type": "obtain_ranged_weapon", "urgency": 5},
+            {"type": "increase_status", "urgency": 4},
+            {"type": "steal_money", "urgency": 4},
+            {"type": "rob", "urgency": 4}
+        ],
         "custom_skills": {"stealth": 12, "observation": 6},
         "primary_status_domain": "criminal",
         "status_data": {
             "public": {"level": StatusLevel.LOW, "title": "Unknown"},
             "criminal": {"level": StatusLevel.LOW, "title": "Alone"}
+        },
+        "self_awareness": {
+            "override_level": None,
+            "override_score": None
+        }
+
     },
-},
          
 {
         "class": Adepta,
         "name": "Ava",
         "sex": "female",
+        "is_player": True,
         "race": "Irish",
         "faction_name": "Factionless",
-        "region_name": "Northville",
+        "region_name": "northville",
         "location_name": "Park",        #ATTN npcs are placed with add_character() now
 
-        "wallet": Wallet(bankCardCash=500),
+        #"wallet": Wallet(bankCardCash=500),
+        "wallet": {"bankCardCash": 50, "cash": 0},
         "preferred_actions": {"charm", "heal", "flirt"},
-        "motivations": MotivationPresets.for_class("Adepta"),  # new
+        "motivations": [
+            {"type": "earn_money", "urgency": 3},
+            {"type": "have_fun", "urgency": 6, "status_type": "civilian"},
+            {"type": "increase_status", "urgency": 2}
+        ],
+        "primary_status_domain": "civilian",
         "status_data": {
             "public": {"level": StatusLevel.LOW, "title": "Woman"}
-    },
+        },
+        "self_awareness": {
+            "override_level": None,
+            "override_score": None
+        }
     },
 
 ]   
@@ -160,8 +212,8 @@ def player_character_options(all_regions, factions):
     
 def instantiate_character(char_data, all_regions, factions):
     from utils import get_faction_by_name, get_region_by_name, get_location_by_name
-    from create_game_state import get_game_state
-    from InWorldObjects import Wallet
+    from create.create_game_state import get_game_state
+    from objects.InWorldObjects import Wallet
     from weapons import Weapon
 
     print(f"\n[DEBUG] Instantiating character: {char_data.get('name')}")
@@ -211,7 +263,7 @@ def instantiate_character(char_data, all_regions, factions):
         print(f"[DEBUG] Location found: {location.name}")
 
 
-    wallet = char_data.get("wallet", Wallet())
+    wallet_data = char_data.get("wallet", {})
     race = char_data["race"]
     sex = char_data["sex"]
 
@@ -238,40 +290,62 @@ def instantiate_character(char_data, all_regions, factions):
     faction=faction,
     region=region,
     location=location,
-    wallet=wallet,
     fun=1,
     hunger=3,
     preferred_actions=char_data.get("preferred_actions", {}),
-    motivations=motivation_objects,
+
     custom_skills=char_data.get("custom_skills"),
     status=status
 )
+    character.mind = Mind(owner=character, capacity=character.intelligence)
+    character.curiosity = Curiosity(base_score=character.intelligence // 2)
+    character.task_manager = TaskManager(character)
+    character.employment = EmployeeProfile()
+    character.motivation_manager = MotivationManager(character)
+    character.inventory_component = InventoryComponent(owner=character)
 
-    # ✅ Set primary status domain
+    knife = Knife()
+    character.inventory.add_item(knife)
+
     character.primary_status_domain = char_data.get("primary_status_domain", "public")
-    #maybe move the above block up into instantiator above it.
+    character.observation_component = ObservationComponent(owner=character)
+    character.self_awareness = SelfAwarenessComponent(owner=character)
+    character.is_player = char_data.get("is_player", False)
+
+    character.wallet = WalletComponent(
+        owner=character,
+        bankCardCash=wallet_data.get("bankCardCash", 0),
+        cash=wallet_data.get("cash", 0)
+    )
 
 
-# Assign inventory if provided
+    # Populate motivations
+    for m in motivation_objects:
+        if isinstance(m, tuple):
+            mtype, urgency = m
+            character.motivation_manager.create_initial(mtype, urgency)
+
+        elif isinstance(m, dict):
+            character.motivation_manager.create_initial(
+                m["type"], 
+                m.get("urgency", 1),
+                target=m.get("target"),
+                source=m.get("source", "initial"),
+                status_type=m.get("status_type")
+            )
+
+
     if "inventory" in char_data:
-        character.inventory = char_data["inventory"]
-        character.inventory.owner = character  # Set the owner reference
-
-        # Update each item to be aware of its new owner
-        for item in character.inventory.items.values():
-            item.owner_name = character.name
-            if isinstance(item, Weapon):
-                character.inventory.weapons.append(item)
+        initial_items = char_data["inventory"]
+        for item in initial_items:
+            character.inventory.add_item(item)
 
         character.inventory.update_primary_weapon()
-        #print(f"Post-instantiation inventory for {character.name}:")
-        for item in character.inventory.items.values():
-            print(f"  - {item.name} x{getattr(item, 'quantity', 1)}")
 
-        print(f"{character.name} starts with motivations: {', '.join([m.type for m in character.motivation_manager.motivations])}")
 
+    if character.is_player:
         game_state.player_character = character
-        print(f"[SUCCESS] Character '{character.name}' instantiated successfully.")
+
     return character
 
     

@@ -1,7 +1,7 @@
 #worldQueries.py
 #location searches, filtering targets, etc.
 
-from memory_entry import RegionKnowledge
+from memory.memory_entry import RegionKnowledge
 from typing import Dict, List, Optional
 
 #essentially redundant now that Im doing salience computation directly via anchors.
@@ -18,34 +18,29 @@ def get_viable_robbery_targets(region):
     #If an NPC lacks personal region knowledge, VisitToRobAnchor
     #  could call get_viable_robbery_targets(region) as a fallback list of possible targets.
 
-def get_nearby_objects(npc, region=None, location=None):
-    #Currently obsolete for npc flow
-    if isinstance(location, Region):
-        # Region is NOT a perceptible container
-        return []
-    
+def get_nearby_objects(npc, location=None):
     if location is None:
         print(f"[DEBUG] {npc.name} has no valid location. No objects to observe.")
         return []
 
     nearby = []
 
-    if location:
-        # All characters at same location, except self
-        nearby.extend([c for c in location.characters_there if c is not npc])
+    # Characters
+    nearby.extend([c for c in location.characters_there if c is not npc])
 
-        # Objects at location
-        if hasattr(location, "objects_present"):
-            nearby.extend(location.objects_present)
+    # Objects
+    if hasattr(location, "objects_present"):
+        nearby.extend(location.objects_present)
 
-        # Static structures like cash register, shop structure
-        if hasattr(location, "cash_register"):
-            nearby.append(location.cash_register)
+    # Fixtures
+    if hasattr(location, "cash_register"):
+        nearby.append(location.cash_register)
 
-        # Add location itself if needed (e.g. a perceptible building)
-        nearby.append(location)
+    # Location itself
+    nearby.append(location)
 
     return nearby
+
 
 def observe_location(self, loc):
     #print(f"[Observe] {self.name} observes {loc.name}")

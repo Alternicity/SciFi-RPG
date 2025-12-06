@@ -1,5 +1,5 @@
 import random
-from InWorldObjects import Wallet
+from objects.InWorldObjects import Wallet
 
 # Default base amounts by character type
 BASE_AMOUNTS = {

@@ -1,11 +1,11 @@
 #TheKindMan.py
-from base_classes import Character
+from base.character import Character
 from status import CharacterStatus, StatusLevel, FactionStatus
 from wallet import generate_wallet
 from inventory import Inventory
 from weapons import Knife, Pistol
-from InWorldObjects import Wallet
-from motivation_presets import MotivationPresets
+from objects.InWorldObjects import Wallet
+from motivation.motivation_presets import MotivationPresets
 
 class Alter(Character):
     default_motivations = [
@@ -83,9 +83,10 @@ class Alter(Character):
         "sex": "male",
         "race": "English",
         "faction_name": "Factionless",
-        "region_name": "Southville",
+        "region_name": "southville",
         "location_name": "None",
-        "inventory": Inventory([Knife(owner_name="U7s")]),
+
+        
         "wallet": Wallet(bankCardCash=50),
         "preferred_actions": {"Feed": 1, "Teach": 2, "Protect": 2, "Create": 2 },
         "motivations": MotivationPresets.for_class("GangMember"),

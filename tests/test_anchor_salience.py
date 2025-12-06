@@ -5,7 +5,7 @@
 
 import pytest
 from anchor_visit import VisitToRobAnchor
-from location import Location, Region
+
 from location_types import Shop
 from character_mind import Mind
 
@@ -14,11 +14,11 @@ class DummyNPC:
     def __init__(self):
         self.name = "TestNPC"
         # minimal dummy Region and Mind for compatibility
-        self.region = type("Region", (), {"name": "Downtown"})()
+        self.region = type("Region", (), {"name": "downtown"})()
         self.mind = type("Mind", (), {"memory": type("Memory", (), {"semantic": {}})})()
         # ↑ type(name, bases, dict) dynamically makes a temporary class
-        #   e.g. type("Region", (), {"name": "Downtown"})() creates
-        #   an object of an anonymous class with attribute .name = "Downtown"
+        #   e.g. type("Region", (), {"name": "downtown"})() creates
+        #   an object of an anonymous class with attribute .name = "downtown"
 
 
 class DummyLocation:

@@ -1,6 +1,6 @@
 #weapons.py split from InWorldObject to shorten file sizes
 
-from InWorldObjects import ObjectInWorld, Size, Toughness
+from objects.InWorldObjects import ObjectInWorld, Size, Toughness
 import logging
 
 valid_items = [
@@ -12,15 +12,14 @@ valid_items = [
 #at the level of the most specific concrete classes that directly need them
 class Weapon(ObjectInWorld):
     is_concrete = False
-    def __init__(self, name, toughness, price, size, blackmarket_value, damage_points, legality, damage, owner_name=None, intimidation=1):
-        super().__init__(name=name, toughness=toughness, item_type="Weapon", size=size, blackmarket_value=blackmarket_value, price=price, damage_points=damage_points, legality=legality, owner_name=owner_name)
+    def __init__(self, name, toughness, price, size, blackmarket_value, damage_points, legality, damage, intimidation=1):
+        super().__init__(name=name, toughness=toughness, item_type="Weapon", size=size, blackmarket_value=blackmarket_value, price=price, damage_points=damage_points, legality=legality)
         self.damage = damage
         self.intimidation = intimidation  # Base intimidation factor
         self.name = name
-        self.owner = owner_name      # Original or legal owner
         self.user = None        # Currently wielding the weapon
         self.history = []  # List of (character, event_type, timestamp)
-
+        self.is_weapon = True
     @property
     def tags(self):
         return super().tags + ["weapon"]
@@ -29,7 +28,7 @@ class Weapon(ObjectInWorld):
         self.user = character
         logging.info(f"{character.name} is now using {self.name}")
 
-    def change_ownership(self, new_owner):
+    def change_ownership(self, new_owner):#deprecated/unnecesary?
         self.owner = new_owner
         logging.info(f"{self.name} is now owned by {new_owner.name}")
         #switch to prints at some point?
@@ -50,8 +49,8 @@ class RangedWeapon(Weapon):
 #at the level of the most specific concrete classes that directly need them
 class MeleeWeapon(Weapon):
     is_concrete = False
-    def __init__(self, name, toughness, price, size, damage, blackmarket_value=50, damage_points=10, legality=True, owner_name=None, intimidation=2):
-        super().__init__(name=name, toughness=toughness, price=price, size=size, blackmarket_value=blackmarket_value, damage_points=damage_points, legality=legality, owner_name=owner_name, damage=damage, intimidation=intimidation)
+    def __init__(self, name, toughness, price, size, damage, blackmarket_value=50, damage_points=10, legality=True, intimidation=2):
+        super().__init__(name=name, toughness=toughness, price=price, size=size, blackmarket_value=blackmarket_value, damage_points=damage_points, legality=legality, damage=damage, intimidation=intimidation)
 
 #only concrete, fully implementable classes have the damage_points
 #and legality attributes.
@@ -77,7 +76,7 @@ class Pistol(RangedWeapon):
             ammo=ammo,
             intimidation=7
         )
-        self.owner_name = None
+        self.owner = None#We can remove owner from weapon classes, unless used in percept text.
         self.human_readable_id = "Unowned Pistol"
 
     def get_percept_data(self, observer=None):
@@ -233,23 +232,24 @@ class Sword(MeleeWeapon):
 
 class Knife(MeleeWeapon):
     is_concrete = True  # An concrete class will create objects and have more attributes
-    def __init__(self, price=50, legality=True, owner_name=None):
+    def __init__(self, price=50, legality=True):
         super().__init__(
             name="Knife",
             toughness=Toughness.DURABLE,
             price=price,
             size=Size.ONE_HANDED,  # size is now passed here
-            damage=8,  # Damage for the Knife
+            damage=8,  # ATTN
             blackmarket_value=30,
-            damage_points=5,
+            damage_points=5,#ATTN
             legality=legality,
-            owner_name=owner_name,
+
             intimidation=3
         )
         self.price = price
         self.legality = legality
         self.item_type = "weapon"
-        self.human_readable_id = f"{owner_name}'s Knife" if owner_name else "Unowned Knife"
+        #self.human_readable_id = f"{owner}'s Knife" if owner else "Unowned Knife"
+        #broken now, remove human_readable_id
     
     def get_percept_data(self, observer=None):
         tags = ["weapon", "knife"]

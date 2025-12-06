@@ -3,7 +3,7 @@
 
 from typing import List, Dict, Optional, Any, Union, Set, Callable
 from events import Event
-from memory_entry import MemoryEntry, RegionKnowledge
+from memory.memory_entry import MemoryEntry, RegionKnowledge
 from dataclasses import dataclass, field
 import importlib
 from typing import Optional

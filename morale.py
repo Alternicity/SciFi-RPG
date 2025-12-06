@@ -1,4 +1,4 @@
-from location import HQ
+from location.locations import HQ
 
 
 def adjust_morale(characters, location):

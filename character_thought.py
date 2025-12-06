@@ -1,11 +1,11 @@
 #character_thought.py
 import time
-from salience import compute_salience
+
 from LunaMath import FractalRoot
 from typing import Optional, Any, List
 
 # ✅ Import the actual game state accessor, not the class
-from create_game_state import get_game_state
+from create.create_game_state import get_game_state
 from debug_utils import debug_print  # optional, if you want to log failures
 
 
@@ -73,19 +73,17 @@ class Thought:
     def salience_for(self, observer, anchor=None):
         """
         Computes how salient this thought is to the observer.
-        Anchor is optional and can be a motivation, event, object, etc.
+        Anchor is optional and should compute salience relative to itself.
         """
-        from salience import compute_salience
         if anchor is None:
             anchor = getattr(observer, "current_anchor", None)
+        # Prefer anchor-driven computation:
+        if anchor is not None and hasattr(anchor, "compute_salience_for"):
+            return anchor.compute_salience_for(self, observer)
+        
+        # Fallback to global compute_salience helper
+        from ai.ai_utility import compute_salience
         return compute_salience(self, observer, anchor)
-        #usage
-        """ salient_thoughts = sorted(
-        relevant_thoughts,
-        key=lambda t: t.salience_for(self.npc, anchor=self.npc.primary_motivation()),
-        reverse=True
-    ) """
-
 
     def summary(self, include_source=False, include_time=False):
         parts = [

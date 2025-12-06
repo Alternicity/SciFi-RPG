@@ -1,13 +1,18 @@
 #characters.py
 import random
 from enum import Enum, auto
+from importlib import import_module
+
 from inventory import Inventory
 from status import StatusLevel, CharacterStatus, FactionStatus
-from InWorldObjects import ObjectInWorld, Wallet
+from objects.InWorldObjects import ObjectInWorld, Wallet
 from wallet import generate_wallet
-from base_classes import Character, Location, Faction
-from ai_gang import GangMemberAI, GangCaptainAI, BossAI, gang_observation_logic
-from ai_utility import UtilityAI
+from base.character import Character
+from base.location import Location
+from base.faction import Faction
+
+from ai.ai_gang import GangMemberAI, GangCaptainAI, BossAI, gang_observation_logic
+from ai.ai_utility import UtilityAI
 
 #Method overriding is used sparingly (e.g., issue_directive in 
 # Boss and CEO). Consider leveraging polymorphism more to reduce 
@@ -55,7 +60,6 @@ class Boss(Character):
         )
         self.directives = []  # High-level orders issued to Captains/Managers
         self.primary_status_domain = "criminal"
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
   # List to store items in the character's inventory
         
     def get_percept_data(self, observer=None):
@@ -125,7 +129,6 @@ class CEO(Character):
             location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs # Pass remaining keyword arguments safely
         )
         self.directives = []  # List of high-level directives
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
 
         
     def __repr__(self):
@@ -550,10 +553,9 @@ class GangMember(Subordinate):
         )
     
         # ✅ Post-init AI (now region exists)
-        from ai_gang import GangMemberAI
-        if ai is None:
-            from importlib import import_module
-            GangMemberAI = import_module("ai_gang").GangMemberAI
+        from ai.ai_gang import GangMemberAI
+        if ai is None:            
+            GangMemberAI = import_module("ai.ai_gang").GangMemberAI
             self.ai = GangMemberAI(self)
         else:
             self.ai = ai
@@ -735,7 +737,6 @@ class Civilian(Character):
         # --- Post-super setup ---
         self.targetIsInMelee = False
         self.is_employee = False
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
 
         # Weapon & Combat Attributes
         
@@ -745,9 +746,6 @@ class Civilian(Character):
         self.region
         self.is_employee = False
 
-
-        # Inventory Initialization
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
 
     
     def __repr__(self):
@@ -791,7 +789,7 @@ class VIP(Civilian):
         #print(f"Initializing VIP: {name}, Region: {region}, Location: {location}")  # Debugging
 
         # Find a MunicipalBuilding in the region
-        from location import MunicipalBuilding
+        from location.locations import MunicipalBuilding
 
         municipal_buildings = [loc for loc in region.locations if isinstance(loc, MunicipalBuilding)]
         location = municipal_buildings[0] if municipal_buildings else None  # Pick first available or None
@@ -856,7 +854,6 @@ class VIP(Civilian):
         self.bankCardCash = bankCardCash  # Redundant but ensures it's explicitly set for VIP """
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
   # List to store items in the character's inventory
         self.position = position
         self.region = region  # Keep track of initial region
@@ -948,7 +945,6 @@ class Child(Civilian):
         self.bankCardCash = bankCardCash """ 
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
         # List to store items in the character's inventory
         self.position = position
 
@@ -1063,7 +1059,6 @@ class Influencer(Civilian):
         self.bankCardCash = bankCardCash """  
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
   # List to store items in the character's inventory
         self.position = position
 
@@ -1160,18 +1155,19 @@ class Babe(Civilian):
         
         self.targetIsInMelee = False
         
+        #what is a Scalar Priestess?
 
         """ self.cash = 1000
         self.bankCardCash = bankCardCash  """
 
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
         # List to store items in the character's inventory
         self.position = position
         self.partner = Character
 
         self.base_preferred_actions = {
-            self.flirt: "powerful man"
+            self.flirt: "powerful man",
+            self.bitch_shield: "low_status_man"
         }
 
     def __repr__(self):
@@ -1272,7 +1268,6 @@ class Adepta(Civilian):
         self.influence = influence
         self.targetIsInMelee = False
         self.health = 120 + toughness
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
         # List to store items in the character's inventory
         self.position = position
         self.partner = None
@@ -1473,7 +1468,6 @@ class Taxman(Character):
 
         # self.bankCardCash = bankCardCash
 
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
 
     def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)
@@ -1498,7 +1492,7 @@ class Taxman(Character):
 class Accountant(Character):
     is_concrete = True
 
-    default_motivations = [
+    default_motivations = [#REMOVE I THINK, FROM ALL CLASSES
         ("earn_money", 4),
         ("find_safety", 3),
         ("influence", 2)
@@ -1543,7 +1537,6 @@ class Accountant(Character):
         )
         self.position = position
 
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
   # List to store items in the character's inventory
     
 
@@ -1627,7 +1620,6 @@ class SpecialChild(Child):
         self.influence = influence
         self.targetIsInMelee = False 
         self.health = 15 + toughness
-        self.inventory = kwargs.get("inventory", Inventory(owner=self))
         self.position = position
 
     def __repr__(self):

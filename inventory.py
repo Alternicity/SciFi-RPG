@@ -7,12 +7,9 @@ import traceback
 import logging
 logging.basicConfig(level=logging.INFO)
 
-
-
-
 class Inventory:
     """Manages a collection of items for characters, shops, or other entities."""
-
+    
     def has_ranged_weapon(self):
         from weapons import RangedWeapon
 
@@ -28,7 +25,6 @@ class Inventory:
                 return True
 
         return False
-
 
     #code doesnt use recent npc attributes
     def has_melee_weapon(self):
@@ -97,15 +93,15 @@ class Inventory:
         if not getattr(self, "owner", None):
             if fallback:
                 self.owner = fallback
-            elif hasattr(self, "_owner_name"):
-                self.owner = self._owner_name
+            elif hasattr(self, "owner"):
+                self.owner = self.owner
             else:
                 debug_print(npc, f"[inventory] Warning: Inventory {id(self)} still ownerless after ensure_owner()", category ="inventory")
 
 
     def clear_recently_acquired(self, current_day=None):
         if current_day is None:
-            from create_game_state import get_game_state
+            from create.create_game_state import get_game_state
             current_day = get_game_state().day
 
         cleaned = []
@@ -144,56 +140,42 @@ class Inventory:
         return None
 
     def add_item(self, item, quantity=1):
-
-        if self.max_capacity and len(self.items) >= self.max_capacity:
-            logging.warning(f"Inventory full. Can't add {item.name}")
-            return False
-        
+        # 1. Validate
         if not hasattr(item, "name"):
             raise ValueError("Inventory.add_item expects an object with a 'name' attribute.")
-
         if isinstance(item, str):
             raise TypeError("Inventory ERROR: attempted to add string into inventory.")
 
-        """ if isinstance(item, dict):
-            raise TypeError("Raw dict inserted into inventory.") """
+        # 2. Assign owner
+        item.owner = self.owner
+        item.owner = getattr(self.owner, "name", None)
 
-        if item.name in self.items:
-            existing_item = self.items[item.name]
-
-            # ✅ If item is a weapon, NEVER stack quantities
-            if isinstance(item, Weapon):
-                # Treat each weapon as a separate object
-                new_item = item
-                self.items[f"{item.name}_{id(new_item)}"] = new_item
-                self.weapons.append(new_item)
-                if self.owner:
-                    self.update_primary_weapon()
+        # 3. Quantity logic for non-weapons
+        if not isinstance(item, Weapon):
+            # check if another object with this *name* already exists
+            for existing in self.items.values():
+                if existing.name == item.name:
+                    # stackable
+                    existing.quantity = getattr(existing, "quantity", 1) + quantity
                     return True
 
-                logging.info(f"Updated {item.name} to quantity {existing_item.quantity}")
-            else:
-                logging.warning(f"{item.name} does not support quantity.")
-
-            # Weapon logic
-            if isinstance(item, Weapon) and self.owner:
-                self.weapons.append(item)
-                self.update_weapon_flags()
-                self.update_primary_weapon()
-            if "weapon" in item.tags:
-                self.recently_acquired.append(item)
-
-        else:
+            # otherwise it's a new stack
             item.quantity = quantity
-            self.items[item.name] = item
-            #print(f"Added {item.name} to inventory with quantity {quantity}")
+            self.items[id(item)] = item
+            return True
 
-            # Weapon logic
-            if isinstance(item, Weapon) and self.owner:
-                self.weapons.append(item)
-                self.update_primary_weapon()
+        # 4. Weapons — never stack
+        item.quantity = 1
+        self.items[id(item)] = item
+        self.weapons.append(item)
+
+        # update primary weapon if held by a character
+        if self.owner:
+            self.update_weapon_flags()
+            self.update_primary_weapon()
 
         return True
+
 
     def has_item(self, item) -> bool:
         return item in self.items.values()
@@ -256,8 +238,8 @@ class Inventory:
         return iter(self.items.values())
 
     def update_primary_weapon(self):
-        from base_classes import Character, Location
-
+        from base.location import Location
+        from base.character import Character
         # If  there are no weapons → nothing to do
         if not self.weapons:
             return
@@ -265,19 +247,10 @@ class Inventory:
         # Pick the best weapon by damage (default 0 if missing)
         best_weapon = max(self.weapons, key=lambda w: getattr(w, "damage", 0))
 
-        # If the owner is a Location → update and print
-        if isinstance(self.owner, Location):
-            # update the primary weapon silently if needed
-            
+        # If the owner is a Location → update and print HOPEFULLY DEPRECATED
+        """         if isinstance(self.owner, Location):
                 self.primary_weapon = best_weapon
-                #possibly illogical
-                #self.owner.primary_weapon = best_weapon
-                #possibly illogical
-
-                #so which of the preceding loines is correct. A Shop has an inventory
-
-                #debug_print(self.owner, f"{self.owner.name}'s primary weapon is now {best_weapon.name}.", category="inventory")
-                return
+                return """
 
         # If the owner is a Character → update and print
         if isinstance(self.owner, Character):
@@ -285,8 +258,9 @@ class Inventory:
                 self.primary_weapon = best_weapon
                 # ✅ FIX: write back into the Character object
                 self.owner.primary_weapon = best_weapon
-                debug_print(self.owner, f"[INV] Primary weapon now {best_weapon.name}", category="inventory")
+                #debug_print(self.owner, f"[INV] Primary weapon now {best_weapon.name}", category="inventory")
             
+            #Likely cruft
 #inventory.py
 #added as a utility function after class Inventory
 # --- DEBUG LAYER FOR add_item() ---

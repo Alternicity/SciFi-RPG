@@ -1,10 +1,10 @@
 #character_think_utils.py
 from character_thought import Thought
-from motivation import Motivation
+from motivation.motivation import Motivation
 from debug_utils import debug_print
 
 def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought objects
-    from motivation_presets import MotivationPresets
+    from motivation.motivation_presets import MotivationPresets
 
     for thought in thoughts:  # iterate over each Thought object
         if not hasattr(thought, 'tags'):
@@ -27,7 +27,17 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
                     motivation.type,
                     motivation.urgency,
                 )
+#character_think_utils.py
+def social_thoughts(self):
+    npc = self.npc
 
+    for connection in npc.social_connections["co_workers"]:#this should include more than just friend connections, at least in potential
+        if npc.world.recently_interacted(npc, connection):
+            npc.mind.add_thought({
+                "type": "social_thought",
+                "about": connection,
+                "tags": ["unwind", "co_worker", "social"]
+            })
 
 def should_promote_thought(thought):
     return thought.urgency >= 4 or "weapon" in thought.tags

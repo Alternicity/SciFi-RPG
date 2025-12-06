@@ -2,8 +2,8 @@
 from tabulate import tabulate
 from display import display_world, show_shop_inventory
 from typing import Dict, Any
-from create_game_state import get_game_state
-from InWorldObjects import ObjectInWorld
+from create.create_game_state import get_game_state
+from objects.InWorldObjects import ObjectInWorld
 # Ensure game_state is initialized correctly before use
 game_state = get_game_state()
     
@@ -42,7 +42,7 @@ def main_menu(all_locations, all_characters):
             print("Invalid selection. Please try again.")
 
 
-from location import Shop
+from location.locations import Shop
 from display import display_employees
 from typing import List
 

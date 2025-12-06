@@ -3,7 +3,7 @@ from tabulate import tabulate
 import logging
 from textwrap import wrap
 
-from base_classes import Character
+from base.character import Character
 
 import loader
 import os
@@ -13,17 +13,20 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                            CEO, Manager, CorporateSecurity, Civilian, GangMember, Child, Influencer,
                            Babe, Detective)
 
-from location import Region, UndevelopedRegion, VacantLot
+from location.locations import VacantLot
+from region.region import UndevelopedRegion
+
 from visual_effects import loading_bar, color_text
 #from menu_utils import get_user_choice
 #This file cannot import from menu_utils here, maybe lazy imports are ok
 from common import get_file_path, BASE_REGION_DIR
 from typing import List, Union
 from character_creation_funcs import player_character_options
-from base_classes import Faction, Location
-from perceptibility import extract_appearance_summary
-from shop_name_generator import format_shop_debug
-from salience import compute_salience
+from base.faction import Faction
+from base.location import Location
+from perception.perceptibility import extract_appearance_summary
+
+
 from debug_utils import debug_print
 
 logging.basicConfig(level=logging.DEBUG)
@@ -202,7 +205,7 @@ def display_character_whereabouts(character):
 def display_civilians():
     pass
 
-from location import Shop
+from location.locations import Shop
 
 def display_employees(location):
 
@@ -599,7 +602,7 @@ def display_percepts_table(npc):
 
     table_data = []
 
-    for i, (key, v) in enumerate(npc._percepts.items()):
+    for i, (key, v) in enumerate(npc.observation_component._percepts.items()):
         # Step 1: Safely access nested data
         data = v.get("data", {})
         origin = v.get("origin", data.get("origin", "—"))
@@ -639,7 +642,7 @@ def display_percepts_table(npc):
 
         if hasattr(origin, "compute_salience") and callable(origin.compute_salience):#a problem line?
             try:#is this block now deprecated?
-                salience = origin.compute_salience(npc, anchor)
+                salience = origin.compute_salience(npc, anchor)#salience not accessed
             except Exception as e:
                 salience = f"ERR: {e}"#salience not accessed
 
@@ -752,11 +755,20 @@ def debug_display_all_shops(all_regions):
 
     all_shops = []
     for region in all_regions:
-        if hasattr(region, "shops"):
+        if hasattr(region, "shops"):#perhaps there is a problem here. we should check this shops, and perhaps try testing for
+            #other things
             all_shops.extend(region.shops)
 
     display_sellers(all_shops)
 
+def format_shop_debug(shop) -> dict:
+    return {
+        "Name": shop.name,
+        "Type": shop.__class__.__name__,
+        "Region": shop.region.name if hasattr(shop, "region") else "?",
+        "Specialization": shop.specialization,
+        "OwnerType": "corporate" if any(corp for corp in getattr(shop.region, "region_corps", []) if corp.HQ == shop) else "family"
+    }
 
 def gameplay_print(message):
     debug_print(None, message, category="gameplay")

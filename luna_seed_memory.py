@@ -3,7 +3,7 @@
 """ Only import MemoryEntry (no back-dependency into character_memory).
 Define memory entries as objects or functions returning them. """
 
-from memory_entry import MemoryEntry
+from memory.memory_entry import MemoryEntry
 
 def prototype_pulse_memory():
     return MemoryEntry(

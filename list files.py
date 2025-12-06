@@ -1,7 +1,7 @@
 import os
 
 # Define the root folder and file extensions to look for
-root_folder = r"C:\Users\Stuart\Python Scripts\scifiRPG"
+root_folder = r"/home/stuart/SciFi-RPG"
 extensions = {'.py', '.yaml', '.json'}
 output_file = "file_structure.txt"  # Output file name
 

@@ -23,6 +23,7 @@ class GameState:
         self.state = None
         self.civilians = []
         self.families = []
+        self.extant_family_names = []
         self.all_employees =  {}
         self.gangs = []
         self.all_street_gangs = []

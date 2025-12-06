@@ -5,7 +5,7 @@ def generate_thoughts_from_percepts(self):
     thoughts = []
     
     # Use internal values safely
-    percepts = list(npc._percepts.values())  
+    percepts = list(npc.observation_component._percepts.values())  
     
     motivations = npc.motivation_manager.get_urgent_motivations()
     

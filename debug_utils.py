@@ -2,7 +2,8 @@
 from config import (
     DEBUG_MODE,
     SHOW_FUN_LOGS,
-    SHOW_EAT_FLAGS,
+    SHOW_EAT_LOGS,
+    SHOW_FACTION_LOGS,
     SHOW_PRIMARY_LOGS,
     SHOW_SECONDARY_LOGS,
     SHOW_CREATE_LOGS,
@@ -33,16 +34,20 @@ from config import (
     SHOW_PLACEMENT_LOGS,
     SHOW_VERIFY_LOGS,
     SHOW_ECONOMY_LOGS,
+    SHOW_EMPLOYMENT_LOGS,
+    SHOW_POPULATION_LOGS,
+    SHOW_GAMESTATE_LOGS,
     SHOW_ROLE_FLAGS,
     DEBUG_LEVEL,
 )
 
 DEBUG_FLAGS = {
     "fun": SHOW_FUN_LOGS,
-    "eat": SHOW_EAT_FLAGS,
+    "eat": SHOW_EAT_LOGS,
     "create": SHOW_CREATE_LOGS,
     "primary": SHOW_PRIMARY_LOGS,
     "secondary": SHOW_SECONDARY_LOGS,
+    "faction": SHOW_FACTION_LOGS,
     "placement": SHOW_PLACEMENT_LOGS,
     "test_npc": SHOW_TEST_NPC_LOGS,
     "tick": SHOW_TICK_LOGS,
@@ -70,6 +75,9 @@ DEBUG_FLAGS = {
     "family": SHOW_FAMILY_LOGS,
     "verify": SHOW_VERIFY_LOGS,
     "economy": SHOW_ECONOMY_LOGS,
+    "gamestate": SHOW_GAMESTATE_LOGS,
+    "population": SHOW_POPULATION_LOGS,
+    "employment": SHOW_EMPLOYMENT_LOGS,
     # NEW — role filtering is a **parallel system**, not inside DEBUG_FLAGS
 }
     
@@ -81,6 +89,8 @@ ROLE_FILTERS = {
     "test_npc": False,
 }
 
+#categories act like tags.
+#ALL categories in the print must be enabled.
 def debug_print(npc=None, message="", category="general", level="DEBUG"):
     if not DEBUG_MODE:
         return
@@ -104,24 +114,30 @@ def debug_print(npc=None, message="", category="general", level="DEBUG"):
                 return  # suppressed because of NPC’s role
 
     # 2 — category filter
-    if category in DEBUG_FLAGS and not DEBUG_FLAGS[category]:
-        return
+    """ if category in DEBUG_FLAGS and not DEBUG_FLAGS[category]:
+        return """
+    #delete if multi category prints work
 
     # ----- Message formatting -----
     npc_name = getattr(npc, "name", "System")
-    print(f"[{','.join(categories):<20}] {npc_name}: {message}")
+    print(f"[{','.join(categories)}] {npc_name}: {message}")
 
 
 def add_character(location, char):
-    #Add a debug print to every place characters are added to a location, the ONLY legal way to place someone inside a location.
+    #Add a debug print to every place characters are added to a location, the ONLY legal way to add a character to characters_there.
     location.characters_there.append(char)
-    debug_print(char, f"PLACED at {location.name} from add_character", category="placement")
+    """ debug_print(char,
+            f"PLACED at {location.name} from debug_utils add_character",
+            category=("placement", "population")) """
+    #double category
+    
+
     """ Correct Safe Ordering (prevents ghost placement):
     1. Set new location on the character
     2. Call add_character() """
 
-
-def diagnose_civilian_location_integrity(region_civilians, all_civilians):
+#marked for deletion, not currently called
+def diagnose_civilian_location_integrity(region_civilians, all_civilians):#region_civilians is not accessed
     """
     Checks for duplicates and mismatched location references across civilians.
     """

@@ -9,7 +9,7 @@ from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
 #🟢 ⚪🔴 🔵 🟡 🟠 🟣 ⚫  🟤
-from create_game_state import get_game_state  # Ensure we get the latest game state
+from create.create_game_state import get_game_state  # Ensure we get the latest game state
 from typing import List, Optional, Type, Union
 
 def get_region_by_name(name, all_regions): #these get functions get the object from a "string"
@@ -71,7 +71,7 @@ def create_weapon(data): #Might still be useful, but need updating
 
 def create_item(data): #Might still be useful, but need updating
     """Create an ObjectInWorld object."""
-    from InWorldObjects import ObjectInWorld
+    from objects.InWorldObjects import ObjectInWorld
     if "name" not in data:
         raise ValueError("Missing required attribute 'name' for Item.")
     return ObjectInWorld(
@@ -91,7 +91,7 @@ def get_project_root():
 
 # ✅ Move the test outside the function to prevent recursion
 if __name__ == "__main__":
-    from create_game_state import get_game_state
+    from create.create_game_state import get_game_state
     game_state = get_game_state()
 
     if not hasattr(game_state, "all_locations") or game_state.all_locations is None:
@@ -140,7 +140,7 @@ def normalize_location_regions(all_locations, all_regions):
     Ensures all Location objects reference a Region object, not a string.
     Fixes any locations with region as a str by matching it to a Region by name.
     """
-    from location import Region  # Ensure you're importing the right Region class
+    from region.region import Region  # Ensure you're importing the right Region class
 
     # First pass: fix string -> Region
     for loc in all_locations:
@@ -170,7 +170,7 @@ def normalize_location_regions(all_locations, all_regions):
                 loc.region = matched_region
                 matched_region.add_location(loc)
 
-from location import Location
+from base.location import Location
 #assign VIPs to Airport etc
 def find_location_by_type(locations: List[Location], target_type: Union[Type, str]) -> Optional[Location]:
     """

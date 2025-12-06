@@ -1,5 +1,5 @@
 
-from region_utils import get_all_regions
+from region.region_utils import get_all_regions
 #remove all object creation from this file and dont let it back in
 import random
 from menu_utils import get_menu_choice, build_gameplay_menu, GameplayMenu
@@ -9,17 +9,17 @@ from display import (
     display_selected_character_current_region,
     display_filtered_character_summary, display_character_Summary, display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
 )
-from motivation import MotivationManager
+from motivation.motivation import MotivationManager
 #MotivationManager not accessed here
 
-from base_classes import Character
+from base.character import Character
 from character_creation_funcs import create_faction_characters
 from utils import dev_mode
-from create_game_state import get_game_state
+from create.create_game_state import get_game_state
 from simulate_day import simulate_days
     
 def gameplay(selected_character, region):
-    from create_game_state import get_game_state
+
     game_state = get_game_state()  # Ensure we get the singleton game state
     all_characters = game_state.all_characters  # Access all characters
     
@@ -32,7 +32,7 @@ def gameplay(selected_character, region):
     character.motivation_manager.update_motivations("idle")
 
     #tmp
-    from location import Location
+    from base.location import Location
     if isinstance(character.region, str):
         print(f"[ERROR] {character.name} has region set as a string: {character.region}")
     if isinstance(character.location, Location) and isinstance(character.location.region, str):
@@ -113,9 +113,9 @@ def move_region(character, selected_region, all_regions):
 def show_region_choices(all_regions):
         #for the future
         #show regions the character can move to
-        #maybe build a map. cannot move to diametrically opposed region without passing through Downtown, ie
+        #maybe build a map. cannot move to diametrically opposed region without passing through downtown, ie
         #she cant go directly from north to south region, OR if doing this, a message displays
-        #"passing through Downtown (Central) on the way to destinationRegion" Here a Downtown percept or event might be triggered
+        #"passing through downtown (Central) on the way to destinationRegion" Here a downtown percept or event might be triggered
         for i, region in enumerate(all_regions, 1):
             print(f"{i}. {region.name}")  # Assuming regions have a 'name' attribute
 
@@ -159,7 +159,7 @@ def view_characters(all_characters, region): #this should be moved to display
 
 """ def assign_random_civilians_to_random_shops(regions, all_characters, count: int = 4):
     print(f"[TRACE] assign_random_civilians_to_random_shops() called with count={count}")
-    from location import Shop
+    from location.locations import Shop
     from characters import Civilian
     all_civilians = []
     all_shops = []

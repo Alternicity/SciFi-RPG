@@ -5,7 +5,7 @@ import json
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from status import StatusLevel
+
 
 def get_file_path(*path_parts):
     """

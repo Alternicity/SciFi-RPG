@@ -1,10 +1,11 @@
+#loader.py
 import os
 import json
 import logging
 from typing import List, Union
-from location import Shop, CorporateStore, Stash
+from location.locations import Shop, CorporateStore, Stash
 from characters import Character, Employee, Civilian, Manager
-from location_security import Security
+from location.location_security import Security
 #from character_creation_funcs import player_character_options
 from typing import List, Dict, Union
 #If loader.py already imports location, and location imports Security, you could access it as:

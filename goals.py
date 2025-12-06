@@ -1,6 +1,6 @@
 import random
 import logging
-from tasks import Task
+from tasks.tasks import Task
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,15 +1,15 @@
 # simulate_day.py
 import random
-from location import Shop
-from create_game_state import get_game_state
-from ai_utility import UtilityAI #not currently accessed
+from location.locations import Shop
+from create.create_game_state import get_game_state
+from ai.ai_utility import UtilityAI #not currently accessed
 from events import Robbery
 from characterActions import execute_action #not currently accessed
 from summary_utils import format_location
 from display import display_region_knowledge_summary, display_percepts_table
-from memory_entry import RegionKnowledge
+from memory.memory_entry import RegionKnowledge
 from character_thought import Thought
-from ambience_and_psy_utils import compute_location_ambience
+from ambience.ambience_and_psy_utils import compute_location_ambience
 from debug_utils import debug_print
 
 def simulate_days(all_characters, num_days=1, debug_character=None):
@@ -121,8 +121,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
                     #finished what action? Also I must change to debug_print
 
-                #npc.just_arrived = False
-                #candidate for removal as this now exists in begin_npc_turn()
+                
 
         # STEP 3: Post-Day DEBUG (single character)
         for npc in all_characters:
@@ -165,13 +164,12 @@ def begin_npc_turn(npc):
     npc.just_arrived = False
     npc.turn_start_tick = get_game_state().tick
     npc.mind.remove_thought_by_content("No focus")
+    #Set attention_focus straight away? Test it?
     debug_print(f"[TURN] Begin NPC turn: {npc.name}", category="tick")
 
 def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()
-
     npc.inventory.clear_recently_acquired()
-
     npc.last_action_tick = get_game_state().tick
 
     # reset observation flag so next tick will allow a fresh observation
@@ -181,6 +179,7 @@ def end_npc_turn(npc):
     game_state = get_game_state()#Needed for the lines below
     debug_print(f"[TURN] Tick {game_state.tick}, Day {game_state.day}", category="tick")
     game_state.advance_tick()#Is this the right place for this, or does it belong in begin_npc_turn(npc)
+    #should we be ending the DAY here?
 
     
     

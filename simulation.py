@@ -1,13 +1,20 @@
 #simulation.py
 import random
 from characters import GangMember, Civilian
-from ai_utils import encode_weapon_shop_memory
+from ai.ai_utils import encode_weapon_shop_memory
 from debug_utils import debug_print
+from create.create_game_state import get_game_state, game_state#is game_state needed here?
+
+game_state = get_game_state()
+
+from augment.augmentLocations import reassign_shop_names_after_character_creation
+
+from population.population import summarize_civilians
 
 def run_simulation(all_characters, num_days=10):
     from simulate_day import simulate_days
-    from create_game_state import get_game_state, game_state
-    from location import Shop
+    
+    from location.locations import Shop
 
     debug_npcs = []
     debug_print(None, "Debug system initialised successfully.", category="simulation")
@@ -31,15 +38,15 @@ def run_simulation(all_characters, num_days=10):
 
     # Set NPCs to Regions
     #When next scaling up use pick_random_npc()
-    easternhole_region = next((r for r in game_state.all_regions if r.name == "Easternhole"), None)
+    easternhole_region = next((r for r in game_state.all_regions if r.name == "easternhole"), None)
     debug_gang_npc.region = easternhole_region
     easternhole_region.add_character(debug_gang_npc)
 
-    northVille_region = next((b for b in game_state.all_regions if b.name == "NorthVille"), None)
-    debug_gang_npc2.region = northVille_region
-    northVille_region.add_character(debug_gang_npc2)
+    northville_region = next((b for b in game_state.all_regions if b.name == "northville"), None)
+    debug_gang_npc2.region = northville_region
+    northville_region.add_character(debug_gang_npc2)
 
-    downtown_region = next((r for r in game_state.all_regions if r.name == "Downtown"), None)
+    downtown_region = next((r for r in game_state.all_regions if r.name == "downtown"), None)
     debug_civilian_npc.region = downtown_region
     downtown_region.add_character(debug_civilian_npc)
 
@@ -51,14 +58,14 @@ def run_simulation(all_characters, num_days=10):
 
     #We should add these npcs to their region objects, and game_state
 
-    # Choose a non-shop location in Easternhole to place the test NPC
+    # Choose a non-shop location in easternhole to place the test NPC
     non_shop_locations = [loc for loc in easternhole_region.locations if not isinstance(loc, Shop)]
 
     if non_shop_locations:
         start_location = random.choice(non_shop_locations)
         debug_gang_npc.location = start_location
     else:
-        print("[WARNING] No valid non-shop locations found in Easternhole for debug NPC.")
+        print("[WARNING] No valid non-shop locations found in easternhole for debug NPC.")
     
     start_locs = non_shop_or_cafe_locations(easternhole_region)
     debug_gang_npc2.location = random.choice(start_locs)
@@ -67,8 +74,8 @@ def run_simulation(all_characters, num_days=10):
     start_loc_g2 = random.choice(start_locs)
     start_loc_civ = random.choice(start_locs)
 
-    from create_game_state import get_game_state
-    from region_knowledge_builder import build_region_knowledge
+    
+    from region.region_knowledge_builder import build_region_knowledge
 
     if debug_gang_npc:
         debug_print(None, f"[Simulation] Selected DEBUG NPC: {debug_gang_npc.name}, {debug_gang_npc.race}", category="simulation")
@@ -166,12 +173,19 @@ def run_simulation(all_characters, num_days=10):
         for thought in debug_gang_npc.mind.get_all():  # safer if you have get_all() 
             print(f" - {thought}") """
 
-    from create_game_state import get_game_state
+    from create.create_game_state import get_game_state
     from display import debug_list_gang_hqs
-    game_state = get_game_state()
+    
     debug_list_gang_hqs(game_state)
     #call other display.py functions listing important info for the new npcs
 
+    civilians = game_state.civilians #Will this give us the quantity or just a list of civ objects?
+    all_regions = game_state.all_regions #should i just move this game_state data lookup to population.summarize_civilians?
+
+    #Fine tune/augment objects
+    #reassign_shop_names_after_character_creation()
+
+    summarize_civilians(civilians, all_regions)
 
     simulate_days(all_characters, num_days=num_days, debug_character=debug_gang_npc)
     print("\nSimulation complete.")

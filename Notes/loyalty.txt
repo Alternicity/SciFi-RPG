@@ -1,9 +1,0 @@
-
-
-
-
-Once character creation is working, I need to be able to clearly see the difference between code that modifies gnerators/serial data and code that works on run time/Objects
-Any general advice about this?
-
-
- 

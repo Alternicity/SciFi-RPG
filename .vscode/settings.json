@@ -10,5 +10,6 @@
     "python.linting.flake8Enabled": true,
     "editor.formatOnSave": true,
     "editor.renderWhitespace": "all",
+    "code-runner.temporaryFileName": "",
     "workbench.editor.enablePreview": false
 }

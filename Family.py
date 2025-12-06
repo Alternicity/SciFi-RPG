@@ -3,9 +3,9 @@ from dataclasses import dataclass, field
 import random
 from typing import List, Dict, Optional
 from debug_utils import debug_print
-from location import House, ApartmentBlock
+from location.locations import House, ApartmentBlock
 #from common import weighted_choice
-from base_classes import Location
+from base.location import Location
 from characters import Civilian
 
 @dataclass
@@ -84,7 +84,8 @@ def assign_families_and_homes(game_state):
             if civ not in home.characters_there:
                 home.characters_there.append(civ)
 
-        debug_print(None, f"[FAMILY] Placed {len(family.members)} {family.surname} members at {home.name}.", "family")
+        #verbose
+        #debug_print(None, f"[FAMILY] Placed {len(family.members)} {family.surname} members at {home.name}.",category=["placement", "family", "population"])
 
     # -------------------------------
     # 3. Link partners (rough pass)
@@ -96,7 +97,7 @@ def assign_families_and_homes(game_state):
             a, b = adults[i], adults[i + 1]
             a.social_connections["partners"].append(b)
             b.social_connections["partners"].append(a)
-            debug_print(None, f"[FAMILY] Partnered {a.name} ↔ {b.name}", "family")
+            #debug_print(None, f"[FAMILY] Partnered {a.name} ↔ {b.name}",category=["family", "population"])
 
     # -------------------------------
     # 4. Store and return
@@ -151,3 +152,4 @@ def link_family_shops(game_state):
                 break  # one shop = one family owner, avoid duplicates
 
     debug_print(None, f"[FAMILY_SHOPS] Linked {matches} shops to families.", "family")
+    #often 0 or 1, 5 would be logical as 5 shops currently exist

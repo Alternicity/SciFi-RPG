@@ -70,7 +70,7 @@ def visit_location(character, location=None):
     """Presents a menu to visit a location within the region.
     This function was developed for player/menu use"""
     from menu_utils import display_menu, get_available_options
-    from location_utils import get_visitable_locations
+    from location.location_utils import get_visitable_locations
     from characterActions import choose_location
     region = character.region
     locations = {}
@@ -179,7 +179,7 @@ def idle(npc, region, **kwargs):
     pass
 
 def buy(character, shop, item):
-    from location import Shop
+    from location.locations import Shop
     location = character.location
     if not isinstance(shop, Shop):
         print("You can't buy things here!")
@@ -226,8 +226,8 @@ def buy(character, shop, item):
     character.inventory.add_item(item_copy)
 
     # Set ownership data after buying
-    if hasattr(item_copy, "owner_name"):
-        item_copy.owner_name = character.name
+    if hasattr(item_copy, "owner"):
+        item_copy.owner = character.name
         item_copy.human_readable_id = f"{character.name}'s {item_copy.name}"
 
     # ✅ Decrease stock in the shop
@@ -631,7 +631,7 @@ def rob(character, location, target_item=None):
     debug_print(character, f"[ROB] Target location: {location.name}", category="action")
 
     from events import Robbery
-    from InWorldObjects import CashWad
+    from objects.InWorldObjects import CashWad
 
     has_weapon = hasattr(character, "primary_weapon") and character.primary_weapon is not None
 

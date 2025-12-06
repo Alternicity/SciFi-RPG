@@ -19,8 +19,8 @@ class Mind:
         self.memory = Memory()
         self.obsessions: List[Obsession] = []
         self.max_thinks_per_tick=1
-        self.default_focus = None
-        self.attention_focus = None
+        self.default_focus = None #baseline
+        self.attention_focus = None #momentary concern
 
         #Consider syncing Character.social_connections["enemies"] with mind.memory.semantic["enemies"] at periodic intervals
 
