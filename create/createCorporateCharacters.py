@@ -14,6 +14,8 @@ from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from character_components.observation_component import ObservationComponent
+from create.create_game_state import get_game_state
+game_state = get_game_state()
 
 def create_corporation_characters(faction, factions):
     """
@@ -74,6 +76,10 @@ def create_corporation_characters(faction, factions):
     initialize_motivations(ceo, ceo.motivations)
     ceo.inventory_component = InventoryComponent(owner=ceo)
     ceo.observation_component = ObservationComponent(owner=ceo)
+    family_name = ceo.family_name
+    if family_name not in game_state.extant_family_names:
+        game_state.extant_family_names.append(family_name)
+
     # Managers
     for _ in range(random.randint(2, 3)):
         status = CharacterStatus()
@@ -103,6 +109,10 @@ def create_corporation_characters(faction, factions):
         initialize_motivations(manager, manager.motivations)
         manager.inventory_component = InventoryComponent(owner=manager)
         manager.observation_component = ObservationComponent(owner=manager)
+        family_name = manager.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
+
     # Employees
     for _ in range(random.randint(3, 6)):
         status = CharacterStatus()
@@ -132,6 +142,10 @@ def create_corporation_characters(faction, factions):
         initialize_motivations(employee, employee.motivations)
         employee.inventory_component = InventoryComponent(owner=employee)
         employee.observation_component = ObservationComponent(owner=employee)
+        family_name = employee.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
+
     # Security
     for _ in range(random.randint(2, 4)):
         status = CharacterStatus()
@@ -161,6 +175,11 @@ def create_corporation_characters(faction, factions):
         initialize_motivations(guard, guard.motivations)
         guard.inventory_component = InventoryComponent(owner=guard)
         guard.observation_component = ObservationComponent(owner=guard)
+        family_name = guard.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
+
+
     # Accountants
     for _ in range(random.randint(1, 3)):
         status = CharacterStatus()
@@ -190,6 +209,10 @@ def create_corporation_characters(faction, factions):
         initialize_motivations(accountant, accountant.motivations)
         accountant.inventory_component = InventoryComponent(owner=accountant)
         accountant.observation_component = ObservationComponent(owner=accountant)
+        family_name = accountant.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
+
     # Corporate Assassins
     for _ in range(random.randint(0, 2)):
         status = CharacterStatus()
@@ -218,4 +241,7 @@ def create_corporation_characters(faction, factions):
         initialize_motivations(assassin, assassin.motivations)
         assassin.inventory_component = InventoryComponent(owner=assassin)
         assassin.observation_component = ObservationComponent(owner=assassin)
+        family_name = assassin.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
     return characters

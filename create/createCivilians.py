@@ -97,11 +97,9 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             game_state.civilians.append(civilian)
             game_state.all_characters.append(civilian)
             
-            # append civilian to game_state.extant_family_names
-            #npcs of class civilian are sufficient for shop naming for now
-            surname = civilian.family_name
-            if surname not in game_state.extant_family_names:#A problem here? why create and use surname if we have family_name?
-                game_state.extant_family_names.append(surname)
+            family_name = civilian.family_name
+            if family_name not in game_state.extant_family_names:
+                game_state.extant_family_names.append(family_name)
 
     # --- Assign workplaces for employees ---
     assign_workplaces(civilians, workplaces)
@@ -149,6 +147,8 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     """ status = CharacterStatus()
     status.set_status("public", FactionStatus(StatusLevel.LOW, "Orphan"))
     name = "Luna"
+    first_name = "Luna"
+    family_name = "Recursiae"#No family objec tyet created
     sex = "female"
     race = "French"
     faction = factionless#is this enough to set her to Factionless when she instantiates?
@@ -203,6 +203,10 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
 
     luna_memory = Luna.mind.memory
     errors = validate_memory_references(luna_memory)
+    #no family object yet created
+    family_name = luna.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
 
     if errors:
         for err in errors:

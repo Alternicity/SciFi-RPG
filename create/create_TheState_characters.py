@@ -72,6 +72,10 @@ def create_TheState_characters(faction):
         initialize_motivations(vip, vip.motivations)
         vip.inventory_component = InventoryComponent(owner=vip)
         vip.observation_component = ObservationComponent(owner=vip)
+        family_name = vip.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
+
     # --- Managers, Employees, Taxmen ---
     for cls, count, motivations, status_label, status_level in [
         (Manager, random.randint(0, 0), MotivationPresets.for_class("Manager"), "Manager", StatusLevel.MID),#2,3
@@ -109,6 +113,9 @@ def create_TheState_characters(faction):
             initialize_motivations(person, person.motivations)
             person.inventory_component = InventoryComponent(owner=person)
             person.observation_component = ObservationComponent(owner=person)
+            family_name = person.family_name
+            if family_name not in game_state.extant_family_names:
+                game_state.extant_family_names.append(family_name)
 
     # --- Police Station ---
     police_stations = [loc for loc in faction.region.locations if isinstance(loc, PoliceStation)]
@@ -147,6 +154,10 @@ def create_TheState_characters(faction):
             cop.employment = EmployeeProfile()
             initialize_motivations(cop, cop.motivations)
             cop.inventory_component = InventoryComponent(owner=cop)
+            family_name = cop.family_name
+            if family_name not in game_state.extant_family_names:
+                game_state.extant_family_names.append(family_name)
+
     characters.extend(state_staff)
     #print(f"✅ Created {len(state_staff)} state characters for {faction.name}")
     return characters

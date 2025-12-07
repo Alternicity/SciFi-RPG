@@ -99,10 +99,11 @@ class Alter(Character):
 },
 
 #instantiation for createCivilians
-# Create Luna
 """ status = CharacterStatus()
 status.set_status("public", FactionStatus(StatusLevel.LOW, "Orphan"))
 name = "U7s"
+first_name = "U7s"
+family_name = "Recursiae"
 sex = "Male"
 race = "English"
 faction = factionless
@@ -133,4 +134,29 @@ U7s.skills.update({
     "explore_math": 16,
     "use_advanced_python_features": 20,
     "persuasion": 20,
-}) """
+})
+U7s.status.set_status("general_population", FactionStatus(StatusLevel.LOW, "Normie"))
+U7s.home = home
+U7s.residences = [home]
+U7s.is_employee = random.random() < 0.8
+U7s.mind = Mind(owner=U7s, capacity=U7s.intelligence)
+U7s.curiosity = Curiosity(base_score=U7s.intelligence // 2)
+U7s.task_manager = TaskManager(U7s)
+U7s.employment = EmployeeProfile()
+U7s.faction = factionless
+U7s.motivation_manager = MotivationManager(U7s)
+initialize_motivations(U7s, passed_motivations=[("idle", 1)])
+U7s.inventory_component = InventoryComponent(U7s)
+U7s.observation_component = ObservationComponent(owner=U7s)
+U7s.append(U7s)
+game_state.U7s.append(U7s)
+game_state.all_characters.append(U7s)
+
+family_name = U7s.family_name
+if family_name not in game_state.extant_family_names:
+    game_state.extant_family_names.append(family_name)
+
+
+
+
+"""

@@ -49,7 +49,7 @@ def reassign_shop_names_after_character_creation():
     all_shops = game_state.all_shops
     family_pool = list(game_state.extant_family_names)
 
-    debug_print(None, f"[DEBUG] extant_family_names={game_state.extant_family_names}", "economy")
+    #debug_print(None, f"[DEBUG] extant_family_names={game_state.extant_family_names}", "economy")
 
     if not family_pool:
         debug_print(None, "[WARN] No extant family names exist; shop renaming skipped.", "economy")
@@ -64,9 +64,8 @@ def reassign_shop_names_after_character_creation():
         if not shop.name.startswith("Generic"):
             continue  # Only rename placeholder names
 
-        # -------------------
         # 1. Choose unused family name
-        # -------------------
+
         available = [f for f in family_pool if f not in used_names]
         if not available:
             available = family_pool  # fallback, allow reuse
@@ -74,16 +73,14 @@ def reassign_shop_names_after_character_creation():
         family = random.choice(available)
         used_names.add(family)
 
-        # -------------------
         # 2. Determine region flavor
-        # -------------------
+
         region_name = shop.region.name if shop.region else "Unknown"
         region_flavor_list = REGIONAL_FLAVOR.get(region_name, [])
         flavor = random.choice(region_flavor_list) + " " if region_flavor_list and random.random() < 0.4 else ""
 
-        # -------------------
         # 3. Determine suffix based on specialization
-        # -------------------
+
         spec_suffix = {
             "weapon": "Guns",
             "electronics": "Electrics",
@@ -93,12 +90,9 @@ def reassign_shop_names_after_character_creation():
             "general": "Store",
         }.get(shop.specialization, "Store")
 
-        # -------------------
         # 4. Assign final name
-        # -------------------
         shop.name = f"{family}'s {flavor}{spec_suffix}"
-
-        debug_print(None, f"Renamed shop → {shop.name}", "shops")
+        #debug_print(None, f"Renamed shop → {shop.name}", "shops")
 
 
 

@@ -112,7 +112,7 @@ def create_regions():
                 category="create"
             )
     total_locations = sum(len(r.locations) for r in all_regions)
-    debug_print(None, f"[CREATE] Created {len(all_regions)} regions and {total_locations} locations total.", category="create")
+    #debug_print(None, f"[CREATE] Created {len(all_regions)} regions and {total_locations} locations total.", category="create")
 
     
 

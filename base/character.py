@@ -5,11 +5,10 @@ from base.self_awareness_levels import SelfAwarenessLevel
 from perception.perceptibility import PerceptibleMixin
 from typing import Callable, Any
 
-
 class Character(PerceptibleMixin, CharacterBase):
     
     VALID_SEXES = ("male", "female")  # Class-level constant
-    VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "Irish", "French", "Chinese", "German", "BlackAmerican", "Indian", "IndoAryan", "IranianPersian", "Japanese", "WhiteAryanNordic")  # Class-level constant
+    VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", ...)  # Class-level constant
 
     is_concrete = False
     def __init__(
@@ -23,9 +22,9 @@ class Character(PerceptibleMixin, CharacterBase):
         ai=None,
         motivations=None,
         preferred_actions=None,
-        behaviors=None, #possibly deprecate in favour of preferred_actions, as it overlaps
+        behaviors=None, #unused, possibly deprecate in favour of preferred_actions, as it overlaps
         partner=None,
-        fun=1,
+        fun=1,# integer attributes have a 1-20 scale
         hunger=1,
         faction=None,
         strength=10,
@@ -36,7 +35,7 @@ class Character(PerceptibleMixin, CharacterBase):
         psy=10,
         charisma=10,
         toughness=10,
-        observation=10, #1-20 scale
+        observation=10,
         morale=10,
         status=None,
         loyalties=None,
@@ -44,9 +43,9 @@ class Character(PerceptibleMixin, CharacterBase):
         **kwargs,
         
     ):
-        #assert hasattr(self, "region"), "region must be set by end of Character.__init__"
+
         super().__init__()
-        #PerceptibleMixin.__init__(self)  # Explicit call instead of super()
+
         self.region = region
         self.location = location
         self.current_destination = location
@@ -63,56 +62,32 @@ class Character(PerceptibleMixin, CharacterBase):
         self.is_player = False
         self.is_test_npc = False  # Default to False
         self.is_peaceful_npc = False
-        self.has_plot_armour = False# characters should perceive this but not print it to user
-
-        # --- AI initialization (after region is defined) ---
-
-        self.ai = ai  # only assign if provided, don’t auto-create here
+        self.has_plot_armour = False#rare, currently unused
+        self.ai = ai  # added at instantiation as a component
         self.residences = []
-
-        
-        # Default preferred actions (subclasses can extend this)
         self.base_preferred_actions = {}
-        
         self._initial_motivations = motivations
         self.motivation_manager = None
-        #this was not addressed in the god file refactor
-
         self.skills = self.default_skills()
-        """ if custom_skills:
-            self.skills.update(custom_skills) """
-
         # Individual character preferences (overrides base)
         self.preferred_actions = preferred_actions if preferred_actions else {}
         self.is_alert = False
-        
         self.posture = Posture.STANDING
-
         self.intelligence = intelligence
         self.mind = None
         self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)
         self._last_promote_tick = -1 #promoting thoughts to anchor should happen only once
         self.curiosity = None
         self.concentration = concentration
-
-        self.task_manager = None
-        """ Should Tasks Be Stored in Memory?
-        Yes, that makes a lot of sense — but with separation of concerns:
-        Memory stores past and ongoing tasks for recall, journaling, or planning.
-        tasks[] list should still exist for actively assigned or planned tasks (like a task queue). """
-
+        self.task_manager = None#undeveloped system, utilityAI does not use this. Tasks will be recipes issued by high status
+        #npcs to their subordinates, please ignore for now.
         self.self_awareness = None
         self.race = race
         self.sex = sex
         self.clothing = None
         self.notable_features = []
-        self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID
+        self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID. ie whose blood?
         self.is_visibly_wounded = False
-        
-        # Appearance traits
-        #If you want self.appearance to always reflect the latest values of self.race, 
-        #self.sex, etc., you can make it a @property, but your current method is fine if 
-        #you're OK with updating it manually when needed.
         self.overall_impression = None
         self.appearance = {
         "race": self.race,
@@ -123,43 +98,36 @@ class Character(PerceptibleMixin, CharacterBase):
         "is_visibly_wounded": self.is_visibly_wounded,
         "overall_impression": self.overall_impression  # To be updated by observers
     }
-
         self.current_anchor = None
         self.anchors = []
         self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
-        #status loss, or lack of money, or tasks failed, or baf personal events
-        
-        
+        #status loss, or lack of money, or tasks failed, or bad personal events. Currently unused.
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
-        
+
         # Social connections
         self.social_connections = {
             "friends": [],#no code yet exists  to populate this
             "enemies": [],
             "allies": [],
             "neutral": [],
-            "co_workers": [],#added, shold we set it here, perhaps with lambda? If an npc has worked 3 shift with another, ther set this
+            "co_workers": [],#If an npc has worked 3 shift with another, then set this
             "partners": [partner] if partner else [],#partners exists
         }
 
         self.isArmed = False
         self.hasRangedWeapon = False
         self.hasMeleeWeapon = False
-        
-        self.employment = None
-        
+        self.employment = None#object added as a component at instantiation, of during sim flow
         self.shift = 'day'  # Can be 'day' or 'night'
-        self.is_working = False  # Tracks if the character is working, in world, at a job, or "off duty"
+        self.is_working = False
         self.just_got_off_shift =False #Just finished a work shift
         self.partner = partner
         self.faction = faction
-        # Use kwargs to allow overrides, but default to constructor values
-        self.fun = kwargs.get("fun", fun)
+        self.fun = kwargs.get("fun", fun)#under developed, but some building blocks are in place
         self.fun_prefs = None
         self.hunger = kwargs.get("hunger", hunger)
         self.strength = strength
         self.agility = agility
-        
         self.luck = luck
         self.psy = psy
         self.charisma = charisma
@@ -167,30 +135,18 @@ class Character(PerceptibleMixin, CharacterBase):
         self.morale = morale
         self.status = status
         self.primary_status_domain = kwargs.get("primary_status_domain", "public")
-               
         self.health = 100 + toughness
-        
-        
         self.wallet = None
-
-        
-        #self.inventory = None
         self.inventory_component = None
         #I predict this will break all npc.inventory type calls
-
         # Initialize loyalties as a dictionary
         self.loyalties = kwargs.get("loyalties", {})  # Default to empty dictionary if not provided
-
-        # Handle other attributes from kwargs
-        """ for key, value in kwargs.items():
-            setattr(self, key, value) """
 
     # Assign faction HQ if applicable
         if self.faction and hasattr(self.faction, "HQ"):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
         
         self.observation_component = None
-
         # compatibility shim — DO NOT REMOVE until migration is complete
     @property
     def percepts(self):
@@ -203,17 +159,12 @@ class Character(PerceptibleMixin, CharacterBase):
             return self.observation_component.percepts
         return self._percepts
 
-
     @property
     def inventory(self):
         if self.inventory_component:
             return self.inventory_component.inventory
         return None
     #compatibility property. Needed bc I removed self.inventory
-    #Many npc.inventory calls (and similiar) broken due to this.
-    #This property fixes that, but maybe I should do a wider logic audit to change npc.inventory and character.inventory type calls 
-    #to npc.inventory_component. Foda-se.
-    #   Do NOT remove this property until that audit is complete!
 
     def register_anchor(self, anchor):
         """
@@ -253,7 +204,7 @@ class Character(PerceptibleMixin, CharacterBase):
                 print(f"Decisions.. {self.name} is in {self.region} but no specific location")
             return f"{region_name}, {location_name}"
 
-        if sublocation:
+        if sublocation:#sublocations is an underdeveloped feature. Basic world structure is regions have locations.
             return f"{region_name}, {location_name}, {sublocation}"
         return f"{region_name}, {location_name}"
     
@@ -282,7 +233,7 @@ class Character(PerceptibleMixin, CharacterBase):
         return " ".join(filter(None, parts))
     
     def default_skills(self):
-        # Basic human-level skills
+        # Basic human-level skills, will likely expand and need to become an npc component
         return {
             "stealth": 4,
             "melee_attack": 2,
@@ -390,6 +341,7 @@ class Character(PerceptibleMixin, CharacterBase):
         location_name = self.location.name if hasattr(self.location, "name") else self.location
         sublocation = getattr(self, "_sublocation", None)
         print(f"DEBUG: Accessing whereabouts -> region: {region_name}, location: {location_name}")
+        #Elsewhere in the code, print is being deprecated in favor of custom debug_print which has filtering
         return f"{region_name}, {location_name}" + (f", {sublocation}" if sublocation else "")
 
     def adjust_self_esteem(self, amount):
@@ -421,11 +373,7 @@ class Character(PerceptibleMixin, CharacterBase):
         #if loyalty goes <0 a treachery event might be triggered
 
     def set_partner(self, partner):
-        """
-        Sets the partner attribute.
-
-        :param partner: A Character object or None.
-        """
+        #unused. partners are set during world creation for now
         if partner is None or isinstance(partner, Character):
             self.partner = partner
         else:

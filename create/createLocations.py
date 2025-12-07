@@ -1,6 +1,7 @@
 #create.createLocations.py
 from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock
 from base.location import Location
+from base.character import Character
 from typing import List
 from create.create_game_state import get_game_state
 from utils import get_region_by_name
@@ -92,8 +93,6 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
             #debug_print(None, f"[VERIFY] {shop.name} inventory: {shop.inventory.get_inventory_summary()}", category="verify")
         except Exception as e:
             debug_print(None, f"⚠️ Error stocking shop, or adding specialization '{shop.name}': {e}", "create")
-        game_state.all_shops.append(shop)
-
 
     # NO CORPORATE_STORE NAMING CALL, CODE EXISTS IN SHOP NAMING FILE
 
@@ -129,11 +128,11 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     # Maintain global lists
     if not hasattr(game_state, "all_shops"):
         game_state.all_shops = []
-    game_state.all_shops.extend(region.shops)
+    game_state.all_shops.extend(region.shops)#line 133
 
     if not hasattr(game_state, "all_locations"):
         game_state.all_locations = []
-    game_state.all_locations.extend(locations)
+    game_state.all_locations.extend(locations)#line 137
 
     return locations
 

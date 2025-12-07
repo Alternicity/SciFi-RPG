@@ -11,8 +11,8 @@ from characters import Civilian
 @dataclass
 class Family:
     """Lightweight social unit tracking related civilians."""
-    surname: str
-    members: List['Civilian'] = field(default_factory=list)
+    family_name: str
+    members: List['Civilian'] = field(default_factory=list)#Civilian must be updated
     home: Optional['Location'] = None
 
     @property
@@ -23,47 +23,61 @@ class Family:
     def children(self) -> List['Civilian']:
         return [c for c in self.members if getattr(c, "age", 20) < 18]
 
-    def add_member(self, civilian: 'Civilian'):
-        if civilian not in self.members:
-            self.members.append(civilian)
-            civilian.family = self
-            if "family" not in civilian.social_connections:
-                civilian.social_connections["family"] = []
-            civilian.social_connections["family"].append(self)
+    def add_member(self, character):
+        if character not in self.members:
+            self.members.append(character)
+            character.family = self
+            character.social_connections.setdefault("family", []).append(self)
 
-    "add update npc.loyalties code here"
+
+    #add update npc.loyalties code here
 
 
 def assign_families_and_homes(game_state):
     """
-    Groups civilians into families based on surname,
+    Groups civilians into families based on family name,
     assigns each family a residential location,
     and links partners probabilistically.
     """
-    civilians = getattr(game_state, "civilians", [])
+    all_characters = getattr(game_state, "all_characters", [])
+
     regions = getattr(game_state, "all_regions", [])
     all_residences = [loc for loc in getattr(game_state, "all_locations", [])
                       if isinstance(loc, (House, ApartmentBlock))]
 
-    if not civilians or not all_residences:
-        debug_print(None, "[FAMILY] No civilians or residences to assign.", "family")
+    if not all_characters or not all_residences:
+        debug_print(None, "[FAMILY] No characters or residences to assign.", "family")
         game_state.families = []
         return []
 
-    # -------------------------------
+
     # 1. Group by family name
-    # -------------------------------
     families_by_name: Dict[str, Family] = {}
-    for civ in civilians:
-        if not hasattr(civ, "name") or " " not in civ.name:
+
+    for c in all_characters:
+        if not getattr(c, "family_name", None):
+            print(f"[FAMILY-DEBUG] Missing family_name → {c.name} ({type(c)})")
+
+
+    for char in all_characters:
+        family_name = getattr(char, "family_name", None)
+
+        # Skip characters with missing or blank family_name
+        if not family_name or not family_name.strip():
             continue
-        surname = civ.name.split()[-1]
-        family = families_by_name.setdefault(surname, Family(surname=surname))
-        family.add_member(civ)
 
-    debug_print(None, f"[FAMILY] Grouped {len(families_by_name)} family surnames.", "family")
+        family_key = family_name.strip().lower()
 
-    # -------------------------------
+        family = families_by_name.setdefault(
+            family_key,
+            Family(family_name=family_name)
+        )
+
+        family.add_member(char)
+
+
+    debug_print(None, f"[FAMILY] Grouped {len(families_by_name)} family family_names.", "family")
+
     # 2. Assign homes
     # -------------------------------
     unassigned_residences = all_residences.copy()
@@ -71,7 +85,7 @@ def assign_families_and_homes(game_state):
 
     for family in families_by_name.values():
         if not unassigned_residences:
-            debug_print(None, f"[FAMILY] Out of residences while placing family {family.surname}.", "family")
+            debug_print(None, f"[FAMILY] Out of residences while placing family {family.family_name}.", "family")
             break
 
         home = unassigned_residences.pop()
@@ -85,7 +99,7 @@ def assign_families_and_homes(game_state):
                 home.characters_there.append(civ)
 
         #verbose
-        #debug_print(None, f"[FAMILY] Placed {len(family.members)} {family.surname} members at {home.name}.",category=["placement", "family", "population"])
+        #debug_print(None, f"[FAMILY] Placed {len(family.members)} {family.family_name} members at {home.name}.",category=["placement", "family", "population"])
 
     # -------------------------------
     # 3. Link partners (rough pass)
@@ -99,21 +113,20 @@ def assign_families_and_homes(game_state):
             b.social_connections["partners"].append(a)
             #debug_print(None, f"[FAMILY] Partnered {a.name} ↔ {b.name}",category=["family", "population"])
 
-    # -------------------------------
+
     # 4. Store and return
-    # -------------------------------
+
     families = list(families_by_name.values())
     game_state.families = families
     debug_print(None, f"[FAMILY] Assigned {len(families)} families.", "family")
 
     return families
-# -------------------------------------------------------------
+
 # PATCH D: FAMILY SHOP OWNERSHIP LINKAGE
-# -------------------------------------------------------------
 
 def link_family_shops(game_state):
     """
-    Link families to shops that bear their surname in the shop name.
+    Link families to shops that bear their family_name in the shop name.
     Example: 'O'Sullivan's Store' -> Family('O'Sullivan')
     """
 
@@ -123,16 +136,30 @@ def link_family_shops(game_state):
         debug_print(None, "[FAMILY_SHOPS] No families or shops to link.", "family")
         return
 
-    # Index families by surname for faster lookup
-    surname_map: Dict[str, Family] = {fam.surname.lower(): fam for fam in families}
+    # Index families by family_name for faster lookup
+    
+    family_name_map = {fam.family_name.lower(): fam for fam in families}
 
     matches = 0
+
+    #tmp
+    """ for shop in all_shops:
+        print("SHOP:", id(shop), shop.name)
+
+    for fam in families:
+        print("FAM:", id(fam), fam.family_name) """
+
+
+    #If you see two identical object IDs → no duplicates
+    #If you see two identical names but different IDs → they are being recreated.
+
+
     for shop in all_shops:
         shop_name_lower = shop.name.lower()
 
-        # Attempt to find a family whose surname appears at start of shop name
-        for surname, fam in surname_map.items():
-            if shop_name_lower.startswith(surname.lower()):
+        # Attempt to find a family whose family_name appears at start of shop name
+        for family_key, fam in family_name_map.items():
+            if shop_name_lower.startswith(family_key):
                 setattr(shop, "owner_family", fam)
                 if not hasattr(fam, "owned_shops"):
                     fam.owned_shops = []
@@ -148,7 +175,7 @@ def link_family_shops(game_state):
                     if hasattr(member, "morale"):
                         member.morale = min(member.morale + 1, 20)
 
-                debug_print(None, f"[FAMILY_SHOPS] Linked {fam.surname} to {shop.name}.", "family")
+                debug_print(None, f"[FAMILY_SHOPS] Linked {fam.family_name} to {shop.name}.", "family")
                 break  # one shop = one family owner, avoid duplicates
 
     debug_print(None, f"[FAMILY_SHOPS] Linked {matches} shops to families.", "family")

@@ -51,7 +51,7 @@ def create_faction_characters(faction, all_regions, factions=None):
 
 def create_all_characters(factions, all_locations, all_regions):
 
-    print("\n" * 3)  # Line breaks for clarity
+    #print("\n" * 3)  # Line breaks for clarity
     print("Creating characters for factions...")
     print(f"Received {len(factions)} factions")
         # Extract all shops from the location list
@@ -96,7 +96,7 @@ def create_all_characters(factions, all_locations, all_regions):
         occupants = [c.name for c in shop.characters_there]
         #debug_print(None, f"[DIAG] SHOP (Currently) {shop.name} occupants: {occupants}",category=["placement", "economy"])
 
-    link_family_shops(game_state)
+    
     
     """from game_logic import assign_random_civilians_to_random_shops
     assign_random_civilians_to_random_shops(all_regions, all_characters, count=3) """
@@ -115,7 +115,9 @@ def player_character_options(all_regions, factions):
     character_data = [
     {
         "class": Manager,
-        "name": "Karen",
+        "name": "Karen Andersen",
+        "first_name": "Karen",
+        "family_name": "Andersen",
         "sex": "female",
         "is_player": True,
         "race": "Terran",
@@ -148,9 +150,11 @@ def player_character_options(all_regions, factions):
     {
         "class": GangMember,
         "name": "Swiz",
+        "first_name": "Swiz",
+        "family_name": "Novak",
         "sex": "male",
         "is_player": True,
-        "race": "French",
+        "race": "Terran",
         "faction_name": "Factionless",
         "region_name": "easternhole",
         "location_name": "None",
@@ -180,7 +184,9 @@ def player_character_options(all_regions, factions):
          
 {
         "class": Adepta,
-        "name": "Ava",
+        "name": "Ava Kelly",
+        "first_name": "Ava",
+        "family_name": "Kelly",
         "sex": "female",
         "is_player": True,
         "race": "Irish",
@@ -311,6 +317,9 @@ def instantiate_character(char_data, all_regions, factions):
     character.observation_component = ObservationComponent(owner=character)
     character.self_awareness = SelfAwarenessComponent(owner=character)
     character.is_player = char_data.get("is_player", False)
+    family_name = character.family_name
+    if family_name not in game_state.extant_family_names:
+        game_state.extant_family_names.append(family_name)
 
     character.wallet = WalletComponent(
         owner=character,

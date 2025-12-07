@@ -183,7 +183,7 @@ def run_simulation(all_characters, num_days=10):
     all_regions = game_state.all_regions #should i just move this game_state data lookup to population.summarize_civilians?
 
     #Fine tune/augment objects
-    #reassign_shop_names_after_character_creation()
+
 
     summarize_civilians(civilians, all_regions)
 

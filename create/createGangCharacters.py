@@ -2,7 +2,9 @@
 import random
 from characters import Boss, Captain, GangMember
 from create.create_character_names import create_name
-from create.create_game_state import get_game_state
+
+
+
 
 from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
 from motivation.motivation_presets import MotivationPresets
@@ -20,6 +22,10 @@ from debug_utils import debug_print, add_character
 from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
+
+from create.create_game_state import get_game_state
+game_state = get_game_state()
+
 #no ai import here
 def create_gang_characters(faction, all_regions):
 
@@ -83,6 +89,10 @@ def create_gang_characters(faction, all_regions):
     initialize_motivations(boss, member.motivations)
     boss.inventory_component = InventoryComponent(owner=boss)
     boss.observation_component = ObservationComponent(owner=boss)
+    family_name = boss.family_name
+            if family_name not in game_state.extant_family_names:
+                game_state.extant_family_names.append(family_name)
+                
       """
 #not neccesary to uncomment to restore gang chars instantiation
     """ if faction.HQ:
@@ -113,8 +123,6 @@ def create_gang_characters(faction, all_regions):
         assert race == faction.race, f"Race mismatch when creating gang characters: {race} vs {faction.race}"
         first_name, family_name, full_name = create_name(race, sex)
 
-
-
         captain = Captain(
             name=full_name,
             first_name=first_name,
@@ -144,6 +152,9 @@ def create_gang_characters(faction, all_regions):
             captain.location = faction.HQ
         characters.append(captain)
         faction.region.characters_there.append(captain)
+        family_name = captain.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
 
     # Gang Members
     for _ in range(random.randint(1,1)):#5, 10
@@ -181,6 +192,9 @@ def create_gang_characters(faction, all_regions):
         initialize_motivations(member, passed_motivations=[("idle", 1)])
         
         member.observation_component = ObservationComponent(owner=member)
+        family_name = member.family_name
+        if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name)
 
         if faction.is_street_gang and faction.street_gang_start_location:
             member.location = faction.street_gang_start_location

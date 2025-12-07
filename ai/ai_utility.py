@@ -23,13 +23,6 @@ class UtilityAI(BaseAI):
     """ Filtering episodic memories and tagging/promoting important ones into thoughts.
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
-    
-    #self._region_cache = getattr(npc, "region", None)#why does this exist?
-    """ @property
-    def region(self):
-        if self._region_cache is None:
-            self._region_cache = getattr(self.npc, "region", None)
-        return self._region_cache """
 
     def choose_action(self, region):
         npc = self.npc
@@ -400,9 +393,6 @@ class UtilityAI(BaseAI):
             #visit_to_rob_anchor remains marked an not defined.
             #If I import that here is there a risk of circular import problems?
             #can we get it via npc.current_anchor.visit_to_rob_anchor ?
-
-
-
 
     def recall_location_with_tags(npc, required_tags: list, min_salience=0.5):
         memories = npc.mind.memory.query_memory_by_tags(required_tags)
