@@ -12,10 +12,22 @@ If events and character_memory are highly interdependent, you may consider
 abstracting their connection via an interface or shared messaging/event system.
 But thats likely overkill for your current scale. """
 
+""" Should memories link together? Does AI care?
+Is there an AI benefit?
+Yes, absolutely.
+Memory linking allows:
+spreading activation
+priming
+faster retrieval
+emergent chain-of-thought behavior
+context cascades ("If I know X, I recall Y") """
+
+
+
 MEMORY_CATEGORIES = [
     "events", "region_knowledge", "people", "awakening", "social",
     "memory_entries", "enemies", "Objects", "procedures", "internal_architecture",
-    "shop_knowledge"#we can add categories
+    "shop_knowledge", "food_locations"
 ]
 
 class Memory:
@@ -125,7 +137,7 @@ class Memory:
         return sorted(self.episodic, key=lambda e: e.timestamp, reverse=True)[:count]
 
     def all_facts(self):
-        return self.semantic #deprecate
+        return self.semantic
 
     def get_episodic(self):
         return self.episodic

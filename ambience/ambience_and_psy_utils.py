@@ -5,7 +5,7 @@ def compute_location_ambience(location, observer=None):
     Blends ambience contributions from all objects in the location.
     Optionally filters based on observer psy.
     """
-    from ambience import Ambience  # Assuming your Ambience class is in ambience.py
+    from ambience.ambience import Ambience
 
     total_ambience = Ambience()
 

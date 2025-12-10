@@ -333,13 +333,14 @@ class RobberyAnchor(Anchor):
         if tags and "turf_war" in tags:
             return
 
-        debug_print(
+        #verbose
+        """ debug_print(
             npc,
             f"[ANCHOR-SALIENCE] RobberyAnchor final={score:.2f} for {name}"
             + (f" (target={target_name})" if target_name else "")
             + f" (tags={tags})",
             category="salience",
-        )
+        ) """
 
         return round(score, 2)
 

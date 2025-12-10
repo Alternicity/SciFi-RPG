@@ -20,16 +20,10 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
     tick = game_state.tick #not yet accessed here
     #all_characters is present from paramter not game_state
 
-    #tmp. Prints what character are in what region
-    """     for r in all_regions:
-        should we print here the tick
-        print(f"[DEBUG REGION LIST] {r.name}: {[c.name for c in r.characters_there]}") """
 
     for _ in range(num_days):
         game_state.advance_tick()# a tick is now 1 hour so function name is wrong
         debug_print(f"[TIME] Tick {game_state.tick}, Day {game_state.day}", category="tick")
-
-    #and replicate the tmp block above here?
 
         for location in all_locations:
                     location.recent_arrivals.clear()
@@ -42,7 +36,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 if npc.is_player:
                     continue
                 
-                
                 # OBSERVE
                 
                 if npc is debug_character:
@@ -50,13 +43,12 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     #or here?
 
                     npc.observe(region=region, location=npc.location)
-                    #observe call moved here from npc AI think functions
 
                 if npc.is_test_npc or npc is debug_character:
                     display_percepts_table(npc)
 
                 # --- Ambience Influence + Social Vibe Logging ---
-                #This framework sets the stage for scene-level emergent stories
+                #This framework sets the stage for scene-level emergent stories, largely un developed
                 for loc in game_state.all_locations:
                     for char in getattr(loc, "characters_there", []):
                         if not hasattr(char, "mind") or not hasattr(char, "psy"):
@@ -119,9 +111,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                     npc.ai.execute_action(action, region)
 
                     debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
-                    #finished what action? Also I must change to debug_print
-
-                
 
         # STEP 3: Post-Day DEBUG (single character)
         for npc in all_characters:
@@ -131,8 +120,6 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 continue
             for mem in npc.mind.memory.episodic:
                 pass
-                #print(f" - {mem}")#This could get noisy fast
-                #also does this mean that this print will work only for non debug_character npcs?
 
         debug_print(npc, f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})", category="think")
         
@@ -147,13 +134,11 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
                 for i, rk in enumerate(region_knowledges):
 
                     print(display_region_knowledge_summary(region_knowledges, npc=npc))
-                    #Now we have a tick counter, can we make the RegionKnowledge only get printed to output on the first tick?
+
         debug_print(npc, "[THOUGHTS — filtered]", "think")
         for thought in npc.mind.thoughts:
             if thought.urgency > 1:
                 debug_print(npc, f" - {thought.content} (urgency {thought.urgency})", "think")
-
-
 
     # STEP 4: Sanity Check on Character List
     for c in all_characters:
@@ -164,7 +149,7 @@ def begin_npc_turn(npc):
     npc.just_arrived = False
     npc.turn_start_tick = get_game_state().tick
     npc.mind.remove_thought_by_content("No focus")
-    #Set attention_focus straight away? Test it?
+
     debug_print(f"[TURN] Begin NPC turn: {npc.name}", category="tick")
 
 def end_npc_turn(npc):

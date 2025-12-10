@@ -28,7 +28,7 @@ class Motivation:
 
     @property
     def tags(self):
-        from motivation_presets import get_tags_for_motivation
+        from motivation.motivation_presets import get_tags_for_motivation
         return get_tags_for_motivation(self.type)
 
     @classmethod
@@ -167,6 +167,13 @@ class MotivationManager:
             return existing
 
         return self._create_motivation(mtype, urgency, target, source, status_type)
+
+    def set_motivations(self, motivations_list):
+        """Replace all existing motivations with a new list."""
+        self.motivations = []
+        for mtype, urgency in motivations_list:
+            self.update_motivations(mtype, urgency)
+
 
     # user-friendly API aliases
     def increment(self, motivation_type, amount=1):

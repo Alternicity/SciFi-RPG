@@ -10,7 +10,7 @@ from location.location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
 from characters import Civilian, SpecialChild, Adepta
 from objects.InWorldObjects import Wallet
 from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
-from motivation.motivation_presets import MotivationPresets
+from motivation.motivation_presets import MotivationPresets #not accessed here
 from motivation.motivation_init import initialize_motivations
 from status import CharacterStatus, FactionStatus, StatusLevel
 from ai.ai_civilian import AdeptaAI
@@ -76,10 +76,10 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
                 race=race,
                 faction=factionless,#Is this not working?
                 #motivations=[("idle", 1)],
-                wallet=Wallet(bankCardCash=random_cash),
+                wallet=None,
                 status=CharacterStatus()
             )
-
+            civilian.wallet=Wallet(bankCardCash=random_cash)
             civilian.status.set_status("general_population", FactionStatus(StatusLevel.LOW, "Normie"))
             civilian.home = home
             civilian.residences = [home]
@@ -87,7 +87,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             civilian.mind = Mind(owner=civilian, capacity=civilian.intelligence)
             civilian.curiosity = Curiosity(base_score=civilian.intelligence // 2)
             civilian.task_manager = TaskManager(civilian)
-            civilian.employment = EmployeeProfile()
+            civilian.employment = EmployeeProfile(shift_start=9, shift_end = 5)
             civilian.faction = factionless
             civilian.motivation_manager = MotivationManager(civilian)
             initialize_motivations(civilian, passed_motivations=[("idle", 1)])

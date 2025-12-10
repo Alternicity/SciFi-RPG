@@ -1,7 +1,7 @@
 #food_sources_builder
-
+#DEPRECATED
 from character_memory import RegionKnowledge, FoodSources, FoodSourceMemory
-def build_food_sources(self, npc):
+def build_food_sourcesDEPRECATED(self, npc):
     sources = FoodSources()
 
     for loc in npc.region.locations:

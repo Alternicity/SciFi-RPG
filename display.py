@@ -4,7 +4,7 @@ import logging
 from textwrap import wrap
 
 from base.character import Character
-
+from create.create_game_state import get_game_state
 import loader
 import os
 from collections import defaultdict
@@ -25,6 +25,7 @@ from character_creation_funcs import player_character_options
 from base.faction import Faction
 from base.location import Location
 from perception.perceptibility import extract_appearance_summary
+from config_npc_vitals import NPC_VITALS_CONFIG
 
 
 from debug_utils import debug_print
@@ -396,11 +397,17 @@ def list_characters(characters):
     for char in characters:
         if isinstance(char, dict):
             print(f"Character dictionary: {char}")
-            name = char.get('name', 'Unknown')  # Safely access dictionary attributes
+            name = char.get('name', 'Unknown')#would this be better is it was name = char.name?
     else:
         print(f"Character object: {char}")
         name = char.name  # Access object attribute
         print(f"Character Name: {name}")
+        #npc not defined below. Use char? 
+        debug_flag = ""
+        if hasattr(npc, "debug_role") and npc.debug_role in ("primary", "secondary", "civilian_test"):
+            debug_flag = f" [DEBUG: {npc.debug_role}]"
+
+        print(f"  Name: {npc.name}{debug_flag}")
 
 
     print("Listing Characters, list_characters().")
@@ -777,3 +784,288 @@ def sim_print(message):
     debug_print(None, message, category="simulation")
 
 
+#Start Claude block
+def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
+    """
+    Comprehensive display of NPC state.
+    Call this from simulate_days() for your 3 debug NPCs.
+    """
+    if not npc:
+        return
+    
+    game_state = get_game_state()
+    
+    print("\n")
+    print(f"NPC VITALS: {npc.name}")
+
+    
+    # === BASIC INFO ===
+    if NPC_VITALS_CONFIG.get("identity", True):
+        print(f"\n[IDENTITY]")
+        print(f"  Name: {npc.name}")
+        print(f"  Debug Role: {getattr(npc, 'debug_role', 'N/A')}")
+        print(f"  Class: {npc.__class__.__name__}")
+        print(f"  Race: {npc.race}, Sex: {npc.sex}")
+    
+    # === LOCATION ===
+    if NPC_VITALS_CONFIG.get("location", True):
+        print(f"\n[LOCATION]")
+        print(f"  Region: {npc.region.name if npc.region else 'None'}")
+        print(f"  Current Location: {npc.location.name if npc.location else 'None'}")
+        
+        if npc.current_destination and npc.current_destination != npc.location:
+            print(f"  Destination: {npc.current_destination.name}")
+        
+        if npc.just_arrived:
+            print(f"  Status: Just arrived")
+        if npc.just_left_location:
+            print(f"  Status: Just left")
+    
+    # === VITALS ===
+    if NPC_VITALS_CONFIG.get("vitals", True):
+        print(f"\n[VITALS]")
+        if hasattr(npc, 'vitals'):
+            v = npc.vitals
+            print(f"  Hunger: {v.hunger:.1f}/20 {_vitals_indicator(v.hunger, 'hunger')}")
+            print(f"  Effort: {v.effort:.1f}/20 {_vitals_indicator(v.effort, 'effort')}")
+            print(f"  Fun: {v.fun:.1f}/20 {_vitals_indicator(v.fun, 'fun')}")
+        else:
+            # Fallback for NPCs without VitalsComponent
+            print(f"  Hunger: {getattr(npc, 'hunger', 'N/A')}/20")
+            print(f"  Effort: {getattr(npc, 'effort', 'N/A')}/20")
+            print(f"  Fun: {getattr(npc, 'fun', 'N/A')}/20")
+    
+    # === EMPLOYMENT ===
+    if NPC_VITALS_CONFIG.get("employment", True):
+        print(f"\n[EMPLOYMENT]")
+        if npc.employment and npc.employment.workplace:
+            print(f"  Workplace: {npc.employment.workplace.name}")
+            print(f"  Role: {npc.employment.role.name if npc.employment.role else 'None'}")
+            print(f"  Shift: {npc.employment.shift} ({npc.employment.shift_start}:00-{npc.employment.shift_end}:00)")
+            print(f"  On Shift: {'Yes' if npc.employment.is_on_shift else 'No'}")
+            print(f"  Currently Working: {'Yes' if npc.is_working else 'No'}")
+            if npc.just_got_off_shift:
+                print(f"  Status: Just got off shift")
+        else:
+            print(f"  Unemployed")
+    
+    # === MONEY ===
+    if NPC_VITALS_CONFIG.get("finances", True):
+        print(f"\n[FINANCES]")
+        if npc.wallet:
+            print(f"  Cash: ${npc.wallet.cash}")
+            print(f"  Bank: ${npc.wallet.bankCardCash}")
+            print(f"  Total: ${npc.wallet.balance}")
+        else:
+            print(f"  No wallet")
+    
+    # === MOTIVATIONS ===
+    if NPC_VITALS_CONFIG.get("motivations", True):
+        print(f"\n[MOTIVATIONS]")
+        motivations = npc.motivation_manager.sorted_by_urgency(descending=True)
+        if motivations:
+            for i, m in enumerate(motivations[:5], 1):  # Show top 5
+                print(f"  {i}. {m.type} (urgency: {m.urgency:.1f})")
+                if m.target:
+                    print(f"     → target: {m.target}")
+        else:
+            print(f"  No active motivations")
+    
+    # === ANCHORS ===
+    if NPC_VITALS_CONFIG.get("anchors", True):
+        print(f"\n[ANCHORS]")
+        if hasattr(npc, 'anchors') and npc.anchors:
+            for anchor in npc.anchors:
+                print(f"  • {anchor.name} (weight: {anchor.weight:.1f}, priority: {anchor.priority:.1f})")
+                if anchor.enables:
+                    print(f"    Enables: {', '.join(anchor.enables)}")
+        else:
+            print(f"  No anchors")
+    
+    # === FOCUS ===
+    if NPC_VITALS_CONFIG.get("focus", True):
+        print(f"\n[MENTAL FOCUS]")
+        if npc.mind.default_focus:
+            print(f"  Default Focus: {npc.mind.default_focus.name if hasattr(npc.mind.default_focus, 'name') else npc.mind.default_focus}")
+        else:
+            print(f"  Default Focus: None")
+        
+        if npc.mind.attention_focus:
+            focus = npc.mind.attention_focus
+            if hasattr(focus, 'content'):
+                print(f"  Attention: {focus.content} (urgency: {focus.urgency})")
+            else:
+                print(f"  Attention: {focus}")
+        else:
+            print(f"  Attention: None")
+    
+    # === THOUGHTS ===
+    if NPC_VITALS_CONFIG.get("thoughts", True):
+        if show_thoughts:
+            print(f"\n[THOUGHTS] ({len(npc.mind.thoughts)} total)")
+            urgent_thoughts = [t for t in npc.mind.thoughts if t.urgency >= 5]
+            if urgent_thoughts:
+                for i, thought in enumerate(sorted(urgent_thoughts, key=lambda t: t.urgency, reverse=True)[:5], 1):
+                    print(f"  {i}. {thought.content}")
+                    print(f"     Urgency: {thought.urgency}, Tags: {thought.tags}")
+                    if thought.anchored:
+                        print(f"     [ANCHORED]")
+            else:
+                print(f"  No urgent thoughts")
+    
+    # === MEMORIES ===
+    if NPC_VITALS_CONFIG.get("memories", True):
+        if show_memories:
+            print(f"\n[RECENT EPISODIC MEMORIES] (last 5)")
+            episodic = npc.mind.memory.get_episodic()
+            if episodic:
+                for i, mem in enumerate(reversed(episodic[-5:]), 1):
+                    print(f"  {i}. {mem.subject} {mem.verb} {mem.object_}")
+                    if mem.details:
+                        print(f"     → {mem.details}")
+            else:
+                print(f"  No episodic memories")
+            
+            print(f"\n[SEMANTIC KNOWLEDGE]")
+            semantic_count = {cat: len(mems) for cat, mems in npc.mind.memory.semantic.items() if mems}
+            if semantic_count:
+                for cat, count in semantic_count.items():
+                    print(f"  {cat}: {count} entries")
+            else:
+                print(f"  No semantic knowledge")
+    
+    # === SOCIAL ===
+    if NPC_VITALS_CONFIG.get("social", True):
+        print(f"\n[SOCIAL]")
+        if npc.partner:
+            partner_name = npc.partner.name if hasattr(npc.partner, 'name') else str(npc.partner)
+            print(f"  Partner: {partner_name}")
+        else:
+            print(f"  Partner: None")
+        
+        print(f"  Self-Esteem: {npc.self_esteem}/100")
+        
+        if npc.fun_prefs:
+            print(f"  Fun Preferences: {npc.fun_prefs}")
+        
+        # === TIME CONTEXT ===
+        print(f"\n[TIME]")
+        print(f"  Tick: {game_state.tick} (Hour: {game_state.tick % 24}:00)")
+        print(f"  Day: {game_state.day}")
+        
+
+def _vitals_indicator(value, vital_type):
+    """Return visual indicator for vital status."""
+    if vital_type == 'hunger':
+        if value >= 18:
+            return "[CRITICAL ⚠️]"
+        elif value >= 15:
+            return "[URGENT ⚠]"
+        elif value >= 10:
+            return "[HUNGRY]"
+        else:
+            return "[OK ✓]"
+    
+    elif vital_type == 'effort':
+        if value <= 3:
+            return "[EXHAUSTED ⚠️]"
+        elif value <= 8:
+            return "[TIRED ⚠]"
+        elif value >= 15:
+            return "[ENERGETIC ✓]"
+        else:
+            return "[OK]"
+    
+    elif vital_type == 'fun':
+        if value >= 18:
+            return "[MISERABLE ⚠️]"
+        elif value >= 15:
+            return "[BORED ⚠]"
+        elif value <= 5:
+            return "[HAPPY ✓]"
+        else:
+            return "[OK]"
+    
+    return ""
+
+
+def display_all_debug_npcs():
+    """
+    Display vitals for all 3 debug NPCs.
+    Call this at key moments in simulate_days().
+    """
+    game_state = get_game_state()
+    
+    # Get debug NPCs from game_state
+    debug_npcs = getattr(game_state, 'debug_npcs', {})
+    
+    if not debug_npcs:
+        print("[WARNING] No debug NPCs registered in game_state")
+        return
+    
+    for role, npc in debug_npcs.items():
+        display_npc_vitals(npc, show_memories=True, show_thoughts=True)
+
+
+def display_npc_summary(npc):
+    """
+    Condensed one-line summary for quick scanning.
+    Useful for showing all NPCs at once.
+    """
+    hour = (get_game_state().tick % 24)
+    
+    hunger = getattr(npc.vitals, 'hunger', npc.hunger) if hasattr(npc, 'vitals') else npc.hunger
+    effort = getattr(npc.vitals, 'effort', npc.effort) if hasattr(npc, 'vitals') else getattr(npc, 'effort', '?')
+    
+    top_mot = npc.motivation_manager.get_highest_priority_motivation()
+    mot_str = f"{top_mot.type}({top_mot.urgency:.0f})" if top_mot else "none"
+    
+    loc = npc.location.name if npc.location else "nowhere"
+    
+    status = ""
+    if npc.is_working:
+        status = "🔧WORK"
+    elif npc.just_got_off_shift:
+        status = "🏁OFF"
+    elif npc.just_arrived:
+        status = "📍ARR"
+    
+    print(f"{npc.name:20} | {loc:15} | H:{hunger:4.1f} E:{effort:4.1f} | {mot_str:20} | {status}")
+
+
+def display_daily_schedule_preview(npc):
+    """
+    Show what NPC's schedule looks like for the day.
+    Useful for understanding work/sleep patterns.
+    """
+    print(f"\n{'='*60}")
+    print(f"DAILY SCHEDULE: {npc.name}")
+    print(f"{'='*60}")
+    
+    schedule = []
+    
+    # Sleep
+    schedule.append("00:00-06:00 | Sleep (home)")
+    
+    # Morning
+    schedule.append("06:00-09:00 | Wake, breakfast, commute")
+    
+    # Work
+    if npc.employment and npc.employment.workplace:
+        start = npc.employment.shift_start
+        end = npc.employment.shift_end
+        schedule.append(f"{start:02d}:00-{end:02d}:00 | Work at {npc.employment.workplace.name}")
+    else:
+        schedule.append("09:00-17:00 | Free time (unemployed)")
+    
+    # Evening
+    schedule.append("17:00-20:00 | Unwind, eat, social")
+    
+    # Night
+    schedule.append("20:00-22:00 | Fun activities")
+    schedule.append("22:00-00:00 | Prepare for sleep")
+    
+    for entry in schedule:
+        print(f"  {entry}")
+    
+    print(f"{'='*60}\n")

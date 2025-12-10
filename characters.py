@@ -195,6 +195,7 @@ class Captain(Character):
         )
         self.first_name = first_name
         self.family_name = family_name
+        
     def handle_observation(self, region):
         gang_observation_logic(self, region)
 

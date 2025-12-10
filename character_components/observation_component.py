@@ -203,19 +203,20 @@ class ObservationComponent:
         from create.create_game_state import get_game_state
         import inspect
         game_state = get_game_state()
-        npc = self
+
+        observer = self.owner
 
         # caller info for diagnostics
         caller = inspect.stack()[1].function
 
         # Ensure only runs once per tick
         if getattr(self, "_observed_this_tick", False):
-            debug_print(npc, f"[OBSERVE SKIP] already observed this tick={game_state.tick} (caller={caller})", "percept")
+            debug_print(observer, f"[OBSERVE SKIP] already observed this tick={game_state.tick} (caller={caller})", "percept")
             return
         self._observed_this_tick = True
 
-        debug_print(npc, f"[OBSERVE TRACE] {self.name} observing at tick {game_state.tick} (caller={caller})", category="observation")
-        debug_print(npc, f"[OBSERVE TRACE] npc.location={npc.location}, region={npc.region}", category="perception")
+        debug_print(observer, f"[OBSERVE TRACE] {observer.name} observing at tick {game_state.tick} (caller={caller})", category="observation")
+        debug_print(observer, f"[OBSERVE TRACE] npc.location={observer.location}, region={observer.region}", category="perception")
         #debug_print(npc, f"[OBSERVE] RAW location param={location} (type={type(location)})", "perception")
         if region is not None and location is None:
             print(f"[BUG] observe() called with region but no location! Caller={caller}")
@@ -226,18 +227,20 @@ class ObservationComponent:
             before_count = len(self.percepts)
         except Exception:
             before_count = 0
-        debug_print(npc, f"[OBSERVE] Before clearing percepts, count={before_count}, location param={(location.name if location else None)}", "percept")
+
+        debug_print(self.owner, f"[OBSERVE] Before clearing percepts, count={before_count}, location param={(location.name if location else None)}", "percept")
 
         # --- clear percepts for new observation cycle ---
         self.percepts.clear()
         self.percepts_update = False
 
         # --- perceive self (always included) ---
-        self_percept = self.get_percept_data(observer=self)
+        self_percept = self.owner.get_percept_data(observer=self.owner)
+
         if self_percept:
             self._percepts["self"] = {
                 "data": self_percept,
-                "origin": self
+                "origin": self.owner   # origin should be the Character, not the component
             }
             self.percepts_updated = True
 
@@ -249,11 +252,11 @@ class ObservationComponent:
 
         # If someone passed a Region (bad), fallback to npc.location
         if isinstance(location, Region):
-            debug_print(self, "[BUGFIX] observe() received Region instead of Location; switching to self.location", "percept")
-            location = npc.location
+            debug_print(self, "[BUGFIX] observe() received Region instead of Location; switching to self.location", category = "percept")
+            location = self.owner.location
 
         if not location:
-            debug_print(npc, f"[OBSERVE WARNING] {self.name} has no valid location.", "percept")
+            debug_print(self.owner, f"[OBSERVE WARNING] {self.owner.name} has no valid location.", category = "percept")
             return
 
         if isinstance(location, Location):
@@ -293,7 +296,7 @@ class ObservationComponent:
         # --- mark update complete ---
         self.percepts_updated = True
         final_count = len(self._percepts)
-        debug_print(npc, f"[OBSERVE COMPLETE] {self.name} perceived {final_count} entities at {location.name} (tick={game_state.tick})", category="percept")
+        debug_print(self.owner, f"[OBSERVE COMPLETE] {self.owner.name} perceived {final_count} entities at {location.name} (tick={game_state.tick})", category="percept")
 
     def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
         """
@@ -310,13 +313,13 @@ class ObservationComponent:
         if hasattr(location, "list_perceptibles"):
             nearby_objects = location.list_perceptibles()
         else:
-            nearby_objects = get_nearby_objects(self, location=self.location)
+            nearby_objects = get_nearby_objects(self, location=self.location)#get_nearby_objects is marked not defined
 
 
         # Perceive items from the location's inventory (if enabled)
         if include_inventory_check and location and hasattr(location, "inventory"):
             for item in location.inventory.items.values():
-                if isinstance(item, PerceptibleMixin):
+                if isinstance(item, PerceptibleMixin): #is this correct? isinstance rather than som has-a check?
                     percept = item.get_percept_data(observer=self)
                     if percept:
                         new_percepts[item.id] = {

@@ -1,4 +1,4 @@
-#location.py
+#location.locations.py
 from __future__ import annotations
 import random
 import string
@@ -21,7 +21,7 @@ from inventory import Inventory
 from ambience.ambience import Ambience
 
 from employment.roles import EmployeeRole
-from employment.roles import COOK, CAFE_MANAGER, WAITRESS
+from employment.roles import COOK, CAFE_MANAGER, WAITRESS, RESTAURANT_MANAGER
 from employment.roles import CASHIER, SHOP_MANAGER
 from employment.workplace_mixin import WorkplaceMixin
 
@@ -205,12 +205,12 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
 
     description: str = "Some shop"
     legality: bool = True
-    has_security: bool = True  # <-- For testing
+    has_security: bool = True
     is_shop: bool = True
-    owner: Optional[Character] = None  # New field to indicate who owns it
+    owner: Optional[Character] = None
     specialization = None
     employees_there: List['Employee'] = field(default_factory=list)
-    allowed_roles = [CASHIER, SHOP_MANAGER]#But these are not marked as not defined
+    allowed_roles = [CASHIER, SHOP_MANAGER]
     
     characters_there: List['Character'] = field(default_factory=list)
      # menu_options should be defined with actions
@@ -259,15 +259,10 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security,
         }
     
-
     def to_dict(self):
         return asdict(self)
     
-
-
     def list_employees(self):
-        """Return a list of employees working at this shop."""
-        #should this be generalised to a less specific class?
         return self.employees
     
     def sell_item(self, character, item_name, quantity=1):
@@ -293,7 +288,7 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
     def __post_init__(self):
-        self.inventory.owner = self  # Link inventory to the shop
+        self.inventory.owner = self
         super().__post_init__()
 
 
@@ -1251,6 +1246,49 @@ def update_dynamic_ambience(self):
 
 def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
+
+@dataclass
+class Restaurant(WorkplaceMixin, PerceptibleLocation):
+    name: str = "Generic Restaurant"
+    tags: list[str] = field(default_factory=lambda: ["workplace", "food", "social"])
+    description: str = "A restaurant"
+    upkeep: int = 20
+    categories: List[str] = field(default_factory=lambda: ["workplace"])
+    items_available: List[Any] = field(default_factory=list)  # menu items
+    inventory: Inventory = field(default_factory=Inventory)
+
+    owner: Optional[Character] = None
+    employees_there: List['Employee'] = field(default_factory=list)
+    allowed_roles = [COOK, RESTAURANT_MANAGER, WAITRESS]
+
+    fun: int = 2
+    ambience_level: int = 7
+    is_concrete: bool = True
+    secret_entrance: bool = False
+    is_powered: bool = False
+    energy_cost: int = 0
+    security: Security = field(default_factory=lambda: Security(
+        level=1,
+        guards=[],
+        difficulty_to_break_in=1,
+        surveillance=False,
+        alarm_system=False
+    ))
+
+    is_restaurant: bool = True
+    is_food_source: bool = True
+
+    def get_percept_data(self, observer=None):
+        return {
+            "name": self.name,
+            "type": "Restaurant",
+            "description": f"Restaurant: {self.name}",
+            "region": self.region.name if self.region else None,
+            "tags": ["location", "food", "restaurant"],
+            "urgency": 1,
+            "security": self.security.level,
+            "is_open": self.is_open,
+        }
 
 
 @dataclass

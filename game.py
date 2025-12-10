@@ -1,5 +1,5 @@
 #game.py
-#Call gameplay(character, region)
+#Call gameplay(character, region). Player centric flow, not sim flow
 from menu_utils import select_character_menu
 
 from game_logic import gameplay

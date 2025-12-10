@@ -1,10 +1,10 @@
 #region.region_knowledge_builder.py
-from location import Region#needs update
-from character_memory import RegionKnowledge, FoodSources
+from region.region import Region
+from character_memory import RegionKnowledge
 from base.character import Character
 from base.faction import Faction
 from typing import Union
-
+#Builders should ALWAYS take a single region or a single source object.
 def build_region_knowledge(region: Region, character_or_faction: Union["Character", "Faction"]) -> RegionKnowledge:
     
     knowledge = RegionKnowledge(
@@ -17,7 +17,7 @@ def build_region_knowledge(region: Region, character_or_faction: Union["Characte
         locations={loc.name for loc in region.locations},
         shops={loc.name for loc in region.shops},
         known_characters={c.name for c in region.characters_there},
-        cultural_adjectives = region.cultural_adjectives
+        cultural_adjectives = region.cultural_adjectives,
         active_events=region.active_regional_events.copy(),
         recent_regional_events=region.recent_regional_events.copy(),
         historical_regional_events=region.historical_regional_events.copy(),

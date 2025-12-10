@@ -1,6 +1,5 @@
 #character_components.wallet_component.py
 
-
 class WalletComponent:
     def __init__(self, owner, bankCardCash=0, cash=0):
         self.owner = owner

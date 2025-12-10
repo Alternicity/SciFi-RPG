@@ -463,7 +463,7 @@ class UtilityAI(BaseAI):
 
         region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
         if region_knowledge:
-            turf_status = self.evaluate_turf_war_status(self.npc, region_knowledge)  # Base awareness
+            self.evaluate_turf_war_status(region_knowledge)
         #self.promote_thoughts()# Delete in favour of calling from simulate_days()
 
         motivations = self.npc.motivation_manager.get_urgent_motivations()

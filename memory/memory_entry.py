@@ -22,8 +22,10 @@ class MemoryEntry:
     object_: str #underscore to differentiate from reserved term object
     #Do memory entries need to capture bidirectional or dyadic info? BIDIRECTIONAL
     details: str
+    owner: Optional[Any] = None
     source: Optional[Any] = None
-    
+    data: Optional[Any] = None
+    related: list = field(default_factory=list)
     importance: int = 1
     timestamp: Optional[str] = "now"
     tags: List[str] = field(default_factory=list)
@@ -93,7 +95,8 @@ class MemoryEntry:
                 f"description='{self.description}', tags={self.tags}>")
     
 if TYPE_CHECKING:
-    from base_classes import Character, Faction
+    from base.character import Character
+    from base.faction import Faction
     from events import Event
 
 
@@ -112,6 +115,7 @@ class RegionKnowledge:
     known_characters: Set[str] = field(default_factory=set)
     character_relationships: Dict[str, List[str]] = field(default_factory=dict)
     active_events: List["Event"] = field(default_factory=list)
+    cultural_adjectives: List[str] = field(default_factory=list)
     concluded_events: List["Event"] = field(default_factory=list)
     gossip: List[str] = field(default_factory=list)
     economic_info: Dict[str, Any] = field(default_factory=dict)

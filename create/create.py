@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 
-from loader import load_gang_names, get_gang_names_filepath, get_corp_names_filepath, load_corp_names
+from loader import get_corp_names_filepath, load_corp_names
 from base.character import  Character
 from base.location import Location
 from location.locations import Shop, CorporateStore, Stash, Region, VacantLot, HQ, MunicipalBuilding
@@ -68,6 +68,7 @@ def create_regions():
                 ),
             )
             all_regions.append(region_obj)
+            game_state.all_regions.append(region_obj)
             
         except Exception as e:
             print(f"Error creating Region object for '{region_name}': {e}")

@@ -1,4 +1,4 @@
-#roles.py
+#employment.roles.py
 
 from dataclasses import dataclass, field
 from typing import List
@@ -37,6 +37,12 @@ COOK = EmployeeRole(
 WAITRESS = EmployeeRole(
     "waitress",
     ["serve_food", "entertain", "clean_tables"],
+    4,
+)
+
+RESTAURANT_MANAGER = EmployeeRole(
+    "cafe_manager",
+    ["restock_supplies", "check_inventory", "hire_and_fire", "manage_staff"],
     4,
 )
 
@@ -101,6 +107,13 @@ ROLE_RULES = {
         (WAITRESS, 3),
         (COOK, 1),
         (CAFE_MANAGER, 1),
+    ],
+
+    # RESTAURANTS
+    "restaurant": [
+        (WAITRESS, 3),
+        (COOK, 1),
+        (RESTAURANT_MANAGER, 1),
     ],
 
     # FACTORIES

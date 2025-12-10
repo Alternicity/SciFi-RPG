@@ -20,6 +20,11 @@ class GameState:
         self.tick = 0 # 1 hour
         self.day = 1
 
+        self.primary = None
+        self.secondary = None
+        self.civilian_test = None
+        self.debug_npcs = {}
+
         self.state = None
         self.civilians = []
         self.families = []

@@ -1,4 +1,4 @@
-# base/core_types.py
+# base.core_types.py
 #NO IMPORTS
 #tiny, pure, Platonic objects
 class FactionBase:
@@ -19,4 +19,13 @@ class CharacterBase:
 class RegionBase:
     def __init__(self, name, tags=None):
         self.name = name
-        self.tags = tags or []
+        self.tags = tags or []#tags in fine here
+
+class KnowledgeBase:
+    def __init__(self, **kwargs):
+        # Apply all explicit fields
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+        # Always ensure a tags attribute exists
+        self.tags = kwargs.get("tags", [])

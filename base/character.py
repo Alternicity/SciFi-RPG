@@ -1,4 +1,4 @@
-# base/character.py
+# base.character.py
 from base.core_types import CharacterBase
 from base.posture import Posture
 from base.self_awareness_levels import SelfAwarenessLevel
@@ -8,7 +8,7 @@ from typing import Callable, Any
 class Character(PerceptibleMixin, CharacterBase):
     
     VALID_SEXES = ("male", "female")  # Class-level constant
-    VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", ...)  # Class-level constant
+    VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "Irish", "French", "Chinese", "German", "BlackAmerican", "Indian", "IndoAryan", "IranianPersian", "Japanese", "WhiteAryanNordic")
 
     is_concrete = False
     def __init__(
@@ -117,11 +117,12 @@ class Character(PerceptibleMixin, CharacterBase):
         self.isArmed = False
         self.hasRangedWeapon = False
         self.hasMeleeWeapon = False
-        self.employment = None#object added as a component at instantiation, of during sim flow
+        self.employment = None#object added as a component at instantiation, or during sim flow
         self.shift = 'day'  # Can be 'day' or 'night'
         self.is_working = False
         self.just_got_off_shift =False #Just finished a work shift
         self.partner = partner
+        self.partner_presumed_location = None
         self.faction = faction
         self.fun = kwargs.get("fun", fun)#under developed, but some building blocks are in place
         self.fun_prefs = None
@@ -147,6 +148,15 @@ class Character(PerceptibleMixin, CharacterBase):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
         
         self.observation_component = None
+
+    def observe(self, *args, **kwargs):
+        """Delegates the actual observation logic to the ObservationComponent."""
+        if not hasattr(self, "observation_component") or self.observation_component is None:
+            raise RuntimeError(
+                f"{self.__class__.__name__} has no ObservationComponent but observe() was called."
+            )
+        return self.observation_component.observe(*args, **kwargs)
+
         # compatibility shim — DO NOT REMOVE until migration is complete
     @property
     def percepts(self):
