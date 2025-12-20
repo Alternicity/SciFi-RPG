@@ -350,7 +350,7 @@ def select_character_menu():
     """Displays the character selection menu, instantiates the chosen character, and returns it."""
     
     # Get character options
-    from create_game_state import get_game_state
+    from create.create_game_state import get_game_state
     game_state = get_game_state()
 
     all_regions = game_state.all_regions

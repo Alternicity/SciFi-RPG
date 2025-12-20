@@ -75,8 +75,8 @@ class Character(PerceptibleMixin, CharacterBase):
         self.posture = Posture.STANDING
         self.intelligence = intelligence
         self.mind = None
-        self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)
-        self._last_promote_tick = -1 #promoting thoughts to anchor should happen only once
+        self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)#should be hour
+        self._last_promote_hour = -1 #promoting thoughts to anchor should happen only once
         self.curiosity = None
         self.concentration = concentration
         self.task_manager = None#undeveloped system, utilityAI does not use this. Tasks will be recipes issued by high status
@@ -275,11 +275,16 @@ class Character(PerceptibleMixin, CharacterBase):
             #Return perceptual information for this character. Self perception.
             tags = ["human"]
 
+            hunger = self.motivation_manager.get_motivation("eat")
+            if hunger and hunger.urgency >= 5:
+                tags.append("hungry")
             if self.bloodstained:
                 tags.append("bloodstained")
             if self.is_visibly_wounded:
                 tags.append("wounded")
                 
+            urgency = hunger.urgency if hunger else 1
+
             return {
                 "name": self.name,
                 "type": self.__class__.__name__,
@@ -288,9 +293,8 @@ class Character(PerceptibleMixin, CharacterBase):
                 "location": self.location.name if getattr(self, "location", None) else "Unknown",
                 "sublocation": self.sublocation.name if getattr(self, "sublocation", None) else "Unknown",
                 "origin": self,
-
                 "tags": tags,
-                "urgency": 2,
+                "urgency": urgency,
                 "source": None,
                 "menu_options": [],
                 "has_security": getattr(self, "has_security", lambda: False)()

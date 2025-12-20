@@ -1,4 +1,5 @@
 Male Name
+Vitalas
 Zorvan
 Kylox
 Tharron
@@ -20,6 +21,7 @@ Kryos
 Myron
 Axion
 Female Name
+Sciotxa
 Lyraxis
 Zelara
 Nyxara
@@ -33,7 +35,7 @@ Zynara
 Quorina
 Novara
 Ryza
-alvina
+Alvina
 Vorina
 Zenthara
 Kryssa
@@ -54,6 +56,7 @@ Galaxor
 Neptar
 Chronis
 Vortexis
+Toroixa
 Lunarian
 Starborn
 Exorion

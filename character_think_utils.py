@@ -3,8 +3,16 @@ from character_thought import Thought
 from motivation.motivation import Motivation
 from debug_utils import debug_print
 
+
 def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought objects
     from motivation.motivation_presets import MotivationPresets
+    from characters import GangMember
+    # HARD GATE
+    if isinstance(npc, GangMember):
+        if not getattr(npc, "is_test_npc", False):
+            return
+        if npc.debug_role != "primary":
+            return
 
     for thought in thoughts:  # iterate over each Thought object
         if not hasattr(thought, 'tags'):
@@ -40,7 +48,7 @@ def social_thoughts(self):
             })
 
 def should_promote_thought(thought):
-    return thought.urgency >= 4 or "weapon" in thought.tags
+    return thought.urgency >= 4 or "weapon" in thought.tags#very test case 1 centric
 
 def debug_recent_thoughts(npc, mind, n=5):
     recent = list(mind.thoughts)[-n:]

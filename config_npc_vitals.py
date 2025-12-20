@@ -1,4 +1,4 @@
-#config_display_vitals.py
+
 # config_npc_vitals.py
 
 NPC_VITALS_CONFIG = {

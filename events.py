@@ -1,15 +1,19 @@
+
+#events.py
 from dataclasses import field
 import uuid
 from distributions import generate_normal, generate_black_swan
 from combat import calculate_intimidation_score, calculate_resistance_score
 from characterActionTests import IntimidationTest
+from character_thought import Thought
 from objects.InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
 from debug_utils import debug_print
-
+from focus_utils import set_attention_focus
 from output_utils import group_reactions
-
+from create.create_game_state import get_game_state
+game_state = get_game_state()
 
 class Event(ABC):
     """ Do not make Event perceptible.
@@ -256,7 +260,7 @@ class Robbery(Event):
         return None
     
     def resolve(self, simulate=False, verbose=True):
-        from memory_entry import MemoryEntry
+        from memory.memory_entry import MemoryEntry
         print(f"\n[Event]: {self.description}")
         self.apply(self.instigator)
 
@@ -265,11 +269,48 @@ class Robbery(Event):
         if not self.shopkeeper:
             print("No shopkeeper present. Robbery proceeds unopposed.")
             self.success = True
-            return Burglary(
-                name="Unopposed Robbery",
-                instigator=self.instigator,
-                location=self.location,
+
+            npc = self.instigator
+            location = self.location
+            state = get_game_state()
+
+            # --------------------------------
+            # 🧠 Thought: situational realization
+            # --------------------------------
+            thought = Thought(
+                subject=location.name,
+                content=f"{location.name} is empty. No one is here to stop me.",
+                origin="robbery_event",
+                urgency=6,
+                tags=["robbery", "opportunity", "unopposed"],
+                source=location,
+                weight=2.0,
             )
+            npc.mind.add_thought(thought)
+
+            # --------------------------------
+            # 🧾 Episodic memory
+            # --------------------------------
+            memory = MemoryEntry(
+                subject=npc.name,
+                object_=location.name,
+                verb="robbed",
+                details=f"I robbed {location.name} while it was unoccupied.",
+                type="robbery",
+                initial_memory_type="episodic",
+                description="Unopposed robbery — no shopkeeper present.",
+                tags=["robbery", "unopposed", "crime"],
+                target=location.name,
+                payload={"location": location},
+                source="robbery_event",
+                created_day=state.day,
+                last_updated_day=state.day,
+                cost_to_owner=3,
+            )
+
+            npc.mind.memory.add_episodic(memory, current_day=state.day)
+
+            return True
 
         # Step 1: Attempt Intimidation
 
@@ -351,7 +392,12 @@ class Robbery(Event):
         reactions = []
 
         for witness in witnesses:
-            witness.mind.attention_focus = self.instigator
+            #old line
+            #witness.mind.attention_focus = self.instigator
+            
+            set_attention_focus(witness, self.instigator)
+
+
             #use @attention_focus.setter
             if id(witness) in seen:
                 continue

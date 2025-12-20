@@ -100,7 +100,7 @@ if TYPE_CHECKING:
     from events import Event
 
 
-#when you add or update an existing RegionKnowledge, call rk.touch(current_tick)
+#when you add or update an existing RegionKnowledge, call rk.touch(current_hour)
 @dataclass
 class RegionKnowledge:
     region_name: str

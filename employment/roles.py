@@ -130,3 +130,4 @@ ROLE_RULES = {
         (FARM_MANAGER, 1),
     ],
 }
+

@@ -140,6 +140,10 @@ class Mind:
                 return  # Don't add duplicate content
 
         self.thoughts.append(thought)
+
+        from focus_utils import set_attention_focus
+        set_attention_focus(self.owner, thought=thought)
+        
         #print(f"[MIND] Added thought: {thought.content}")
         """ You may eventually want to detect duplicates not just 
         by .content but also by .subject or .tags depending on future use cases """

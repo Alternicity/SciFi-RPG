@@ -2,10 +2,7 @@
 import random
 from characters import Boss, Captain, GangMember
 from create.create_character_names import create_name
-
-
-
-
+from objects.InWorldObjects import Wallet
 from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
 from motivation.motivation_presets import MotivationPresets
 from motivation.motivation_init import initialize_motivations
@@ -165,7 +162,7 @@ def create_gang_characters(faction, all_regions):
         assert race == faction.race, f"Race mismatch when creating gang characters: {race} vs {faction.race}"
 
         first_name, family_name, full_name = create_name(race, sex)
-        
+        random_cash = random.randint(350, 500)
         member = GangMember(
         name=full_name,
         first_name=first_name,
@@ -181,7 +178,9 @@ def create_gang_characters(faction, all_regions):
         member.inventory_component = InventoryComponent(member)#added as a component
         knife = Knife()
         member.inventory.add_item(knife)#function adds ownership also, so I must check how in light of name changes above
-
+        wallet = Wallet(bankCardCash=random_cash)
+        member.wallet = wallet
+        #Wallets are a perfect candidate for a later ECS cleanup — but not during AI debugging
         faction.members.append(member)
         member.mind = Mind(owner=member, capacity=member.intelligence)
         member.curiosity = Curiosity(base_score=member.intelligence // 2)

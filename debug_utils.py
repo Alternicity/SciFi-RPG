@@ -1,4 +1,8 @@
 # debug_utils.py
+from debug_registry import get_debug_npc
+from create.create_game_state import get_game_state
+game_state = get_game_state()
+
 from config import (
     DEBUG_MODE,
     SHOW_FUN_LOGS,
@@ -39,6 +43,7 @@ from config import (
     SHOW_GAMESTATE_LOGS,
     SHOW_ROLE_FLAGS,
     DEBUG_LEVEL,
+
 )
 
 DEBUG_FLAGS = {
@@ -89,9 +94,48 @@ ROLE_FILTERS = {
     "test_npc": False,
 }
 
+def npc_is_allowed(npc):
+    """
+    Returns True if this NPC should have its debug information printed.
+    """
+    if npc is None:
+        return False
+
+    debug_npc = get_debug_npc()
+
+    # If a global debug NPC is set, enforce it
+    if debug_npc is not None:
+        return npc is debug_npc
+
+    # Otherwise fallback to per-npc flag
+    return getattr(npc, "is_test_npc", False)
+
+def should_display_npc(npc):
+    # System / non-NPC messages
+    if npc is None:
+        return True
+
+    # Defensive: ignore non-character inputs
+    if not hasattr(npc, "__dict__"):
+        return False
+
+    # Explicit per-NPC flag
+    if getattr(npc, "is_test_npc", False):
+        return True
+
+    # Role-based filtering
+    """ role = getattr(npc, "debug_role", None)
+    if role and ROLE_FILTERS.get(role, False):
+        return True """
+
+    return False
+
+
 #categories act like tags.
 #ALL categories in the print must be enabled.
 def debug_print(npc=None, message="", category="general", level="DEBUG"):
+    if npc and not should_display_npc(npc):
+        return
     if not DEBUG_MODE:
         return
 
@@ -106,19 +150,20 @@ def debug_print(npc=None, message="", category="general", level="DEBUG"):
         if cat in DEBUG_FLAGS and not DEBUG_FLAGS[cat]:
             return
 
-    # 1 — NPC filter
+    # role filtering
     if npc is not None:
         role = getattr(npc, "debug_role", None)
-        if role is not None:
-            if not ROLE_FILTERS.get(role, False):
-                return  # suppressed because of NPC’s role
+        if role is not None and not ROLE_FILTERS.get(role, False):
+            return
 
-    # 2 — category filter
-    """ if category in DEBUG_FLAGS and not DEBUG_FLAGS[category]:
-        return """
-    #delete if multi category prints work
+    # 🔥 NPC filter: Only print for the selected NPC
+    from debug_registry import get_debug_npc
+    debug_npc = get_debug_npc()
 
-    # ----- Message formatting -----
+    if debug_npc is not None and npc is not debug_npc:
+        return
+
+    # proceed to print
     npc_name = getattr(npc, "name", "System")
     print(f"[{','.join(categories)}] {npc_name}: {message}")
 
@@ -162,3 +207,10 @@ def diagnose_civilian_location_integrity(region_civilians, all_civilians):#regio
     if mismatches:
         print(f"[WARNING] Civilians with mismatched location references: {mismatches}")
 
+_DEBUG_ONCE_KEYS = set()
+
+def debug_once(key, npc, message, category="debug"):
+    if key in _DEBUG_ONCE_KEYS:
+        return
+    _DEBUG_ONCE_KEYS.add(key)
+    debug_print(npc, message, category=category)

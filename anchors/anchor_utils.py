@@ -10,7 +10,8 @@ import time
 from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print
 from create.create_game_state import get_game_state
-
+from weapons import Weapon, RangedWeapon
+from events import Event
 if TYPE_CHECKING:
     from character_thought import Thought
     from base.character import Character#not accessed
@@ -87,10 +88,10 @@ class Anchor:
         """Stamp simulation time (tick/day) on creation if possible."""
         try:
             state = get_game_state()
-            self.tick_created = getattr(state, "tick", None)
+            self.hour_created = getattr(state, "hour", None)
             self.day_created = getattr(state, "day", None)
         except Exception as e:
-            self.tick_created = None
+            self.hour_created = None
             self.day_created = None
             debug_print(
                 self.owner,
@@ -103,7 +104,7 @@ class Anchor:
             debug_print(
                 self.owner,
                 f"[ANCHOR CREATED] {self.name} (type={self.type}) "
-                f"tick={self.tick_created}, day={self.day_created}",
+                f"tick={self.hour_created}, day={self.day_created}",
                 category="anchor"
             )
 
@@ -194,7 +195,8 @@ class Anchor:
                 "origin": percept_data
             }
         return percept
-
+    
+    #Tags may adjust salience, but may never grant eligibility, classes do.
     def compute_salience_for(self, percept_data, npc) -> float:
         """
         Generic anchor salience computation.
@@ -239,19 +241,7 @@ class Anchor:
             if m:
                 target_name = m.group(1)
 
-        # --- debug output (safe; never touches obj.content directly) ---
-        """ debug_print(
-            npc,
-            f"[ANCHOR-SALIENCE] {type(self).__name__} score={score:.2f} for {name}"
-            + (f" (target={target_name})" if target_name else "")
-            + f" (tags={tags})",
-            category="salience",
-        ) """
-        #verbose
-
         return round(score, 2)
-
-
 
     def is_percept_useful(self, percept_data: Any, npc=None) -> bool:
         """
@@ -567,7 +557,10 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
 
     return anchor
 
+#create_anchor_from_motivation and create_anchor_from_thought are generic in name but not in behaviour.
 
+# Once civilian and non-criminal anchors are implemented, split into
+# role-specific anchor factories.
 
 def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = None) -> Optional["Anchor"]:
     """
@@ -644,7 +637,7 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
 
     # Add memory entry with explicit target (prefer anchor.target, fallback to anchor.name)
     target_value = getattr(anchor, "target", None) or anchor.name
-    npc.mind.memory.add_entry_if_new( #should this use add_episodcic or semantic?
+    npc.mind.memory.add_entry_if_new( #should this use add_episodic or semantic?
         MemoryEntry(
             subject=npc.name,
             object_=anchor.name,
@@ -665,28 +658,26 @@ class ObtainWeaponAnchor(Anchor):
     def compute_salience_for(self, percept_data, npc) -> float:
         percept = self._coerce_to_percept(percept_data, npc)
         obj = percept.get("object")
-        tags = percept.get("tags", [])
+        tags = percept.get("tags", []) or []
         name = percept.get("name", "<unnamed>")
 
-        from events import Event
-        if obj is npc:
-            return 0.0
-        if isinstance(obj, Event):
-            return 0.0
-        if isinstance(obj, npc.__class__):
+        # HARD ELIGIBILITY FILTER (NO TAGS HERE)
+
+        # Must be a Weapon instance
+        if not isinstance(obj, Weapon):
+            return 0.0 
+
+        # Ignore weapons already owned
+        if obj.owner is npc:
             return 0.0
 
-        score = super().compute_salience_for(percept, npc)
+        # SOFT SCORING (TAGS & CONTEXT)
 
-        # boosts
-        if "weapon" in tags:
-            score += 0.3
-        if "ranged_weapon" in tags:
-            score += 0.6
-        if getattr(obj, "location", None) == npc.location:
-            score += 0.3
-        if percept.get("has_security", False):
-            score -= 1.0
+        score = 1.0
+
+        # Prefer ranged weapons if NPC already has melee
+        if isinstance(obj, RangedWeapon):#RangedWeapon is marked as not defined
+            score += 1.0
 
         debug_print(
             npc,
@@ -729,7 +720,7 @@ def refresh_salience_for_anchor(npc, anchor=None):
     return update_saliences_for_anchor(anchor, npc, percepts)
 
 
-def _safe_percept_label(percept_data):
+def _safe_percept_label(percept_data):#marked not accesssed
     if isinstance(percept_data, dict):
         return percept_data.get("description") or percept_data.get("name") or "<unnamed>"
     return getattr(percept_data, "content", None) or getattr(percept_data, "name", "<unnamed>")

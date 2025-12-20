@@ -168,7 +168,7 @@ class Memory:
         if current_day is not None:
             memory_entry.created_day = current_day
         self.episodic.append(memory_entry)
-        # Hook: could notify utility/thinking AI
+        # Hook: could notify UtilityAI() or a subclass
         # self.check_for_pattern(memory_entry)
         #"Thats the third time Fido asked to go for a walk"
 

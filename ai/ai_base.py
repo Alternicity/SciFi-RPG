@@ -1,4 +1,5 @@
 #ai_base.py
+#simple ECS friendly, platonic base class that imports nothing.
 class BaseAI:
     def __init__(self, npc):
         self.npc = npc

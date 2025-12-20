@@ -4,7 +4,7 @@ from debug_utils import debug_print
 import copy
 from character_thought import Thought
 from create.create_game_state import get_game_state
-
+from focus_utils import clear_attention_focus
 
 def visit_location_auto(character, region=None, destination=None, destination_name=None, **kwargs):
     npc = character
@@ -68,10 +68,10 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     if hasattr(destination, "recent_arrivals"):
         destination.recent_arrivals.append(npc)
 
-    # --- Optional tick/day stamp ---
-    tick = getattr(character, "current_tick", None)
+    # --- Optional hour/day stamp ---
+    hour = getattr(character, "current_hour", None)
     day = getattr(character, "current_day", None)
-    timestamp = f"Day {day} Tick {tick}" if (day is not None and tick is not None) else None
+    timestamp = f"Day {day} Hour {hour}" if (day is not None and hour is not None) else None
     character.last_visit_timestamp = timestamp
 
     # --- Observation ---
@@ -100,7 +100,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
                 "previous_location": prev_loc_name,
                 "destination": dest_name,
                 "day": day,
-                "tick": tick
+                "hour": hour
             },
             associated_function="visit_location_auto",
             implementation_path="npc_actions.visit_location_auto"
@@ -126,8 +126,10 @@ def visit_location_auto(character, region=None, destination=None, destination_na
             # Clear attention focus if it pointed at that thought
             af = getattr(character.mind, "attention_focus", None)
             if af and (getattr(af, "source", None) is destination or getattr(af, "content", "") and destination.name in getattr(af, "content", "")):
-                character.mind.attention_focus = None
-
+                clear_attention_focus(character)
+                #replaced:
+                #character.mind.attention_focus = None
+                
     return True
 
 
@@ -175,7 +177,7 @@ def steal_auto(npc, region, item=None):
     location = npc.location
 
     # Ensure location has inventory and that item exists
-    if not hasattr(location, "inventory") or item.name not in location.inventory.items:
+    if not hasattr(location, "inventory") or item not in location.inventory.items.values():
         print(f"[STEAL FAIL] {item.name} not found in {location.name}'s inventory.")
         return False
 
@@ -205,10 +207,17 @@ def steal_auto(npc, region, item=None):
     # ============================
 
     # Remove real item and give NPC a copy
-    stolen_item = item.clone()
-    location.inventory.remove_item(item.name)
-    npc.inventory.add_item(stolen_item)
-    npc.inventory.recently_acquired.append(stolen_item)
+    #stolen_item = item.clone()
+
+
+    location.inventory.remove_item(item)
+    #may need to add an overload for this if remove_item currently expects a name:
+    #location.inventory.remove_item(item.name)
+
+    item.owner = npc
+    npc.inventory.add_item(item)
+    #npc.inventory.add_item(stolen_item)
+    npc.inventory.recently_acquired.append(item)
 
     # Update weapon state
     npc.inventory.update_weapon_flags()
@@ -246,15 +255,15 @@ def steal_auto(npc, region, item=None):
 
     memory = MemoryEntry(
         subject=npc.name,
-        object_=stolen_item.name,
+        object_=item.name,#was stolen_item
         verb="stole",
-        details=f"I stole a {stolen_item.name} from {location.name}.",
+        details=f"I stole a {item.name} from {location.name}.",#was stolen_item
         type="theft",
         initial_memory_type="episodic",
         description="Theft of a ranged weapon enabling robbery.",
         tags=["theft", "weapon", "ranged_weapon", "enabling"],
         target=location.name,
-        payload={"item": stolen_item, "location": location},
+        payload={"item": item, "location": location},#was stolen_item
         source="steal_auto",
         created_day=state.day,
         last_updated_day=state.day,
@@ -268,7 +277,7 @@ def steal_auto(npc, region, item=None):
     npc.mind.add_thought(
         Thought(
             subject=npc.name,
-            content=f"I stole a {stolen_item.name}.",
+            content=f"I stole a {item.name}.",#was stolen_item
             origin="episodic_memory",
             urgency=7,
             tags=["theft", "self", "weapon", "ranged_weapon", "enabling"],
@@ -280,11 +289,11 @@ def steal_auto(npc, region, item=None):
     # -----------------------------------------------
     # ✅ SKILL INCREASE (optional but realistic)
     # -----------------------------------------------
-    if hasattr(stolen_item, "intimidate"):
-        npc.skills["intimidation"] = npc.skills.get("intimidation", 0) + stolen_item.intimidate
-        print(f"[STEAL] {npc.name}'s intimidation increased due to {stolen_item.name}.")
+    if hasattr(item, "intimidation"):
+        npc.skills["intimidation"] = npc.skills.get("intimidation", 0) + item.intimidation
+        print(f"[STEAL] {npc.name}'s intimidation increased due to {item.name}.")#was stolen_item
 
-    print(f"[STEAL] {npc.name} successfully stole {stolen_item.name} from {location.name}")
+    print(f"[STEAL] {npc.name} successfully stole {item.name} from {location.name}")#was stolen_item
     return True
 
 def exit_location_auto():

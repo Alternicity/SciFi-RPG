@@ -51,7 +51,11 @@ class MeleeWeapon(Weapon):
     is_concrete = False
     def __init__(self, name, toughness, price, size, damage, blackmarket_value=50, damage_points=10, legality=True, intimidation=2):
         super().__init__(name=name, toughness=toughness, price=price, size=size, blackmarket_value=blackmarket_value, damage_points=damage_points, legality=legality, damage=damage, intimidation=intimidation)
-
+    
+    @property
+    def tags(self):
+        return super().tags + ["melee", "melee_weapon"]
+    
 #only concrete, fully implementable classes have the damage_points
 #and legality attributes.
 #Any object that represents something that could potentially break or

@@ -12,18 +12,15 @@ from character_thought import Thought
 from ambience.ambience_and_psy_utils import compute_location_ambience
 from debug_utils import debug_print
 
-def simulate_days(all_characters, num_days=1, debug_character=None):
+def simulate_hours(all_characters, num_days=1, debug_character=None):
     game_state = get_game_state()
     all_regions = game_state.all_regions
     all_locations = game_state.all_locations
     day = game_state.day
-    tick = game_state.tick #not yet accessed here
-    #all_characters is present from paramter not game_state
-
 
     for _ in range(num_days):
-        game_state.advance_tick()# a tick is now 1 hour so function name is wrong
-        debug_print(f"[TIME] Tick {game_state.tick}, Day {game_state.day}", category="tick")
+        game_state.advance_hour()
+        debug_print(None, f"[TIME] Hour {game_state.hour}, Day {game_state.day}", category="tick")
 
         for location in all_locations:
                     location.recent_arrivals.clear()
@@ -31,18 +28,19 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
         # STEP 1: Perceive and Think
         for region in all_regions:
             for npc in region.characters_there:
-                npc._observed_this_tick = False  # reset observation guard
+                #npc._observed_this_tick = False
                 begin_npc_turn(npc)
                 if npc.is_player:
                     continue
                 
                 # OBSERVE
-                
+                npc.observe(region=region, location=npc.location)
+
                 if npc is debug_character:
                     debug_print(npc, "This is a test NPC log.", category="think")
                     #or here?
 
-                    npc.observe(region=region, location=npc.location)
+                    
 
                 if npc.is_test_npc or npc is debug_character:
                     display_percepts_table(npc)
@@ -91,7 +89,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
                 # THINK CYCLE
                 if hasattr(npc, 'ai') and npc.ai:
-                    think_loops = getattr(npc, "max_thinks_per_tick", 1)
+                    think_loops = getattr(npc, "max_thinks_per_tick", 1)#max_thinks_per_tick is just a placeholder, for uber npcs, not widely implemented
                     for _ in range(think_loops):
                         npc.ai.think(npc.location.region)
                     npc.ai.promote_thoughts()
@@ -102,18 +100,18 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
         for npc in all_characters:
             if hasattr(npc, 'ai') and npc.ai:
 
-                # NEW: Let AI process thoughts
+                #Let AI process thoughts
                 npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
                 
                 region = npc.location.region if hasattr(npc.location, 'region') else None
                 action = npc.ai.choose_action(npc.location.region)
-                if action:#is this missleadingly simplistic to print a current location
+                if action:
                     npc.ai.execute_action(action, region)
 
                     debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
 
         # STEP 3: Post-Day DEBUG (single character)
-        for npc in all_characters:
+        for npc in all_characters:#ATTN
             end_npc_turn(npc)
 
             if npc is not debug_character:
@@ -121,7 +119,7 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
             for mem in npc.mind.memory.episodic:
                 pass
 
-        debug_print(npc, f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})", category="think")
+        debug_print(npc, f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})", category="think")#ATTN :are there more than one?
         
 
         if npc is debug_character:#is debug_character even set? Should we instead use an npc attribute lookup?
@@ -147,24 +145,22 @@ def simulate_days(all_characters, num_days=1, debug_character=None):
 
 def begin_npc_turn(npc):
     npc.just_arrived = False
-    npc.turn_start_tick = get_game_state().tick
+    #npc.turn_start_tick = get_game_state().tick
     npc.mind.remove_thought_by_content("No focus")
-
     debug_print(f"[TURN] Begin NPC turn: {npc.name}", category="tick")
 
 def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()
     npc.inventory.clear_recently_acquired()
-    npc.last_action_tick = get_game_state().tick
+    #npc.last_action_tick = get_game_state().tick
 
     # reset observation flag so next tick will allow a fresh observation
-    if hasattr(npc, "_observed_this_tick"):
-        npc._observed_this_tick = False
+    """ if hasattr(npc, "_observed_this_tick"):
+        npc._observed_this_tick = False """
 
     game_state = get_game_state()#Needed for the lines below
-    debug_print(f"[TURN] Tick {game_state.tick}, Day {game_state.day}", category="tick")
-    game_state.advance_tick()#Is this the right place for this, or does it belong in begin_npc_turn(npc)
-    #should we be ending the DAY here?
+    debug_print(f"[TURN] Hour {game_state.hour}, Day {game_state.day}", category="tick")
+
 
     
     

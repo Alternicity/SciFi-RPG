@@ -1,4 +1,5 @@
 #memory.injectors.initial_memory_injectors.py
+import random
 from memory.memory_builders.region_knowledge_builder import build_region_knowledge
 from memory.memory_builders.shop_knowledge_builder import build_shop_knowledge
 from memory.memory_builders.food_sources_builder import build_food_sources
@@ -31,3 +32,9 @@ def inject_food_location_knowledge(npc):
     for region in game_state.all_regions:
         mem = build_food_sources(region)
         npc.mind.memory.semantic["food_locations"].append(mem)
+
+def inject_initial_food_preferences(npc):
+    for fs in npc.mind.memory.food_sources.entries.values():
+        fs.base_preference = random.randint(1, 3)
+        fs.nutrition_value = random.randint(1, 3)
+        fs.considers_nutrition = True

@@ -3,7 +3,7 @@
 
 from memory.memory_entry import RegionKnowledge
 from typing import Dict, List, Optional
-
+from debug_utils import debug_print
 #essentially redundant now that Im doing salience computation directly via anchors.
 def get_viable_robbery_targets(region):
     return [
@@ -36,8 +36,8 @@ def get_nearby_objects(npc, location=None):
     if hasattr(location, "cash_register"):
         nearby.append(location.cash_register)
 
-    # Location itself
-    nearby.append(location)
+    # causes duplicated location percepts
+    #nearby.append(location)
 
     return nearby
 
@@ -49,9 +49,8 @@ def observe_location(self, loc):
         #obj is not accessed
         return
     
-def get_region_knowledge(semantic_memory: Dict[str, List], region_name: str) -> Optional[RegionKnowledge]:
-    region_knowledge_entries = semantic_memory.get("region_knowledge", [])
-    for rk in region_knowledge_entries:
+def get_region_knowledge(semantic_memory, region_name):
+    for rk in semantic_memory.get("region_knowledge", []):
         if isinstance(rk, RegionKnowledge) and rk.region_name == region_name:
             return rk
     return None

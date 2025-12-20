@@ -26,12 +26,17 @@ class MotivationPresets:
                         "explore": "visit_location",
 
                     }
-
-    @classmethod #questionable value, and not in alignment with recent motivation tag appending needed for anchor dev
+    
+    #MARKED FOR DELETION
+    #questionable value, and not in alignment with recent motivation tag appending needed for anchor dev
+    """ @classmethod 
     def tag_to_motivation(cls):
-        return
+        return """
+    
     tag_to_motivation_presets = {
-    "rob": Motivation("rob", 4, status_type="criminal"), #does the ai actually need status_type?
+    "rob": Motivation("rob", 4, status_type="criminal"),
+    #commenting out the rob above does not solve the GangMember steal/rob herding
+      #does the ai actually need status_type?
     "steal": Motivation("steal", 4, status_type="criminal"),
     "weapon": Motivation("obtain_ranged_weapon", 4),
     "shop": Motivation("visit", 4),
@@ -43,10 +48,11 @@ class MotivationPresets:
 
         "GangMember": [
             Motivation("join_gang", 6, target="Red Fangs"),
-            Motivation("obtain_ranged_weapon", 5),
+            #Motivation("obtain_ranged_weapon", 5),
+            #commenting out the rob above does not solve the GangMember steal/rob herding
             Motivation("increase_status", 4, status_type="criminal"),
             Motivation("steal_money", 4, status_type="criminal"),
-            Motivation("rob", 4, status_type="criminal"),
+            #Motivation("rob", 4, status_type="criminal"),
         ],
 
         "Manager": [

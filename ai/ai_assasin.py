@@ -27,7 +27,11 @@ class AssassinAI(UtilityAI):
         # Step 1: Check current location for target
         for char in npc.location.characters_there:
             if char.name == target_name:
-                npc.mind.attention_focus = char
+                
+                #npc.mind.attention_focus = char
+                npc.set_attention_focus(npc, anchor=None, thought=None, character=char)
+
+
                 print(f"[AssassinAI] Target {char.name} found at {npc.location.name}")
                 return {"name": "target_acquired", "params": {"target": char}}
 

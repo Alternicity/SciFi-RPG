@@ -12,6 +12,10 @@ ENABLED_DEBUG_CATEGORIES = {"test_npc"}  # Only logs for test NPCs
 # Individual subsystem toggles
 SHOW_TICK_LOGS = True
 
+# Proper NPC instance will be assigned at runtime
+#DEBUG_NPC_ONLY = None
+#deprecated if code works
+
 # Test NPC visibility
 SHOW_TEST_NPC_LOGS = True   # keep this True so test NPCs still show
 # ^ only relevant when npc.is_test_npc == True
@@ -28,12 +32,12 @@ SHOW_NPC_THINK_LOGS = True
 SHOW_ACTION_LOGS = True
 SHOW_MEMORY_LOGS = True
 SHOW_SALIENCE_LOGS = True
-SHOW_SIMULATION_LOGS = False
-SHOW_GAMEPLAY_LOGS = False
+SHOW_SIMULATION_LOGS = True
+SHOW_GAMEPLAY_LOGS = True
 SHOW_ANCHOR_LOGS = True
-SHOW_RK_LOGS = False
+SHOW_RK_LOGS = True
 SHOW_DECISION_LOGS = True
-SHOW_INSIGHT_LOGS = False
+SHOW_INSIGHT_LOGS = True
 SHOW_PERCEPT_LOGS = True
 SHOW_INVENTORY_LOGS = True
 SHOW_OBSERVATION_LOGS =True
@@ -45,7 +49,7 @@ SHOW_ERROR_LOGS = True
 SHOW_WEAPON_LOGS =True
 SHOW_ACTION_LOGS = True
 SHOW_EVENT_LOGS = True
-SHOW_FAMILY_LOGS = True
+SHOW_FAMILY_LOGS = False
 SHOW_PLACEMENT_LOGS = True
 SHOW_VERIFY_LOGS = True
 SHOW_ECONOMY_LOGS = True

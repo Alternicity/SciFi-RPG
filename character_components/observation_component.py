@@ -1,6 +1,6 @@
 #character_components.observation_component.py
-
-from perception.perceptibility import PerceptibleMixin
+from worldQueries import get_nearby_objects
+from perception.perceptibility import PerceptibleMixin, gather_perceptible_objects
 class ObservationComponent:
     def __init__(self, owner):
         self.owner = owner
@@ -42,7 +42,7 @@ class ObservationComponent:
                 self._percepts[key] = {"data": data, "origin": origin}
 
 
-        if len(self._percepts) > self.npc.observation:
+        if len(self._percepts) > self.owner.observation:
             sorted_items = sorted(
                 self._percepts.items(), key=lambda kv: kv[1]["data"].get("salience", 0.0), reverse=True
             )
@@ -203,6 +203,18 @@ class ObservationComponent:
         from create.create_game_state import get_game_state
         import inspect
         game_state = get_game_state()
+        current_hour = game_state.hour
+
+        if getattr(self, "last_observed_hour", None) == current_hour:
+            return
+        
+        assert hasattr(self, "_percepts") and isinstance(self._percepts, dict)
+        """ guards the whole function
+        Not tied to self-percept logic
+        Will catch corruption earlier """
+
+        self.last_observed_hour = current_hour
+        self._percepts.clear()
 
         observer = self.owner
 
@@ -210,13 +222,11 @@ class ObservationComponent:
         caller = inspect.stack()[1].function
 
         # Ensure only runs once per tick
-        if getattr(self, "_observed_this_tick", False):
-            debug_print(observer, f"[OBSERVE SKIP] already observed this tick={game_state.tick} (caller={caller})", "percept")
-            return
-        self._observed_this_tick = True
+        
 
-        debug_print(observer, f"[OBSERVE TRACE] {observer.name} observing at tick {game_state.tick} (caller={caller})", category="observation")
-        debug_print(observer, f"[OBSERVE TRACE] npc.location={observer.location}, region={observer.region}", category="perception")
+        """ debug_print(observer, f"[OBSERVE TRACE] {observer.name} observing at tick {game_state.tick} (caller={caller})", category="observation")
+        debug_print(observer, f"[OBSERVE TRACE] npc.location={observer.location}, region={observer.region.name}", category="perception") """
+
         #debug_print(npc, f"[OBSERVE] RAW location param={location} (type={type(location)})", "perception")
         if region is not None and location is None:
             print(f"[BUG] observe() called with region but no location! Caller={caller}")
@@ -228,7 +238,8 @@ class ObservationComponent:
         except Exception:
             before_count = 0
 
-        debug_print(self.owner, f"[OBSERVE] Before clearing percepts, count={before_count}, location param={(location.name if location else None)}", "percept")
+        #debug_print(self.owner, f"[OBSERVE] Before clearing percepts, count={before_count}, location param={(location.name if location else None)}", "percept")
+        
 
         # --- clear percepts for new observation cycle ---
         self.percepts.clear()
@@ -236,6 +247,7 @@ class ObservationComponent:
 
         # --- perceive self (always included) ---
         self_percept = self.owner.get_percept_data(observer=self.owner)
+        #canonical insertion point for internal state → percept → thought
 
         if self_percept:
             self._percepts["self"] = {
@@ -243,8 +255,31 @@ class ObservationComponent:
                 "origin": self.owner   # origin should be the Character, not the component
             }
             self.percepts_updated = True
+            
 
-        debug_print(self, f"[OBSERVE] Final percept count from oberve() ={len(self.percepts)} at {location.name}", "percept")
+        if location:
+            for obj in gather_perceptible_objects(location):
+                if obj is self.owner:
+                    continue
+
+                percept = obj.get_percept_data(observer=self.owner)
+                if not percept:
+                    continue
+
+                self._percepts[obj.id] = {
+                    "data": percept,
+                    "origin": obj
+                }
+                self.percepts_updated = True
+
+        assert isinstance(self._percepts, dict), "Percepts store corrupted"
+
+        debug_print(
+        self.owner,
+        f"[SELF PERCEPT] tags={self._percepts['self']['data']['tags']} urgency={self._percepts['self']['data'].get('urgency')}",
+        category="percept"
+        )
+        #debug_print(self, f"[OBSERVE] Final percept count from oberve() ={len(self.percepts)} at {location.name}", "percept")
 
         # --- determine current location if not passed ---
         if location is None:
@@ -285,7 +320,7 @@ class ObservationComponent:
                     self.add_percept_from(obj)
             else:
                 # fallback to worldQueries
-                from worldQueries import get_nearby_objects
+                
                 for obj in get_nearby_objects(self, location=location):
                     self.add_percept_from(obj)
 
@@ -296,13 +331,13 @@ class ObservationComponent:
         # --- mark update complete ---
         self.percepts_updated = True
         final_count = len(self._percepts)
-        debug_print(self.owner, f"[OBSERVE COMPLETE] {self.owner.name} perceived {final_count} entities at {location.name} (tick={game_state.tick})", category="percept")
+        #debug_print(self.owner, f"[OBSERVE COMPLETE] {self.owner.name} perceived {final_count} entities at {location.name} (tick={game_state.tick})", category="percept")
 
-    def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
-        """
+    """ def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
+        
         Gathers percepts from nearby Perceptible objects and optionally from the location's inventory.
         Updates self._percepts.
-        """
+        
         from debug_utils import debug_print
         debug_print(self, f"[OBSERVE] Before clearing percepts, from observe_objects() object count={len(self.percepts)}", "percept")
 
@@ -345,4 +380,4 @@ class ObservationComponent:
 
         self._percepts.update(new_percepts)
         self.percepts_updated = True
-        debug_print(self, f"[OBSERVE] Final percept count from observe_objects ={len(self.percepts)} at {location.name}", "percept")
+        debug_print(self, f"[OBSERVE] Final percept count from observe_objects ={len(self.percepts)} at {location.name}", "percept") """

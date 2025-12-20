@@ -2,6 +2,9 @@
 from character_thought import Thought, FailedThought
 from anchors.anchor_utils import Anchor
 from typing import Optional
+from create.create_game_state import get_game_state
+game_state = get_game_state
+from debug_utils import debug_print
 
 class UtilityAIThoughtTools():
 
@@ -50,3 +53,16 @@ def rank_memory_locations_by_salience(npc, anchor, tag_filter=None, top_n=3):
 
     ranked.sort(key=lambda x: x[1], reverse=True)
     return ranked[:top_n]
+
+def generate_hunger_thought(npc):
+        if npc.hunger > 7:  # Threshold for hunger
+            thought = Thought(
+                subject="hunger",
+                content="I'm hungry. I need to eat.",
+                urgency=8,  # High urgency for hunger
+                source="generate_hunger_thought",
+                tags=["hunger", "food", "intention"],
+                weight=8,
+            )
+            npc.mind.add_thought(thought)
+            debug_print(npc, f"[THOUGHT] Generated hunger thought: {thought.content}", category="think")

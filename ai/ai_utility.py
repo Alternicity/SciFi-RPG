@@ -11,9 +11,11 @@ from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_a
 from collections import defaultdict
 from worldQueries import get_region_knowledge
 from memory.memory_entry import MemoryEntry
-from debug_utils import debug_print
+from debug_utils import debug_print, debug_once
 from create.create_game_state import get_game_state
+from focus_utils import set_attention_focus
 
+from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought
 
 class UtilityAI(BaseAI):
     def __init__(self, npc):
@@ -24,10 +26,12 @@ class UtilityAI(BaseAI):
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
 
+
+#placeholder  code:
     def choose_action(self, region):
         npc = self.npc
     
-        motivations = npc.motivation_manager.get_motivations()
+        motivations = npc.motivation_manager.get_urgent_motivations()
         if not motivations:
             return {"name": "idle"}
 
@@ -37,6 +41,7 @@ class UtilityAI(BaseAI):
         # === 2. Basic Need: Procure Food ===
         if mtype == "procure_food" or mtype == "eat":
             return self._choose_procure_food(npc)
+        
 
         # === 3. Basic Need: Earn Money ===
         if mtype == "earn_money":
@@ -49,32 +54,29 @@ class UtilityAI(BaseAI):
         # === 5. Unknown → idle fallback ===
         return {"name": "idle"}
     
-        debug_print(
-            npc,
-            f"[CHOOSE] {npc.name} motivation={top.type} → chose {action['name']}",
-            category="choose"
-        )
-
-
     def _choose_procure_food(self, npc):
+        # First, generate the hunger thought if necessary
+        generate_hunger_thought(npc)#line 57, generate_hunger_thought is currently marked not defined
 
-        # 1. Eat snack if available
-        snack = npc.inventory.get_item_with_tag("snack")
-        if snack:
-            return {"name": "eat_auto", "params": {"item": snack}}
-
-        # 2. Use semantic knowledge
+        # Use semantic knowledge for food sources
         food_sources = npc.mind.memory.food_sources
         if food_sources:
-            best = food_sources.best_source()
+            debug_print(npc, f"[FOOD_MEM] Known food sources: "f"{[(m.region, m.locations) for m in npc.mind.memory.semantic.get('food_locations', [])]}", category="food")
+
+            best = food_sources.best_source()  # Pick the best food source
             if best and best.location_ref:
+                debug_print(npc, f"[FOOD] Best food source found: {best.location_ref.name}", category="food")
                 return {
                     "name": "visit_location_auto",
                     "params": {"destination": best.location_ref}
                 }
 
-        # 3. No food source → fallback
+        debug_print(npc, f"[FOOD_MEM] Recalled food regions: "f"{[(m.region, m.locations) for m in food_sources]}", category="food")
+
+        # Fallback if no food source found
+        debug_print(npc, "[FOOD] No food source found, NPC is idling.", category="food")
         return {"name": "idle"}
+
 
     def _choose_earn_money(self, npc):
         wp = npc.employment.workplace
@@ -119,19 +121,17 @@ class UtilityAI(BaseAI):
         return {"name": "idle"}
 
     def execute_action(self, action, region):
-        """
-        Dispatch NPC actions to npc_actions.py functions.
-        """
+
         npc = self.npc
         # Ensure action is a dict
         if not isinstance(action, dict):
             print(f"[ERROR] From UtilityAI Action must be a dict, got: {action}")
             return
 
-        action_name = action.get("name", "")
+        action_name = action.get("name", "").lower()
         params = action.get("params", {})
 
-        # Import action implementations once, before use (prevents UnboundLocalError)
+
         from actions.npc_actions import (
             visit_location_auto,
             exit_location_auto,
@@ -139,36 +139,54 @@ class UtilityAI(BaseAI):
             idle_auto
         )
 
-        # Special-case visit_location so it runs exactly once here
-        if action_name.lower() == "visit_location":
-            # Call visit auto directly
+        if action_name == "visit_location":
+            # Call visit location action
             try:
                 result = visit_location_auto(npc, region, **params)
+                debug_print(npc, f"[ACTION] Visit Location from UtilityAI.execute_action, Result: {result}", category="visit")
+
             except Exception as e:
                 print(f"[ERROR] visit_location_auto failed: {e}")
-                result = None
-
-            # After visiting, remove the visit motivation and stale visit thoughts
-            npc.motivation_manager.remove_motivation("visit")
+                return
+            
+            # cleanup AFTER visiting
+            if npc.motivation_manager.has_motivation("visit"):
+                npc.motivation_manager.remove_motivation("visit")
             npc.mind.remove_thoughts_with_tag("visit")
             debug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location}", category="visit")
             return result
-        
+    
+        if npc.motivation_manager.has_motivation("eat"):
+            eat_motive = npc.motivation_manager.get_motivation("eat")
 
+            if eat_motive.urgency >= 7:   # tune later
+                thought = generate_hunger_thought(npc)
+                if thought:
+                    npc.mind.add_thought(thought)
+                    debug_print(
+                        npc,
+                        "[FOOD] Hunger thought generated",
+                        category="food"
+                    )
 
-        # --- fallback routing for other actions ---
+        # --- generic routing ---
         action_map = {
-            "exit_location": exit_location_auto,
             "eat": eat_auto,
-            "idle": idle_auto
-        }
+            "exit_location": exit_location_auto,
+            "idle": idle_auto,
+            }
 
-        action_func = action_map.get(action_name.lower())
+        action_func = action_map.get(action_name)
         if not action_func:
-            debug_print(npc, f"[EXECUTE] Unknown action '{action_name}' — cannot dispatch; skipping.", category="action")
+            debug_print(npc, f"[EXECUTE] Unknown action '{action_name}' — skipping.", category="action")
             return
 
-        debug_print(npc, f"[EXECUTE UTILITYAI] Dispatching {action_name} with params={params}", category="action")
+        debug_print(
+            npc,
+            f"[EXECUTE UTILITYAI] Dispatching {action_name} with params={params}",
+            category="action"
+        )
+
         try:
             return action_func(npc, region, **params)
         except Exception as e:
@@ -185,9 +203,9 @@ class UtilityAI(BaseAI):
 
         #Anchors participate only in the scoring phase
         # ----------------------------------------
-        # 1. Anchor selection (cleaned up)
+        # 1. Anchor selection (cleaned up) 
         # ----------------------------------------
-        from ai_utility_thought_tools import extract_anchor_from_action
+        
         anchor = (
             extract_anchor_from_action(action)
 
@@ -280,11 +298,11 @@ class UtilityAI(BaseAI):
         game_state = get_game_state()
 
         # Guard: only promote once per tick
-        if getattr(npc, "_last_promote_tick", -1) == game_state.tick:
+        if getattr(npc, "_last_promote_hour", -1) == game_state.hour:
             return
 
         # mark we've run this tick
-        npc._last_promote_tick = game_state.tick
+        npc._last_promote_hour = game_state.hour
 
         if not mind.thoughts:
             return
@@ -340,7 +358,7 @@ class UtilityAI(BaseAI):
         npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
         
         # Set attention focus
-        npc.mind.attention_focus = strongest
+        set_attention_focus(npc, anchor=None, thought=strongest, character=None)
         npc.default_focus = anchor
         
         if npc.is_test_npc:
@@ -350,6 +368,8 @@ class UtilityAI(BaseAI):
                 category="think"
             )
             print(f"[FOCUS] From promote_thoughts {self.npc.name}'s attention focused on: {self.npc.mind.attention_focus}")
+
+    
 
     def examine_episodic_memory(self, episodic_memories):
         event_counts = defaultdict(int)
@@ -464,13 +484,15 @@ class UtilityAI(BaseAI):
         region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
         if region_knowledge:
             self.evaluate_turf_war_status(region_knowledge)
-        #self.promote_thoughts()# Delete in favour of calling from simulate_days()
+        #self.promote_thoughts()# Delete in favour of calling from simulate_hours()
 
         motivations = self.npc.motivation_manager.get_urgent_motivations()
         if not motivations:
             #print(f"[THINK] {self.npc.name} has no urgent motivations.")
             return
-        
+        npc=self.npc
+        debug_print(npc, f"[MOTIVES] {npc.motivation_manager.get_motivations()}", category="think")
+
         # Examine episodic memory for repeated events
         episodic_memories = self.npc.mind.memory.get_episodic()
         self.examine_episodic_memory(episodic_memories)
@@ -479,7 +501,9 @@ class UtilityAI(BaseAI):
         percepts = list(self.npc.get_percepts()) #get_percepts.values? Re check this
 
         for i, percept in enumerate(percepts):
-            print(f"[DEBUG] From UtilityAI, think() Percept[{i}]: {type(percept)} {percept}")
+            pass
+            #print(f"[DEBUG] From UtilityAI, think() Percept[{i}]: {type(percept)} {percept}")
+            #verbose
 
         candidate_thoughts = [] #candidate_thoughts not accesssed
         for motivation in motivations:
@@ -496,17 +520,26 @@ class UtilityAI(BaseAI):
                         tags=percept.get("tags", []),
                     ))
                     self.npc.mind.add_thought(thought)
-                    #added
+                    debug_print(self.npc, f"[THOUGHT CREATED] subject={thought.subject} content={thought.content} urgency={thought.urgency}", category="think")
+                    
+                    if debug_once("food_memory", npc):
+                        debug_print(npc, f"[MEMORY] food_locations={npc.mind.memory.semantic.get('food_locations')}", category="memory")
+
+
                     thoughts = self.npc.mind.get_all()
                     self.deduplicate_thoughts_by_type(thoughts)
                     self.npc.mind.remove_thought_by_content("No focus")
         
-        #self.promote_thoughts()# Delete in favour of calling from simulate_days()
+        #self.promote_thoughts()# Delete in favour of calling from simulate_hours()
         self.generate_thoughts_from_percepts()#can we then just add the salient percepts to the parameters here?
 
         #Add a function for this:
         social_thoughts(self)
         
+        # 🔹 Decision + action (minimal)
+        action = self.choose_action(region)
+        if action:
+            self.execute_action(action, region)
 
         print(f"[DEBUG] From UtilityAI, def think()")
         print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
@@ -675,7 +708,7 @@ class UtilityAI(BaseAI):
                     npc.is_alert = True
                     print(f"[THREAT] {npc.name} became alert due to memory: {memory.name}")
 
-    def get_salience(self, item):
+    def get_salience(self, item):#possiblby deprecated in favor of anchors
         return item.salience_for(self.npc)
     #Usage
     #salient_thoughts = sorted(relevant_thoughts, key=self.get_salience, reverse=True)

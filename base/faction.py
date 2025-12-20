@@ -11,7 +11,7 @@ class Faction(FactionBase):
         #Expand Attributes: Use nested dictionaries if factions need even more data about members.
         self.goals = []  # List of active goals
         self.current_goal = None
-        self.resources = {"money": 1000, "weapons": 10}  # Example default resources
+        self.resources = {"money": 1000, "weapons": 10}  # unused
         self.region = None
         self.is_vengeful = False
         self.violence_disposition = violence_disposition

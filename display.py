@@ -4,7 +4,7 @@ import logging
 from textwrap import wrap
 
 from base.character import Character
-from create.create_game_state import get_game_state
+
 import loader
 import os
 from collections import defaultdict
@@ -24,12 +24,14 @@ from typing import List, Union
 from character_creation_funcs import player_character_options
 from base.faction import Faction
 from base.location import Location
+from region.region import Region
 from perception.perceptibility import extract_appearance_summary
+
 from config_npc_vitals import NPC_VITALS_CONFIG
-
-
+from debug_registry import get_debug_npc
 from debug_utils import debug_print
-
+from create.create_game_state import get_game_state
+game_state = get_game_state()
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -261,14 +263,8 @@ def display_gangs(game_state):
         # Add a space between gang entries for clarity
         print("\n" + "-" * 50 + "\n")
 
-def debug_list_gang_hqs(game_state):
-    """
-    Lightweight diagnostic to show:
-    - Gang name
-    - Whether it is a street gang
-    - HQ name (or MISSING)
-    - Member count
-    """
+def debug_list_gang_hqs():
+    
     print("\n[DEBUG] ===== GANG HQ DIAGNOSTICS =====\n")
     
     gangs = game_state.gangs if hasattr(game_state, "gangs") else []
@@ -279,13 +275,19 @@ def debug_list_gang_hqs(game_state):
         return
 
     for gang in gangs:
-        is_street = "Street Gang" if gang in street_gangs else "Non-Street Gang"
+        # NEW: race column (fallback if missing)
+        race = getattr(gang, "race", "Unknown")
 
-        hq_name = gang.HQ.name if getattr(gang, "HQ", None) else "❌ NO HQ ASSIGNED"
-
+        hq_name = gang.HQ.name if getattr(gang, "HQ", None) else "Street Gang"
         member_count = len(getattr(gang, "members", []))
 
-        print(f"• {gang.name:<25} | {is_street:<15} | HQ: {hq_name:<25} | Members: {member_count}")
+        print(
+            f"• {gang.name:<35} | "
+            f"• {race:<15} | "
+            f"• {hq_name:<25} | "
+            f"Members: {member_count}"
+        )
+
 
 
 def display_state(state):
@@ -391,45 +393,28 @@ def display_selected_character_current_region(character, region):
 
 
 def list_characters(characters):
-
-    #Display a list of existing characters in a table format.
-   
-    for char in characters:
-        if isinstance(char, dict):
-            print(f"Character dictionary: {char}")
-            name = char.get('name', 'Unknown')#would this be better is it was name = char.name?
-    else:
-        print(f"Character object: {char}")
-        name = char.name  # Access object attribute
-        print(f"Character Name: {name}")
-        #npc not defined below. Use char? 
-        debug_flag = ""
-        if hasattr(npc, "debug_role") and npc.debug_role in ("primary", "secondary", "civilian_test"):
-            debug_flag = f" [DEBUG: {npc.debug_role}]"
-
-        print(f"  Name: {npc.name}{debug_flag}")
-
-
-    print("Listing Characters, list_characters().")
-
     if not characters:
         print("No existing characters.")
         return
 
-    # Extract data from object instances
-    table_data = [
-        [
+    rows = []
+    for char in characters:
+        debug_flag = ""
+        if hasattr(char, "debug_role"):
+            debug_flag = f"[{char.debug_role}]"
+
+        rows.append([
             char.name,
-            char.char_role,
-            char.faction,
-            char.bankCardCash,
-            char.fun,
-            char.hunger,
-        ]
-        for char in characters
-    ]
-    headers = ["Name", "Role", "Faction", "Bank Card Cash", "Fun", "Hunger"]
-    return tabulate.tabulate(table_data, headers=headers, tablefmt="fancy_grid")
+            char.__class__.__name__,
+            getattr(char, "faction", None),
+            debug_flag
+        ])
+
+    print(tabulate(
+        rows,
+        headers=["Name", "Class", "Faction", "Debug"],
+        tablefmt="fancy_grid"
+    ))
 
 def compare_locations(all_locations, all_regions):
     """Compares locations in all_locations vs. region.locations and lists missing ones."""
@@ -609,7 +594,8 @@ def display_percepts_table(npc):
 
     table_data = []
 
-    for i, (key, v) in enumerate(npc.observation_component._percepts.items()):
+    for i, (key, v) in enumerate(npc.percepts.items()):
+
         # Step 1: Safely access nested data
         data = v.get("data", {})
         origin = v.get("origin", data.get("origin", "—"))
@@ -765,8 +751,8 @@ def debug_display_all_shops(all_regions):
         if hasattr(region, "shops"):#perhaps there is a problem here. we should check this shops, and perhaps try testing for
             #other things
             all_shops.extend(region.shops)
-
-    display_sellers(all_shops)
+    #temporarily commented to suppress this table in output, re-enable and update it later.
+    #display_sellers(all_shops)
 
 def format_shop_debug(shop) -> dict:
     return {
@@ -788,17 +774,23 @@ def sim_print(message):
 def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
     """
     Comprehensive display of NPC state.
-    Call this from simulate_days() for your 3 debug NPCs.
+    Call this from simulate_hours() for the 3 debug NPCs.
     """
-    if not npc:
+    from debug_utils import npc_is_allowed
+    if not npc_is_allowed(npc):
         return
+
+    #Still retain this?
+    """ if not npc:
+        return """
     
-    game_state = get_game_state()
+    debug_npc = get_debug_npc()
+
+    #See: config_npc_vitals.py
     
     print("\n")
     print(f"NPC VITALS: {npc.name}")
 
-    
     # === BASIC INFO ===
     if NPC_VITALS_CONFIG.get("identity", True):
         print(f"\n[IDENTITY]")
@@ -950,7 +942,7 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
         
         # === TIME CONTEXT ===
         print(f"\n[TIME]")
-        print(f"  Tick: {game_state.tick} (Hour: {game_state.tick % 24}:00)")
+        print(f"  Hour: {game_state.hour}:00")
         print(f"  Day: {game_state.day}")
         
 
@@ -989,22 +981,7 @@ def _vitals_indicator(value, vital_type):
     return ""
 
 
-def display_all_debug_npcs():
-    """
-    Display vitals for all 3 debug NPCs.
-    Call this at key moments in simulate_days().
-    """
-    game_state = get_game_state()
-    
-    # Get debug NPCs from game_state
-    debug_npcs = getattr(game_state, 'debug_npcs', {})
-    
-    if not debug_npcs:
-        print("[WARNING] No debug NPCs registered in game_state")
-        return
-    
-    for role, npc in debug_npcs.items():
-        display_npc_vitals(npc, show_memories=True, show_thoughts=True)
+#Claude function btfo from here
 
 
 def display_npc_summary(npc):
@@ -1069,3 +1046,13 @@ def display_daily_schedule_preview(npc):
         print(f"  {entry}")
     
     print(f"{'='*60}\n")
+
+def display_one_debug_npc():
+    """ Alternative to using a filter for display_npc_vitals()
+    If used, call with:
+    display_one_debug_npc()
+    from simulation.py """
+
+    npc = get_debug_npc()
+    if npc:
+        display_npc_vitals(npc)#Used to have parameters: , show_memories=True, show_thoughts=True

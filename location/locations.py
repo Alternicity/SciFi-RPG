@@ -198,7 +198,7 @@ from characters import Employee
 @dataclass
 class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
     name: str = "QQ Store"#placeholder/default
-    tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial", "weapon", "ranged_weapon","pistol", "weapons"])
+    tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial", "weapon", "ranged_weapon","pistol", "weapons", "food"])
     #Keep tags at class level (Shop(tags=["shop"])) for static traits like economic category.
     #Use get_percept_data tags for dynamic, observer-relative info like visible weapons, open status, etc
     #these  won't be automatically included in memory — only what’s passed into the MemoryEntry.tags

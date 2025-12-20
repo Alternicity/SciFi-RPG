@@ -17,7 +17,7 @@ class GameState:
         GAME_MODE_SIMULATION = "simulation"
 
         self.game_mode = GAME_MODE_PLAYER
-        self.tick = 0 # 1 hour
+        self.hour = 0 # 1 hour
         self.day = 1
 
         self.primary = None
@@ -59,9 +59,15 @@ class GameState:
         hiring  =  {} #employers with job vacancies. Employer/character class wanted
         recruiting =  {} # gangs with vacancies to fill. Gang/type character wanted
 
-    def advance_tick(self):
-        self.tick += 1
-        if self.tick % 24 == 0:# e.g., 24 ticks = 1 day
+
+    @property
+    def tick(self):
+        # TEMPORARY alias for legacy code
+        return self.hour
+
+    def advance_hour(self):#Do not keep this alias forever, migrate from tick to hour
+        self.hour = (self.hour + 1) % 24
+        if self.hour == 0:
             self.day += 1
 
     def set_state(self, state):
@@ -87,5 +93,21 @@ class GameState:
         self.state_staff.append(staff_member)
 
     
+    def get_day_phase(self):
+        hour = self.tick % 24
 
+        if 5 <= hour < 7:
+            return "Dawn"
+        elif 7 <= hour < 10:
+            return "Mid Morning"
+        elif 10 <= hour < 13:
+            return "Midday"
+        elif 13 <= hour < 17:
+            return "Afternoon"
+        elif 17 <= hour < 20:
+            return "Evening"
+        elif 20 <= hour < 23:
+            return "Night"
+        elif 23 <= hour or hour < 5:
+            return "Pre-Dawn"
     

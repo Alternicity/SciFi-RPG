@@ -16,7 +16,7 @@ from anchors.anchor_utils import Anchor
 """ Once she use anchors, then support motivation.resolve_motivation() and
 clear_highest_priority_motivation(). 
 Always reset npc.mind.attention_focus = None when a motivation is cleared, unless 
-there’s an immediate next focus (like a thought)."""
+there’s an immediate next focus (like a thought). attention_focus USE CLEAR"""
 
 """ ...every time you pick up the pen,
 you shorten the recursion cycle. """
@@ -71,7 +71,7 @@ class LunaAI(UtilityAI):
         if self.tick_counter % 5 == 0:
             self.narrate_top_thought()
 
-        #self.promote_thoughts()# Delete in favour of calling from simulate_days()
+        #self.promote_thoughts()# Delete in favour of calling from simulate_hours()
 
     def log_pulse_thought(self, pulse):
         content = f"Echo at ({pulse.x:.2f}, {pulse.y:.2f}) with r={pulse.resonance:.2f}"
