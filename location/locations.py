@@ -1166,6 +1166,8 @@ class Cafe(WorkplaceMixin, PerceptibleLocation):
     name: str = "Metro Cafe"
     tags: list[str] = field(default_factory=lambda: ["workplace", "fun", "food", "social"])
     description: str = "A cafe"
+    #TMP
+    is_shakedown_target: bool = True
     upkeep: int = 10
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambience: Ambience = field(default_factory=lambda: Ambience({"social": 0.5, "fun": 0.3}))
@@ -1252,6 +1254,10 @@ class Restaurant(WorkplaceMixin, PerceptibleLocation):
     name: str = "Generic Restaurant"
     tags: list[str] = field(default_factory=lambda: ["workplace", "food", "social"])
     description: str = "A restaurant"
+
+    #TMP
+    is_shakedown_target: bool = True
+    
     upkeep: int = 20
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     items_available: List[Any] = field(default_factory=list)  # menu items

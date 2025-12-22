@@ -7,7 +7,7 @@ from location.locations import House, ApartmentBlock
 #from common import weighted_choice
 from base.location import Location
 from characters import Civilian
-
+from economy.economy import Ownership
 @dataclass
 class Family:
     """Lightweight social unit tracking related civilians."""
@@ -142,18 +142,6 @@ def link_family_shops(game_state):
 
     matches = 0
 
-    #tmp
-    """ for shop in all_shops:
-        print("SHOP:", id(shop), shop.name)
-
-    for fam in families:
-        print("FAM:", id(fam), fam.family_name) """
-
-
-    #If you see two identical object IDs → no duplicates
-    #If you see two identical names but different IDs → they are being recreated.
-
-
     for shop in all_shops:
         shop_name_lower = shop.name.lower()
 
@@ -180,3 +168,11 @@ def link_family_shops(game_state):
 
     debug_print(None, f"[FAMILY_SHOPS] Linked {matches} shops to families.", "family")
     #often 0 or 1, 5 would be logical as 5 shops currently exist
+
+def assign_business_ownership(game_state):
+    for loc in game_state.all_locations:
+        if hasattr(loc, "owner") and loc.owner:
+            loc.ownership = Ownership(
+                owner_type="family",
+                owner_ref=loc.owner
+            )

@@ -30,7 +30,16 @@ class UtilityAI(BaseAI):
 #placeholder  code:
     def choose_action(self, region):
         npc = self.npc
-    
+
+        #commented out due to not defined items. this allows visiting
+        """ allow_visit = False
+
+        if motivation:
+            allow_visit = ROLE_PERMISSIONS[role(npc)].get("visit", False)
+
+            if motivation.type in ("eat", "work", "have_fun", "shakedown", "rob"):
+                allow_visit = allow_visit and True """
+
         motivations = npc.motivation_manager.get_urgent_motivations()
         if not motivations:
             return {"name": "idle"}

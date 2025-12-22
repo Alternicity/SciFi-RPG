@@ -110,9 +110,6 @@ class GangMemberAI(UtilityAI):
                     )#This will currently create this anchor for any thought with those tags. Ok for now I think
                 debug_print(npc, f"[ANCHOR] Created anchor {anchor.name} target={getattr(anchor,'target',None)} source={type(getattr(anchor,'source',None)).__name__}", category="anchor")
 
-        
-
-
                 npc.motivation_manager.update_motivations(
                     anchor.name,
                     urgency=thought.urgency,
@@ -693,7 +690,7 @@ class GangMemberAI(UtilityAI):
 
             pistol = ranged_weapons[0]
 
-            npc.motivation_manager.update_motivations(
+            npc.motivation_manager.consider_adding_motivation(
                 "obtain_ranged_weapon",
                 urgency=25,
                 target=pistol,
@@ -902,18 +899,13 @@ class GangMemberAI(UtilityAI):
             allow_visit = True
 
         # ROB CHAIN (only activates when rob is top motive) - does it?
-        if motivation.type == "rob":
-
-            # ✅ GUARD: Do NOT create 'obtain_ranged_weapon' if already armed
-            if npc.inventory.has_ranged_weapon():
-                pass  # do nothing — already armed
-
-            else:
-                if not npc.inventory.find_item("ranged_weapon"):
-                    enable_motive = "obtain_ranged_weapon"
-                    if not motives.has_motivation(enable_motive):
-                        motives.update_motivations(enable_motive, urgency=15)
-                        print(f"[CHAIN] Promoting enabling motivation: {enable_motive}")
+        if motivation.type == "rob" and not npc.inventory.has_ranged_weapon():
+            motives.consider_adding_motivation(
+                "obtain_ranged_weapon",
+                urgency=15,
+                source="rob_chain",
+            )
+            
 
             if region_knowledge:
                 for loc_name in region_knowledge.locations or set():
@@ -1025,7 +1017,7 @@ class GangMemberAI(UtilityAI):
         for thought in list(npc.mind.thoughts):
             if getattr(thought, "resolved", False):
                 continue
-            if "rob" in thought.tags and "weapon" in thought.tags:
+            if "rob" in thought.tags and "weapon" in thought.tags:#uses weapon, is that optimal? we have npc booleans we can look up
                 debug_print(npc, f"[THOUGHT EVAL] {npc.name} is influenced by thought: {thought.content}", "think")
                 npc.motivation_manager.increase("rob", amount=getattr(thought, "weight", 1))
                 thought.resolved = True

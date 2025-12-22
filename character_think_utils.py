@@ -14,7 +14,7 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
         if npc.debug_role != "primary":
             return
 
-    for thought in thoughts:  # iterate over each Thought object
+    for thought in thoughts:
         if not hasattr(thought, 'tags'):
             continue  # skip any object that doesn't have .tags
 
@@ -31,9 +31,11 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
                     status_type=getattr(template, "status_type", None),
                 )
 
-                npc.motivation_manager.update_motivations(
+                npc.motivation_manager.consider_adding_motivation(
                     motivation.type,
-                    motivation.urgency,
+                    urgency=motivation.urgency,
+                    target=motivation.target,
+                    source=thought,
                 )
 #character_think_utils.py
 def social_thoughts(self):

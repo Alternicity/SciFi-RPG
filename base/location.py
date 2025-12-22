@@ -12,6 +12,9 @@ class Location(LocationBase):
     name: str = "Unnamed Location"
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional[Any] = None
+
+    #TMP
+    is_shakedown_target: bool = False
     owner = None
     sublocations: Optional[List['Location']] = None
     controlling_faction: Optional[Any] = None

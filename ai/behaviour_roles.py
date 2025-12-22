@@ -36,7 +36,7 @@ ROLE_PERMISSIONS = {
     "civilian_worker": {
         "percept_to_motivation": True,
         "thought_to_motivation": True,
-        "anchor_creation": False,
+        "anchor_creation": True,
     },
     "civilian_liberty": {
         "percept_to_motivation": True,

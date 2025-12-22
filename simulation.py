@@ -39,7 +39,7 @@ def run_simulation(all_characters, num_days=10):
 
     if debug_civilian_npc:
         debug_civilian_npc.is_test_npc = True
-        debug_civilian_npc.debug_role = "civilian_test"
+        debug_civilian_npc.debug_role = "civilian_test"#see Also line 184
 
     if debug_gang_npc2:
         debug_gang_npc2.is_test_npc = True
@@ -115,7 +115,7 @@ def run_simulation(all_characters, num_days=10):
     if debug_gang_npc2: #aka secondary 
 
         debug_gang_npc2.motivation_manager.update_motivations("shakedown", urgency=4)
-        debug_gang_npc2.motivation_manager.update_motivations("eat", urgency=7)#currently eating is this npcs priority, but we can change that. Maybe eating should get developed first?
+        debug_gang_npc2.motivation_manager.update_motivations("eat", urgency=7)
         debug_gang_npc2.motivation_manager.update_motivations("have_fun", urgency=5)
 
         locs_g2 = non_shop_or_cafe_locations(northville_region)
@@ -131,7 +131,7 @@ def run_simulation(all_characters, num_days=10):
     #Civilian test npc
     if debug_civilian_npc:
 
-        debug_civilian_npc.motivation_manager.update_motivations("work", urgency=8)
+        debug_civilian_npc.motivation_manager.update_motivations("work", urgency=8)#so it makes sense for this npc to be cvilian_worker
         debug_civilian_npc.motivation_manager.update_motivations("eat", urgency=6)
         debug_civilian_npc.motivation_manager.update_motivations("have_fun", urgency=5)
 

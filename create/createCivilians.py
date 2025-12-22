@@ -40,7 +40,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
 
     homes = [loc for loc in all_locations if "residential" in getattr(loc, "categories", [])]
     workplaces = [loc for loc in all_locations if any(cat in getattr(loc, "categories", []) for cat in ("workplace", "commercial"))]
-    public_spaces = [loc for loc in all_locations if "public" in getattr(loc, "categories", [])]
+    public_spaces = [loc for loc in all_locations if "public" in getattr(loc, "categories", [])]#public_spaces not yet accessed
     shops = [loc for loc in all_locations if isinstance(loc, Shop)]#shop not yet accessed
     
     if not homes:
@@ -110,7 +110,6 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     # Print global constants so we can verify they aren't being overridden
     #debug_print(npc=None, message=f"[ECONOMY VARS] SHOP_PATRONS_MIN={SHOP_PATRONS_MIN} SHOP_PATRONS_MAX={SHOP_PATRONS_MAX} MAX_CIVILIANS_PER_LOCATION={MAX_CIVILIANS_PER_LOCATION}", category="economy")
 
-    # --- Assign logical start locations ---
     # --- Assign logical start locations ---
     for civ in civilians:
         # RULE:

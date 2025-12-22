@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 
 @dataclass
 class Ownership:
-    owner_type: Literal["family", "gang", "corporation", "state"]#these are showing as not defined, despite looking like strings here
+    owner_type: Literal["family", "gang", "corporation", "state"]
     owner_ref: Any  # Family, Gang, Corporation, etc. 
     share: float = 1.0  # Later: partial ownership
 

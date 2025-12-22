@@ -318,22 +318,11 @@ class RobberyAnchor(Anchor):
             if m:
                 target_name = m.group(1)
                 
-        npc.motivation_manager.update_motivations("obtain_ranged_weapon", urgency=3)
         # Suppress turf-war salience logs
         if tags and "turf_war" in tags:
             return
 
-        #verbose
-        """ debug_print(
-            npc,
-            f"[ANCHOR-SALIENCE] RobberyAnchor final={score:.2f} for {name}"
-            + (f" (target={target_name})" if target_name else "")
-            + f" (tags={tags})",
-            category="salience",
-        ) """
-
         return round(score, 2)
-
 
 class just_got_off_shift(Anchor):
     def __init__(self, **kwargs):
@@ -459,6 +448,14 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     if motivation is None:
         return None
 
+    if motivation.type == "obtain_ranged_weapon" and npc.inventory.has_ranged_weapon():
+        debug_print(
+            npc,
+            "[ANCHOR] Skipping obtain_ranged_weapon anchor — already armed",
+            category="anchor"
+        )
+        return None
+
     if not hasattr(npc, "anchors") or npc.anchors is None:
         npc.anchors = []
 
@@ -530,7 +527,12 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
 
     # --- Update motivation manager ---
     urgency_delta = min(int(anchor.weight or 1), 3)
-    npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
+    
+    if anchor.name != "obtain_ranged_weapon":
+        npc.motivation_manager.update_motivations(
+            motivation_type=anchor.name,
+            urgency=urgency_delta
+        )
 
     # --- Register anchor in NPC memory once ---
     memory_entry = MemoryEntry(

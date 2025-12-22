@@ -41,6 +41,7 @@ def setup_game():
 
     reassign_shop_names_after_character_creation()
     link_family_shops(game_state)
+    #here
     debug_display_all_shops(all_regions)
     
     print(f"Game setup complete. Total characters: {len(game_state.all_characters)}")
