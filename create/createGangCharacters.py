@@ -112,7 +112,7 @@ def create_gang_characters(faction, all_regions):
             break """
 
     # Captains
-    for _ in range(random.randint(0, 0)):#2,3
+    for _ in range(random.randint(0, 0)):#not instantiating
         status = CharacterStatus()
         status.set_status("criminal", FactionStatus(StatusLevel.MID, "Captain"))
         
@@ -154,7 +154,7 @@ def create_gang_characters(faction, all_regions):
             game_state.extant_family_names.append(family_name)
 
     # Gang Members
-    for _ in range(random.randint(1,1)):#5, 10
+    for _ in range(random.randint(2,3)):#What? Why is there more than 1 GangMember instantiating?
         status = CharacterStatus()
         status.set_status("criminal", FactionStatus(StatusLevel.LOW, "Ganger"))
         

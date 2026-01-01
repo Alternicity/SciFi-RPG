@@ -11,10 +11,11 @@
     high-impact behaviours.
     """
 
+#capability filters
 def role(npc):
     r = getattr(npc, "debug_role", None) or "background"
     if r not in ROLE_PERMISSIONS:
-        return "background"
+        return "background"#defaults to "background" at lookup time
     return r
 
 

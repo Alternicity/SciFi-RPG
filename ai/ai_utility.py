@@ -1,14 +1,15 @@
-#ai_utility.py
+#ai.ai_utility.py
 
 from ai.ai_base import BaseAI
-from character_thought import Thought
+from character_thought import Thought, FailedThought
 from character_think_utils import social_thoughts
 from actions.npc_actions import visit_location_auto, idle_auto
 from character_memory import Memory
 from time import time
 
-from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation
-from collections import defaultdict
+from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation, select_best_anchor, deduplicate_anchors
+
+from collections import defaultdict, deque
 from worldQueries import get_region_knowledge
 from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print, debug_once
@@ -26,66 +27,96 @@ class UtilityAI(BaseAI):
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
 
-
-#placeholder  code:
     def choose_action(self, region):
         npc = self.npc
+        anchor = npc.current_anchor
 
-        #commented out due to not defined items. this allows visiting
-        """ allow_visit = False
-
-        if motivation:
-            allow_visit = ROLE_PERMISSIONS[role(npc)].get("visit", False)
-
-            if motivation.type in ("eat", "work", "have_fun", "shakedown", "rob"):
-                allow_visit = allow_visit and True """
-
-        motivations = npc.motivation_manager.get_urgent_motivations()
-        if not motivations:
+        if not anchor:
             return {"name": "idle"}
 
-        top = npc.motivation_manager.get_highest_priority_motivation()
-        mtype = top.type
+        target = anchor.resolve_target_location()
+        if target and npc.location != target:
+            return {
+                "name": "visit_location_auto",
+                "params": {"destination": target}
+            }
 
-        # === 2. Basic Need: Procure Food ===
-        if mtype == "procure_food" or mtype == "eat":
-            return self._choose_procure_food(npc)
-        
-
-        # === 3. Basic Need: Earn Money ===
-        if mtype == "earn_money":
-            return self._choose_earn_money(npc)
-
-        # === 4. Fun / Social / Recreation ===
-        if mtype == "have_fun":
-            return self._choose_have_fun(npc)
-
-        # === 5. Unknown → idle fallback ===
         return {"name": "idle"}
+
     
     def _choose_procure_food(self, npc):
-        # First, generate the hunger thought if necessary
-        generate_hunger_thought(npc)#line 57, generate_hunger_thought is currently marked not defined
+        # 1. Generate hunger thought
+        generate_hunger_thought(npc)
 
-        # Use semantic knowledge for food sources
-        food_sources = npc.mind.memory.food_sources
-        if food_sources:
-            debug_print(npc, f"[FOOD_MEM] Known food sources: "f"{[(m.region, m.locations) for m in npc.mind.memory.semantic.get('food_locations', [])]}", category="food")
+        # 2. HARD GUARD — memory system not yet actionable
+        mem = npc.mind.memory
 
-            best = food_sources.best_source()  # Pick the best food source
-            if best and best.location_ref:
-                debug_print(npc, f"[FOOD] Best food source found: {best.location_ref.name}", category="food")
-                return {
-                    "name": "visit_location_auto",
-                    "params": {"destination": best.location_ref}
-                }
+        if not hasattr(mem, "semantic"):
+            debug_print(
+                npc,
+                "[FOOD] No semantic memory available",
+                category="food"
+            )
+            return {"name": "idle"}
 
-        debug_print(npc, f"[FOOD_MEM] Recalled food regions: "f"{[(m.region, m.locations) for m in food_sources]}", category="food")
+        food_kb = mem.semantic.get("food_locations")
+        if not food_kb:
+            debug_print(
+                npc,
+                "[FOOD] No food location knowledge yet",
+                category="food"
+            )
+            return {"name": "idle"}
 
-        # Fallback if no food source found
-        debug_print(npc, "[FOOD] No food source found, NPC is idling.", category="food")
+        debug_print(
+            npc,
+            f"[FOOD] Hunger present; food knowledge exists ({len(food_kb)} regions)",
+            category="food"
+        )
+
+        # 3. TC2 STOP POINT — resolution via anchors later
         return {"name": "idle"}
 
+    def generate_motivation_thoughts(self):
+        npc = self.npc
+        top_motivations = npc.motivation_manager.get_top_motivations(n=2)
+
+        for m in top_motivations:
+            if not npc.mind.has_thought_with_tag(m.type):
+                npc.mind.add_thought(
+                    Thought(
+                        subject=m.type,
+                        content=f"I need to {m.type.replace('_', ' ')}.",
+                        urgency=m.urgency,
+                        tags=[m.type, "need"]
+                    )
+                )
+
+    def select_current_anchor(self):
+        npc = self.npc
+
+        anchors = getattr(npc, "anchors", None)
+        if not anchors:
+            debug_print(npc, "[ANCHOR] No anchors available", category="anchor")
+            npc.current_anchor = None
+            return
+
+        selected = select_best_anchor(npc, anchors)
+
+        if selected:
+            npc.current_anchor = selected
+            debug_print(
+                npc,
+                f"[ANCHOR] Selected anchor: {selected.name}",
+                category="anchor"
+            )
+        else:
+            npc.current_anchor = None
+            debug_print(
+                npc,
+                "[ANCHOR] No suitable anchor selected",
+                category="anchor"
+            )
 
     def _choose_earn_money(self, npc):
         wp = npc.employment.workplace
@@ -99,35 +130,34 @@ class UtilityAI(BaseAI):
         return {"name": "idle"}
     
     def _choose_have_fun(self, npc):
+        """
+        TC2 stub:
+        Fun is not spatially resolved yet.
+        Allow only social fun or idle.
+        """
+        # HARD GUARD — TC2 placeholder
+        if not hasattr(npc, "fun_prefs") or npc.fun_prefs is None:
+            debug_print(
+                npc,
+                "[FUN] Fun system not initialized — skipping have_fun",
+                category="fun"
+            )
+            return {"name": "idle"}
+
         prefs = npc.fun_prefs or {}
 
-        # 1. Social fun: meet a friend
+        # 1️⃣ Social fun (safe)
         if prefs.get("social", 0) > 5:
-            friend = npc.get_close_friend()
-            if friend:
+            friend = npc.get_close_friend() if hasattr(npc, "get_close_friend") else None
+            if friend and hasattr(friend, "location"):
                 return {
                     "name": "visit_location_auto",
                     "params": {"destination": friend.location}
                 }
 
-        # 2. Location-based fun
-        fav_loc = npc.world.find_location_matching_fun_prefs(prefs)
-        if fav_loc:
-            return {
-                "name": "visit_location_auto",
-                "params": {"destination": fav_loc}
-            }
-
-        # 3. Object-based fun (retail therapy)
-        if prefs.get("shopping", 0) > 5:
-            shop = npc.world.find_nearest_location_with_tag(npc.location, "shop")
-            if shop:
-                return {
-                    "name": "visit_location_auto",
-                    "params": {"destination": shop}
-                }
-
+        # 2️⃣ Everything else disabled for now
         return {"name": "idle"}
+
 
     def execute_action(self, action, region):
 
@@ -349,6 +379,34 @@ class UtilityAI(BaseAI):
                 category="anchor"
             )
 
+        for thought in npc.mind.thoughts:
+            if (
+                thought.subject == "hunger"
+                and "intention" in thought.tags
+                and not npc.current_anchor
+            ):
+                anchor = Anchor(
+                    name="eat",
+                    type="motivation",
+                    weight=thought.urgency,
+                    priority=1.0,
+                    tags=["food", "eat"],
+                    desired_tags=["food"],
+                    owner=npc,
+                    source=thought,
+                )
+
+                npc.current_anchor = anchor
+
+                debug_print(
+                    npc,
+                    f"[ANCHOR] Hunger promoted to FoodAnchor (urgency={thought.urgency})",
+                    category="anchor"
+                )
+
+                break  # one anchor per tick
+
+
         # Boost motivation
         anchor_weight = getattr(anchor, "weight", 1.0)
         top_motive = getattr(self.npc.motivation_manager, "top_motivation", None)
@@ -370,13 +428,12 @@ class UtilityAI(BaseAI):
         set_attention_focus(npc, anchor=None, thought=strongest, character=None)
         npc.default_focus = anchor
         
-        if npc.is_test_npc:
-            debug_print(
-                f"[FOCUS] {npc.name} promoted thought '{strongest.content}' "
-                f"→ anchor '{anchor.name}' (urgency +{urgency_delta})",
-                category="think"
-            )
-            print(f"[FOCUS] From promote_thoughts {self.npc.name}'s attention focused on: {self.npc.mind.attention_focus}")
+        debug_print(
+            npc,
+            f"Promoted thought '{strongest.content}' → anchor '{anchor.name}' "
+            f"(urgency +{urgency_delta})",
+            category="think"
+        )
 
     
 
@@ -402,14 +459,24 @@ class UtilityAI(BaseAI):
             #call trigger just_got_off_shift=True
             
 
-    def deduplicate_thoughts_by_type(thoughts):
+    def deduplicate_thoughts_by_type(self, thoughts):
         #call it: After thoughts are generated from percepts, before promotions happen
-        #do we want all thoghts of the same type to get de duped?
+        #do we want all thoughts of the same type to get de duped?
         #Should the npc notice that some thoughts are recurrent?
+
+        """
+        Cognitive hygiene: keep strongest thought per type.
+
+
+        Future versions may record recurrence frequency here
+        to support metacognition, habits, or obsession formation.
+        See also def deduplicate_thoughts()
+        """
         seen = {}
         for t in thoughts:
-            if t.type not in seen or t.urgency > seen[t.type].urgency:
-                seen[t.type] = t
+            key = t.tags[0] if t.tags else "misc"
+            if key not in seen or t.urgency > seen[key].urgency:
+                seen[key] = t
         return list(seen.values())
 
     def evaluate_candidates_with_anchor(npc, region):
@@ -417,11 +484,7 @@ class UtilityAI(BaseAI):
         for loc in candidates:
             #score = visit_to_xyz_anchor.compute_salience_for(loc, npc)
             pass 
-            #to get region to be defined here.
-            #I added npc and region to the parameters.
-            #visit_to_rob_anchor remains marked an not defined.
-            #If I import that here is there a risk of circular import problems?
-            #can we get it via npc.current_anchor.visit_to_rob_anchor ?
+
 
     def recall_location_with_tags(npc, required_tags: list, min_salience=0.5):
         memories = npc.mind.memory.query_memory_by_tags(required_tags)
@@ -482,7 +545,13 @@ class UtilityAI(BaseAI):
 
     def think(self, region):
         from region.region import Region
-        #tmp if/print block for debug
+        percepts = self.npc.get_percepts()
+
+        self.generate_motivation_thoughts()
+        self.ensure_anchors_from_motivations()
+        self.handle_failed_anchors()
+        self.select_current_anchor()
+
         if not isinstance(region, Region):
             print(f"[DEBUG] {self.npc.name} UtilityAI def think calling observe with region={region}, location={self.npc.location}")
             print(f"[UtilityAI] Bad region: {region} ({type(region).__name__}) for {self.npc.name}")
@@ -499,22 +568,32 @@ class UtilityAI(BaseAI):
         if not motivations:
             #print(f"[THINK] {self.npc.name} has no urgent motivations.")
             return
+        
         npc=self.npc
-        debug_print(npc, f"[MOTIVES] {npc.motivation_manager.get_motivations()}", category="think")
+
+        if not getattr(npc, "current_anchor", None):
+            motive = npc.motivation_manager.get_highest_priority_motivation()
+            if motive:
+                anchor = create_anchor_from_motivation(npc, motive)
+                if anchor:
+                    npc.current_anchor = anchor
+
+        deduplicate_anchors(npc)
+
 
         # Examine episodic memory for repeated events
         episodic_memories = self.npc.mind.memory.get_episodic()
         self.examine_episodic_memory(episodic_memories)
         #logic to do something with them
 
-        percepts = list(self.npc.get_percepts()) #get_percepts.values? Re check this
+        #percepts = list(self.npc.get_percepts()) 
+        #get_percepts.values? Re check this
 
-        for i, percept in enumerate(percepts):
-            pass
-            #print(f"[DEBUG] From UtilityAI, think() Percept[{i}]: {type(percept)} {percept}")
-            #verbose
+        """ for i, percept in enumerate(percepts):
+            pass """
+            
 
-        candidate_thoughts = [] #candidate_thoughts not accesssed
+        """ candidate_thoughts = []
         for motivation in motivations:
             anchor = create_anchor_from_motivation(self.npc, motivation)
             for percept in percepts:
@@ -530,30 +609,51 @@ class UtilityAI(BaseAI):
                     ))
                     self.npc.mind.add_thought(thought)
                     debug_print(self.npc, f"[THOUGHT CREATED] subject={thought.subject} content={thought.content} urgency={thought.urgency}", category="think")
-                    
-                    if debug_once("food_memory", npc):
-                        debug_print(npc, f"[MEMORY] food_locations={npc.mind.memory.semantic.get('food_locations')}", category="memory")
+                     """
+        debug_once(
+            "food_memory",
+            npc,
+            f"[MEMORY] food_locations={npc.mind.memory.semantic.get('food_locations')}",
+            category="memory"
+        )
 
 
-                    thoughts = self.npc.mind.get_all()
-                    self.deduplicate_thoughts_by_type(thoughts)
-                    self.npc.mind.remove_thought_by_content("No focus")
+
+        thoughts = self.npc.mind.get_all()
+        self.deduplicate_thoughts_by_type(thoughts)
+        self.npc.mind.remove_thought_by_content("No focus")
+        self.npc.mind.thoughts = deque(thoughts, maxlen=self.npc.mind.thoughts.maxlen)
         
-        #self.promote_thoughts()# Delete in favour of calling from simulate_hours()
-        self.generate_thoughts_from_percepts()#can we then just add the salient percepts to the parameters here?
+        self.generate_thoughts_from_percepts()
+        #can we then just add the salient percepts to the parameters here?
 
         #Add a function for this:
         social_thoughts(self)
-        
-        # 🔹 Decision + action (minimal)
-        action = self.choose_action(region)
-        if action:
-            self.execute_action(action, region)
+        if not npc.current_anchor:
+            npc.current_anchor = self.select_current_anchor(npc)
+
 
         print(f"[DEBUG] From UtilityAI, def think()")
         print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
         print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
         print(f"[DEBUG] Thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
+
+    def handle_failed_anchors(self):
+        npc = self.npc
+        anchor = npc.current_anchor
+        if not anchor:
+            return
+
+        if anchor.resolve_target_location() is None:
+            if not npc.mind.has_thought_with_tag("planning"):
+                npc.mind.add_thought(
+                    FailedThought(
+                        content=f"I want to {anchor.name}, but I don't know how.",
+                        cause="anchor_unresolved",
+                        urgency=getattr(anchor, "urgency", 5),
+                        tags=["planning", "frustration", anchor.name]
+                    )
+                )
 
     def resolve_percept_target_for_anchor(self, anchor, required_tags=None):
         """
@@ -592,6 +692,16 @@ class UtilityAI(BaseAI):
             return scored[0][0]  # best origin
         return None
 
+    def ensure_anchors_from_motivations(self):
+        npc = self.npc
+        motivations = npc.motivation_manager.get_top_motivations()
+
+        for m in motivations:
+            if not any(a.name == m.type for a in npc.anchors):
+                anchor = create_anchor_from_motivation(npc, m)
+                if anchor:
+                    npc.anchors.append(anchor)
+
 
     def evaluate_turf_war_status(self, region_knowledge):
         # Basic version — maybe no-op or minimal response
@@ -624,13 +734,15 @@ class UtilityAI(BaseAI):
     def generate_thoughts_from_percepts(self):
         npc = self.npc
         percepts = list(npc.observation_component._percepts.values())
+        anchor = getattr(npc, "current_anchor", None)
 
         motivations = npc.motivation_manager.get_urgent_motivations()
         if not motivations:
             return
 
-        for motivation in motivations:
-            anchor = create_anchor_from_motivation(self.npc, motivation)
+        for motivation in motivations:#motivation currently not accessed
+            #anchor = create_anchor_from_motivation(self.npc, motivation)
+            #removal cadidate. "Anchors are not percept-driven for TC2."
 
             for percept in percepts:
                 
@@ -646,7 +758,7 @@ class UtilityAI(BaseAI):
                     normalized = _normalize_percept(percept.get("data", percept), npc)
 
                     # compute_salience may return None or a number — normalize and guarantee numeric
-                    raw_sal = compute_salience(normalized, npc, anchor)#now in ai_utility.py
+                    raw_sal = compute_salience(normalized, npc, anchor) if anchor else 0.0
                     salience = normalize_salience(raw_sal)
                     if not isinstance(salience, (int, float)):
                         # Fallback to zero salience to prevent TypeErrors downstream
@@ -670,7 +782,7 @@ class UtilityAI(BaseAI):
                     origin=origin_obj,
                     urgency=urgency,
                     tags=tags,#check!
-                    source=anchor  # useful for later motivation tracking
+                    source=anchor if anchor else None
                 )
 
                 if not npc.mind.has_similar_thought(thought):
@@ -684,7 +796,7 @@ class UtilityAI(BaseAI):
 
                 self.npc.mind.remove_thought_by_content("No focus")
 
-    def evaluate_thoughts(self): #remove or override in subclasses
+    def evaluate_thoughts(self): #called from simulate_day.py and ai_gang.py
         """Loop through unresolved thoughts and increase motivations accordingly."""
         #Eventually this should evolve into a utility-based appraisal. I think
         npc = self.npc
@@ -765,7 +877,7 @@ class UtilityAI(BaseAI):
 def generate_location_visit_thought(npc, location, enabling_motivation=None):
     """
     Creates a thought suggesting visiting a specific location to satisfy a motivation.
-    Designed for general-purpose NPCs (non-criminal).
+    designed for non-criminal npcs
     """
     debug_print(npc, f"[THINK] Generating thought to visit {location.name}", category="think")
     
@@ -780,7 +892,7 @@ def generate_location_visit_thought(npc, location, enabling_motivation=None):
     # Expand this as your world adds more location attributes.
     if getattr(location, "serves_food", False):
         tags.append("food")
-        reasons.append("they serve food")
+        reasons.append("they serve food")#reasons doesnt exists anywhere else in the program
     if getattr(location, "provides_rest", False):
         tags.append("rest")
         reasons.append("it’s a place to rest")

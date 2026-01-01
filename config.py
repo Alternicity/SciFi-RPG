@@ -2,7 +2,8 @@
 # Global game settings and constants
 
 DEBUG_MODE = True  # Master switch for all debug printing
-
+DEBUG_TC1 = False         # legacy TC1 narration
+DEBUG_TC2 = True          # current focus
 
 """ ENABLED_DEBUG_CATEGORIES = {"think", "salience", "memory", "action", "motivation", 
                             "rkprint", "decision", "anchor", "tick", "insight"} """
@@ -12,9 +13,7 @@ ENABLED_DEBUG_CATEGORIES = {"test_npc"}  # Only logs for test NPCs
 # Individual subsystem toggles
 SHOW_TICK_LOGS = True
 
-# Proper NPC instance will be assigned at runtime
-#DEBUG_NPC_ONLY = None
-#deprecated if code works
+
 
 # Test NPC visibility
 SHOW_TEST_NPC_LOGS = True   # keep this True so test NPCs still show
@@ -27,7 +26,7 @@ SHOW_FACTION_LOGS = True
 SHOW_ROLE_FLAGS = True
 SHOW_PRIMARY_LOGS = True
 SHOW_SECONDARY_LOGS = True
-
+SHOW_ATTRIBUTE_TEST_LOGS = True
 SHOW_NPC_THINK_LOGS = True
 SHOW_ACTION_LOGS = True
 SHOW_MEMORY_LOGS = True

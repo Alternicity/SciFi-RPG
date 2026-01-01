@@ -3,6 +3,53 @@
 #DONT import Shop here, use lazy import
 #DONT IMPORT from menu_utils HERE, USE LAZY
 
+"""
+DEBUG / NARRATION SYSTEM — IMPORTANT NOTES
+
+There are TWO distinct narration gates. Do not merge them.
+
+1) can_narrate(entity)
+----------------------
+Local permission check.
+
+Answers:
+    "Is this specific entity allowed to narrate internal reasoning?"
+
+Typical usage:
+    - Player character
+    - Primary debug NPC
+    - Focused test avatar
+
+This function MUST remain simple and stable.
+It does NOT know about test cases, modes, or global flags.
+
+2) narration_enabled(entity=None, *, tc1=False)
+-----------------------------------------------
+Global policy gate.
+
+Answers:
+    "Is narration allowed at all right now?"
+
+Controls:
+    - DEBUG_MODE
+    - DEBUG_TC1 (legacy TC1 output)
+
+Usage examples:
+    narration_enabled()                  # system messages
+    narration_enabled(npc)               # gated NPC narration
+    narration_enabled(npc, tc1=True)     # TC1-only narration
+
+Rule of thumb:
+--------------
+- can_narrate() decides WHO may narrate
+- narration_enabled() decides WHETHER narration is active
+
+TC1 output can be fully restored by:
+    DEBUG_MODE = True
+    DEBUG_TC1 = True
+"""
+
+
 import copy
 import random
 from visual_effects import loading_bar, RED, color_text
@@ -17,7 +64,7 @@ from weapons import Weapon, RangedWeapon
 #needed for execute_actions
 from events import Robbery
 from worldQueries import get_viable_robbery_targets
-from debug_utils import debug_print
+from debug_utils import debug_print, can_narrate
 
 def execute_action(npc, action, region):
     """Fallback to the NPC's AI execute_action if available."""
@@ -304,13 +351,20 @@ def enjoy(character, location, object, otherCharacter):
     # character or group of them tries to raise their fun attribute which
     #might also raise their health and maybe morale
 
+#see also not at top of file
 def steal(character, location, target_item=None, simulate=False, verbose=True):
     import copy
     from attribute_tests import adversarial_attribute_test
     from weapons import RangedWeapon, Weapon
 
     
-    debug_print(character, f"\n>>> {character.name} is attempting to steal at {location.name} <<<", category="action")
+    if getattr(character, "debug_role", None) == "primary":
+        debug_print(
+            character,
+            f"Attempting to steal at {location.name}",
+            category="action"
+        )
+
 
     # Quick guard
     if not hasattr(location, 'inventory') or not getattr(location.inventory, "items", None):
@@ -383,6 +437,11 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
         debug_print(character, f"Modifiers - Attempt: {attempt_mod}, Resistance: {resistance_mod}", category="action")
 
     # Run the adversarial test ONCE
+    verbose = can_narrate(character)#call 1
+    #this line could read:
+    #narrate = can_narrate(character)
+    #for improved readability
+
     success = adversarial_attribute_test(
         attempt_value=stealth,
         resistance_value=observation,
@@ -392,6 +451,14 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
         simulate=simulate,
         verbose=verbose
     )
+    if verbose:
+        debug_print(
+            None,
+            f"Intimidation result → success={success}",
+            category="event"
+        )
+    if can_narrate(character):#call 2
+        debug_print(character, "Tries to steal ...", category="action")
 
     if not success:
         debug_print(character, f"{character.name} FAILED to steal the {item_name} from {location.name}.", "category = action")

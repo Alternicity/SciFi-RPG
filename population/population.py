@@ -13,7 +13,12 @@ def summarize_civilians(civilians, regions):
     most_populous_race, pop_count = race_counts.most_common(1)[0]
 
     # --- 2. Partner statistics ---
-    partnered = [c for c in civilians if getattr(c, "partner", None)]
+    partnered = [
+        c for c in civilians
+        if len(c.social_connections.get("partners", [])) > 0
+    ]
+
+
 
     partner_race_counts = Counter(c.race for c in partnered)
     if partner_race_counts:
@@ -24,7 +29,8 @@ def summarize_civilians(civilians, regions):
     # --- 3. Richest race ---
     race_wealth = defaultdict(int)
     for c in civilians:
-        race_wealth[c.race] += c.wallet.balance
+        if c.wallet:
+            race_wealth[c.race] += c.wallet.balance
 
     richest_race = max(race_wealth, key=race_wealth.get)
     richest_race_amount = race_wealth[richest_race]
@@ -39,7 +45,8 @@ def summarize_civilians(civilians, regions):
     richest_region_amount = region_wealth[richest_region]
 
     # --- Print block ---
-    debug_print(None, f"\n====== CIVILIAN SUMMARY ======\n", category = "population")
+    debug_print(None, "====== CIVILIAN SUMMARY ======", category="population")
+
 
     debug_print(None, f"Total civilians: {len(civilians)}", category = "population")
 
@@ -52,4 +59,5 @@ def summarize_civilians(civilians, regions):
     debug_print(None, f"Richest region: {richest_region} "
           f"(total wealth {richest_region_amount})", category = "population")
 
-    debug_print(None, "\n==============================\n", category = "population")
+    debug_print(None, "==============================", category="population")
+

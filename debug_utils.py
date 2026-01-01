@@ -1,5 +1,4 @@
 # debug_utils.py
-from debug_registry import get_debug_npc
 from create.create_game_state import get_game_state
 game_state = get_game_state()
 
@@ -10,6 +9,7 @@ from config import (
     SHOW_FACTION_LOGS,
     SHOW_PRIMARY_LOGS,
     SHOW_SECONDARY_LOGS,
+    SHOW_ATTRIBUTE_TEST_LOGS,
     SHOW_CREATE_LOGS,
     SHOW_TEST_NPC_LOGS,
     SHOW_TICK_LOGS,
@@ -56,6 +56,7 @@ DEBUG_FLAGS = {
     "placement": SHOW_PLACEMENT_LOGS,
     "test_npc": SHOW_TEST_NPC_LOGS,
     "tick": SHOW_TICK_LOGS,
+    "attribute": SHOW_ATTRIBUTE_TEST_LOGS,
     "think": SHOW_NPC_THINK_LOGS,
     "action": SHOW_ACTION_LOGS,
     "memory": SHOW_MEMORY_LOGS,
@@ -86,86 +87,63 @@ DEBUG_FLAGS = {
     # NEW — role filtering is a **parallel system**, not inside DEBUG_FLAGS
 }
     
-# A second parallel dict for role filtering:
+# A second parallel dict for role filtering OUTPUT
 ROLE_FILTERS = {
-    "primary": True,
-    "secondary": True,
-    "civilian_test": True,
-    "test_npc": False,
+    "primary": False,#set to False for test case 2
+    "secondary": False,
+    "civilian_worker": True,
+    "civilian_liberty": True,
+    
 }
 
-def npc_is_allowed(npc):
-    """
-    Returns True if this NPC should have its debug information printed.
-    """
-    if npc is None:
-        return False
+""" Why move ROLE_FILTERS into config (per test case)?
+Debug policy becomes hot-swappable
 
-    debug_npc = get_debug_npc()
+Later, you can do things like:
 
-    # If a global debug NPC is set, enforce it
-    if debug_npc is not None:
-        return npc is debug_npc
+game_state.load_debug_profile("tc2_civilians")
 
-    # Otherwise fallback to per-npc flag
-    return getattr(npc, "is_test_npc", False)
-
-def should_display_npc(npc):
-    # System / non-NPC messages
-    if npc is None:
-        return True
-
-    # Defensive: ignore non-character inputs
-    if not hasattr(npc, "__dict__"):
-        return False
-
-    # Explicit per-NPC flag
-    if getattr(npc, "is_test_npc", False):
-        return True
-
-    # Role-based filtering
-    """ role = getattr(npc, "debug_role", None)
-    if role and ROLE_FILTERS.get(role, False):
-        return True """
-
-    return False
-
+Which swaps:
+ROLE_FILTERS
+category flags
+maybe even display verbosity
+That is impossible if filters are hard-coded. """
 
 #categories act like tags.
 #ALL categories in the print must be enabled.
+# NOTE: is_test_npc is deprecated.
+# Do not use for debug filtering; use debug_role + ROLE_FILTERS instead.
 def debug_print(npc=None, message="", category="general", level="DEBUG"):
-    if npc and not should_display_npc(npc):
-        return
     if not DEBUG_MODE:
         return
+    if not message:
+        return
+    gs = get_game_state()
 
-    # ----- Resolve categories -----
-    if isinstance(category, str):
-        categories = [category]
-    else:
-        categories = list(category)
+    # ---- System-level message ----
+    if npc is None or not hasattr(npc, "id"):
+        categories = [category] if isinstance(category, str) else list(category)
+        for cat in categories:
+            if cat in DEBUG_FLAGS and not DEBUG_FLAGS[cat]:
+                return
+        print(f"[{','.join(categories)}] System: {message}")
+        return
 
-    # ----- Category filtering -----
+    # ---- NPC-gated message ----
+    if gs and not gs.should_display_npc(npc):
+        return
+
+    categories = [category] if isinstance(category, str) else list(category)
     for cat in categories:
         if cat in DEBUG_FLAGS and not DEBUG_FLAGS[cat]:
             return
 
-    # role filtering
-    if npc is not None:
-        role = getattr(npc, "debug_role", None)
-        if role is not None and not ROLE_FILTERS.get(role, False):
-            return
-
-    # 🔥 NPC filter: Only print for the selected NPC
-    from debug_registry import get_debug_npc
-    debug_npc = get_debug_npc()
-
-    if debug_npc is not None and npc is not debug_npc:
+    role = getattr(npc, "debug_role", None)
+    if role is not None and not ROLE_FILTERS.get(role, False):
         return
 
-    # proceed to print
-    npc_name = getattr(npc, "name", "System")
-    print(f"[{','.join(categories)}] {npc_name}: {message}")
+    print(f"[{','.join(categories)}] {npc.name}: {message}")
+
 
 
 def add_character(location, char):
@@ -181,7 +159,7 @@ def add_character(location, char):
     1. Set new location on the character
     2. Call add_character() """
 
-#marked for deletion, not currently called
+#marked for deletion
 def diagnose_civilian_location_integrity(region_civilians, all_civilians):#region_civilians is not accessed
     """
     Checks for duplicates and mismatched location references across civilians.
@@ -214,3 +192,23 @@ def debug_once(key, npc, message, category="debug"):
         return
     _DEBUG_ONCE_KEYS.add(key)
     debug_print(npc, message, category=category)
+
+def can_narrate(npc):#older, now deprecated?
+    return getattr(npc, "debug_role", None) == "primary"
+
+from config import DEBUG_MODE, DEBUG_TC1
+
+def narration_enabled(entity=None, *, tc1=False):
+    """
+    Central gate for narration/debug output.
+    """
+    if not DEBUG_MODE:
+        return False
+
+    if tc1 and not DEBUG_TC1:
+        return False
+
+    if entity is None:
+        return True
+
+    return getattr(entity, "debug_role", None) == "primary"

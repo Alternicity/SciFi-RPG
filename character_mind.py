@@ -7,6 +7,7 @@ import random
 from character_thought import Thought
 from character_memory import Memory
 from debug_utils import debug_print
+from create.create_game_state import get_game_state
 
 class Mind:
     def __init__(self, owner=None, capacity=None):
@@ -17,6 +18,7 @@ class Mind:
         self.thoughts = deque(maxlen=capacity)
         self.corollaries = deque(maxlen=capacity)
         self.memory = Memory()
+        self.recurrent_thought_traces = {}  # thought_type -> count (passive, unused for now)
         self.obsessions: List[Obsession] = []
         self.max_thinks_per_tick=1
         self.default_focus = None #baseline
@@ -62,6 +64,18 @@ class Mind:
         for t in removed:
             debug_print(self.owner, f"[MIND] Removed thought: {t.content}", "think")
 
+    def has_thought_with_tag(self, tag: str) -> bool:
+        """
+        Returns True if any current thought has the given tag.
+        """
+        for thought in self.thoughts:
+            if hasattr(thought, "tags") and tag in thought.tags:
+                debug_print(
+                    f"[THOUGHT CHECK] {self.owner.name} has thought with tag: '{tag}'",
+                    category="think"
+                )
+                return True
+        return False
 
     def has_thought_content(self, content_substring: str) -> bool:
         """
@@ -125,7 +139,12 @@ class Mind:
         Optionally, can be enhanced to merge/update existing thoughts.
         """
 
-        print("[DEBUG] add_thought called; content repr:", repr(thought.content))
+        debug_print(
+            self.owner,
+            f"add_thought called; content repr: {repr(thought.content)}",
+            category="think"
+        )
+
 
         # ensure mind knows its owner
         owner = getattr(self, "owner", None)
@@ -180,7 +199,13 @@ class Mind:
 
     def clear_stale_percepts(self):
         """Placeholder: future logic will remove percepts that no longer reflect the game world."""
+
+        gs = get_game_state()
+        if gs is not None and not gs.should_display_npc(self.owner):#GATE
+            return
+
         debug_print(self.owner, "[MIND] clear_stale_percepts() called — no action (placeholder)", "percept")
+
         # In the future, check if any percept's object no longer exists or changed region/location.
         return
         #Is mind the right place for this? Where are percepts stored?

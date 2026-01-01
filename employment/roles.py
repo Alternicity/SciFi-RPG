@@ -9,7 +9,7 @@ from base.location import Location
 class EmployeeRole:
     name: str
     responsibilities: list
-    priority: int = 5  # 1=critical, 10=low urgency
+    priority: int = 5  
 
     def get_tasks(self, npc: "Character", workplace: "Location") -> List[str]:
         """Return list of tasks NPC should perform this tick."""

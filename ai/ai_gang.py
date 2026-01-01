@@ -33,18 +33,7 @@ class GangCaptainAI(UtilityAI):
         self.npc.mind.remove_thought_by_content("No focus")
 
     def choose_action(self, region):
-
-        if self.npc.is_test_npc:
-            top_motivation = self.npc.motivation_manager.get_highest_priority_motivation()
-            print(f"[CHOOSE_ACTION] {self.npc.name} motivation: {top_motivation.type} (urgency: {top_motivation.urgency})")
-
-        # Step 1: Check if subordinates are idle, need tasks
-        if self.should_assign_tasks():
-            print(f"[CaptainAI] {self.npc.name} decides to assign tasks.")
-            self.assign_tasks(region)
-
-        # Step 2: Perform own utility action like a Member
-        return super().choose_action(region)
+        return
 
     def should_assign_tasks(self):
         # Very simple rule: assign tasks if at least one subordinate is idle
@@ -83,15 +72,6 @@ class GangMemberAI(UtilityAI):
 
         npc = self.npc
         to_remove = []
-
-        """   if not npc.is_test_npc:
-            return
-
-        if not getattr(npc, "is_test_npc", False):
-            return """
-
-        """ if npc.debug_role != "primary":
-            return """
 
         if not ROLE_PERMISSIONS[role(npc)]["anchor_creation"]:
             return
@@ -228,12 +208,16 @@ class GangMemberAI(UtilityAI):
         anchor = getattr(npc, "current_anchor", None)
         if not anchor and npc.mind.attention_focus:
             anchor = create_anchor_from_thought(npc, npc.mind.attention_focus)
-            debug_print(npc, f"[ANCHOR] Created from attention focus: {anchor.name}", category="anchor")
+
+            #deprecated in UtilityAI
+            #debug_print(npc, f"[ANCHOR] Created from attention focus: {anchor.name}", category="anchor")
         elif not anchor:
             motive = npc.motivation_manager.get_highest_priority_motivation()
             if motive:
                 anchor = create_anchor_from_motivation(npc, motive)
-                debug_print(npc, f"[ANCHOR] Created from motivation: {anchor.name}", category="anchor")
+                
+                #deprecated in UtilityAI
+                #debug_print(npc, f"[ANCHOR] Created from motivation: {anchor.name}", category="anchor")
 
         npc.current_anchor = anchor
         
@@ -480,8 +464,12 @@ class GangMemberAI(UtilityAI):
         memory_entry = encode_weapon_shop_memory(self.npc, location)
 
 
-        if self.npc.is_test_npc:
-            print(f"[MEMORY ADD] {self.npc.name} added memory of {location.name} selling weapons.") 
+        if npc.debug_role == "primary":
+            debug_print(
+                npc,
+                f"Added memory: {location.name} sells weapons",
+                category="memory"
+            ) 
             self.npc.mind.memory.add_semantic_unique(
             "shop_knowledge", memory_entry, dedupe_key="details"
         )
@@ -646,7 +634,7 @@ class GangMemberAI(UtilityAI):
         mind = npc.mind
         motives = npc.motivation_manager
 
-        if not getattr(self.npc, "is_test_npc", False):
+        if getattr(npc, "debug_role", None) != "primary":
             return
 
         game_state = get_game_state()
@@ -677,11 +665,6 @@ class GangMemberAI(UtilityAI):
 
         if ranged_weapons:
             #deprecated
-            """ if not getattr(npc, "is_test_npc", False):
-                return   # or continue, depending on structure
-
-            if npc.debug_role != "primary":
-                return """
             
             if not ROLE_PERMISSIONS[role(npc)]["anchor_creation"]:
                 return
@@ -806,7 +789,7 @@ class GangMemberAI(UtilityAI):
         # INITIAL DEBUG / CONTEXT DUMP
 
         region_knowledge = get_region_knowledge(npc.mind.memory.semantic, region.name)
-        if npc.is_test_npc:
+        if npc.debug_role == "primary":
             if region_knowledge:
                 shops = ", ".join(region_knowledge.shops) or "No shops listed"
                 debug_print(npc, f"[RK] Shops in {region.name}: {shops}", category="rkprint")
@@ -848,10 +831,11 @@ class GangMemberAI(UtilityAI):
 
         motivation = motives.get_highest_priority_motivation()
         if not motivation:
-            print(f"[THINK] No motivation found for {npc.name}")
+            debug_print(npc, f"[THINK] No motivation found for {npc.name}", category="motive")
             return
 
-        print(f"[DEBUG] Active motivation: {motivation.type} (urgency={motivation.urgency})")
+        
+        debug_print(npc, f"[MOTIVES] Active motivation: {motivation.type} (urgency={motivation.urgency})", category="motive")
 
         # CREATE ANCHOR FROM MOTIVATION
 
@@ -865,7 +849,11 @@ class GangMemberAI(UtilityAI):
         npc.current_anchor = anchor
         
         set_attention_focus(npc, anchor=anchor, thought=None, character=None)
-        print(f"[ANCHOR DEBUG] Thinking about: {anchor.name} (tags: {anchor.tags})")
+        debug_print(
+            npc,
+            f"Thinking about anchor: {anchor.name} (tags={anchor.tags})",
+            category="anchor"
+        )
 
         # THOUGHT URGENCY ADJUSTMENTS
 
@@ -985,16 +973,24 @@ class GangMemberAI(UtilityAI):
 
         # END OF THINK CYCLE LOGGING
 
-        print(f"[POST-THINK] ====== THINK CYCLE END for {npc.name} ======")
-        print(f"[POST] Focus: {getattr(mind.attention_focus, 'content', None)}")
-        #print(f"[POST] Motivations: {[m.type for m in motives.motivations]}")
+        debug_print(
+            npc,
+            "====== THINK CYCLE END ======",
+            category="think"
+        )
+        debug_print(
+            npc,
+            f"Focus: {getattr(mind.attention_focus, 'content', None)}",
+            category="think"
+        )
 
-        #converts the deque into a list before slicing:
-        #print(f"[POST] Thoughts: {[t.content for t in list(mind.thoughts)[-5:]]}")  # last 5 thoughts
-        #Cleaner way:
         debug_recent_thoughts(npc, mind)
-        npc.mind.deduplicate_thoughts(npc)#eventually ditch the npc, this is a bound method
-        print(f"[POST] Inventory: {npc.inventory.get_inventory_summary()}")
+        npc.mind.deduplicate_thoughts(npc)
+        debug_print(
+            npc,
+            f"Inventory: {npc.inventory.get_inventory_summary()}",
+            category="inventory"
+        )
 
     def evaluate_thoughts(self):
         """Gang-specific thought evaluation: promotes robbery-related thoughts to motivations.
@@ -1006,9 +1002,6 @@ class GangMemberAI(UtilityAI):
 
         npc = self.npc
         
-        """ if not getattr(npc, "is_test_npc", False):
-            return """
-
         if not ROLE_PERMISSIONS[role(npc)]["thought_to_motivation"]:
             return
         #with this secondaryGangMembers can think but not escalate that to new motivations

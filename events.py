@@ -9,7 +9,7 @@ from character_thought import Thought
 from objects.InWorldObjects import ObjectInWorld
 from visual_effects import loading_bar, RED, color_text
 from abc import ABC, abstractmethod
-from debug_utils import debug_print
+from debug_utils import debug_print, can_narrate
 from focus_utils import set_attention_focus
 from output_utils import group_reactions
 from create.create_game_state import get_game_state
@@ -51,14 +51,34 @@ class Event(ABC):
     @staticmethod
     def get_character_driven_event_outcomes(character, location=None):
         return {
-            "success": lambda: print(f"{character.name} successfully completes the action."),
-            "detected": lambda: print(f"{character.name} was spotted! Guards are alerted."),
-            "parsimony_opportunity": lambda: print(f"{character.name} notices another opportunity."),
-            "triggered_trap": lambda: print(f"{character.name} sets off a trap! Trouble ahead."),
+            "success": lambda: debug_print(
+                character,
+                "Successfully completes the action",
+                category="event"
+            ),
+
+            "detected": lambda: debug_print(
+                character,
+                "Was spotted! Guards are alerted",
+                category="event"
+            ),
+
+            "parsimony_opportunity": lambda: debug_print(
+                character,
+                f"{character.name} notices another opportunity.",
+                category="event"
+            ),
+
+            "triggered_trap": lambda: debug_print(
+                character,
+                f"{character.name} sets off a trap! Trouble ahead.",
+                category="event"
+            ),
+
             "incident": lambda: Event.handle_incident(character, location)
- 
-            
+       
         }
+    
     @staticmethod
     def trigger_event_outcome(character, event_name, location=None):
         outcomes = Event.get_character_driven_event_outcomes(character, location)
@@ -99,7 +119,7 @@ class TemplateEvent(Event):
 
     def generate_percepts(self):
         # Isolate percept logic from resolve()
-        from memory_entry import MemoryEntry
+        from memory.memory_entry import MemoryEntry
         percept = {
             "description": f"{self.name} at {self.location.name}",
             "origin": self,
@@ -261,13 +281,21 @@ class Robbery(Event):
     
     def resolve(self, simulate=False, verbose=True):
         from memory.memory_entry import MemoryEntry
-        print(f"\n[Event]: {self.description}")
+        instigator = self.instigator
+        from debug_utils import narration_enabled
+        narrate = narration_enabled(self.instigator, tc1=True)
+
+        debug_print(
+            self.instigator,
+            self.description,
+            category="event"
+        )
         self.apply(self.instigator)
 
         
 
         if not self.shopkeeper:
-            print("No shopkeeper present. Robbery proceeds unopposed.")
+            debug_print(instigator, f"No shopkeeper present. Robbery proceeds unopposed.", category="event")
             self.success = True
 
             npc = self.instigator
@@ -328,10 +356,14 @@ class Robbery(Event):
         weapon_name = weapon.name if weapon else "bare hands"
         
         intimidation_test = IntimidationTest(self.instigator, self.shopkeeper, wildcard_bonus=5)
-        success = intimidation_test.run(simulate=simulate, verbose=verbose)
+        success = intimidation_test.run(simulate=simulate)
         
-        if success:
-            print(f"{self.instigator.name} successfully {color_text('intimidates', RED)} {self.shopkeeper.name} with {weapon_name}.")
+        if getattr(self.instigator, "debug_role", None) == "primary":
+            debug_print(
+                self.instigator,
+                f"Intimidation result → success={success}",
+                category="event"
+            )
 
         # Step 2: Steal physical cash if available
         if hasattr(self.location, "cash_register"):
@@ -340,17 +372,26 @@ class Robbery(Event):
                 cashwad = register.create_cashwad()
                 self.instigator.inventory.add_item(cashwad)
 
-                print(f"{self.instigator.name} steals ${cashwad.amount} from {self.location.name}!")
+                if narrate:
+                    debug_print(
+                        instigator,
+                        f"Steals ${cashwad.amount} from {self.location.name}",
+                        category="event"
+                    )
+                else:
+                    debug_print(self.instigator, f"The register at {self.location.name} is empty.", category="event")
             else:
-                print(f"The register at {self.location.name} is empty.")
-        else:
-            print(f"{self.location.name} has no cash register.")
+                debug_print(self.instigator, f"{self.location.name} has no cash register.", category="event")
 
         if hasattr(self.location, "inventory"):
             if hasattr(self, "target_item") and self.target_item in self.location.inventory.items:
                 self.location.inventory.remove(self.target_item)
                 self.instigator.inventory.add_item(self.target_item)
-                print(f"{self.instigator.name} steals the targeted {self.target_item.name}!")
+                debug_print(
+                    self.instigator,
+                    f"Steals {self.target_item.name}",
+                    category="event"
+                )
 
             # ✅ Iterate over *item objects*, not dictionary keys
             items = list(self.location.inventory.items.values())
@@ -367,23 +408,27 @@ class Robbery(Event):
                     # Safe removal by name (Inventory guarantees name-keyed dict)
                     self.location.inventory.remove_item(item.name)
 
-                    # Give to robber
+                    # Give to instigator/robber
                     self.instigator.inventory.add_item(item)
-                    print(f"{self.instigator.name} also steals a {item.name}!")
+                    debug_print(
+                        self.instigator,
+                        f"Also steals {item.name}",
+                        category="event"
+                    )
 
                 else:
                     # ✅ Non-ObjectInWorld items trigger resistance
-                    print(f"{self.shopkeeper.name} resists the robbery attempt!")
+                    debug_print(self.instigator, f"{self.shopkeeper.name} resists the robbery attempt!", category="event")
 
                     if hasattr(self.shopkeeper, "alert"):
                         self.shopkeeper.alert(self.instigator)
                     else:
-                        print("Shopkeeper is panicking or shouting!")
+                        debug_print(self.instigator, f"Shopkeeper is panicking or shouting!", category="event")
                     # Trigger response
                     if hasattr(self.shopkeeper, "alert"):
                         self.shopkeeper.alert(self.instigator)
                     else:
-                        print("xShopkeeper is panicking or shouting!")
+                        debug_print(self.instigator, f"Shopkeeper is panicking or shouting!", category="event")
 
         # Step 4: Witnesses respond
         witnesses = self.location.list_characters(exclude=[self.instigator])
@@ -392,8 +437,7 @@ class Robbery(Event):
         reactions = []
 
         for witness in witnesses:
-            #old line
-            #witness.mind.attention_focus = self.instigator
+
             
             set_attention_focus(witness, self.instigator)
 
@@ -457,18 +501,27 @@ class Robbery(Event):
             witness.alert = True
             reactions.append((
                 witness.name,
-                "becomes alert and distressed!",
+                "becomes alert and distressed!!",
                 witness.__class__.__name__
             ))
 
         #  Print reactions once, after loop
 
-        for line in group_reactions(reactions):
-            print(line)
+        if narrate:
+            for line in group_reactions(reactions):
+                debug_print(
+                    None,
+                    line,
+                    category="event"
+                )
 
         # ✅ Hook: handle security if present
         if hasattr(self.location, "security") and self.location.security.guards:
-            print("[SECURITY] Guards are being alerted!")
+            debug_print(
+                None,
+                "Guards are being alerted!",
+                category="security"
+            )
             for guard in self.location.security.guards:
                 # Add a placeholder call for now
                 guard.respond_to_event(self)
@@ -486,6 +539,7 @@ class Robbery(Event):
 
         
     def conclude(self):
+        #lacks a filter or gate code
         debug_print(self.instigator, f"[DEBUG] Robbery at {self.location.name} is over. Returning to normal.", category ="event")
         # instigator in not present and marked as not defined
 

@@ -1,4 +1,4 @@
-#ai_utility_thought_tools
+#ai.ai_utility_thought_tools
 from character_thought import Thought, FailedThought
 from anchors.anchor_utils import Anchor
 from typing import Optional
@@ -29,6 +29,7 @@ class DoubtMixin:
     A doubt in one corollary led her to refine the pattern
     and birth a stronger Thought. """
 
+#utility functions
 def extract_anchor_from_action(action: dict) -> Optional[Anchor]:#line 108
         if "anchor" in action:
             return action["anchor"]
@@ -66,3 +67,5 @@ def generate_hunger_thought(npc):
             )
             npc.mind.add_thought(thought)
             debug_print(npc, f"[THOUGHT] Generated hunger thought: {thought.content}", category="think")
+
+

@@ -33,7 +33,7 @@ class Family:
     #add update npc.loyalties code here
 
 
-def assign_families_and_homes(game_state):
+def assign_families_and_homes(game_state):#anomalous that game_state is passed as a parameter, its was made to be global
     """
     Groups civilians into families based on family name,
     assigns each family a residential location,
@@ -98,9 +98,7 @@ def assign_families_and_homes(game_state):
             if civ not in home.characters_there:
                 home.characters_there.append(civ)
 
-        #verbose
-        #debug_print(None, f"[FAMILY] Placed {len(family.members)} {family.family_name} members at {home.name}.",category=["placement", "family", "population"])
-
+ 
     # -------------------------------
     # 3. Link partners (rough pass)
     # -------------------------------

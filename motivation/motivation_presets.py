@@ -75,7 +75,8 @@ class MotivationPresets:
             ],
 
         "Civilian": [
-                Motivation("earn_money", 3),
+                Motivation("earn_money", 3),#admitedly this has some conceptual overlap with work, but could branch into entrepreneurial or invest type 
+                #Civilian motivations
                 Motivation("have_fun", 6, status_type="corporate"),
                 Motivation("protect_family", 6),
                 Motivation("increase_status", 2),

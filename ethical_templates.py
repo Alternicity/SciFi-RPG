@@ -1,5 +1,5 @@
 #ethical_templates
-from memory_entry import memory_field_companion
+from memory.memory_entry import memory_field_companion
 
 ethical_templates = {
     "field_support_with_boundary": memory_field_companion,

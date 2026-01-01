@@ -78,7 +78,7 @@ def create_all_characters(factions, all_locations, all_regions):
 
 
     # After all civilians and locations exist:
-    families = assign_families_and_homes(game_state)
+    families = assign_families_and_homes(game_state)#anomalous that game_state is passed as a parameter, its was made to be global
     shops = [loc for loc in all_locations if getattr(loc, "is_shop", False)]
     place_civilians_in_homes(civilians, families, all_locations, shops, populate_shops_after_worldgen=True)
 

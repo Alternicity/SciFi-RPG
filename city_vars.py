@@ -20,10 +20,12 @@ class GameState:
         self.hour = 0 # 1 hour
         self.day = 1
 
-        self.primary = None
+        self.primary = None #the npc to suppress the output of
         self.secondary = None
-        self.civilian_test = None
+        self.civilian_worker = None
+        self.civilian_liberty = None
         self.debug_npcs = {}
+        self.show_background_debug = False
 
         self.state = None
         self.civilians = []
@@ -69,6 +71,21 @@ class GameState:
         self.hour = (self.hour + 1) % 24
         if self.hour == 0:
             self.day += 1
+
+    def should_display_npc(self, npc):
+        
+        if npc is None:
+            return False
+
+        if npc in self.debug_npcs.values():
+            return True
+
+        if self.show_background_debug:
+            return True
+
+        return False
+
+
 
     def set_state(self, state):
         self.state = state #State object is initialized as State, but that becomes undefined here

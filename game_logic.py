@@ -7,7 +7,7 @@ from characterActions import visit_location
 from display import (
     show_character_details,
     display_selected_character_current_region,
-    display_filtered_character_summary, display_character_Summary, display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
+    display_filtered_character_summary, display_character_summary, display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
 )
 from motivation.motivation import MotivationManager
 #MotivationManager not accessed here

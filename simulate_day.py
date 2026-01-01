@@ -3,10 +3,11 @@ import random
 from location.locations import Shop
 from create.create_game_state import get_game_state
 from ai.ai_utility import UtilityAI #not currently accessed
+from ai.behaviour_roles import role
 from events import Robbery
 from characterActions import execute_action #not currently accessed
 from summary_utils import format_location
-from display import display_region_knowledge_summary, display_percepts_table
+from display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_liberty, display_npc_vitals
 from memory.memory_entry import RegionKnowledge
 from character_thought import Thought
 from ambience.ambience_and_psy_utils import compute_location_ambience
@@ -21,7 +22,7 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
     for _ in range(num_days):
         game_state.advance_hour()
         debug_print(None, f"[TIME] Hour {game_state.hour}, Day {game_state.day}", category="tick")
-
+        debug_print(None, summarize_npc_turns(all_characters), category="tick")
         for location in all_locations:
                     location.recent_arrivals.clear()
 
@@ -36,13 +37,13 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                 # OBSERVE
                 npc.observe(region=region, location=npc.location)
 
-                if npc is debug_character:
-                    debug_print(npc, "This is a test NPC log.", category="think")
-                    #or here?
+                gs = get_game_state()
+                
+                if gs.day == 1 and gs.hour == 1:
+                    if npc in gs.debug_npcs.values():
+                        display_npc_vitals(npc)
 
-                    
-
-                if npc.is_test_npc or npc is debug_character:
+                if npc in gs.debug_npcs.values():
                     display_percepts_table(npc)
 
                 # --- Ambience Influence + Social Vibe Logging ---
@@ -85,28 +86,39 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                             "others_present": [c.name for c in loc.characters_there if c.name != char.name],
                             **social_data
                         })
+                
 
 
                 # THINK CYCLE
                 if hasattr(npc, 'ai') and npc.ai:
-                    think_loops = getattr(npc, "max_thinks_per_tick", 1)#max_thinks_per_tick is just a placeholder, for uber npcs, not widely implemented
-                    for _ in range(think_loops):
-                        npc.ai.think(npc.location.region)
-                    npc.ai.promote_thoughts()
+                    if role(npc) != "background":#GATE
+                        think_loops = getattr(npc, "max_thinks_per_tick", 1)
+                        for _ in range(think_loops):
+                            npc.ai.think(npc.location.region)
+                        npc.ai.promote_thoughts()
+
+        # ✅ NEW: TC2 snapshot displays
+        for dbg_npc in (
+            gs.debug_npcs.get("civilian_worker"),
+            gs.debug_npcs.get("civilian_liberty"),
+        ):
+            if dbg_npc:
+                if dbg_npc.debug_role == "civilian_worker":
+                    display_civ_worker(dbg_npc)
+                elif dbg_npc.debug_role == "civilian_liberty":
+                    display_civ_liberty(dbg_npc)
 
                     #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
                     
         # STEP 2: Choose and Execute Action
         for npc in all_characters:
             if hasattr(npc, 'ai') and npc.ai:
-
-                #Let AI process thoughts
-                npc.ai.evaluate_thoughts()  # << Thought-based motivation tuning
-                
-                region = npc.location.region if hasattr(npc.location, 'region') else None
-                action = npc.ai.choose_action(npc.location.region)
-                if action:
-                    npc.ai.execute_action(action, region)
+                if role(npc) != "background":
+                    npc.ai.evaluate_thoughts()
+                    region = npc.location.region if hasattr(npc.location, 'region') else None
+                    action = npc.ai.choose_action(region)
+                    if action:
+                        npc.ai.execute_action(action, region)
 
                     debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
 
@@ -147,7 +159,16 @@ def begin_npc_turn(npc):
     npc.just_arrived = False
     #npc.turn_start_tick = get_game_state().tick
     npc.mind.remove_thought_by_content("No focus")
-    debug_print(f"[TURN] Begin NPC turn: {npc.name}", category="tick")
+
+    # ✅ passive physiological drift
+    npc.hunger = min(npc.hunger + 0.2, 20)
+    #hunger = 20 → starving
+    npc.effort = max(npc.effort - 0.1, 1)
+    #effort = 1 → exhausted
+
+    #npc.motivation_manager.sync_physiological_motivations()
+    tick = get_game_state().tick
+    npc.motivation_manager.sync_motivations(tick)
 
 def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()

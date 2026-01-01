@@ -5,10 +5,22 @@ from debug_utils import debug_print
 class Motivation:
     def __init__(self, type, urgency=1, target=None, status_type=None, source=None):
         self.type = type  #  "join_gang"
-        self.urgency = float(urgency)  # integer
+        self.urgency = float(urgency)  # is this optimal, or should it just be self.urgency = urgency?
         self.target = target  #  "e.g. Red Fangs"
         self.status_type = status_type  #  "criminal"
         self.source = source  #  memory, event, etc.
+
+        self.suppressed = False
+        self.suppression_reason = None
+
+    def suppress(self, reason):
+        self.suppressed = True
+        self.suppression_reason = reason
+
+    def unsuppress(self):
+        self.suppressed = False
+        self.suppression_reason = None
+
 
     def __repr__(self):
         desc = f"{self.type} (urgency {self.urgency})"
@@ -87,10 +99,13 @@ VALID_MOTIVATIONS = {
 
 class MotivationManager:
     def __init__(self, character):
+        #will instantiation of this class now need editing?
         self.character = character
         self.motivations = []  # Now a list of Motivation instances
-
+        
+        # optional global suppression bookkeeping
         self.suppressed = {}  
+        # {motivation_type: reason}
         # example:
         # {
         #   "obtain_ranged_weapon": {
@@ -98,9 +113,9 @@ class MotivationManager:
         #       "until": "inventory_change"
         #   }
         # }
-    # ======================================================
-    #  A — INPUT COERCION HELPERS
-    # ======================================================
+
+
+        
 
     def consider_adding_motivation(
         self,
@@ -159,24 +174,63 @@ class MotivationManager:
             status_type=status_type,
         )
         return True
-    
+
+    # 🔹 MASTER SYNC — called once per tick
+    def sync_motivations(self, tick):
+        self.sync_physiological_motivations()
+        self.sync_role_motivations(tick)
+        self.cleanup_suppressed()
+
+    # 🔹 PHYSIOLOGY
+    def sync_physiological_motivations(self):
+        npc = self.character
+
+        if npc.hunger >= 5:
+            self.consider_adding_motivation(
+                "eat",
+                urgency=npc.hunger,
+                source="physiology"
+            )
+
+    # 🔹 ROLE / OBLIGATION
+    def sync_role_motivations(self, tick):
+        npc = self.character
+
+        for motivation in self.motivations:
+            if motivation.type == "work":
+                if npc.is_working:
+                    motivation.suppress("currently_working")
+                elif not npc.employment or not npc.employment.on_duty(tick):
+                    motivation.suppress("off_shift")
+                else:
+                    motivation.unsuppress()
+
+    # 🔹 CLEANUP (optional but recommended)
+    def cleanup_suppressed(self):
+        # Optional: remove permanently suppressed motivations
+        pass
+
+    #  A — INPUT COERCION HELPERS
 
     def _coerce_motivation_type(self, motivation_type) -> str:
-        """Convert various objects (Motivation, Thought, Memory, strings) into a safe string key."""
+        aliases = {
+            "earn_money": "work",
+        }
+
         if isinstance(motivation_type, str):
-            return motivation_type
+            return aliases.get(motivation_type, motivation_type)
 
         if hasattr(motivation_type, "type"):
-            return str(motivation_type.type)
+            return aliases.get(motivation_type.type, motivation_type.type)
 
         if hasattr(motivation_type, "content"):
-            return str(motivation_type.content)[:120]
+            return aliases.get(motivation_type.content, motivation_type.content)
 
         return str(motivation_type)
 
-    # ======================================================
+
     #  B — MOTIVATION CREATION / GETTERS
-    # ======================================================
+
     def add(self, motivation: Motivation):
         self.motivations.append(motivation)
         return motivation
@@ -213,9 +267,9 @@ class MotivationManager:
         return None
 
 
-    # ======================================================
+
     #  C — ADDING / UPDATING MOTIVATIONS
-    # ======================================================
+
 
     def update_motivations(self, motivation_type, urgency=1, target=None, source=None, status_type=None):
         """
@@ -253,9 +307,9 @@ class MotivationManager:
         return m
 
 
-    # ======================================================
+
     #  D — REMOVAL / CLEARING
-    # ======================================================
+
 
     def remove_motivation(self, motivation_type):
         """Remove motivations of a given type. Return True if anything removed."""
@@ -277,14 +331,31 @@ class MotivationManager:
         return top
 
 
-    # ======================================================
+
     #  E — QUERIES / SORTING
-    # ======================================================
+
 
     def get_highest_priority_motivation(self):
-        if not self.motivations:
-            return Motivation(type="earn_money", urgency=5)
-        return max(self.motivations, key=lambda m: m.urgency)
+        active = [m for m in self.motivations if not m.suppressed]
+        if not active:
+            return None
+        return max(active, key=lambda m: m.urgency)
+
+    def get_top_motivations(self, n=2, include_zero=False):
+        """
+        Return the top-N motivations sorted by urgency (descending).
+        """
+        motivations = list(self.motivations)
+
+        if not motivations:
+            return []
+
+        if not include_zero:
+            motivations = [m for m in motivations if getattr(m, "urgency", 0) > 0]
+
+        motivations.sort(key=lambda m: getattr(m, "urgency", 0), reverse=True)
+
+        return motivations[:n]
 
     def get_motivations(self):
         """Return all motivations sorted by urgency."""
@@ -320,9 +391,9 @@ class MotivationManager:
                 m.urgency = max(0, m.urgency - amount)
 
 
-    # ======================================================
+
     #  F — DEBUG / DISPLAY
-    # ======================================================
+
 
     def get_motivations_display(self):
         """Return simple strings suitable for debug output."""

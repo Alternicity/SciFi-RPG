@@ -221,25 +221,14 @@ class ObservationComponent:
         # caller info for diagnostics
         caller = inspect.stack()[1].function
 
-        # Ensure only runs once per tick
-        
-
-        """ debug_print(observer, f"[OBSERVE TRACE] {observer.name} observing at tick {game_state.tick} (caller={caller})", category="observation")
-        debug_print(observer, f"[OBSERVE TRACE] npc.location={observer.location}, region={observer.region.name}", category="perception") """
-
-        #debug_print(npc, f"[OBSERVE] RAW location param={location} (type={type(location)})", "perception")
         if region is not None and location is None:
             print(f"[BUG] observe() called with region but no location! Caller={caller}")
 
         # --- show before/after counts for easier debugging ---
-
         try:
-            before_count = len(self.percepts)
+            before_count = len(self.percepts)#before_count not accessed
         except Exception:
             before_count = 0
-
-        #debug_print(self.owner, f"[OBSERVE] Before clearing percepts, count={before_count}, location param={(location.name if location else None)}", "percept")
-        
 
         # --- clear percepts for new observation cycle ---
         self.percepts.clear()
@@ -274,12 +263,16 @@ class ObservationComponent:
 
         assert isinstance(self._percepts, dict), "Percepts store corrupted"
 
-        debug_print(
+        gs = get_game_state()
+        if gs is not None and not gs.should_display_npc(self.owner):
+            return
+        #everything after this block is gated
+        
+        debug_print(#line 271
         self.owner,
         f"[SELF PERCEPT] tags={self._percepts['self']['data']['tags']} urgency={self._percepts['self']['data'].get('urgency')}",
         category="percept"
         )
-        #debug_print(self, f"[OBSERVE] Final percept count from oberve() ={len(self.percepts)} at {location.name}", "percept")
 
         # --- determine current location if not passed ---
         if location is None:

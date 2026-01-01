@@ -5,7 +5,8 @@ from typing import Literal, List, Union, Dict, TYPE_CHECKING, Optional, Any
 import re
 
 from events import Event #maybe risky import
-
+from anchors.work_anchor import WorkAnchor
+from anchors.eat_anchor import EatAnchor
 import time
 from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print
@@ -70,7 +71,6 @@ class Anchor:
     weight: float = 1.0  # salience amplification factor
     priority: float = 1.0  # importance to current AI thinking
     enables: List[str] = field(default_factory=list)
-    #requires: List[str] = field(default_factory=list)  # Introduces a hard gate, which goes angainst utility AI, Dont use.
     tags: List[str] = field(default_factory=list)  # used in tag-overlap salience logic
     owner: Optional[Any] = None  # populated with npc object at runtime
     desired_tags: List[str] = field(default_factory=list)
@@ -83,6 +83,10 @@ class Anchor:
     # Simulation timing
     tick_created: Optional[int] = None
     day_created: Optional[int] = None
+    target_location: Optional[Any] = None
+    _warned_no_target: bool = False
+
+    #Object lifecycle logs belong at creation sites, not constructors.
 
     def __post_init__(self):
         """Stamp simulation time (tick/day) on creation if possible."""
@@ -99,14 +103,26 @@ class Anchor:
                 category="anchor"
             )
 
-        # Optional debug trace of creation context
-        if self.owner:
-            debug_print(
-                self.owner,
-                f"[ANCHOR CREATED] {self.name} (type={self.type}) "
-                f"tick={self.hour_created}, day={self.day_created}",
-                category="anchor"
-            )
+    def resolve_target_location(self):
+        npc = self.owner
+
+        if self.target_location is None:
+            if not getattr(self, "_warned_no_target", False):
+                debug_print(
+                    self.owner,
+                    f"[ANCHOR] {self.name} has no target_location to resolve",
+                    category="anchor"
+                )
+                self._warned_no_target = True
+            return None
+        
+    
+        debug_print(
+            self.owner,
+            f"[ANCHOR] {self.name} resolved target_location -> {getattr(self.target_location, 'name', self.target_location)}",
+            category="anchor"
+        )
+        return self.target_location
 
     def _coerce_to_percept(self, percept_data, npc) -> dict:
         """
@@ -260,6 +276,41 @@ class Anchor:
     @property
     def motivation_type(self):
         return self.name or self.type
+
+#utilty functions
+def select_best_anchor(npc, anchors):
+    if not anchors:
+        return None
+
+    viable = [a for a in anchors if not getattr(a, "blocked", False)]
+    if not viable:
+        return None
+
+    return max(viable, key=lambda a: getattr(a, "urgency", 0))
+
+def deduplicate_anchors(npc):
+        """
+        Keep strongest anchor per name.
+        Ensures npc.current_anchor remains valid.
+        """
+        seen = {}
+
+        for anchor in npc.anchors:
+            key = anchor.name
+            if key not in seen or anchor.priority > seen[key].priority:
+                seen[key] = anchor
+
+        npc.anchors = list(seen.values())
+
+        # Re-link current_anchor if needed
+        if npc.current_anchor:
+            npc.current_anchor = seen.get(
+                npc.current_anchor.name,
+                npc.current_anchor
+            )
+
+
+
 
 class RobberyAnchor(Anchor):
     def __init__(self, **kwargs):
@@ -432,7 +483,7 @@ def create_robbery_anchor(npc, source=None, urgency=None, desired_tags=None, dis
 
     return anchor
 
-
+#utility function
 def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     """
     Converts a Motivation into a Motivation Anchor.
@@ -440,14 +491,10 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     and specialized subclasses (RobberyAnchor, ObtainWeaponAnchor).
     """
 
-    from memory.memory_entry import MemoryEntry
-    import time
-    from anchors.anchor_utils import ObtainWeaponAnchor, RobberyAnchor, Anchor
-
     # --- Guard invalid inputs ---
     if motivation is None:
         return None
-
+    
     if motivation.type == "obtain_ranged_weapon" and npc.inventory.has_ranged_weapon():
         debug_print(
             npc,
@@ -481,6 +528,10 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     tags = getattr(motivation, "tags", []) or []
 
     # --- Create specialized anchors ---
+    if base_name == "work":
+        anchor = WorkAnchor(npc, motivation)
+
+
     if base_name == "rob":
         anchor = RobberyAnchor(
             name=base_name,
@@ -556,6 +607,15 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
         npc.anchors = []
     if anchor not in npc.anchors:
         npc.anchors.append(anchor)
+
+    debug_print(
+            npc,
+            f"[ANCHOR] Created '{anchor.name}' from motivation "
+            f"({motivation.type}, urgency={motivation.urgency}) "#motive marked as not defined, so I changed it to motivation
+            f"@ day {anchor.day_created}, hour {anchor.hour_created}",
+            category="anchor"
+        )
+
 
     return anchor
 

@@ -9,7 +9,7 @@ from base.location import Location
 from location.locations import Shop, CorporateStore, Stash, Region, VacantLot, HQ, MunicipalBuilding
 from characters import (Boss, Captain, Employee, VIP, RiotCop,
                          CorporateAssasin, Employee, GangMember,
-                           CEO, Manager, CorporateSecurity, Civilian, GangMember, Child, Influencer,
+                           CEO, Manager, CorporateSecurity, Civilian, Child, Influencer,
                            Babe, Detective)
 from faction import Corporation, Gang, State
 from goals import Goal

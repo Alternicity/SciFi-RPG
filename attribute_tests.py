@@ -1,20 +1,15 @@
 #attribute_tests.py
 import random
+from debug_utils import debug_print
 
-
-def attribute_test(attribute_value, difficulty=10, modifiers=0, verbose=False):
+def attribute_test(attribute_value, difficulty=10, modifiers=0):
     """
     Simple attribute test: pass if attribute + mods > random threshold.
     """
-    roll = random.randint(1, 20)
+    roll = random.randint(1, 20)#roll is not accessed
     total = attribute_value + modifiers
-    if verbose:
-        print(f"Attribute Test → Roll: {roll}, Attribute+Mods: {total}, Difficulty: {difficulty}")
 
-        # Swiz tries to pick a lock with Dexterity 12
-        #success = attribute_test(attribute_value=12, difficulty=14, modifiers=1, verbose=True)
-
-    return total >= difficulty
+    return total >= difficulty#Is this a truthy return?
 
 def adversarial_attribute_test(
     attempt_value,
@@ -23,7 +18,6 @@ def adversarial_attribute_test(
     resistance_mod=0,
     wildcard_mod=0,
     simulate=False,
-    verbose=False
 ):
     """
     General-purpose adversarial attribute test.
@@ -39,14 +33,7 @@ def adversarial_attribute_test(
     base_resist = resistance_value + resistance_mod
 
     if not simulate:
-        attempt_roll = random.randint(0, 10)
-        resist_roll = random.randint(0, 10)
-        base_attempt += attempt_roll
-        base_resist += resist_roll
-        if verbose:
-            print(f"[Verbose] Random roll → Attempt +{attempt_roll}, Resistance +{resist_roll}")
-
-    if verbose:
-        print(f"[Verbose] Final Attempt score: {base_attempt} vs Resistance score: {base_resist}")
+        base_attempt += random.randint(0, 10)
+        base_resist += random.randint(0, 10)
 
     return base_attempt > base_resist

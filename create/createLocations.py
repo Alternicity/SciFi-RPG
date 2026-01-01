@@ -11,9 +11,9 @@ from location.security_setup import attach_default_security
 from objects.InWorldObjects import SmartPhone, Size, Item
 from weapons import Pistol
 from shop_name_generator import generate_shop_name
-from create.create_game_state import get_game_state
-from debug_utils import debug_print
 
+from debug_utils import debug_print
+from augment.augmentLocations import seed_food_locations
 game_state = get_game_state()
 
 def create_locations(region: Region, wealth: str) -> List[Location]:
@@ -122,17 +122,24 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     region.locations = locations
     region.shops = [loc for loc in locations if hasattr(loc, "is_shop")]
 
+    
+
     #all_locations.append(locations)
     #all_locations is marked as not defined
     #lets also add a temporary print here to show its size, or if it contains houses and apartment blocks
     # Maintain global lists
     if not hasattr(game_state, "all_shops"):
         game_state.all_shops = []
-    game_state.all_shops.extend(region.shops)#line 133
+    game_state.all_shops.extend(region.shops)
 
     if not hasattr(game_state, "all_locations"):
         game_state.all_locations = []
-    game_state.all_locations.extend(locations)#line 137
+    game_state.all_locations.extend(locations)
+
+
+    #get the cafes and retaurants here, 
+    seed_food_locations(game_state.all_locations)#we added this recently
+
 
     return locations
 

@@ -60,7 +60,8 @@ class Character(PerceptibleMixin, CharacterBase):
         self.family = None # Will hold a Family component later
         self.debug_role = None   # "primary" | "secondary" | "civilian_test" | etc.
         self.is_player = False
-        self.is_test_npc = False  # Default to False
+        self.is_test_npc = False  # Deprecated
+        self.effort = 10 #1-20 scale, 1 is very tired, 20 is high energy both mental and physical
         self.is_peaceful_npc = False
         self.has_plot_armour = False#rare, currently unused
         self.ai = ai  # added at instantiation as a component
@@ -100,8 +101,8 @@ class Character(PerceptibleMixin, CharacterBase):
     }
         self.current_anchor = None
         self.anchors = []
-        self.self_esteem = 50  # Neutral starting value. Goes up with needs met, down with increasing hunger or
-        #status loss, or lack of money, or tasks failed, or bad personal events. Currently unused.
+        self.self_esteem = 10  # Neutral starting value. Goes up with needs met, down with increasing hunger or
+        #status loss, or lack of money, or failure, or bad personal events. Currently unused.
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
 
         # Social connections
@@ -122,6 +123,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.is_working = False
         self.just_got_off_shift =False #Just finished a work shift
         self.partner = partner
+        
         self.partner_presumed_location = None
         self.faction = faction
         self.fun = kwargs.get("fun", fun)#under developed, but some building blocks are in place

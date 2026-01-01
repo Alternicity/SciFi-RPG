@@ -54,6 +54,7 @@ Hoffmann
 Schäfer
 Koch
 Bauer
+Plankalkül
 Richter
 Klein
 Wolf

@@ -1,6 +1,6 @@
 # actions.npc_actions.py
 from memory.memory_entry import MemoryEntry
-from debug_utils import debug_print
+from debug_utils import debug_print, can_narrate#can_narrate greyed out not accessed
 import copy
 from character_thought import Thought
 from create.create_game_state import get_game_state
@@ -54,6 +54,12 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     npc.previous_location = npc.location
     npc.location = destination
     npc.just_arrived = True
+
+    if npc.current_anchor and npc.current_anchor.name == "work":
+        debug_print(npc, "[ANCHOR] Work anchor satisfied — clearing", category="anchor")
+        npc.current_anchor.active = False
+        npc.current_anchor = None
+
     #this is the only place in the code base where  npc.just_arrived is set to true
     # --- Clear visit-related thoughts ---
     npc.mind.remove_thoughts_with_tag("visit")
@@ -168,7 +174,11 @@ Choose a target item with logic like “most valuable percepted object in locati
 Decide whether to rob based on mood, threat level, weapon presence, etc. """
 
 def steal_auto(npc, region, item=None):
-    print(f"[STEAL] {npc.name} tries to steal {item.name if item else 'something'} at {npc.location.name}")
+    debug_print(
+            npc,
+            f"Tries to steal {item.name if item else 'something'} at {npc.location.name}",
+            category="steal"
+        )
 
     if not item:
         print("[STEAL] No item specified.")
@@ -189,17 +199,29 @@ def steal_auto(npc, region, item=None):
     attempt_mod = getattr(npc, "criminal_modifier", 0)
 
     from attribute_tests import adversarial_attribute_test
+    verbose = getattr(npc, "debug_role", None) == "primary"
     success = adversarial_attribute_test(
         attempt_value=stealth,
         resistance_value=observation,
         attempt_mod=attempt_mod,
         resistance_mod=resistance_mod,
         simulate=False,
-        verbose=npc.is_test_npc
+        
     )
+    if getattr(npc, "debug_role", None) == "primary":
+        debug_print(
+            npc,
+            f"Intimidation result → success={success}",
+            category="event"
+        )
 
     if not success:
-        print(f"[STEAL FAIL] {npc.name} failed to steal {item.name} from {location.name}.")
+        debug_print(
+            npc,
+            f"Failed to steal {item.name} from {location.name}",
+            category="steal"
+        )
+
         return False
 
     # ============================
@@ -291,9 +313,19 @@ def steal_auto(npc, region, item=None):
     # -----------------------------------------------
     if hasattr(item, "intimidation"):
         npc.skills["intimidation"] = npc.skills.get("intimidation", 0) + item.intimidation
-        print(f"[STEAL] {npc.name}'s intimidation increased due to {item.name}.")#was stolen_item
+        debug_print(
+            npc,
+            f"Intimidation increased due to {item.name}",
+            category="attribute"
+        )
 
-    print(f"[STEAL] {npc.name} successfully stole {item.name} from {location.name}")#was stolen_item
+
+    debug_print(
+            npc,
+            f"Successfully stole {item.name} from {location.name}",
+            category="steal"
+        )
+
     return True
 
 def exit_location_auto():
@@ -304,6 +336,13 @@ def eat_auto(self):
     name = self.name
     #what exactly is self for an npc action function?
     debug_print(npc, f"[EATING] eat_auto called for npc.{name}", category="eat")
+
+    npc.memory.add_episodic(
+            subject=npc,
+            _object="food",
+            content=f"Ate at {npc.location.name}",
+            importance=1
+        )
     
 
 def procure_food_auto(self):

@@ -4,7 +4,7 @@ import logging
 from textwrap import wrap
 
 from base.character import Character
-
+from social.social_utils import get_socially_favoured
 import loader
 import os
 from collections import defaultdict
@@ -28,8 +28,7 @@ from region.region import Region
 from perception.perceptibility import extract_appearance_summary
 
 from config_npc_vitals import NPC_VITALS_CONFIG
-from debug_registry import get_debug_npc
-from debug_utils import debug_print
+from debug_utils import debug_print, ROLE_FILTERS
 from create.create_game_state import get_game_state
 game_state = get_game_state()
 logging.basicConfig(level=logging.DEBUG)
@@ -327,16 +326,9 @@ def display_world(all_regions):
     print("\n🌍 **World Overview:**")
     print(tabulate(table_data, headers=["Region", "Locations", "Danger Level"], tablefmt="grid"))
 
-def display_character_vicinity():
-    #shows where the character is in a table and what has got their attention there
-    #The columns should be charcter name, wherebouts and a third dynamic column called percepts that displays
-    #other proximal data, for example if there is danger or an attracive other character, or a partner, friend or event
-    #
-    pass
-
-def display_character_Summary():
-    #shows on what the characters attention is on. This will be a dynamic list, called Attention including motivations, goals, and environmental 
-    #proximal factors like friends, partners, enemies or dangers nearby.
+def display_character_summary():#called from player flow
+    #shows on what the characters attention is on. This will be a dynamic list, called Attention including motivations, and environmental 
+    #proximal factors like friends, partners, enemies or dangers.
     pass
 
 def show_locations_in_region(region):
@@ -572,7 +564,7 @@ def display_region_knowledge_summary(knowledge_list, npc=None):
     return f"{region_table_output}\n\n{social_table_output}"
 
 
-def format_origin(origin):
+def format_origin(origin):#not called
     if origin == "—":
         return "[MISSING]"
     elif hasattr(origin, "name"):
@@ -587,10 +579,31 @@ def display_percepts_table(npc):
     Prints a clean tabular debug summary of an NPC's percepts.
     Only intended for debug characters or test NPCs.
     """
-    anchor = getattr(npc, "current_anchor", None)
-    if not getattr(npc, "is_test_npc", False):
+    
+    if npc is None:
         return
-    print(f"\n[DEBUG] {npc.name} - Percepts Table After Observation:")
+    
+    gs = get_game_state()
+    if gs and not gs.should_display_npc(npc):
+        return
+    
+    debug_print(
+        npc,
+        f"[DEBUG] display_percepts_table: debug_role={getattr(npc, 'debug_role', None)}",
+        category="percept"
+    )
+
+    role = getattr(npc, "debug_role", None)
+    if role is None or not ROLE_FILTERS.get(role, False):
+        return
+    
+    anchor = getattr(npc, "current_anchor", None)
+
+    debug_print(
+            npc,
+            "Percepts table after observation",
+            category="percept"
+        )
 
     table_data = []
 
@@ -632,12 +645,6 @@ def display_percepts_table(npc):
         # Step 4: Count keys inside data block
         n_keys = len(data.keys())
 
-
-        if hasattr(origin, "compute_salience") and callable(origin.compute_salience):#a problem line?
-            try:#is this block now deprecated?
-                salience = origin.compute_salience(npc, anchor)#salience not accessed
-            except Exception as e:
-                salience = f"ERR: {e}"#salience not accessed
 
         origin = v.get("origin") or data.get("origin")
         # --- Unified, safe salience computation ---
@@ -728,6 +735,31 @@ def display_npc_mind(npc):
             ", ".join(ob.tags)
         ])
 
+    # --- Motivation Table ---
+    print("\n--- Motivation Table ---")
+
+    motivation_data = []
+
+    top = npc.motivation_manager.get_highest_priority_motivation(npc)
+
+    for m in npc.motivation_manager.get_motivations():
+        motivation_data.append([
+            m.type,
+            f"{m.urgency:.1f}",
+            "YES" if m is top else "",
+            "YES" if m.suppressed else "NO",
+            m.suppression_reason or "—",
+        ])
+
+    if motivation_data:
+        print(tabulate(
+            motivation_data,
+            headers=["Motivation", "Urgency", "TOP", "Suppressed", "Reason"],
+            tablefmt="rounded_outline"
+        ))
+    else:
+        print("(no motivations)")
+
     print("\n--- Obsessions ---")
     print(tabulate(obsessions_data, headers=["Source", "Weight", "Tags"]))
 
@@ -763,28 +795,25 @@ def format_shop_debug(shop) -> dict:
         "OwnerType": "corporate" if any(corp for corp in getattr(shop.region, "region_corps", []) if corp.HQ == shop) else "family"
     }
 
-def gameplay_print(message):
-    debug_print(None, message, category="gameplay")
-
-def sim_print(message):
-    debug_print(None, message, category="simulation")
-
-
-#Start Claude block
 def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
     """
     Comprehensive display of NPC state.
     Call this from simulate_hours() for the 3 debug NPCs.
     """
-    from debug_utils import npc_is_allowed
-    if not npc_is_allowed(npc):
+    from debug_utils import ROLE_FILTERS
+
+    if npc is None:
+        return
+    
+    # Contextual suppression
+    gs = get_game_state()
+    if gs is not None and not gs.should_display_npc(npc):
         return
 
-    #Still retain this?
-    """ if not npc:
+    # Optional role filter
+    """ role = getattr(npc, "debug_role", None)
+    if role is not None and not ROLE_FILTERS.get(role, False):
         return """
-    
-    debug_npc = get_debug_npc()
 
     #See: config_npc_vitals.py
     
@@ -981,8 +1010,6 @@ def _vitals_indicator(value, vital_type):
     return ""
 
 
-#Claude function btfo from here
-
 
 def display_npc_summary(npc):
     """
@@ -1047,12 +1074,135 @@ def display_daily_schedule_preview(npc):
     
     print(f"{'='*60}\n")
 
-def display_one_debug_npc():
-    """ Alternative to using a filter for display_npc_vitals()
-    If used, call with:
-    display_one_debug_npc()
-    from simulation.py """
+#deprecate, at least for now, maybe useful when more active npcs added
+""" def display_debug_npcs(npcs):
+    
+    if not npcs:
+        return
 
-    npc = get_debug_npc()
-    if npc:
-        display_npc_vitals(npc)#Used to have parameters: , show_memories=True, show_thoughts=True
+    for npc in npcs:
+        display_npc_vitals(npc) """
+
+def summarize_npc_turns(all_characters):
+    from collections import Counter
+
+    counts = Counter()
+
+    for npc in all_characters:
+        cls = npc.__class__.__name__
+        role = getattr(npc, "debug_role", "background")
+        counts[(cls, role)] += 1
+
+    parts = []
+    for (cls, role), count in counts.items():
+        parts.append(f"{cls}({role}) x{count}")
+
+    gs = get_game_state()
+    return f"Hour {gs.hour} — " + ", ".join(sorted(parts))
+
+#remove
+""" def display_tc2_npc_state(npc):
+    gs = get_game_state()
+    if not gs:
+        return
+    for npc in (
+        gs.debug_npcs.get("civilian_worker"),
+        gs.debug_npcs.get("civilian_liberty"),
+    ):
+        if npc:
+            display_npc_vitals(npc) """
+
+def display_civ_worker(npc):
+    gs = get_game_state()
+    if not gs or npc not in gs.debug_npcs.values():
+        return
+
+    emp = getattr(npc, "employment", None)
+
+    workplace = emp.workplace.name if emp and emp.workplace else "—"
+    role = emp.role.name if emp and emp.role else "—"
+    shift = f"{emp.shift_start}–{emp.shift_end}" if emp else "—"
+    on_shift = "Working" if getattr(npc, "is_working", False) else "Off"
+    just_off = " | Just got off shift" if getattr(npc, "just_got_off_shift", False) else ""
+
+    urgent = npc.motivation_manager.get_highest_priority_motivation()
+    urgent_str = (
+        f"{urgent.type}(+{urgent.urgency})"
+        if urgent else "—"
+    )
+
+    print(
+        f"[WORKER] {npc.name} | {npc.location.name if npc.location else '—'}"
+        f" | role={npc.debug_role}"
+        f" | 💼 {on_shift}"
+        f" | shift={shift}"
+        f" | hunger={npc.hunger}"
+        f" | fun={npc.fun}"
+        f" | effort={getattr(npc, 'effort', '—')}"
+        f" | €{npc.wallet.balance if npc.wallet else '—'}"
+        f" | motive={urgent_str}"
+        f" | esteem={npc.self_esteem}"
+        f" | anchor={npc.current_anchor.__class__.__name__ if npc.current_anchor else '—'}"
+        f" | Workplace={workplace}"
+        f"{just_off}"
+    )
+
+
+def display_civ_liberty(npc):
+    gs = get_game_state()
+    if not gs or npc not in gs.debug_npcs.values():
+        return
+
+    urgent = npc.motivation_manager.get_highest_priority_motivation()
+    urgent_str = (
+        f"{urgent.type}(+{urgent.urgency})"
+        if urgent else "—"
+    )
+
+    favoured = get_socially_favoured(npc)
+    favoured_name = favoured.name if favoured else "—"
+
+    print(
+        f"[LIBERTY] {npc.name} | {npc.location.name if npc.location else '—'}"
+        f" | role={npc.debug_role}"
+        f" | hunger={npc.hunger}"
+        f" | fun={npc.fun}"
+        f" | effort={getattr(npc, 'effort', '—')}"
+        f" | €{npc.wallet.balance if npc.wallet else '—'}"
+        f" | motive={urgent_str}"
+        f" | esteem={npc.self_esteem}"
+        f" | anchor={npc.current_anchor.__class__.__name__ if npc.current_anchor else '—'}"
+        f" | favoured={favoured_name}"
+    )
+
+def display_top_motivations(npc, top_n=2, category="motive"):
+    """
+    Print the top-N most urgent, unsuppressed motivations for an NPC.
+    Intended for compact TC2 output.
+    """
+
+    mm = getattr(npc, "motivation_manager", None)
+    if mm is None:
+        return
+
+    # Get unsuppressed motivations
+    active = [m for m in mm.motivations if not m.suppressed]
+    if not active:
+        return
+
+    # Sort by urgency descending
+    active.sort(key=lambda m: m.urgency, reverse=True)
+
+    # Take top N
+    top = active[:top_n]
+
+    motive_str = ", ".join(
+        f"{m.type}({m.urgency:.1f})"
+        for m in top
+    )
+
+    debug_print(
+        npc,
+        f"[TopMotives] {npc.name}: {motive_str}",
+        category=category
+    )
