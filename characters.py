@@ -758,14 +758,8 @@ class Civilian(Character):
         self.targetIsInMelee = False
         self.is_employee = False
 
-        # Weapon & Combat Attributes
-        
-        self.targetIsInMelee = False
         self.location
         self.region
-        self.is_employee = False
-
-
     
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__

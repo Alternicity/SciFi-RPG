@@ -1206,3 +1206,16 @@ def display_top_motivations(npc, top_n=2, category="motive"):
         f"[TopMotives] {npc.name}: {motive_str}",
         category=category
     )
+
+def summarize_action(action):
+    if not isinstance(action, dict):
+        return str(action)
+
+    name = action.get("name", "?")
+    params = action.get("params", {})
+
+    summary_params = {}
+    for k, v in params.items():
+        summary_params[k] = getattr(v, "name", v)
+
+    return f"{name}({summary_params})"

@@ -10,7 +10,7 @@ class Incompressible:
     reason: str
     source: Optional[str] = None
     timestamp: Optional[float] = None
-    tags: Optional[list] = None
+    tags: Optional[list] = None#ATTN
     field_origin: Optional[str] = None
     def __str__(self):
         return f"[Incompressible] {self.symbol}: {self.reason}"

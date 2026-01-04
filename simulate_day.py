@@ -7,7 +7,7 @@ from ai.behaviour_roles import role
 from events import Robbery
 from characterActions import execute_action #not currently accessed
 from summary_utils import format_location
-from display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_liberty, display_npc_vitals
+from display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_liberty, display_npc_vitals, summarize_action
 from memory.memory_entry import RegionKnowledge
 from character_thought import Thought
 from ambience.ambience_and_psy_utils import compute_location_ambience
@@ -120,7 +120,14 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                     if action:
                         npc.ai.execute_action(action, region)
 
-                    debug_print(npc, f"[ACTION] {npc.name} finished {action}, current location: {npc.location}", category="action")
+                    debug_print(
+                        npc,
+                        f"[ACTIONx] {npc.name} finished {summarize_action(action)}, "
+                        f"current_location={npc.location.name}",
+                        category="action"
+                    )
+
+
 
         # STEP 3: Post-Day DEBUG (single character)
         for npc in all_characters:#ATTN

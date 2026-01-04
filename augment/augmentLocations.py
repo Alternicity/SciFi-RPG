@@ -7,8 +7,8 @@ game_state = get_game_state()
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
 from location.locations import Cafe, Restaurant
 from objects.food.prepared_food import Sandwich, Burger
-
-
+from objects.InWorldObjects import Pot
+from objects.trees_and_plants import BonsaiTree
 
 DEFAULT_SPECIALIZATION = "general"
 
@@ -102,6 +102,18 @@ def seed_food_locations(all_locations):
             loc.inventory.add_item(Sandwich(quantity=5))
             loc.inventory.add_item(Burger(quantity=3))
             loc.items_available.extend(["Sandwich", "Burger"])
+
+def seed_ambience_objects(all_locations):
+    for loc in all_locations:
+        if isinstance(loc, Cafe):
+            pot = Pot(quantity=1)
+            bonsai = BonsaiTree()
+
+            pot.add(bonsai)
+
+            loc.items.objects_present.append(pot)
+
+
 
 
 

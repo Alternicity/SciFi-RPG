@@ -1,6 +1,5 @@
 
 #events.py
-from dataclasses import field
 import uuid
 from distributions import generate_normal, generate_black_swan
 from combat import calculate_intimidation_score, calculate_resistance_score

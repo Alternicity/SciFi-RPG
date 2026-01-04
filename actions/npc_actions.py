@@ -5,6 +5,7 @@ import copy
 from character_thought import Thought
 from create.create_game_state import get_game_state
 from focus_utils import clear_attention_focus
+import random
 
 def visit_location_auto(character, region=None, destination=None, destination_name=None, **kwargs):
     npc = character
@@ -344,6 +345,44 @@ def eat_auto(self):
             importance=1
         )
     
+def buy_food_auto(npc, region=None):
+    location = npc.location
+
+    if not hasattr(location, "inventory"):
+        return False
+
+    items = []
+
+    if hasattr(location, "items_available"):
+        items = location.items_available
+    elif hasattr(location, "inventory"):
+        items = location.inventory.items.values()
+
+    food_items = [i for i in items if "food" in getattr(i, "tags", [])]
+
+
+    if not food_items:
+        return False
+
+    item = random.choice(food_items)
+
+    # Minimal transaction for now
+    if npc.wallet.balance < item.price:
+        return False
+
+    npc.wallet.balance -= item.price
+    location.bankCardCash += item.price
+
+    #in the future a social hook here
+
+    npc.inventory.add_item(item.clone(quantity=1))#later I will change this, make numbered tables, and add the food to the table container. npcs do have npc.posture
+    item.quantity -= 1
+    #in the future a social hook here
+
+    npc.hunger = max(0, npc.hunger - 3)#this should also affect npc.effort, I will explain how
+    #Can we add a notification debug_print here? category action
+    return True
+
 
 def procure_food_auto(self):
     npc = self

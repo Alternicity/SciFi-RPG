@@ -1,6 +1,6 @@
 #trees_and_plants.py
-from dataclasses import dataclass
-from typing import List, field, Dict
+from dataclasses import dataclass, field
+from typing import List, Dict
 
 from objects.InWorldObjects import ObjectInWorld, Toughness, Size
 
@@ -37,7 +37,7 @@ class Plant(ObjectInWorld):
     placement_quality: str = "neutral"
     resonance_factor: float = 1.0
     golden_ratio_influence: float = 0.0
-    tags: List[str] = field(default_factory=lambda: ["plant"])
+    #no tags here pls, bc its a dataclass inheriting from a non dataclass
 
     def modulated_ambience(self) -> Dict[str, float]:
         multiplier = {
@@ -50,7 +50,10 @@ class Plant(ObjectInWorld):
             "peace": self.resonance_factor * multiplier,
             "clarity": self.golden_ratio_influence * multiplier
         }
-
+    
+    @property
+    def tags(self):
+        return ["plant"]
 
 @dataclass
 class GoldenRatioTree(Plant):
@@ -69,8 +72,10 @@ class BonsaiTree(Plant):
     geometry: str = "miniature"
     resonance_factor: float = 0.9
     golden_ratio_influence: float = 0.4
-    tags: List[str] = field(default_factory=lambda: ["zen", "focus", "plant"])
 
+    @property
+    def tags(self):
+        return super().tags + ["zen", "focus"]
 #Let some plants carry deeper symbolic meaning:
 #symbolism: List[str] = field(default_factory=list)
 

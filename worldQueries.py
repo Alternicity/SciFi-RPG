@@ -41,16 +41,26 @@ def get_nearby_objects(npc, location=None):
 
     return nearby
 
-
-def observe_location(self, loc):
-    #print(f"[Observe] {self.name} observes {loc.name}")
+#remove
+""" def observe_location(self, loc):
     perceptibles = getattr(loc, "list_perceptibles", lambda exclude=None: [])(exclude=[self])
     for obj in perceptibles:
-        #obj is not accessed
-        return
+        return """
     
 def get_region_knowledge(semantic_memory, region_name):
     for rk in semantic_memory.get("region_knowledge", []):
         if isinstance(rk, RegionKnowledge) and rk.region_name == region_name:
             return rk
     return None
+
+def location_sells_food(location):
+    if not location:
+        return False
+
+    # Explicit capability beats tags
+    if hasattr(location, "items_available") and location.items_available:
+        return True
+
+    # Tag-based fallback
+    tags = getattr(location, "tags", [])
+    return "food" in tags or "restaurant" in tags or "cafe" in tags

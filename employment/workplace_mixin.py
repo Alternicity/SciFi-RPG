@@ -2,13 +2,13 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 from debug_utils import debug_print
-@dataclass
+
 class WorkplaceMixin:
-    """Mixin for Location classes that can employ characters."""
-    
-    allowed_roles: List = field(default_factory=list)
-    employees_there: list = field(default_factory=list)    # currently present
-    employees: list = field(default_factory=list)      # permanent employees
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.allowed_roles = []
+        self.employees_there = []
+        self.employees = []
 
     def add_employee(self, employee):
         if employee not in self.employees:

@@ -1,11 +1,10 @@
-#InWorldObjects.py
+#objects.InWorldObjects.py
 from dataclasses import field
 import uuid
 from enum import Enum
 from perception.perceptibility import PerceptibleMixin
 from typing import Dict
 
-#all references to "value" must be replaced with "value"
 # Enums for toughness and size
 class Toughness(Enum):
     FRAGILE = "fragile"
@@ -18,6 +17,10 @@ class Size(Enum):
     ONE_HANDED = "one-handed"
     TWO_HANDED = "two_handed"
     HEAVY = "heavy"
+    TINY = "tiny"
+    SMALL = "small"
+    MEDIUM = "medium"
+    LARGE = "large"
 
 class ItemType(Enum): # I dont think this was adhered to
     WEAPON = "Weapon"
@@ -59,6 +62,11 @@ class ObjectInWorld(PerceptibleMixin):
         self.quantity = quantity
         self.bloodstained = None  # Can be a character reference or ID string
         self.is_stolen =False
+
+        #tmp
+        assert isinstance(toughness, Enum), toughness
+        assert isinstance(size, Enum), size
+
     @property
     def tags(self):
         return []
@@ -496,22 +504,22 @@ class CashRegister(ObjectInWorld):
 
 class Container:
     def __init__(self):
-        self.inventory = []
+        self.contents = []
 
     def add(self, item):
-        self.inventory.append(item)
+        self.contents.append(item)
 
     def remove(self, item):
-        if item in self.inventory:
-            self.inventory.remove(item)
+        if item in self.contents:
+            self.contents.remove(item)
 
     def list_items(self):
-        return self.inventory
+        return self.contents
 
 
 class ToyBox(Container):
     def __repr__(self):
-        return f"ToyBox({len(self.inventory)} bricks)"
+        return f"ToyBox({len(self.contents)} bricks)"
 
 
 class MarbleBag(Container):
@@ -601,7 +609,7 @@ class Pot(ObjectInWorld, Container):
         ObjectInWorld.__init__(
             self,
             name=f"{material.title()} Pot",
-            toughness=Toughness.STURDY if material == "ceramic" else Toughness.FRAGILE,
+            toughness=Toughness.DURABLE if material == "ceramic" else Toughness.FRAGILE,
             item_type="container",
             size=Size.SMALL,
             blackmarket_value=3,
@@ -625,10 +633,11 @@ class Pot(ObjectInWorld, Container):
     def get_percept_data(self, observer=None):
         base = super().get_percept_data(observer)
         base.update({
-            "description": f"{self.material.title()} Pot containing {len(self.inventory)} item(s)",
+            "description": f"{self.material.title()} Pot containing {len(self.contents)} item(s)",
             "tags": ["container", "natural", "earthy"],
             "symbolism": self.symbolism
         })
+        #only mutates a dict, not the object
         return base
 
 class Statue(ObjectInWorld):
@@ -637,7 +646,7 @@ class Statue(ObjectInWorld):
     def __init__(self, material="stone", theme="contemplation"):
         super().__init__(
             name=f"{material.title()} Statue",
-            toughness=Toughness.STURDY,
+            toughness=Toughness.DURABLE,
             item_type="decor",
             size=Size.LARGE,
             blackmarket_value=150,

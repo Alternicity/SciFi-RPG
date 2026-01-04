@@ -6,7 +6,7 @@ from uuid import uuid4
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from memory_entry import MemoryEntry
+from memory.memory_entry import MemoryEntry
 
 PHI = (1 + np.sqrt(5)) / 2
 SQRT10 = np.sqrt(10)

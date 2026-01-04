@@ -7,12 +7,18 @@ import uuid
 #from location.location_security import Security
 """ MUST NOT import Character.
 If you need characters → pass references as "Character" type hints under TYPE_CHECKING """
+
+class LocationItems:
+    def __init__(self):
+        self.objects_present = []
+        self.items_available = []
+
 @dataclass
 class Location(LocationBase):
     name: str = "Unnamed Location"
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional[Any] = None
-
+    items: LocationItems = field(default_factory=LocationItems)
     #TMP
     is_shakedown_target: bool = False
     owner = None
@@ -23,8 +29,10 @@ class Location(LocationBase):
     security = None#?
     #security: Optional[Any] = None
 
-    objects_present: list[Any] = field(default_factory=list)
-
+    #remove
+    #objects_present: list[Any] = field(default_factory=list)
+    #objects_present now lives in LocationItems
+    
     robbable: bool = False
     is_open: bool = True
     condition: str = "Clean"
@@ -43,7 +51,24 @@ class Location(LocationBase):
     categories: List[str] = field(default_factory=list) #ALERT
 
     def __post_init__(self):
-        PerceptibleMixin.__init__(self)  # Ensure mixin init is called
+        
+        super().__init__(self.name, tags=getattr(self, "tags", None))
+        # initialise structured items container
+        #self.items = LocationItems()
+        print(">>> Location.__post_init__ CALLED for", self)
+
+        """ With dataclasses, the canonical pattern is:
+        define the field with init=False
+        initialise it in __post_init__
+        This is exactly what __post_init__ is for """
+
+    @property
+    def objects_present(self):
+        return self.items.objects_present
+    
+    @objects_present.setter
+    def objects_present(self, value):
+        self.items.objects_present = value
 
     def has_security(self):
         return self.security and (
@@ -67,6 +92,12 @@ class Location(LocationBase):
         # Any additional setup logic if needed
         pass
     
+    def update_dynamic_ambience(self):
+        total_fun = sum(c.fun for c in self.characters_there + self.employees_there)
+        self.ambience.vibes["fun"] = min(total_fun / 100, 1.0)  # normalize to 0-1
+        if len(self.characters_there) > 3:
+            self.ambience.vibes["social"] = 0.4 + len(self.characters_there) * 0.05
+
         #Do the following functions need to change to suit a dataclass?
     def list_characters(self, exclude=None):
         if exclude is None:
@@ -98,3 +129,5 @@ class Location(LocationBase):
 
     def __repr__(self):
         return f"{self.name}"  # Just return the name directly
+
+

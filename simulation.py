@@ -152,7 +152,9 @@ def run_simulation(all_characters, num_days=10):
         display_top_motivations(debug_civilian_worker)
  
     if debug_civilian_liberty:
-
+        debug_civilian_liberty.is_employee = False
+        debug_civilian_liberty.employment.workplace = None
+        debug_civilian_liberty.employment.role = None
         debug_civilian_liberty.motivation_manager.update_motivations("eat", urgency=8)
         debug_civilian_liberty.motivation_manager.update_motivations("find_partner", urgency=3)#but npc might automatically already have one
         debug_civilian_liberty.motivation_manager.update_motivations("have_fun", urgency=5)

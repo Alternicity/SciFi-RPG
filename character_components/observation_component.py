@@ -96,16 +96,14 @@ class ObservationComponent:
         into a percept entry and add it to this character's percept list.
         """
 
-        # Avoid self-perception (handled separately)
-        if obj is self:
+        # NEVER re-add self via generic perception
+        if obj is self.owner:
             return
 
         # Ask the object for its perceptual data
-        percept_data = None
         if hasattr(obj, "get_percept_data"):
-            percept_data = obj.get_percept_data(observer=self)
+            percept_data = obj.get_percept_data(observer=self.owner)
         else:
-            # Fallback for non-perceptible objects
             percept_data = {
                 "name": getattr(obj, "name", str(obj)),
                 "type": obj.__class__.__name__,
@@ -118,34 +116,28 @@ class ObservationComponent:
                 "menu_options": [],
             }
 
-        if "name" not in percept_data:
-            print(f"[BUG] Object {obj} returned percept with NO name: {percept_data}")
-            
         if not percept_data:
             return
 
-        # Store percept by name (unique key)
-        # Defensive ensure-name
-        name = percept_data.get("name") or getattr(obj, "name", None) or str(obj)
+        if "name" not in percept_data:
+            print(f"[BUG] Object {obj} returned percept with NO name: {percept_data}")
 
-        key = name
+        # ✅ STABLE KEY: object identity first, fallback only if needed
+        key = getattr(obj, "id", None)
+        if key is None:
+            key = id(obj)
 
-        # Initialize percept dict if missing
+        # Ensure percept store exists
         if not hasattr(self, "_percepts"):
             self._percepts = {}
 
-        # Add/update percept data
         self._percepts[key] = {
             "data": percept_data,
             "origin": obj
         }
 
-        #from debug_utils import debug_print
-        #debug_print(self, f"[PERCEPT ADDED] {self.name} perceived {obj.name} ({obj.__class__.__name__})", category = "percept")
-        #verbose
-
-        # Mark percepts as updated
         self.percepts_updated = True
+
 
     def get_percepts(self, sort_by_salience=True) -> list[dict]:
         #likely legacy salience sorting from pre anchor centric salience refactor

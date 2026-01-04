@@ -10,7 +10,7 @@ from time import time
 from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation, select_best_anchor, deduplicate_anchors
 
 from collections import defaultdict, deque
-from worldQueries import get_region_knowledge
+from worldQueries import get_region_knowledge, location_sells_food
 from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print, debug_once
 from create.create_game_state import get_game_state
@@ -37,11 +37,22 @@ class UtilityAI(BaseAI):
         target = anchor.resolve_target_location()
         if target and npc.location != target:
             return {
-                "name": "visit_location_auto",
+                "name": "visit_location",
                 "params": {"destination": target}
             }
+        
+        motivation = npc.motivation_manager.get_highest_priority_motivation()
+        if motivation and motivation.name == "eat" and location_sells_food(npc.location):
+            debug_print(npc, "[DEBUG] Eat motive active at Cafe", category="motive")
+            return {"name": "buy_food_auto"}
 
+            debug_print(npc, "[DEBUG] Eat motive active at Cafe", category="motive")
+            return {"name": "buy_food_auto"}
+        
         return {"name": "idle"}
+    
+        
+
 
     
     def _choose_procure_food(self, npc):
@@ -122,7 +133,7 @@ class UtilityAI(BaseAI):
         wp = npc.employment.workplace
         if wp and npc.employment.on_duty(npc.world.tick):
             return {
-                "name": "visit_location_auto",
+                "name": "visit_location",
                 "params": {"destination": wp}
             }
 
@@ -151,7 +162,7 @@ class UtilityAI(BaseAI):
             friend = npc.get_close_friend() if hasattr(npc, "get_close_friend") else None
             if friend and hasattr(friend, "location"):
                 return {
-                    "name": "visit_location_auto",
+                    "name": "visit_location",
                     "params": {"destination": friend.location}
                 }
 
@@ -169,7 +180,6 @@ class UtilityAI(BaseAI):
 
         action_name = action.get("name", "").lower()
         params = action.get("params", {})
-
 
         from actions.npc_actions import (
             visit_location_auto,
@@ -192,7 +202,7 @@ class UtilityAI(BaseAI):
             if npc.motivation_manager.has_motivation("visit"):
                 npc.motivation_manager.remove_motivation("visit")
             npc.mind.remove_thoughts_with_tag("visit")
-            debug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location}", category="visit")
+            debug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location.name}", category="visit")
             return result
     
         if npc.motivation_manager.has_motivation("eat"):
@@ -610,12 +620,22 @@ class UtilityAI(BaseAI):
                     self.npc.mind.add_thought(thought)
                     debug_print(self.npc, f"[THOUGHT CREATED] subject={thought.subject} content={thought.content} urgency={thought.urgency}", category="think")
                      """
+        kbs = npc.mind.memory.semantic.get("food_sources", [])
+        pretty = [
+            {
+                "region": kb.region,
+                "locations": kb.locations
+            }
+            for kb in kbs
+        ]
+
         debug_once(
             "food_memory",
             npc,
-            f"[MEMORY] food_locations={npc.mind.memory.semantic.get('food_locations')}",
+            f"[MEMORY] food_sources={pretty}",
             category="memory"
         )
+
 
 
 
@@ -754,8 +774,8 @@ class UtilityAI(BaseAI):
                     continue
 
                 try:
-                    from anchors.anchor_utils import _normalize_percept
-                    normalized = _normalize_percept(percept.get("data", percept), npc)
+                    from perception.percept_utils import normalize_percept
+                    normalized = normalize_percept(percept.get("data", percept), npc)
 
                     # compute_salience may return None or a number — normalize and guarantee numeric
                     raw_sal = compute_salience(normalized, npc, anchor) if anchor else 0.0

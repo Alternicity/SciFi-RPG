@@ -11,9 +11,9 @@ from location.security_setup import attach_default_security
 from objects.InWorldObjects import SmartPhone, Size, Item
 from weapons import Pistol
 from shop_name_generator import generate_shop_name
-
+import traceback
 from debug_utils import debug_print
-from augment.augmentLocations import seed_food_locations
+from augment.augmentLocations import seed_food_locations, seed_ambience_objects
 game_state = get_game_state()
 
 def create_locations(region: Region, wealth: str) -> List[Location]:
@@ -36,7 +36,10 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                     npc=None,
                     message=(
                         f"⚠️ Failed to instantiate {location_class.__name__} "
-                        f"in region '{region.name}': {e}"
+                        f"in region '{region.name}'\n"
+                        f"  Exception type: {type(e).__name__}\n"
+                        f"  Exception repr: {repr(e)}\n"
+                        f"  Traceback:\n{traceback.format_exc()}"
                     ),
                     category="create"
                 )
@@ -138,8 +141,8 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
 
 
     #get the cafes and retaurants here, 
-    seed_food_locations(game_state.all_locations)#we added this recently
-
+    seed_food_locations(game_state.all_locations)
+    seed_ambience_objects(game_state.all_locations)
 
     return locations
 

@@ -1,7 +1,7 @@
 #create.create.py
 import logging
 from pathlib import Path
-
+import traceback
 
 from loader import get_corp_names_filepath, load_corp_names
 from base.character import  Character
@@ -109,9 +109,15 @@ def create_regions():
         except Exception as e:
             debug_print(
                 npc=None,
-                message=f"⚠️ Error creating locations for region '{region.name}': {e}",
+                message=(
+                    f"⚠️ Error creating locations for region '{region.name}'\n"
+                    f"  Exception type: {type(e).__name__}\n"
+                    f"  Exception repr: {repr(e)}\n"
+                    f"  Traceback:\n{traceback.format_exc()}"
+                ),
                 category="create"
             )
+
     total_locations = sum(len(r.locations) for r in all_regions)
     #debug_print(None, f"[CREATE] Created {len(all_regions)} regions and {total_locations} locations total.", category="create")
 

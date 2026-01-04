@@ -12,9 +12,11 @@ from tabulate import tabulate
 # salience = percept["salience"] if "salience" in percept else "?"
 
 class PerceptibleMixin:
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.id = str(uuid.uuid4())
-
+        self.is_perceptible = True
+        
     def compute_salience(self, observer=None, anchor=None):
         # Avoid circular import; override in subclasses or call global compute_salience externally
         return getattr(self, "salience", 1)
@@ -85,10 +87,21 @@ class PerceptibleMixin:
                 print(f"[WARNING] Percept for key '{key}' is missing an origin.")
             if "type" not in data:
                 print(f"[WARNING] Percept data for key '{key}' is missing 'type'.")
-
             #usage
             #validate_percepts(npc)
 
+    @property
+    def tags(self):
+        return self._tags
+
+    @tags.setter
+    def tags(self, value):
+        self._tags = value
+
+    #print("Bonsai tags:", bonsai.tags)
+    #bonsai marked as not defined
+
+#utility functions
 def gather_perceptible_objects(obj):
     found = []
     if isinstance(obj, PerceptibleMixin):
@@ -96,6 +109,11 @@ def gather_perceptible_objects(obj):
     if hasattr(obj, "inventory"):
         for item in obj.inventory.items.values():
             found.extend(gather_perceptible_objects(item))
+    # Traverse ambience / static objects
+    if hasattr(obj, "items") and hasattr(obj.items, "objects_present"):
+        for item in obj.items.objects_present:
+            found.extend(gather_perceptible_objects(item))
+
     return found 
 #call this from observe_objects() for cleaner recursive visibility.
 

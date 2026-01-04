@@ -5,7 +5,7 @@ NPC_VITALS_CONFIG = {
     "identity": True,
     "location": True,
     "vitals": True,
-    "employment": False,
+    "employment": True,
     "finances": True,
     "motivations": True,
     "anchors": False,

@@ -12,9 +12,14 @@ class LocationBase:
         self.tags = tags or []
 
 class CharacterBase:
+    def __init__(self, name=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = name
+
+""" class CharacterBase:
     def __init__(self, name, tags=None):
         self.name = name
-        self.tags = tags or []
+        self.tags = tags or [] """
 
 class RegionBase:
     def __init__(self, name, tags=None):

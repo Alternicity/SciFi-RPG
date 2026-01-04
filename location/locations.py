@@ -11,6 +11,7 @@ from base.character import Character
 from base.location import Location
 from base.faction import Faction
 from location.location_security import Security
+from objects.InWorldObjects import Toughness, Size
 from objects.InWorldObjects import CashRegister
 import uuid
 from region.region import Region
@@ -233,7 +234,15 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
     is_powered: bool = False
     energy_cost: int = 0
     upkeep: int = 15
-    cash_register: CashRegister = field(default_factory=lambda: CashRegister("Register", 10, "currency", 1, 1000))
+    cash_register: CashRegister = field(
+            default_factory=lambda: CashRegister(
+                "Register",
+                Toughness.DURABLE,   # ✅ enum, not int
+                "currency",
+                Size.SMALL,
+                1000
+            )
+        )
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1164,11 +1173,11 @@ class Factory(WorkplaceMixin, PerceptibleLocation):
 @dataclass
 class Cafe(WorkplaceMixin, PerceptibleLocation):
     name: str = "Metro Cafe"
-    tags: list[str] = field(default_factory=lambda: ["workplace", "fun", "food", "social"])
+    tags: list[str] = field(default_factory=lambda: ["workplace", "fun", "food", "social", "cafe"])
     description: str = "A cafe"
     #TMP
     is_shakedown_target: bool = True
-    upkeep: int = 10
+    upkeep: int = 9
     categories: List[str] = field(default_factory=lambda: ["workplace"])
     ambience: Ambience = field(default_factory=lambda: Ambience({"social": 0.5, "fun": 0.3}))
     #add also to percepts. Good ambience might be calculated by the aggregate fun present
@@ -1176,7 +1185,7 @@ class Cafe(WorkplaceMixin, PerceptibleLocation):
     "peace": 0.6,
     "curiosity": 0.4,
     "memory": 0.2
-}) """
+    }) """
 
     items_available: List[Any] = field(default_factory=list)#food for sale
     inventory: Inventory = field(default_factory=Inventory)#materia prima
@@ -1186,73 +1195,22 @@ class Cafe(WorkplaceMixin, PerceptibleLocation):
     allowed_roles = [COOK, CAFE_MANAGER, WAITRESS]
     """ Passive Thought Emission
     After each tick, locations emit ambience-derived thoughts based on character psy. """
-    fun: int = 1
-    is_concrete: bool = True
-    secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
-    security: Security = field(default_factory=lambda: Security(
-        level=1,
-        guards=[],
-        difficulty_to_break_in=1,
-        surveillance=False,
-        alarm_system=False
-    ))
-
-    def get_percept_data(self, observer=None):
-        return {
-            "name": self.name,
-            "type": self.__class__.__name__,
-        "origin": "FIXME",
-        "tags": "FIXME",
-        "salience": "FIXME",
-        "urgency": "FIXME",
-        "source": "FIXME",
-        "security": "FIXME",
-        "is_open": "FIXME",
-        "has_security": "FIXME",
-            "description": f"Cafe: {self.name}",
-            "region": self.region.name if self.region else None,
-            "robbable": True,
-            "origin": self,
-            "tags": ["location", "food"],
-            "urgency": 1,
-            "source": None,
-            "security": self.security_level,
-            "is_open": self.is_open,
-            "has_security": self.has_security(),
-            
-        }
-
-    def to_dict(self):
-        return asdict(self)
-
-    def serve_customer(self, character):
-        """Serve a customer and increase their satisfaction based on ambience and fun."""
-        print(f"{character.name} is enjoying the ambience at {self.name}.")
-        if self.ambience_level > 7:
-            character.satisfaction += 10  # Example: increase character satisfaction
-            print(f"The ambience at {self.name} makes {character.name} feel very relaxed!")
-        else:
-            character.satisfaction += 5  # Smaller satisfaction increase for lower ambience
-            print(f"{character.name} enjoys their time at {self.name}, but the ambience could be better.")
+    
 
         # Add more logic if you want to further interact with the customer based on the cafe's attributes.
 
-def update_dynamic_ambience(self):
-    total_fun = sum(c.fun for c in self.characters_there + self.employees_there)
-    self.ambience.vibes["fun"] = min(total_fun / 100, 1.0)  # normalize to 0-1
-    if len(self.characters_there) > 3:
-        self.ambience.vibes["social"] = 0.4 + len(self.characters_there) * 0.05
+    def __post_init__(self):
+        super().__post_init__()
 
 
-def __repr__(self):
-        return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
+
+    def __repr__(self):
+            return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
 @dataclass
 class Restaurant(WorkplaceMixin, PerceptibleLocation):
     name: str = "Generic Restaurant"
-    tags: list[str] = field(default_factory=lambda: ["workplace", "food", "social"])
+    tags: list[str] = field(default_factory=lambda: ["workplace", "food", "social", "restaurant"])
     description: str = "A restaurant"
 
     #TMP
