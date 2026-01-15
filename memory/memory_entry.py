@@ -177,6 +177,10 @@ class RegionKnowledge:
     def summary(self) -> str:
         return f"{self.character_or_faction.name}'s view of {self.region_name}: {len(self.locations)} locations, {len(self.region_gangs)} gangs"
 
+
+
+
+
 @dataclass
 class FoodSourceMemory(MemoryEntry):#subclass of MemoryEntry
 
@@ -184,7 +188,7 @@ class FoodSourceMemory(MemoryEntry):#subclass of MemoryEntry
     
     base_preference: int = 0
     fun_factor: int = 0
-    ambience_factor: int = 0
+    ambience_factor: int = 0 #what was the vive like there the last time the character visited?
     nutrition_value: int = 0
     
     considers_fun: bool = False

@@ -99,6 +99,7 @@ def get_available_options(location, character):
     """Determine available menu options based on character and location."""
     from characterActions import talk_to_character, talk_to_employee, talk_to_customer, rob, steal
     from game_logic import gameplay
+    from employment.workplace_mixin import WorkplaceMixin
     available_options = {}
 
     if location is None:
@@ -110,10 +111,11 @@ def get_available_options(location, character):
     #print(f"Debug: Checking available options for {location.name}.")
 
     # Location-based actions
-    if hasattr(location, "employees_there"):
+    if isinstance(location, WorkplaceMixin):
         employee_names = {emp.name for emp in location.employees_there}
     else:
         employee_names = set()
+
         print(f"Debug: {location.name} has employees_there: {[emp.name for emp in location.employees_there]}")
 
     if hasattr(location, "characters_there"):
@@ -121,15 +123,17 @@ def get_available_options(location, character):
         print(f"Debug: {location.name} has characters_there (non-employees): {[char.name for char in non_employee_chars]}")
 
     #consolidate
-    if hasattr(location, "employees_there") and location.employees_there:
+    if isinstance(location, WorkplaceMixin) and location.employees_there:
         option_list.append(("Display Employees", lambda: display_employees(location)))
 
-
-    if hasattr(location, "employees_there") and location.employees_there:
+    if isinstance(location, WorkplaceMixin) and location.employees_there:
         option_list.append(("Talk to an Employee", lambda: talk_to_employee(location, character)))
 
+
     if hasattr(location, "characters_there") and location.characters_there:
-        non_employees = [char for char in location.characters_there if char not in location.employees_there]
+        employees = location.employees_there if isinstance(location, WorkplaceMixin) else []
+        non_employees = [char for char in location.characters_there if char not in employees]
+
         if non_employees:
             option_list.append(("Talk to a Customer", lambda: talk_to_customer(location, character)))
     

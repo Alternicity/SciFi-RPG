@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import time
 from typing import Optional, List, Any
 import random
+import itertools
 from character_thought import Thought
 from character_memory import Memory
 from debug_utils import debug_print
@@ -23,8 +24,9 @@ class Mind:
         self.max_thinks_per_tick=1
         self.default_focus = None #baseline
         self.attention_focus = None #momentary concern
+        #ADD Identity objects (deep structures) = psychic architecture
 
-        #Consider syncing Character.social_connections["enemies"] with mind.memory.semantic["enemies"] at periodic intervals
+        
 
         #Future idea
         #npc.thinking_style = "scatterbrain" Many thoughts
@@ -86,6 +88,22 @@ class Mind:
                 debug_print(f"[THOUGHT CHECK] {self.owner.name} checking for thought containing: '{content_substring}'", category="think")
                 return True
         return False
+
+    #“Have I recently thought about this already?”
+    def has_recent_thought(self, subject, window=6): #window =6 : If not provided, look at the last 6 thoughts only
+        return any(#True if at least one item is truthy, False if all are false
+            t.subject == subject
+            #predicate is the thing being checked for (e.g. "finished")
+            for t in itertools.islice(reversed(self.thoughts), window)
+            #slicing syntax. lazily produces: True, False, False, True, ...one value at a time
+        )
+        #This is idiomatic Python.
+
+    def get_thought_with_tag(self, tag: str):
+        for thought in self.thoughts:
+            if hasattr(thought, "tags") and tag in thought.tags:
+                return thought
+        return None
 
 
     def find_thought_by_tag(self, tag: str):

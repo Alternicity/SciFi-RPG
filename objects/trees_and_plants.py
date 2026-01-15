@@ -72,7 +72,7 @@ class BonsaiTree(Plant):
     geometry: str = "miniature"
     resonance_factor: float = 0.9
     golden_ratio_influence: float = 0.4
-
+    #we can give it some decriptive attributes here for the display function
     @property
     def tags(self):
         return super().tags + ["zen", "focus"]

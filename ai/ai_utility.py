@@ -3,7 +3,7 @@
 from ai.ai_base import BaseAI
 from character_thought import Thought, FailedThought
 from character_think_utils import social_thoughts
-from actions.npc_actions import visit_location_auto, idle_auto
+from actions.social_actions.dispatcher import execute_social_action
 from character_memory import Memory
 from time import time
 
@@ -15,7 +15,7 @@ from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print, debug_once
 from create.create_game_state import get_game_state
 from focus_utils import set_attention_focus
-
+from ai.ai_utils import social_scan
 from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought
 
 class UtilityAI(BaseAI):
@@ -34,26 +34,28 @@ class UtilityAI(BaseAI):
         if not anchor:
             return {"name": "idle"}
 
+        # 1. Immediate action?
+        if hasattr(anchor, "propose_action"):
+            action = anchor.propose_action()
+            if action:
+                return action
+
+        # 2. Need to move?
         target = anchor.resolve_target_location()
         if target and npc.location != target:
             return {
                 "name": "visit_location",
                 "params": {"destination": target}
             }
-        
-        motivation = npc.motivation_manager.get_highest_priority_motivation()
-        if motivation and motivation.name == "eat" and location_sells_food(npc.location):
-            debug_print(npc, "[DEBUG] Eat motive active at Cafe", category="motive")
-            return {"name": "buy_food_auto"}
 
-            debug_print(npc, "[DEBUG] Eat motive active at Cafe", category="motive")
-            return {"name": "buy_food_auto"}
-        
+        # 3. Social/work hooks
+        if anchor.type == "work" and "social" in anchor.tags:
+            return {
+                "name": "social_action",
+                "params": {"anchor": anchor}
+            }
+
         return {"name": "idle"}
-    
-        
-
-
     
     def _choose_procure_food(self, npc):
         # 1. Generate hunger thought
@@ -184,6 +186,7 @@ class UtilityAI(BaseAI):
         from actions.npc_actions import (
             visit_location_auto,
             exit_location_auto,
+            buy_auto,#added
             eat_auto,
             idle_auto
         )
@@ -205,22 +208,16 @@ class UtilityAI(BaseAI):
             debug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location.name}", category="visit")
             return result
     
-        if npc.motivation_manager.has_motivation("eat"):
-            eat_motive = npc.motivation_manager.get_motivation("eat")
+        
 
-            if eat_motive.urgency >= 7:   # tune later
-                thought = generate_hunger_thought(npc)
-                if thought:
-                    npc.mind.add_thought(thought)
-                    debug_print(
-                        npc,
-                        "[FOOD] Hunger thought generated",
-                        category="food"
-                    )
+        if action_name == "social_action":
+            execute_social_action(self.npc, action["params"]["anchor"])
+            return
 
         # --- generic routing ---
         action_map = {
             "eat": eat_auto,
+            "buy": buy_auto,
             "exit_location": exit_location_auto,
             "idle": idle_auto,
             }
@@ -342,6 +339,7 @@ class UtilityAI(BaseAI):
 
 
     def promote_thoughts(self):
+        #Don’t special-case employment inside promote_thoughts
         npc = self.npc
         mind = npc.mind
         game_state = get_game_state()
@@ -389,6 +387,13 @@ class UtilityAI(BaseAI):
                 category="anchor"
             )
 
+
+        #special casing, ok for now
+        """ When should it go away?
+        When:
+        hunger reliably creates a thought with intent
+        that thought promotes via create_anchor_from_thought
+        food discovery & execution are stable """
         for thought in npc.mind.thoughts:
             if (
                 thought.subject == "hunger"
@@ -457,17 +462,23 @@ class UtilityAI(BaseAI):
             if event_counts[key] >= 3:
                 debug_print(npc, f"[INSIGHT] {m.subject} has done {m.verb} {event_counts[key]} times.", category = "insight")
             
-            if m.verb == "finished_shift":
-                npc.add_anchor("just_got_off_shift")#there is currently no add_anchor()
-                #anchor_utils.py is the obvious place to put one, but so far we have been adding anchors without a function
-                #So should this be npc.current_anchor = 
-                #perhaps the function makes the most sense, and it could push any per-existing anchor into npc.anchors
-                #(which is a list of anchors)
-                debug_print(npc, "[SHIFT] {self.npc.name} Shift ended → activating just_got_off_shift anchor", category="employment")
-                
-
-            #call trigger just_got_off_shift=True
-            
+            if (
+                m.verb == "finished_shift"
+                and not npc.mind.has_recent_thought("finished_shift")
+            ):
+                npc.mind.add_thought(
+                    subject="work",
+                    predicate="finished",
+                    content="My shift just ended.",
+                    urgency=4,
+                    tags=["work", "transition"],
+                    source=m
+                )
+                debug_print(
+                    npc,
+                    f"[THOUGHT] {npc.name} thinks: My shift just ended.",
+                    category="thought"
+                )
 
     def deduplicate_thoughts_by_type(self, thoughts):
         #call it: After thoughts are generated from percepts, before promotions happen
@@ -555,8 +566,9 @@ class UtilityAI(BaseAI):
 
     def think(self, region):
         from region.region import Region
-        percepts = self.npc.get_percepts()
-
+        npc = self.npc
+        percepts = npc.get_percepts()
+        generate_hunger_thought(npc)
         self.generate_motivation_thoughts()
         self.ensure_anchors_from_motivations()
         self.handle_failed_anchors()
@@ -566,13 +578,9 @@ class UtilityAI(BaseAI):
             print(f"[DEBUG] {self.npc.name} UtilityAI def think calling observe with region={region}, location={self.npc.location}")
             print(f"[UtilityAI] Bad region: {region} ({type(region).__name__}) for {self.npc.name}")
 
-        #observe calls have moved to the game loop tick  
-        #self.npc.observe(region=region, location=self.npc.location)
-
         region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
         if region_knowledge:
             self.evaluate_turf_war_status(region_knowledge)
-        #self.promote_thoughts()# Delete in favour of calling from simulate_hours()
 
         motivations = self.npc.motivation_manager.get_urgent_motivations()
         if not motivations:
@@ -587,39 +595,31 @@ class UtilityAI(BaseAI):
                 anchor = create_anchor_from_motivation(npc, motive)
                 if anchor:
                     npc.current_anchor = anchor
+                    
+        anchors = npc.anchors
+        deduplicate_anchors(npc, anchors)
 
-        deduplicate_anchors(npc)
+        #If we replace the following block, how will motivations initiate this thought?
+        #generate_hunger_thought() does not look up motivations
 
+        """ if npc.motivation_manager.has_motivation("eat"):
+            eat_motive = npc.motivation_manager.get_motivation("eat")
+
+            if eat_motive.urgency >= 7:   #
+                thought = generate_hunger_thought(npc)
+                if thought:
+                    npc.mind.add_thought(thought)
+                    debug_print(
+                        npc,
+                        "[FOOD] Hunger thought generated",
+                        category="food"
+                    ) """
 
         # Examine episodic memory for repeated events
         episodic_memories = self.npc.mind.memory.get_episodic()
         self.examine_episodic_memory(episodic_memories)
         #logic to do something with them
 
-        #percepts = list(self.npc.get_percepts()) 
-        #get_percepts.values? Re check this
-
-        """ for i, percept in enumerate(percepts):
-            pass """
-            
-
-        """ candidate_thoughts = []
-        for motivation in motivations:
-            anchor = create_anchor_from_motivation(self.npc, motivation)
-            for percept in percepts:
-                if self.matches_motivation(percept, motivation):
-                    salience = self.compute_salience_for_percepts(percept, motivation)
-
-                    #Should line below use mind.add_thought(self, thought: Thought):
-                    thought = Thought(
-                        content = str(percept["description"] if "description" in percept else percept["origin"]),
-                        urgency=salience,
-                        source=str(percept["description"],
-                        tags=percept.get("tags", []),
-                    ))
-                    self.npc.mind.add_thought(thought)
-                    debug_print(self.npc, f"[THOUGHT CREATED] subject={thought.subject} content={thought.content} urgency={thought.urgency}", category="think")
-                     """
         kbs = npc.mind.memory.semantic.get("food_sources", [])
         pretty = [
             {
@@ -636,22 +636,23 @@ class UtilityAI(BaseAI):
             category="memory"
         )
 
-
-
-
         thoughts = self.npc.mind.get_all()
         self.deduplicate_thoughts_by_type(thoughts)
         self.npc.mind.remove_thought_by_content("No focus")
+
         self.npc.mind.thoughts = deque(thoughts, maxlen=self.npc.mind.thoughts.maxlen)
+        #commit the cleaned working copy back into the canonical container
+        """ It’s acceptable for now, but long-term:
+        Thought management should live inside Mind
+        UtilityAI shouldn’t rebuild containers
+        For TC2: ✔ acceptable, ❌ not final. """
         
         self.generate_thoughts_from_percepts()
-        #can we then just add the salient percepts to the parameters here?
 
-        #Add a function for this:
+        social_scan(npc)
         social_thoughts(self)
         if not npc.current_anchor:
             npc.current_anchor = self.select_current_anchor(npc)
-
 
         print(f"[DEBUG] From UtilityAI, def think()")
         print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
@@ -668,6 +669,7 @@ class UtilityAI(BaseAI):
             if not npc.mind.has_thought_with_tag("planning"):
                 npc.mind.add_thought(
                     FailedThought(
+                        subject=anchor,
                         content=f"I want to {anchor.name}, but I don't know how.",
                         cause="anchor_unresolved",
                         urgency=getattr(anchor, "urgency", 5),
@@ -893,6 +895,8 @@ class UtilityAI(BaseAI):
         npc.mind.add(appraise_rival)
         if hasattr(npc, 'utility_ai'):
             npc.utility_ai.evaluate_thought_for_threats(appraise_rival)
+
+
 
 def generate_location_visit_thought(npc, location, enabling_motivation=None):
     """

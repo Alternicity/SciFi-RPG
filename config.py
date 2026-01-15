@@ -4,6 +4,7 @@
 DEBUG_MODE = True  # Master switch for all debug printing
 DEBUG_TC1 = False         # legacy TC1 narration
 DEBUG_TC2 = True          # current focus
+#ATTN are these used?
 
 """ ENABLED_DEBUG_CATEGORIES = {"think", "salience", "memory", "action", "motivation", 
                             "rkprint", "decision", "anchor", "tick", "insight"} """

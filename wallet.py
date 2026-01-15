@@ -1,3 +1,4 @@
+#wallet.py
 import random
 from objects.InWorldObjects import Wallet
 
@@ -36,7 +37,7 @@ def generate_wallet(character_type="civilian", cash_ratio=0.2, variance=0.5):
 
 
 
-    #possibly deprecated function, pasted here
+    #possibly deprecated function, pasted here, not called
 def get_total_money(self):
     """Return the total money available (cash + bank card)."""
     return self.wallet.total_balance()

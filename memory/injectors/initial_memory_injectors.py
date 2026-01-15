@@ -3,7 +3,7 @@ import random
 from memory.memory_builders.region_knowledge_builder import build_region_knowledge
 from memory.memory_builders.shop_knowledge_builder import build_shop_knowledge
 from memory.memory_builders.food_sources_builder import build_food_sources
-
+from memory.social.social_memory import SocialMemory
 from memory.encoders.shop_memory_encoder import encode_shop_knowledge
 
 from create.create_game_state import get_game_state
@@ -38,3 +38,10 @@ def inject_initial_food_preferences(npc):
         fs.base_preference = random.randint(1, 3)
         fs.nutrition_value = random.randint(1, 3)
         fs.considers_nutrition = True
+
+#call this from all character instantiation blocks
+def inject_initial_social_memory(npc):
+    if npc.mind.memory.semantic["social"]:
+        return  # already exists
+
+    npc.mind.memory.semantic["social"] = SocialMemory(owner=npc)

@@ -210,7 +210,6 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
     is_shop: bool = True
     owner: Optional[Character] = None
     specialization = None
-    employees_there: List['Employee'] = field(default_factory=list)
     allowed_roles = [CASHIER, SHOP_MANAGER]
     
     characters_there: List['Character'] = field(default_factory=list)
@@ -1175,7 +1174,7 @@ class Cafe(WorkplaceMixin, PerceptibleLocation):
     name: str = "Metro Cafe"
     tags: list[str] = field(default_factory=lambda: ["workplace", "fun", "food", "social", "cafe"])
     description: str = "A cafe"
-    #TMP
+    till: int = 0   #ATTN replace with CashRegister Component via augmentLocations.py
     is_shakedown_target: bool = True
     upkeep: int = 9
     categories: List[str] = field(default_factory=lambda: ["workplace"])
@@ -1191,7 +1190,6 @@ class Cafe(WorkplaceMixin, PerceptibleLocation):
     inventory: Inventory = field(default_factory=Inventory)#materia prima
 
     owner: Optional[Character] = None  # A Family, Character, or Corporation
-    employees_there: List['Employee'] = field(default_factory=list)
     allowed_roles = [COOK, CAFE_MANAGER, WAITRESS]
     """ Passive Thought Emission
     After each tick, locations emit ambience-derived thoughts based on character psy. """
@@ -1222,7 +1220,6 @@ class Restaurant(WorkplaceMixin, PerceptibleLocation):
     inventory: Inventory = field(default_factory=Inventory)
 
     owner: Optional[Character] = None
-    employees_there: List['Employee'] = field(default_factory=list)
     allowed_roles = [COOK, RESTAURANT_MANAGER, WAITRESS]
 
     fun: int = 2

@@ -1,5 +1,9 @@
 #character_components.wallet_component.py
-
+"""
+DEPRECATED: WalletComponent is not used post-ECS refactor.
+Kept temporarily for reference.
+"""
+#kinda
 class WalletComponent:
     def __init__(self, owner, bankCardCash=0, cash=0):
         self.owner = owner

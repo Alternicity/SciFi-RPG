@@ -356,6 +356,21 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
 
     anchor_name = canonical  # <-- NO timestamp, NO content slug
 
+    #CANONICAL_ANCHORS now greyed ot, not accessed
+    """ CANONICAL_ANCHORS = {
+        ("work", "finished"): "off_work",
+    } """
+    #Save for later, Thought(predicate=...) is reliably populated and we want data-driven canonicalization
+
+    # --- Canonical override (TC2 transitional) ---
+    if thought.subject == "work" and (
+        thought.predicate == "finished"
+        or "finished" in str(thought.content).lower()
+    ):
+        anchor_name = "off_work"
+    #Later (TC3+), you can remove content inspection entirely
+    #define a minimal ThoughtVerb enum (non-binding)
+
     # --- Deduplicate via memory ---
     existing_memory = [
         m for m in npc.mind.memory.episodic
@@ -511,3 +526,10 @@ def compute_salience_for_percept_with_anchor(obj, anchor, observer=None):
                 f"owner={getattr(a.owner, 'name', None)}, source={type(a.source).__name__ if a.source else None}",
                 category="anchor"
             ) """
+
+def anchor_from_duty(npc, duty: str):
+    return Anchor(
+        type=duty,
+        source="employment",
+        tags=["work"],
+    )

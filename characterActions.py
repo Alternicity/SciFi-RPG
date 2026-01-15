@@ -320,7 +320,7 @@ def pick_up_cashwad(self, cashwad):
     print(f"Picked up a CashWad worth {cashwad.get_value()} cash.")
     cashwad.add_to_wallet(self.wallet)
     
-    from create_game_state import get_game_state
+    from create.create_game_state import get_game_state
     game_state = get_game_state()
     
 def exit_location(character):
@@ -426,7 +426,7 @@ def steal(character, location, target_item=None, simulate=False, verbose=True):
     debug_print(character, f"{character.name} is attempting to steal {item_name} from {location.name}.", category="action")
 
     # Calculate observer / resistance
-    employees = getattr(location, 'employees_there', []) or []
+    employees = getattr(location, "employees_there", [])
     observation = max([e.skills.get("observation", 0) for e in employees]) if employees else 0
     stealth = character.skills.get("stealth", 0)
     resistance_mod = getattr(location, "security_level", 0)
@@ -586,10 +586,15 @@ def talk_to_character_group(entity, initiator, context_name="here"):
     convo.start()
 
 def talk_to_customer(location, character):
-    non_employees = [
-        c for c in location.characters_there
-        if c not in getattr(location, "employees_there", [])
-    ]
+    from employment.workplace_mixin import WorkplaceMixin
+    employees = (
+        location.employees_there
+        if isinstance(location, WorkplaceMixin)
+        else []
+    )
+
+    non_employees = [c for c in location.characters_there if c not in employees]
+
     if not non_employees:
         print("No customers here to talk to.")
         return
@@ -607,7 +612,12 @@ def talk_to_customer(location, character):
     convo.start()
 
 def talk_to_employee(location, character):
-    employees = getattr(location, "employees_there", [])
+    from employment.workplace_mixin import WorkplaceMixin
+    if not isinstance(location, WorkplaceMixin):
+        print("No employees here to talk to.")
+        return
+
+    employees = location.employees_there
     if not employees:
         print("No employees here to talk to.")
         return

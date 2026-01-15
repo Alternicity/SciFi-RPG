@@ -15,6 +15,7 @@ from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from character_components.observation_component import ObservationComponent
+from augment.augment_character import augment_character
 
 def create_TheState_characters(faction):
     from faction import State
@@ -66,6 +67,7 @@ def create_TheState_characters(faction):
         game_state.add_state_staff(vip)
         state_staff.append(vip)
         vip.mind = Mind(owner=vip, capacity=vip.intelligence)
+        augment_character(vip)
         vip.curiosity = Curiosity(base_score=vip.intelligence // 2)
         vip.task_manager = TaskManager(vip)
         vip.employment = EmployeeProfile()
@@ -107,6 +109,7 @@ def create_TheState_characters(faction):
             faction.members.append(person)
 
             person.mind = Mind(owner=person, capacity=person.intelligence)
+            augment_character(person)
             person.curiosity = Curiosity(base_score=person.intelligence // 2)
             person.task_manager = TaskManager(person)
             person.employment = EmployeeProfile()
@@ -149,6 +152,7 @@ def create_TheState_characters(faction):
             game_state.add_state_staff(cop)
             state_staff.append(cop)
             cop.mind = Mind(owner=cop, capacity=cop.intelligence)
+            augment_character(cop)
             cop.curiosity = Curiosity(base_score=cop.intelligence // 2)
             cop.task_manager = TaskManager(cop)
             cop.employment = EmployeeProfile()

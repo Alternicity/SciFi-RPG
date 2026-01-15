@@ -13,10 +13,19 @@ def summarize_civilians(civilians, regions):
     most_populous_race, pop_count = race_counts.most_common(1)[0]
 
     # --- 2. Partner statistics ---
-    partnered = [
-        c for c in civilians
-        if len(c.social_connections.get("partners", [])) > 0
-    ]
+    partnered = []
+
+    for c in civilians:
+        social = c.mind.memory.semantic.get("social")
+        if not social:
+            continue
+
+        if any(
+            rel.current_type == "partner"
+            for rel in social.relations.values()
+        ):
+            partnered.append(c)
+            #If you want to be stricter later (mutual partner only), you can refine this.
 
 
 

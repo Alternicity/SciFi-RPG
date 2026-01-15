@@ -1,17 +1,19 @@
 #memory.memory_builders.memory_utils.py
 
 def best_food_location(npc):
-    food_kb = None
 
-    for mem in npc.mind.memory.get_semantic():
-        if getattr(mem, "type", None) == "food_sources":
-            food_kb = mem
-            break
+
+    food_kbs = npc.mind.memory.semantic.get("food_locations", [])
+    if not food_kbs:
+        return None
+
+    region = npc.location.region #better than npc.region
+    food_kb = food_kbs[0]  # later: choose by salience / region
 
     if not food_kb:
         return None
 
-    region = npc.region
+    
     candidates = []
 
     for loc in region.locations:

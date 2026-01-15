@@ -1,2 +1,0 @@
-#character_components.py
-

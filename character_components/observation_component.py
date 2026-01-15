@@ -8,7 +8,7 @@ class ObservationComponent:
         self.percepts_updated = False
 
     def update_percepts(self, new_percepts: list[dict]):
-
+        seen = set()
         for p in new_percepts:
             # Auto-wrap flat percepts if needed
             if "data" not in p:
@@ -21,6 +21,13 @@ class ObservationComponent:
 
             data = wrapped["data"]
             origin = wrapped.get("origin", data.get("origin", None))
+            
+            # 🔒 HARD DEDUPE BY OBJECT IDENTITY
+            if origin is not None:
+                oid = id(origin)
+                if oid in seen:
+                    continue
+                seen.add(oid)
 
             # Validate required fields
             if not isinstance(data, dict):

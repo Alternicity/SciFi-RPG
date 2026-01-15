@@ -58,7 +58,7 @@ def location_sells_food(location):
         return False
 
     # Explicit capability beats tags
-    if hasattr(location, "items_available") and location.items_available:
+    if hasattr(location, "items_available") and location.items_available:#this doesnt check if specifically food is available
         return True
 
     # Tag-based fallback

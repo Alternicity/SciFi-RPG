@@ -23,7 +23,10 @@ class GameState:
         self.primary = None #the npc to suppress the output of
         self.secondary = None
         self.civilian_worker = None
+        self.civilian_waitress = None
         self.civilian_liberty = None
+        #Recommendation (later): Remove individual fields and rely on debug_npcs only
+
         self.debug_npcs = {}
         self.show_background_debug = False
 
@@ -45,6 +48,7 @@ class GameState:
         self.corp_hqs = []
         self.player_character = None
         self.orphans = []
+        
         self.downtown_gangs = []
         self.northville_gangs = []
         self.easternhole_gangs = []
@@ -60,7 +64,7 @@ class GameState:
         #placeholders
         hiring  =  {} #employers with job vacancies. Employer/character class wanted
         recruiting =  {} # gangs with vacancies to fill. Gang/type character wanted
-
+        CHEAP_MEAL_COST = 5
 
     @property
     def tick(self):

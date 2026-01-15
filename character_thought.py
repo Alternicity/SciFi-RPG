@@ -10,9 +10,10 @@ from debug_utils import debug_print  # optional, if you want to log failures
 
 
 class Thought:
-    def __init__(self, subject, content, origin=None, urgency=1, tags=None, source=None, anchored=False, weight=0, timestamp=None, resolved=False, corollary=None):
+    def __init__(self, subject, content, predicate=None, origin=None, urgency=1, tags=None, source=None, anchored=False, weight=0, timestamp=None, resolved=False, corollary=None):
         self.subject = subject              #The object the thought is about. Character, faction, event, ObjectInWorld etc
         self.content = content              # Description of the thought (str or object)
+        self.predicate = predicate
         self.origin = origin                # What caused it (e.g., percept source)
         self.urgency = urgency              # How pressing it is
         self.tags = tags or []              # Useful for filtering (e.g., ["crime", "money"])
@@ -117,15 +118,18 @@ Add a .to_dict() or .summarize() method for UI/debug/logging, if needed
 Add __eq__ or __hash__ methods if you'll compare or de-duplicate thoughts """
 
 class FailedThought(Thought):
-    def __init__(self, content, cause=None, **kwargs):
-        super().__init__(content=content, tags=["error", "fail"], **kwargs)
+    def __init__(self, subject, content, cause=None, **kwargs):
+        user_tags = kwargs.pop("tags", [])
+        tags = ["error", "fail"] + list(user_tags)
+
+        super().__init__(
+            subject=subject,
+            content=content,
+            tags=tags,
+            **kwargs
+        )
         self.cause = cause
 
-    #usage
-    """ try:
-        result = build_triangle()
-    except Exception as e:
-        self.npc.mind.add_thought(FailedThought("Couldn't build triangle", cause=str(e))) """
     
 class ThoughtTools():
     pass

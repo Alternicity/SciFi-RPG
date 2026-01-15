@@ -7,12 +7,14 @@ from location.locations import House, ApartmentBlock
 #from common import weighted_choice
 from base.location import Location
 from characters import Civilian
+from base.character import Character
 from economy.economy import Ownership
+from create.create_game_state import get_game_state
 @dataclass
 class Family:
     """Lightweight social unit tracking related civilians."""
     family_name: str
-    members: List['Civilian'] = field(default_factory=list)#Civilian must be updated
+    members: List[Character] = field(default_factory=list)
     home: Optional['Location'] = None
 
     @property
@@ -24,10 +26,35 @@ class Family:
         return [c for c in self.members if getattr(c, "age", 20) < 18]
 
     def add_member(self, character):
-        if character not in self.members:
-            self.members.append(character)
-            character.family = self
-            character.social_connections.setdefault("family", []).append(self)
+        social = character.mind.memory.semantic.get("social")
+        if not social:
+            raise RuntimeError(f"{character.name} has no SocialMemory")
+
+        gs = get_game_state()
+
+        for other in self.members:
+            other_social = other.mind.memory.semantic.get("social")
+
+            rel_a = social.get_relation(other)
+            rel_a.record_interaction(
+                hour=gs.hour,
+                day=gs.day,
+                valence=0,
+                new_type="family"
+            )
+
+            rel_b = other_social.get_relation(character)
+            rel_b.record_interaction(
+                hour=gs.hour,
+                day=gs.day,
+                valence=0,
+                new_type="family"
+            )
+
+        self.members.append(character)
+
+
+
 
 
     #add update npc.loyalties code here
@@ -85,11 +112,20 @@ def assign_families_and_homes(game_state):#anomalous that game_state is passed a
 
     for family in families_by_name.values():
         if not unassigned_residences:
-            debug_print(None, f"[FAMILY] Out of residences while placing family {family.family_name}.", "family")
-            break
+            debug_print(
+                None,
+                f"[FAMILY] No residence for family {family.family_name} (homeless family)",
+                category=["family", "housing", "warning"]
+            )
+            family.home = None
+            for civ in family.members:
+                civ.is_homeless = True
+            continue
+
 
         home = unassigned_residences.pop()
         family.home = home
+        #eventually update npc.residences
 
         # Place each member at home
         for civ in family.members:
@@ -102,13 +138,38 @@ def assign_families_and_homes(game_state):#anomalous that game_state is passed a
     # -------------------------------
     # 3. Link partners (rough pass)
     # -------------------------------
+
     for family in families_by_name.values():
         adults = family.adults
         random.shuffle(adults)
+
+        gs = get_game_state()
+
         for i in range(0, len(adults) - 1, 2):
             a, b = adults[i], adults[i + 1]
-            a.social_connections["partners"].append(b)
-            b.social_connections["partners"].append(a)
+
+            social_a = a.mind.memory.semantic.get("social")
+            social_b = b.mind.memory.semantic.get("social")
+
+            if not social_a or not social_b:
+                continue
+
+            rel_ab = social_a.get_relation(b)
+            rel_ab.record_interaction(
+                hour=gs.hour,
+                day=gs.day,
+                valence=0,
+                new_type="partner"
+            )
+
+            rel_ba = social_b.get_relation(a)
+            rel_ba.record_interaction(
+                hour=gs.hour,
+                day=gs.day,
+                valence=0,
+                new_type="partner"
+            )
+
             #debug_print(None, f"[FAMILY] Partnered {a.name} ↔ {b.name}",category=["family", "population"])
 
 
@@ -154,7 +215,16 @@ def link_family_shops(game_state):
 
                 # Establish simple social or economic ties
                 for member in fam.members:
-                    member.social_connections.setdefault("family_businesses", []).append(shop)
+                    member.mind.memory.semantic["procedures"].append(
+                        {
+                            "type": "family_business",
+                            "business": shop,
+                            "family": fam.family_name
+                        }
+                    )
+                    #Do not force everything into SocialMemory
+                    #SocialMemory = person ↔ person only.
+
                     # Optionally improve morale or wallet slightly
                     if hasattr(member, "wallet") and member.wallet:
                         member.wallet.balance += random.randint(20, 100)
@@ -174,3 +244,21 @@ def assign_business_ownership(game_state):
                 owner_type="family",
                 owner_ref=loc.owner
             )
+
+def assign_initial_location_from_family(npc):
+    family = getattr(npc, "family", None)
+    home = getattr(family, "home", None) if family else None
+
+    if home:
+        npc.location = home
+        npc.region = home.region
+        return True
+
+    debug_print(
+        npc,
+        "[HOUSING] No family home assigned (homeless)",
+        category=["family", "housing", "warning"]
+    )
+
+    npc.is_homeless = True
+    return False

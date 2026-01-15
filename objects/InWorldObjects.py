@@ -44,13 +44,13 @@ valid_items = [
 class ObjectInWorld(PerceptibleMixin):
     is_concrete = False  # Abstract base
 
-    base_ambience: Dict[str, float] = field(default_factory=dict)
     placement_quality: str = "neutral"  # options: "perfect", "neutral", "poor"
 
     def __init__(self, name, toughness, item_type, size, blackmarket_value,
                  price=0, damage_points=None, legality=True, quantity=1, **kwargs):
         super().__init__()
         self.name = name
+        self.base_ambience = {}
         self.toughness = toughness
         self.item_type = item_type
         self.size = size
@@ -207,6 +207,12 @@ class Wallet:
         """Spend cash, return True if successful, False if not enough."""
         if self.cash >= amount:
             self.cash -= amount
+            return True
+        return False
+
+    def spend_bank(self, amount):
+        if self.bankCardCash >= amount:
+            self.bankCardCash -= amount
             return True
         return False
 
@@ -503,9 +509,15 @@ class CashRegister(ObjectInWorld):
         return CashWad(taken)
 
 class Container:
-    def __init__(self):
+    def __init__(self, *, is_open=True, is_transparent=False):
         self.contents = []
+        self.is_open = is_open
+        self.is_transparent = is_transparent
 
+    def visible_contents(self, observer=None):
+        if self.is_open or self.is_transparent:
+            return self.contents
+        
     def add(self, item):
         self.contents.append(item)
 
@@ -632,12 +644,19 @@ class Pot(ObjectInWorld, Container):
 
     def get_percept_data(self, observer=None):
         base = super().get_percept_data(observer)
-        base.update({
-            "description": f"{self.material.title()} Pot containing {len(self.contents)} item(s)",
-            "tags": ["container", "natural", "earthy"],
-            "symbolism": self.symbolism
-        })
-        #only mutates a dict, not the object
+        visible = self.visible_contents(observer)
+
+        if len(visible) == 1:
+            item = visible[0]
+            base["description"] = f"{item.name} in a {self.material} pot"
+            base["primary"] = item
+            base["secondary"] = self
+        else:
+            base["description"] = f"{self.material.title()} Pot"
+
+        base["tags"] = ["container", "natural", "earthy"]
+        base["symbolism"] = self.symbolism
+
         return base
 
 class Statue(ObjectInWorld):

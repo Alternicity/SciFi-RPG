@@ -41,7 +41,7 @@ WAITRESS = EmployeeRole(
 )
 
 RESTAURANT_MANAGER = EmployeeRole(
-    "cafe_manager",
+    "restaurant_manager",
     ["restock_supplies", "check_inventory", "hire_and_fire", "manage_staff"],
     4,
 )

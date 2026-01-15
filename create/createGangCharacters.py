@@ -10,7 +10,7 @@ from motivation.motivation_init import initialize_motivations
 from status import StatusLevel, CharacterStatus, FactionStatus
 from base.character import Character
 from weapons import Knife
-
+from augment.augment_character import augment_character
 from character_components.inventory_component import InventoryComponent
 from inventory import Inventory
 from character_memory import MemoryEntry
@@ -80,6 +80,7 @@ def create_gang_characters(faction, all_regions):
     characters.append(boss)
     faction.region.characters_there.append(boss)
     boss.mind = Mind(owner=boss, capacity=boss.intelligence)
+    augment_character(boss)
     boss.curiosity = Curiosity(base_score=boss.intelligence // 2)
     boss.task_manager = TaskManager(boss)
     boss.employment = EmployeeProfile()
@@ -137,6 +138,7 @@ def create_gang_characters(faction, all_regions):
         faction.captains.append(captain)
         faction.members.append(captain)
         captain.mind = Mind(owner=captain, capacity=captain.intelligence)
+        augment_character(captain)
         captain.curiosity = Curiosity(base_score=captain.intelligence // 2)
         captain.task_manager = TaskManager(captain)
         captain.employment = EmployeeProfile()
@@ -154,7 +156,7 @@ def create_gang_characters(faction, all_regions):
             game_state.extant_family_names.append(family_name)
 
     # Gang Members
-    for _ in range(random.randint(2,3)):#What? Why is there more than 1 GangMember instantiating?
+    for _ in range(random.randint(2,3)):
         status = CharacterStatus()
         status.set_status("criminal", FactionStatus(StatusLevel.LOW, "Ganger"))
         
@@ -183,6 +185,7 @@ def create_gang_characters(faction, all_regions):
         #Wallets are a perfect candidate for a later ECS cleanup — but not during AI debugging
         faction.members.append(member)
         member.mind = Mind(owner=member, capacity=member.intelligence)
+        augment_character(member)
         member.curiosity = Curiosity(base_score=member.intelligence // 2)
         member.task_manager = TaskManager(member)
         member.employment = EmployeeProfile()

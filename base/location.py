@@ -18,7 +18,7 @@ class Location(LocationBase):
     name: str = "Unnamed Location"
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional[Any] = None
-    items: LocationItems = field(default_factory=LocationItems)
+    items: LocationItems = field(default_factory=LocationItems)#is this used?
     #TMP
     is_shakedown_target: bool = False
     owner = None
@@ -45,7 +45,7 @@ class Location(LocationBase):
     is_workplace: bool = False
     characters_there: list = field(default_factory=list)  # Tracks characters present at this location
     recent_arrivals: list = field(default_factory=list)
-
+    is_public_facing: bool = False
     employees_there: list = field(default_factory=list)
     # Instance-specific categories field
     categories: List[str] = field(default_factory=list) #ALERT
@@ -92,8 +92,21 @@ class Location(LocationBase):
         # Any additional setup logic if needed
         pass
     
+    def get_front_of_house_staff(self):
+        staff = []
+        for c in self.characters_there:
+            emp = getattr(c, "employment", None)#is this testing the self /locations attribute? OR just whether characters_there have this?
+            if not emp:
+                continue
+            if emp.workplace is self and emp.role == "front_of_house":
+                staff.append(c)
+        return staff
+
+
     def update_dynamic_ambience(self):
-        total_fun = sum(c.fun for c in self.characters_there + self.employees_there)
+        employees = self.employees_there if isinstance(self, WorkplaceMixin) else []
+        total_fun = sum(c.fun for c in self.characters_there + employees)#add the locations fun
+
         self.ambience.vibes["fun"] = min(total_fun / 100, 1.0)  # normalize to 0-1
         if len(self.characters_there) > 3:
             self.ambience.vibes["social"] = 0.4 + len(self.characters_there) * 0.05
@@ -106,7 +119,7 @@ class Location(LocationBase):
         present = []
         if hasattr(self, "characters_there"):
             present += self.characters_there
-        if hasattr(self, "employees_there"):
+        if isinstance(self, WorkplaceMixin):
             present += self.employees_there
 
         # Remove excluded

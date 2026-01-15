@@ -62,10 +62,14 @@ class Character(PerceptibleMixin, CharacterBase):
         self.is_player = False
         self.is_test_npc = False  # Deprecated
         self.effort = 10 #1-20 scale, 1 is very tired, 20 is high energy both mental and physical
+
+        self.effects = []  # list of effect objects
+
         self.is_peaceful_npc = False
         self.has_plot_armour = False#rare, currently unused
         self.ai = ai  # added at instantiation as a component
         self.residences = []
+        self.is_homeless = False
         self.base_preferred_actions = {}
         self._initial_motivations = motivations
         self.motivation_manager = None
@@ -105,26 +109,14 @@ class Character(PerceptibleMixin, CharacterBase):
         #status loss, or lack of money, or failure, or bad personal events. Currently unused.
         self.observation = kwargs.get("observation", 10)  # Determines perception ability
 
-        # Social connections
-        self.social_connections = {
-            "friends": [],#no code yet exists  to populate this
-            "enemies": [],
-            "allies": [],
-            "neutral": [],
-            "co_workers": [],#If an npc has worked 3 shift with another, then set this
-            "partners": [partner] if partner else [],#partners exists
-        }
-
         self.isArmed = False
         self.hasRangedWeapon = False
         self.hasMeleeWeapon = False
         self.employment = None#object added as a component at instantiation, or during sim flow
-        self.shift = 'day'  # Can be 'day' or 'night'
-        self.is_working = False
-        self.just_got_off_shift =False #Just finished a work shift
+
         self.partner = partner
-        
         self.partner_presumed_location = None
+        self.social_memory = None
         self.faction = faction
         self.fun = kwargs.get("fun", fun)#under developed, but some building blocks are in place
         self.fun_prefs = None
@@ -150,6 +142,11 @@ class Character(PerceptibleMixin, CharacterBase):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
         
         self.observation_component = None
+
+    def role_at(self, location):
+        if self.employment and self.employment.workplace is location:
+            return "employee"
+        return "visitor"
 
     def observe(self, *args, **kwargs):
         """Delegates the actual observation logic to the ObservationComponent."""
@@ -178,6 +175,35 @@ class Character(PerceptibleMixin, CharacterBase):
         return None
     #compatibility property. Needed bc I removed self.inventory
 
+    def get_ambience_filter(self, vibe: str) -> float:
+        """
+        Returns how receptive this character is to a given ambience vibe.
+        1.0 = neutral
+        <1.0 dampens
+        >1.0 amplifies
+        """
+        # --- base sensitivity from psy ---
+        psy_factor = min(max(self.psy / 10, 0.5), 2.0)
+
+        # --- optional personal affinities ---
+        preferences = getattr(self, "ambience_preferences", {})
+        vibe_modifier = preferences.get(vibe, 1.0)
+
+        return psy_factor * vibe_modifier
+
+    def should_log_ambient_scene(self, loc, peak_tag, peak_power):
+        char=self#how do I set this up please?
+        last = char.mind.memory.semantic.get("ambient_vibes", [])
+        if not last:
+            return True
+
+        prev = last[-1]
+        return (
+            prev["location"] != loc.name or
+            prev["top_vibe"] != peak_tag or
+            abs(prev["power"] - peak_power) > 0.2
+        )
+
     def register_anchor(self, anchor):
         """
         Registers an Anchor with this character.
@@ -188,6 +214,14 @@ class Character(PerceptibleMixin, CharacterBase):
         # filter out None anchors
         if anchor is None:
             return
+
+    @property
+    def is_on_shift(self):
+        return bool(self.employment and self.employment.is_on_shift)
+
+    @property
+    def just_got_off_shift(self):
+        return bool(self.employment and self.employment.just_got_off_shift)
 
     def get_preferred_actions(self):
         """Return combined preferences (base + individual)."""

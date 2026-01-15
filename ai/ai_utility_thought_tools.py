@@ -1,6 +1,7 @@
 #ai.ai_utility_thought_tools
 from character_thought import Thought, FailedThought
 from anchors.anchor_utils import Anchor
+from anchors.eat_anchor import ProcureFood#but ProcureFood is a class, is that ok?
 from typing import Optional
 from create.create_game_state import get_game_state
 game_state = get_game_state
@@ -49,23 +50,64 @@ def rank_memory_locations_by_salience(npc, anchor, tag_filter=None, top_n=3):
         loc = mem.source
         if not loc:
             continue
-        salience = compute_salience(loc, npc, anchor)
+        salience = compute_salience(loc, npc, anchor)#compute_salience is here marked as not defined
         ranked.append((loc, salience, mem))
 
     ranked.sort(key=lambda x: x[1], reverse=True)
     return ranked[:top_n]
 
 def generate_hunger_thought(npc):
-        if npc.hunger > 7:  # Threshold for hunger
-            thought = Thought(
-                subject="hunger",
-                content="I'm hungry. I need to eat.",
-                urgency=8,  # High urgency for hunger
-                source="generate_hunger_thought",
-                tags=["hunger", "food", "intention"],
-                weight=8,
-            )
-            npc.mind.add_thought(thought)
-            debug_print(npc, f"[THOUGHT] Generated hunger thought: {thought.content}", category="think")
+    """
+    Generate a subjective hunger thought based on internal hunger level.
+    This does NOT trigger actions or anchors — it only represents experience.
+    """
 
+    # --- threshold gate ---
+    if npc.hunger <= 4:
+        return None
 
+    # --- deduplication guard ---
+    # Prevents re-spawning the same hunger narrative every think()
+    if npc.mind.has_thought_with_tag("hunger"):
+        return None
+
+    # --- hunger tiering ---
+    if npc.hunger > 7:
+        choice = "burger"
+        urgency = 8
+    else:
+        choice = "sandwich"
+        urgency = 6
+
+    # --- construct subjective thought ---
+    thought = Thought(
+        subject="food",
+        content=f"I'm hungry. I want a {choice}.",
+        urgency=urgency,
+        tags=["hunger", "food", choice],
+        payload={"desired_food": choice},
+    )
+
+    # --- register with mind ---
+    npc.mind.add_thought(thought)
+
+    debug_print(
+        npc,
+        f"[THOUGHT] Generated hunger thought: {thought.content}",
+        category="think"
+    )
+
+    return thought
+
+def procure_food(npc):
+    npc.anchors.add(ProcureFood(
+        name="procure_food",
+        type="motivation",
+        owner=npc,
+        priority=1.5
+    ))
+    """Then downstream:
+    ChooseFoodVenue
+    BuyIngredients
+    EatOut """
+#The procure layer will be where an npc decides whether to go out to a cafe / restaurant, or buy food from shop to take home, or eat a snack directly from their inventory

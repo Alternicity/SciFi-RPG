@@ -23,6 +23,7 @@ from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from character_components.observation_component import ObservationComponent
+from augment.augment_character import augment_character
 
 def create_civilian_population(all_locations, all_regions, factionless, num_civilians=None):
     """Generate civilians and assign them logical locations."""
@@ -85,6 +86,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             civilian.residences = [home]
             civilian.is_employee = random.random() < 0.8
             civilian.mind = Mind(owner=civilian, capacity=civilian.intelligence)
+            augment_character(civilian)
             civilian.curiosity = Curiosity(base_score=civilian.intelligence // 2)
             civilian.task_manager = TaskManager(civilian)
             civilian.employment = EmployeeProfile(shift_start=9, shift_end = 5)
@@ -191,6 +193,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     luna.mind.memory.add_semantic(incompressible_memory(), category="internal_architecture")
 
     luna.mind = Mind(owner=luna, capacity=luna.intelligence)
+    augment_character(luna)
     luna.curiosity = Curiosity(base_score=luna.intelligence // 2)
     luna.task_manager = TaskManager(luna)
     luna.employment = EmployeeProfile()
@@ -262,6 +265,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     # or a separate house
 
     #Ava.mind = Mind(owner=Ava, capacity=Ava.intelligence)
+    #augment_character(Ava)
     #Ava.curiosity = Curiosity(base_score=Ava.intelligence // 2)
     #Ava.task_manager = TaskManager(Ava)
     #Ava.employment = EmployeeProfile()
@@ -323,8 +327,7 @@ def assign_workplaces(civilians, workplace_locations):
         if hasattr(chosen, "employees"):
             chosen.employees.append(civ)
 
-        if hasattr(chosen, "employees_there"):
-            chosen.employees_there.append(civ)
+        
 
 
 from debug_utils import debug_print#line 293, not inside any function

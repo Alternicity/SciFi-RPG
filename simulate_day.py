@@ -7,11 +7,14 @@ from ai.behaviour_roles import role
 from events import Robbery
 from characterActions import execute_action #not currently accessed
 from summary_utils import format_location
-from display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_liberty, display_npc_vitals, summarize_action
+from display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_waitress, display_civ_liberty, display_npc_vitals, summarize_action
 from memory.memory_entry import RegionKnowledge
+from memory.ambience_utils import update_ambient_scene_memory
 from character_thought import Thought
 from ambience.ambience_and_psy_utils import compute_location_ambience
 from debug_utils import debug_print
+from base.character import Character
+from employment.employment import update_employee_presence
 
 def simulate_hours(all_characters, num_days=1, debug_character=None):
     game_state = get_game_state()
@@ -26,11 +29,12 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
         for location in all_locations:
                     location.recent_arrivals.clear()
 
-        # STEP 1: Perceive and Think
+        # Each hour:
         for region in all_regions:
             for npc in region.characters_there:
                 #npc._observed_this_tick = False
                 begin_npc_turn(npc)
+                update_employee_presence(npc, game_state.hour)
                 if npc.is_player:
                     continue
                 
@@ -43,8 +47,15 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                     if npc in gs.debug_npcs.values():
                         display_npc_vitals(npc)
 
+                for effect in npc.effects[:]:
+                    effect.on_tick(npc)
+                    effect.remaining -= 1
+                    if effect.remaining <= 0:
+                        effect.on_end(npc)
+                        npc.effects.remove(effect)
+
                 if npc in gs.debug_npcs.values():
-                    display_percepts_table(npc)
+                    display_percepts_table(npc)#I wonder if effects will show up here via self percept
 
                 # --- Ambience Influence + Social Vibe Logging ---
                 #This framework sets the stage for scene-level emergent stories, largely un developed
@@ -72,20 +83,48 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                         peak_tag, peak_power = max(perceived.items(), key=lambda x: x[1], default=("none", 0))
 
                         # 3. Capture social snapshot
+                        #This logic also encapsulated as a func in social_utils
+                        social = char.mind.memory.semantic.get("social")
+                        if not social:
+                            continue
+
+                        friends_present = []
+                        enemies_present = []
+                        allies_present = []
+
+                        for other in loc.characters_there:
+                            if other is char:
+                                continue
+
+                            rel = social.get_relation(other)
+
+                            if rel.current_type == "friend":
+                                friends_present.append(other.name)
+                            elif rel.current_type == "enemy":
+                                enemies_present.append(other.name)
+                            elif rel.current_type == "ally":
+                                allies_present.append(other.name)
+
                         social_data = {
-                            "friends_present": [c.name for c in loc.characters_there if c.name in char.social_connections["friends"]],
-                            "enemies_present": [c.name for c in loc.characters_there if c.name in char.social_connections["enemies"]],
-                            "allies_present": [c.name for c in loc.characters_there if c.name in char.social_connections["allies"]],
+                            "friends_present": friends_present,
+                            "enemies_present": enemies_present,
+                            "allies_present": allies_present,
                         }
 
+
                         # 4. Save semantic ambient snapshot
-                        char.mind.memory.semantic.setdefault("ambient_vibes", []).append({
-                            "location": loc.name,
-                            "top_vibe": peak_tag,
-                            "power": peak_power,
-                            "others_present": [c.name for c in loc.characters_there if c.name != char.name],
-                            **social_data
-                        })
+                        if char.should_log_ambient_scene(loc, peak_tag, peak_power):
+                            if char.should_log_ambient_scene(loc, peak_tag, peak_power):
+                                update_ambient_scene_memory(
+                                    char=char,
+                                    loc=loc,
+                                    perceived_ambience=perceived,
+                                    peak_tag=peak_tag,
+                                    peak_power=peak_power,
+                                    social_data=social_data,
+                                    current_day=game_state.day,
+                                    current_hour=game_state.hour,
+                                )
                 
 
 
@@ -98,17 +137,21 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                         npc.ai.promote_thoughts()
 
         # ✅ NEW: TC2 snapshot displays
-        for dbg_npc in (
-            gs.debug_npcs.get("civilian_worker"),
-            gs.debug_npcs.get("civilian_liberty"),
-        ):
-            if dbg_npc:
-                if dbg_npc.debug_role == "civilian_worker":
-                    display_civ_worker(dbg_npc)
-                elif dbg_npc.debug_role == "civilian_liberty":
-                    display_civ_liberty(dbg_npc)
+        DISPLAY_BY_DEBUG_ROLE = {
+            "civilian_worker": display_civ_worker,
+            "civilian_liberty": display_civ_liberty,
+            "civilian_waitress": display_civ_waitress,
+        }
 
-                    #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
+        for dbg_npc in gs.debug_npcs.values():
+            if not dbg_npc:
+                continue
+
+            fn = DISPLAY_BY_DEBUG_ROLE.get(dbg_npc.debug_role)
+            if fn:
+                fn(dbg_npc)
+
+                #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
                     
         # STEP 2: Choose and Execute Action
         for npc in all_characters:

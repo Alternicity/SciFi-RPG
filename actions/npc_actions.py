@@ -6,9 +6,16 @@ from character_thought import Thought
 from create.create_game_state import get_game_state
 from focus_utils import clear_attention_focus
 import random
+from employment.employment import update_employee_presence
+from character_components.npc_effects import RecentMealEffect
+from employment.workplace_mixin import WorkplaceMixin
 
 def visit_location_auto(character, region=None, destination=None, destination_name=None, **kwargs):
     npc = character
+    gs = get_game_state()
+
+    
+    #update_employee_presence(npc, gs)
 
     import inspect
     caller = inspect.stack()[1]
@@ -16,14 +23,6 @@ def visit_location_auto(character, region=None, destination=None, destination_na
 
     # inside visit_auto() or the movement routine where you actually change civ.location
     debug_print(npc, f"[MOVE] {npc.name} -> {getattr(destination,'name',destination)} triggered_by={caller_info}", category="movement")
-
-
-    debug_print(
-        npc,
-        f"[VISIT TRACE] visit_location_auto invoked by {caller_info}",
-        category="visit"
-    )#is this print superfluous now?
-
 
     search_region = region or npc.region #search_region is not accessed
     debug_print(npc, f"[VISIT] Arrived at {destination.name}", "visit")
@@ -55,6 +54,8 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     npc.previous_location = npc.location
     npc.location = destination
     npc.just_arrived = True
+    # Entering or leaving workplace
+    update_employee_presence(npc, gs)
 
     if npc.current_anchor and npc.current_anchor.name == "work":
         debug_print(npc, "[ANCHOR] Work anchor satisfied — clearing", category="anchor")
@@ -193,7 +194,7 @@ def steal_auto(npc, region, item=None):
         return False
 
     # Theft difficulty setup
-    employees = getattr(location, 'employees_there', [])
+    employees = location.employees_there if isinstance(location, WorkplaceMixin) else []
     observation = max((e.skills.get("observation", 0) for e in employees), default=0)
     stealth = npc.skills.get("stealth", 0)
     resistance_mod = getattr(location, "security_level", 0)
@@ -332,56 +333,62 @@ def steal_auto(npc, region, item=None):
 def exit_location_auto():
     print (f"npc exit location called")
 
-def eat_auto(self):
-    npc = self
-    name = self.name
+def eat_auto(npc, region=None):
+
     #what exactly is self for an npc action function?
-    debug_print(npc, f"[EATING] eat_auto called for npc.{name}", category="eat")
+    debug_print(npc, f"[EATING] eat_auto called for npc.{npc.name}", category="eat")
+
+    effect = RecentMealEffect()
+    effect.on_start(npc)
+    npc.effects.append(effect)
 
     npc.memory.add_episodic(
             subject=npc,
             _object="food",
             content=f"Ate at {npc.location.name}",
             importance=1
-        )
-    
-def buy_food_auto(npc, region=None):
+    )
+    return True
+
+def buy_auto(npc, region, *, item):
     location = npc.location
+    price = item.price
 
     if not hasattr(location, "inventory"):
         return False
 
-    items = []
+    if item not in location.items_available:
+        debug_print(npc, f"[ERROR] Item {item.name} no longer available", category="error")
 
-    if hasattr(location, "items_available"):
-        items = location.items_available
-    elif hasattr(location, "inventory"):
-        items = location.inventory.items.values()
-
-    food_items = [i for i in items if "food" in getattr(i, "tags", [])]
-
-
-    if not food_items:
         return False
 
-    item = random.choice(food_items)
-
-    # Minimal transaction for now
-    if npc.wallet.balance < item.price:
+    # buyer pays
+    if not npc.wallet.spend_bank(price):
+        debug_print(npc, "[BUY] Not enough funds", category="action")
         return False
 
-    npc.wallet.balance -= item.price
-    location.bankCardCash += item.price
+    # seller receives
+    seller = npc.location
+    seller.till += price
 
-    #in the future a social hook here
-
-    npc.inventory.add_item(item.clone(quantity=1))#later I will change this, make numbered tables, and add the food to the table container. npcs do have npc.posture
+    # remove item
     item.quantity -= 1
-    #in the future a social hook here
+    if item.quantity <= 0:
+        seller.items_available.remove(item)
+    debug_print(
+            npc,
+            f"[BUY] Purchased {item.name} for {price}. "
+            f"Wallet now bank={npc.wallet.bankCardCash}, cash={npc.wallet.cash}",
+            category="action"
+        )
 
-    npc.hunger = max(0, npc.hunger - 3)#this should also affect npc.effort, I will explain how
-    #Can we add a notification debug_print here? category action
     return True
+
+    """ npc.inventory.add_item(item.clone(quantity=1))
+    item.quantity -= 1 """
+
+
+
 
 
 def procure_food_auto(self):

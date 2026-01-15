@@ -3,11 +3,12 @@ import random
 from characters import GangMember, Civilian
 from debug_utils import debug_print
 from display import display_top_motivations
-from simulation_utils import setup_debug_npcs_in_game_state, non_shop_or_cafe_locations, setup_tc2_debug_npcs
+from simulation_utils import setup_debug_npcs_in_game_state, non_shop_or_cafe_locations, setup_tc2_debug_npcs, pick_civilian, assign_fallback_location
 from create.create_game_state import get_game_state
 game_state = get_game_state()
+from employment.roles import CAFE_MANAGER, WAITRESS
 from world.TC2_presets import setup_tc2_worker
-
+from Family import assign_initial_location_from_family
 from augment.augmentLocations import reassign_shop_names_after_character_creation
 
 """ from memory.memory_builders.food_sources_builder import build_food_sources
@@ -25,37 +26,42 @@ def run_simulation(all_characters, num_days=10):
     debug_print(None, f"\nRunning simulation for {num_days} days...\n", category="simulation")
 
     debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)
-
     debug_gang_npc2 = next((c for c in all_characters if isinstance(c, GangMember) and c is not debug_gang_npc), None)
+    #The Gangmembers use the old selection pattern, but are currently unused and ignore in TC2
 
     civilians = [c for c in all_characters if isinstance(c, Civilian)]
-
-    debug_civilian_worker = civilians[0] if len(civilians) > 0 else None
-    debug_civilian_liberty = civilians[1] if len(civilians) > 1 else None
+    debug_civilian_worker = pick_civilian(civilians)
+    debug_civilian_liberty = pick_civilian(
+        civilians,
+        exclude={debug_civilian_worker}
+    )
+    debug_civilian_waitress = pick_civilian(
+        civilians,
+        sex="female",
+        exclude={debug_civilian_worker, debug_civilian_liberty}
+    )
 
 
     # tag them for other code that checks flags
     if debug_gang_npc:
         debug_gang_npc.debug_role = "primary"
         debug_gang_npc.debug = True
-
     if debug_gang_npc2:
         debug_gang_npc2.debug_role = "secondary"
-
     if debug_civilian_worker:
-
         debug_civilian_worker.debug_role = "civilian_worker"
-
     if debug_civilian_liberty:
-
         debug_civilian_liberty.debug_role = "civilian_liberty"
+    if debug_civilian_waitress:
+        debug_civilian_waitress.debug_role = "civilian_waitress"
 
     game_state.debug_npcs["civilian_worker"] = debug_civilian_worker
     game_state.debug_npcs["civilian_liberty"] = debug_civilian_liberty
+    game_state.debug_npcs["civilian_waitress"] = debug_civilian_waitress
 
     # register in game_state.debug_npcs
     #setup_debug_npcs_in_game_state(debug_gang_npc, debug_gang_npc2, debug_civilian_worker, debug_civilian_liberty)
-    setup_tc2_debug_npcs(debug_civilian_worker, debug_civilian_liberty)
+    setup_tc2_debug_npcs(debug_civilian_worker, debug_civilian_liberty, debug_civilian_waitress)
 
 
     characters = [
@@ -63,7 +69,8 @@ def run_simulation(all_characters, num_days=10):
             debug_gang_npc,
             debug_gang_npc2,
             debug_civilian_worker,
-            debug_civilian_liberty
+            debug_civilian_liberty,
+            debug_civilian_waitress
         )
         if c is not None
     ]
@@ -82,10 +89,11 @@ def run_simulation(all_characters, num_days=10):
     downtown_region = next((r for r in game_state.all_regions if r.name == "downtown"), None)
     debug_civilian_worker.region = downtown_region
     debug_civilian_liberty.region = downtown_region
+    debug_civilian_waitress.region = downtown_region
 
     downtown_region.add_character(debug_civilian_worker)
     downtown_region.add_character(debug_civilian_liberty)
-    #We should add these npcs to game_state variables
+    downtown_region.add_character(debug_civilian_waitress)
 
     # Choose a non-shop location in easternhole to place the test NPC (refers to the original test npc, the GangMember that robs the shop)
     non_shop_locations = [loc for loc in easternhole_region.locations if not isinstance(loc, Shop)]
@@ -98,10 +106,6 @@ def run_simulation(all_characters, num_days=10):
     
     start_locs = non_shop_or_cafe_locations(easternhole_region)
     debug_gang_npc2.location = random.choice(start_locs)
-
-    #start_loc_g1 = random.choice(start_locs)
-    start_loc_g2 = random.choice(start_locs)#start_loc_g2 not accessed
-    start_loc_civ = random.choice(start_locs)#start_loc_civ not accessed
 
     # Gang NPC 1 - Test Case 1
     if debug_gang_npc:
@@ -137,7 +141,7 @@ def run_simulation(all_characters, num_days=10):
 
 
     if debug_civilian_worker:
-        setup_tc2_worker(debug_civilian_worker, downtown_region)
+        setup_tc2_worker(debug_civilian_worker, downtown_region, role=CAFE_MANAGER)
         debug_civilian_worker.motivation_manager.update_motivations("work", urgency=8)
         debug_civilian_worker.motivation_manager.update_motivations("eat", urgency=6)
         debug_civilian_worker.motivation_manager.update_motivations("have_fun", urgency=5)
@@ -148,9 +152,25 @@ def run_simulation(all_characters, num_days=10):
         inject_initial_region_knowledge(debug_civilian_worker)
         inject_food_location_knowledge(debug_civilian_worker)
         inject_initial_shop_knowledge(debug_civilian_worker)
-
         display_top_motivations(debug_civilian_worker)
- 
+
+
+    if debug_civilian_waitress:
+        if debug_civilian_waitress is debug_civilian_worker:
+            raise RuntimeError("Waitress and worker resolved to the same NPC")
+        setup_tc2_worker(debug_civilian_waitress, downtown_region, role=WAITRESS)
+        debug_civilian_waitress.motivation_manager.update_motivations("work", urgency=8)
+        debug_civilian_waitress.motivation_manager.update_motivations("eat", urgency=6)
+        debug_civilian_waitress.motivation_manager.update_motivations("have_fun", urgency=5)
+
+        assign_initial_location_from_family(debug_civilian_waitress)
+
+
+        inject_food_location_knowledge(debug_civilian_waitress)
+        inject_initial_shop_knowledge(debug_civilian_waitress)
+        inject_initial_region_knowledge(debug_civilian_waitress)
+        display_top_motivations(debug_civilian_waitress)
+
     if debug_civilian_liberty:
         debug_civilian_liberty.is_employee = False
         debug_civilian_liberty.employment.workplace = None
@@ -165,10 +185,28 @@ def run_simulation(all_characters, num_days=10):
         inject_initial_region_knowledge(debug_civilian_liberty)
         inject_food_location_knowledge(debug_civilian_liberty)
         inject_initial_shop_knowledge(debug_civilian_liberty)
-        #add some more money to their wallet here, and a temporary print
+
         display_top_motivations(debug_civilian_liberty)
 
-                #this npc might automaically have a partner when that is assigned. We can leave this for now.
+        #handle homeless
+        for npc in all_characters:
+            if not isinstance(npc, Civilian):
+                continue
+
+            # Region MUST exist at this point
+            if not npc.region:
+                debug_print(
+                    npc,
+                    "[HOUSING][ERROR] Civilian has no region during setup",
+                    category=["housing", "error"]
+                )
+                continue
+
+            # Assign fallback ONLY if location missing
+            if npc.location is None:
+                assign_fallback_location(npc, npc.region)#handle homeless
+
+                #the npc might automaically have a partner when that is assigned. We can leave this for now.
 
 
     """ debug_npcs = [
@@ -195,12 +233,3 @@ def pick_random_npc(characters, cls, exclude=None):
                  if isinstance(c, cls) and c is not exclude),
                 None)
 
-
-
-
-
-
-
-        #We should probably make some display.py function to list all three new testing npcs, with bools in config.py to 
-        #indicate which ones get output prints actually printing.We dont really need to see the original test_npc in
-        #output for a while (the GangMember from test case 1)

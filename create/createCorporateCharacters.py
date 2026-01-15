@@ -1,4 +1,4 @@
-#createCorporations, code cut from previous bloated file
+#create.createCorporations.py
 #do not import this file: character_creation_funcs.py
 import random
 from characters import CEO, Manager, CorporateSecurity, CorporateAssasin, Employee, Accountant
@@ -14,6 +14,7 @@ from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from character_components.observation_component import ObservationComponent
+from augment.augment_character import augment_character
 from create.create_game_state import get_game_state
 game_state = get_game_state()
 
@@ -70,6 +71,7 @@ def create_corporation_characters(faction, factions):
     characters.append(ceo)
 
     ceo.mind = Mind(owner=ceo, capacity=ceo.intelligence)
+    augment_character(ceo)
     ceo.curiosity = Curiosity(base_score=ceo.intelligence // 2)
     ceo.task_manager = TaskManager(ceo)
     ceo.employment = EmployeeProfile()
@@ -103,6 +105,7 @@ def create_corporation_characters(faction, factions):
         faction.add_manager(manager)
         characters.append(manager)
         manager.mind = Mind(owner=manager, capacity=manager.intelligence)
+        augment_character(manager)
         manager.curiosity = Curiosity(base_score=manager.intelligence // 2)
         manager.task_manager = TaskManager(manager)
         manager.employment = EmployeeProfile()
@@ -136,6 +139,7 @@ def create_corporation_characters(faction, factions):
         faction.add_employee(employee)
         characters.append(employee)
         employee.mind = Mind(owner=employee, capacity=employee.intelligence)
+        augment_character(employee)
         employee.curiosity = Curiosity(base_score=employee.intelligence // 2)
         employee.task_manager = TaskManager(employee)
         employee.employment = EmployeeProfile()
@@ -169,6 +173,7 @@ def create_corporation_characters(faction, factions):
         faction.add_security(guard)
         characters.append(guard)
         guard.mind = Mind(owner=guard, capacity=guard.intelligence)
+        augment_character(guard)
         guard.curiosity = Curiosity(base_score=guard.intelligence // 2)
         guard.task_manager = TaskManager(guard)
         guard.employment = EmployeeProfile()
@@ -203,6 +208,7 @@ def create_corporation_characters(faction, factions):
         faction.add_accountant(accountant)
         characters.append(accountant)
         accountant.mind = Mind(owner=accountant, capacity=accountant.intelligence)
+        augment_character(accountant)
         accountant.curiosity = Curiosity(base_score=accountant.intelligence // 2)
         accountant.task_manager = TaskManager(accountant)
         accountant.employment = EmployeeProfile()
@@ -235,6 +241,7 @@ def create_corporation_characters(faction, factions):
         )
         characters.append(assassin)
         assassin.mind = Mind(owner=assassin, capacity=assassin.intelligence)
+        augment_character(assassin)
         assassin.curiosity = Curiosity(base_score=assassin.intelligence // 2)
         assassin.task_manager = TaskManager(assassin)
         assassin.employment = EmployeeProfile()

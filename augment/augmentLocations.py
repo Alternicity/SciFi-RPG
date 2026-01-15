@@ -99,9 +99,15 @@ def reassign_shop_names_after_character_creation():
 def seed_food_locations(all_locations):
     for loc in all_locations:
         if isinstance(loc, Cafe):
-            loc.inventory.add_item(Sandwich(quantity=5))
-            loc.inventory.add_item(Burger(quantity=3))
-            loc.items_available.extend(["Sandwich", "Burger"])
+            sandwich = Sandwich(quantity=5)
+            burger = Burger(quantity=3)
+
+            loc.items_available.extend([sandwich, burger])
+
+def seed_commercial_equipment(all_locations):
+    """ if isinstance(loc, Cafe):
+        loc.add(CashRegister()) """
+    pass
 
 def seed_ambience_objects(all_locations):
     for loc in all_locations:

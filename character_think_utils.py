@@ -39,15 +39,26 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
                 )
 #character_think_utils.py
 def social_thoughts(self):
+    #Purpose:“Who should I think about socially?”
+    #output thoughts only
     npc = self.npc
+    social = npc.mind.memory.semantic.get("social")
+    if not social:
+        return
 
-    for connection in npc.social_connections["co_workers"]:#this should include more than just friend connections, at least in potential
-        if npc.world.recently_interacted(npc, connection):
-            npc.mind.add_thought({
-                "type": "social_thought",
-                "about": connection,
-                "tags": ["unwind", "co_worker", "social"]
-            })
+    for rel in social.iter_relations(current_type="co_worker", min_interactions=3):
+        other = rel.subject
+
+        if npc.world.recently_interacted(npc, other):
+            continue
+
+        npc.mind.add_thought({
+            "type": "social_thought",
+            "about": other,
+            "tags": ["unwind", "co_worker", "social"]
+        })
+
+
 
 def should_promote_thought(thought):
     return thought.urgency >= 4 or "weapon" in thought.tags#very test case 1 centric

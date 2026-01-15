@@ -1,6 +1,6 @@
 #employment.employee.py
 from dataclasses import dataclass, field
-from typing import List, Callable, Optional, TYPE_CHECKING
+from typing import List, Callable, Optional, TYPE_CHECKING, Literal
 from employment.roles import EmployeeRole
 
 if TYPE_CHECKING:
@@ -9,13 +9,24 @@ if TYPE_CHECKING:
 
 @dataclass
 class EmployeeProfile:
+    
     shift_start: int = 9
     shift_end: int = 17
     workplace: Optional["Location"] = None
     role: Optional[EmployeeRole] = None
     shift: str = "day"  # day/night
-    is_on_shift: bool = False
 
-    def on_duty(self, tick) -> bool:
-        return (self.shift == "day" and 6 <= tick <= 18) or \
-               (self.shift == "night" and (tick > 18 or tick < 6))
+    #hmmm
+    role: Literal["front_of_house", "back_of_house", "management", "labor"]
+
+    # Runtime state (ephemeral, not serialized)
+    is_on_shift: bool = False
+    just_got_off_shift: bool = False
+    #set/reset them only inside update_employee_presence
+
+    def on_duty(self, hour: int) -> bool:
+        if self.shift == "day":
+            return self.shift_start <= hour < self.shift_end
+        else:
+            return hour >= self.shift_start or hour < self.shift_end
+

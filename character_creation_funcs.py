@@ -24,6 +24,7 @@ from character_components.inventory_component import InventoryComponent
 from character_components.self_awareness_component import SelfAwarenessComponent
 from character_components.wallet_component import WalletComponent
 from character_mind import Mind, Curiosity
+from augment.augment_character import augment_character
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from weapons import Knife
@@ -304,6 +305,7 @@ def instantiate_character(char_data, all_regions, factions):
     status=status
 )
     character.mind = Mind(owner=character, capacity=character.intelligence)
+    augment_character(character)
     character.curiosity = Curiosity(base_score=character.intelligence // 2)
     character.task_manager = TaskManager(character)
     character.employment = EmployeeProfile()

@@ -26,6 +26,11 @@ class WorkplaceMixin:
             category="employment"
         )
 
+    def get_present_employees_at(location):
+        if hasattr(location, "workplace") and location.workplace:
+            return location.workplace.employees_there
+        return []
+
     # Renamed to avoid confusion with dormant 'task system'
     def get_duties_for_role(self, role):
         return role.responsibilities  # these are 'duties' now
@@ -42,6 +47,7 @@ class WorkplaceMixin:
         # Future: dispatch to handler methods
         print(f"{employee.name} performs duty: {duty} at {self.name}")
 
+    #do not call, violates utilityAI
     def run_workday_cycle(self):
         """Called once per tick during work hours."""
         for employee in self.employees_there:

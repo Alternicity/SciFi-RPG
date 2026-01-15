@@ -273,9 +273,11 @@ class Robbery(Event):
         return self.menu_options
 
     def _get_main_employee(self):
+        from employment.workplace_mixin import WorkplaceMixin
+        loc = self.location
+        if isinstance(loc, WorkplaceMixin) and loc.employees_there:
+            return loc.employees_there[0]
 
-        if hasattr(self.location, "employees_there") and self.location.employees_there:
-            return self.location.employees_there[0]
         return None
     
     def resolve(self, simulate=False, verbose=True):

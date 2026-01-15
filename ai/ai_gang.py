@@ -802,7 +802,10 @@ class GangMemberAI(UtilityAI):
 
         # CREATE ROBBERY-RELATED THOUGHTS FROM MEMORY
 
-        for memories in npc.mind.memory.semantic.values():
+        for category, memories in npc.mind.memory.semantic.items():
+            if not isinstance(memories, list):
+                continue
+
             for memory in memories:
                 if not hasattr(memory, 'tags'):
                     print(f"[ERROR] Invalid memory object: {memory} (type: {type(memory)})")

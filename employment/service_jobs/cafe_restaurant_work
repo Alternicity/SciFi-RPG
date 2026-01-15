@@ -1,0 +1,23 @@
+#employment.service_jobs.cafe_restaurant_work.py
+from anchors.social_anchors.basic_social_anchors import create_greet_anchor
+from create.create_game_state import get_game_state
+from focus_utils import set_attention_focus
+from social.social_utils import has_recent_interaction
+
+#Not polymorphism — it’s dispatch by employment profile
+
+def work(waitress):
+    location = waitress.location
+
+    for other in location.characters_there:
+        if other is waitress:
+            continue
+
+        if other in location.recent_arrivals:
+            if has_recent_interaction(waitress, other):
+                continue
+
+            create_greet_anchor(waitress, other)
+
+
+

@@ -9,6 +9,8 @@ from create.create_game_state import get_game_state
 
 #Do not import anchor_utils or NPC logic
 
+""" Never read NPC state at class scope.
+Always read it inside a method that receives npc. """
 
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
 #context-aware decision filter

@@ -103,6 +103,7 @@ class PerceptibleMixin:
 
 #utility functions
 def gather_perceptible_objects(obj):
+    #should stay recursive and dumb
     found = []
     if isinstance(obj, PerceptibleMixin):
         found.append(obj)
@@ -118,8 +119,9 @@ def gather_perceptible_objects(obj):
 #call this from observe_objects() for cleaner recursive visibility.
 
 #Optional: Enums or constants (like percept categories: VISUAL, AUDIO, ITEM, etc.)
-def extract_appearance_summary(obj):
+def extract_appearance_summary(obj, observer=None):
     from base.character import Character
+    from objects.InWorldObjects import Container
     """Given an object (Character, Location, ObjectInWorld), return a simple appearance string."""
     if hasattr(obj, "get_percept_data"):
         data = obj.get_percept_data()
@@ -140,6 +142,12 @@ def extract_appearance_summary(obj):
             # Likely a Location
             guarded = "guarded" if getattr(obj.security, "guards", []) else "unguarded"
             return f"{obj.condition}, {guarded}"
+
+        elif isinstance(obj, Container):
+            visible = obj.visible_contents(observer)
+            if len(visible) == 1:
+                item = visible[0]
+                return f"{item.geometry}, {item.foliage_color}, zen presence"
 
         elif hasattr(obj, "item_type"):
             # Likely ObjectInWorld or similar

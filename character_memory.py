@@ -25,8 +25,8 @@ context cascades ("If I know X, I recall Y") """
 
 
 MEMORY_CATEGORIES = [
-    "events", "region_knowledge", "people", "awakening", "social",
-    "memory_entries", "enemies", "Objects", "procedures", "internal_architecture",
+    "events", "region_knowledge", "people", "awakening", "social", "employment", "gangs", "services", "stressors"
+    "memory_entries", "enemies", "Objects", "procedures", "internal_architecture", "authority",
     "shop_knowledge", "food_locations"
 ]
 
@@ -66,16 +66,21 @@ class Memory:
             traceback.print_stack(limit=5)
 
         matching = []
-        for category, memories in self.semantic.items(): #catagory not accessed
+
+        for category, memories in self.semantic.items():
+            if not isinstance(memories, list):
+                print(f"[MEMORY DEBUG] Skipping non-list semantic category: {category}")
+                continue  # ← skip SocialMemory, ProceduralMemory, etc.
+
             for mem in memories:
-                desc = getattr(mem, "description", type(mem).__name__)
-                #print(f"[MEMORY DEBUG] Checking {desc} with tags {getattr(mem, 'tags', [])}")
-                #verbose
-                
+                if not hasattr(mem, "tags"):
+                    continue
+
                 if has_tags(mem.tags, tags):
                     matching.append(mem)
 
         return matching
+
 
     def get_all_memories(self):
         #gets both episodic and semantic memories
@@ -144,25 +149,50 @@ class Memory:
     
     def get_semantic(self):
         for memories in self.semantic.values():
+            if not isinstance(memories, list):
+                continue
             for memory in memories:
-                yield memory #Now this will only return MemoryEntry objects, not dict keys.
+                if isinstance(memory, MemoryEntry):
+                    yield memory
 
     def add_semantic(self, memory_entry: MemoryEntry, category="memory_entries"):
+        """
+        Add an atomic semantic fact (MemoryEntry) to semantic memory.
+
+        NOTE:
+        - This method is ONLY for MemoryEntry-based facts.
+        - Semantic subsystems (e.g. SocialMemory, RegionKnowledge) must be
+        injected directly into self.semantic[category] during initialization.
+        """
+
+        # Enforce correct usage
+        if category != "memory_entries":
+            raise ValueError(
+                f"[ERROR] add_semantic() is for MemoryEntry facts only. "
+                f"Attempted category='{category}' with {type(memory_entry).__name__}"
+            )
+
         if not isinstance(memory_entry, MemoryEntry):
-            raise TypeError(f"[ERROR] Tried to add non-MemoryEntry to semantic memory: {memory_entry}")
+            raise TypeError(
+                f"[ERROR] Tried to add non-MemoryEntry to semantic memory_entries: "
+                f"{memory_entry} ({type(memory_entry).__name__})"
+            )
 
-        self.semantic.setdefault(category, [])
+        # Ensure category exists (defensive, even though __init__ sets it)
+        self.semantic.setdefault("memory_entries", [])
 
-        for mem in self.semantic[category]:
+        # Deduplication: same subject–verb–object–tags
+        for mem in self.semantic["memory_entries"]:
             if (
                 mem.subject == memory_entry.subject and
                 mem.object_ == memory_entry.object_ and
                 mem.verb == memory_entry.verb and
                 set(mem.tags) == set(memory_entry.tags)
             ):
-                return
+                return  # already present
 
-        self.semantic[category].append(memory_entry)
+        self.semantic["memory_entries"].append(memory_entry)
+
 
     def add_episodic(self, memory_entry: MemoryEntry, current_day: Optional[int] = None):
         if current_day is not None:

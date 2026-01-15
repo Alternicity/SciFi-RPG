@@ -99,7 +99,7 @@ VALID_MOTIVATIONS = {
 
 class MotivationManager:
     def __init__(self, character):
-        #will instantiation of this class now need editing?
+
         self.character = character
         self.motivations = []  # Now a list of Motivation instances
         
@@ -198,7 +198,7 @@ class MotivationManager:
 
         for motivation in self.motivations:
             if motivation.type == "work":
-                if npc.is_working:
+                if npc.employment.is_on_shift:
                     motivation.suppress("currently_working")
                 elif not npc.employment or not npc.employment.on_duty(tick):
                     motivation.suppress("off_shift")

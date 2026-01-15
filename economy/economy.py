@@ -57,7 +57,9 @@ class EconomyManager:
             for char in characters:
                 if assigned_workers >= required_workers:
                     break
-                if char.role == 'Worker' and not char.is_working:
+                #if char.role == 'Worker' and not char.is_working:
+                #deprecated
+                
                     char.current_location = location
                     char.is_working = True
                     location.add_worker(char)  # A method to register workers in a location

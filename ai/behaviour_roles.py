@@ -44,6 +44,11 @@ ROLE_PERMISSIONS = {
         "thought_to_motivation": True,
         "anchor_creation": True,
     },
+    "civilian_waitress": {#added
+        "percept_to_motivation": True,
+        "thought_to_motivation": True,
+        "anchor_creation": True,
+    },
     # Default safe state, npc is locked down hard
     "background": {
         "visit": False,

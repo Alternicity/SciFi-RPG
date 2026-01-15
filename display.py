@@ -212,7 +212,7 @@ from location.locations import Shop
 def display_employees(location):
 
     # Check if the location itself has employees
-    if location.employees_there:
+    if isinstance(location, WorkplaceMixin) and location.employees_there:
         table_data = [
             [employee.name, employee.__class__.__name__, ""]  # Name, Position, Notes
             for employee in location.employees_there
@@ -682,6 +682,13 @@ def display_percepts_table(npc):
                     info = "GangMember (unknown faction)"
             else:
                 info = "GangMember (unaffiliated)"
+
+        if hasattr(origin_obj, "modulated_ambience"):
+            ambience = origin_obj.modulated_ambience()
+            if ambience:
+                top = max(ambience.items(), key=lambda x: x[1])
+                info = f"Enhances {top[0]}"
+
         # Append row
         table_data.append([
             i,
@@ -864,8 +871,8 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
             print(f"  Role: {npc.employment.role.name if npc.employment.role else 'None'}")
             print(f"  Shift: {npc.employment.shift} ({npc.employment.shift_start}:00-{npc.employment.shift_end}:00)")
             print(f"  On Shift: {'Yes' if npc.employment.is_on_shift else 'No'}")
-            print(f"  Currently Working: {'Yes' if npc.is_working else 'No'}")
-            if npc.just_got_off_shift:
+            print(f"  Currently Working: {'Yes' if npc.employment.is_on_shift else 'No'}")
+            if npc.employment.just_got_off_shift:
                 print(f"  Status: Just got off shift")
         else:
             print(f"  Unemployed")
@@ -1027,9 +1034,9 @@ def display_npc_summary(npc):
     loc = npc.location.name if npc.location else "nowhere"
     
     status = ""
-    if npc.is_working:
+    if npc.employment.is_on_shift:
         status = "🔧WORK"
-    elif npc.just_got_off_shift:
+    elif npc.employment.just_got_off_shift:
         status = "🏁OFF"
     elif npc.just_arrived:
         status = "📍ARR"
@@ -1122,8 +1129,12 @@ def display_civ_worker(npc):
     workplace = emp.workplace.name if emp and emp.workplace else "—"
     role = emp.role.name if emp and emp.role else "—"
     shift = f"{emp.shift_start}–{emp.shift_end}" if emp else "—"
-    on_shift = "Working" if getattr(npc, "is_working", False) else "Off"
-    just_off = " | Just got off shift" if getattr(npc, "just_got_off_shift", False) else ""
+
+
+    working = emp.is_on_shift or emp.on_duty(game_state.hour)
+    on_shift = "Working" if working else "Off"
+    just_off = " | Just got off shift" if npc.just_got_off_shift else ""
+
 
     urgent = npc.motivation_manager.get_highest_priority_motivation()
     urgent_str = (
@@ -1132,7 +1143,46 @@ def display_civ_worker(npc):
     )
 
     print(
-        f"[WORKER] {npc.name} | {npc.location.name if npc.location else '—'}"
+        f"[WORKER display] {npc.name} | {npc.location.name if npc.location else '—'}"
+        f" | role={npc.debug_role}"
+        f" | 💼 {on_shift}"
+        f" | shift={shift}"
+        f" | hunger={npc.hunger}"
+        f" | fun={npc.fun}"
+        f" | effort={getattr(npc, 'effort', '—')}"
+        f" | €{npc.wallet.balance if npc.wallet else '—'}"
+        f" | motive={urgent_str}"
+        f" | esteem={npc.self_esteem}"
+        f" | anchor={npc.current_anchor.__class__.__name__ if npc.current_anchor else '—'}"
+        f" | Workplace={workplace}"
+        f"{just_off}"
+    )
+
+def display_civ_waitress(npc):
+    gs = get_game_state()
+    if not gs or npc not in gs.debug_npcs.values():
+        return
+
+    emp = getattr(npc, "employment", None)
+
+    workplace = emp.workplace.name if emp and emp.workplace else "—"
+    role = emp.role.name if emp and emp.role else "—"
+    shift = f"{emp.shift_start}–{emp.shift_end}" if emp else "—"
+
+
+    working = emp.is_on_shift or emp.on_duty(game_state.hour)
+    on_shift = "Working" if working else "Off"
+    just_off = " | Just got off shift" if emp and emp.just_got_off_shift else ""
+
+    urgent = npc.motivation_manager.get_highest_priority_motivation()
+    urgent_str = (
+        f"{urgent.type}(+{urgent.urgency})"
+        if urgent else "—"
+    )
+
+    print(
+        f"[WAITRESS display] {npc.name}"
+        f" | {npc.location.name if npc.location else '—'}"
         f" | role={npc.debug_role}"
         f" | 💼 {on_shift}"
         f" | shift={shift}"
