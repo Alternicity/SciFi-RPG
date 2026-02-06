@@ -101,7 +101,7 @@ class MotivationManager:
     def __init__(self, character):
 
         self.character = character
-        self.motivations = []  # Now a list of Motivation instances
+        self.motivations = []  #list of Motivation instances
         
         # optional global suppression bookkeeping
         self.suppressed = {}  
@@ -113,9 +113,6 @@ class MotivationManager:
         #       "until": "inventory_change"
         #   }
         # }
-
-
-        
 
     def consider_adding_motivation(
         self,
@@ -198,12 +195,12 @@ class MotivationManager:
 
         for motivation in self.motivations:
             if motivation.type == "work":
-                if npc.employment.is_on_shift:
-                    motivation.suppress("currently_working")
-                elif not npc.employment or not npc.employment.on_duty(tick):
-                    motivation.suppress("off_shift")
-                else:
+                if npc.employment and npc.employment.on_duty(tick):
                     motivation.unsuppress()
+                else:
+                    motivation.suppress("off_shift")
+
+
 
     # 🔹 CLEANUP (optional but recommended)
     def cleanup_suppressed(self):

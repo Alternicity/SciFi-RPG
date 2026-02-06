@@ -9,6 +9,9 @@ from anchors.anchor_utils import Anchor
 def update_employee_presence(npc, hour):
     #This function is idempotent and safe to call every hour
 
+    
+
+
     #Don’t create anchors in update_employee_presence
     emp = getattr(npc, "employment", None)
     if not emp or not emp.workplace:
@@ -18,6 +21,15 @@ def update_employee_presence(npc, hour):
     on_duty = emp.on_duty(game_state.hour)#we must also investigate on_duty
     at_workplace = npc.location == workplace
     present = npc in workplace.employees_there
+
+    debug_print(
+            npc,
+            f"[EMP PRESENCE] hour={game_state.hour} "
+            f"on_duty={on_duty} "
+            f"is_on_shift={emp.is_on_shift} "
+            f"at_workplace={at_workplace}",
+            category="employment"
+        )
 
     # --- Shift start ---
     if on_duty and not emp.is_on_shift:

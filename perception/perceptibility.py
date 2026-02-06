@@ -1,9 +1,6 @@
 #perception.perceptibility.py
 from abc import ABC, abstractmethod
-from typing import Dict, Any
 import uuid
-from tabulate import tabulate
-
 
 # Avoid using .get() for dict access unless missing keys are expected.
 # Use dict["key"] if the key should exist (will raise KeyError if missing).
@@ -102,21 +99,30 @@ class PerceptibleMixin:
     #bonsai marked as not defined
 
 #utility functions
-def gather_perceptible_objects(obj):
+def gather_perceptible_objects(obj, seen=None):
     #should stay recursive and dumb
+
+    if seen is None:
+        seen = set()
+
     found = []
-    if isinstance(obj, PerceptibleMixin):
+    if isinstance(obj, PerceptibleMixin):#this should be catching npcs correct?
+        oid = id(obj)
+        if oid in seen:
+            return []
+        seen.add(oid)
         found.append(obj)
+
     if hasattr(obj, "inventory"):
         for item in obj.inventory.items.values():
-            found.extend(gather_perceptible_objects(item))
-    # Traverse ambience / static objects
+            found.extend(gather_perceptible_objects(item, seen))
+
     if hasattr(obj, "items") and hasattr(obj.items, "objects_present"):
         for item in obj.items.objects_present:
-            found.extend(gather_perceptible_objects(item))
+            found.extend(gather_perceptible_objects(item, seen))
 
-    return found 
-#call this from observe_objects() for cleaner recursive visibility.
+    return found
+
 
 #Optional: Enums or constants (like percept categories: VISUAL, AUDIO, ITEM, etc.)
 def extract_appearance_summary(obj, observer=None):

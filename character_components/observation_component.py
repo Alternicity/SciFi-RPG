@@ -97,7 +97,12 @@ class ObservationComponent:
         for key, value in percept_dict.items():
             self.add_percept(key, value)
 
-    def add_percept_from(self, obj):
+    def add_percept_from(self, obj, *, source=None):
+
+        """ Using * is intentional:
+        Forces keyword-only usage
+        Prevents accidental positional misuse later """
+
         """
         Convert an observed object (Character, Item, Location, etc.)
         into a percept entry and add it to this character's percept list.
@@ -140,8 +145,10 @@ class ObservationComponent:
 
         self._percepts[key] = {
             "data": percept_data,
-            "origin": obj
+            "origin": obj,
+            "source": source
         }
+        
 
         self.percepts_updated = True
 
@@ -176,7 +183,7 @@ class ObservationComponent:
             if char is not self:
                 self.perceive_object(char)
 
-            for gang in region.region_gangs: #line 534
+            for gang in region.region_gangs: 
                 self.mind.memory.semantic.setdefault("factions", []).append(gang)
 
                 # Form thought if hostile
@@ -202,10 +209,8 @@ class ObservationComponent:
         from create.create_game_state import get_game_state
         import inspect
         game_state = get_game_state()
-        current_hour = game_state.hour
+        current_hour = game_state.hour#this was already here, and seems correct
 
-        if getattr(self, "last_observed_hour", None) == current_hour:
-            return
         
         assert hasattr(self, "_percepts") and isinstance(self._percepts, dict)
         """ guards the whole function
@@ -220,8 +225,6 @@ class ObservationComponent:
         # caller info for diagnostics
         caller = inspect.stack()[1].function
 
-        if region is not None and location is None:
-            print(f"[BUG] observe() called with region but no location! Caller={caller}")
 
         # --- show before/after counts for easier debugging ---
         try:
@@ -230,7 +233,7 @@ class ObservationComponent:
             before_count = 0
 
         # --- clear percepts for new observation cycle ---
-        self.percepts.clear()
+        self._percepts.clear()
         self.percepts_update = False
 
         # --- perceive self (always included) ---
@@ -238,9 +241,9 @@ class ObservationComponent:
         #canonical insertion point for internal state → percept → thought
 
         if self_percept:
-            self._percepts["self"] = {
+            self._percepts["self"] = {#Is this one ok, it is not using add_percept_from but has caused no problems
                 "data": self_percept,
-                "origin": self.owner   # origin should be the Character, not the component
+                "origin": self.owner
             }
             self.percepts_updated = True
             
@@ -249,29 +252,31 @@ class ObservationComponent:
             for obj in gather_perceptible_objects(location):
                 if obj is self.owner:
                     continue
+                
+                self.add_percept_from(obj, source="gather_perceptible_objects")
 
-                percept = obj.get_percept_data(observer=self.owner)
+                """ percept = obj.get_percept_data(observer=self.owner)
                 if not percept:
                     continue
 
                 self._percepts[obj.id] = {
                     "data": percept,
-                    "origin": obj
-                }
+                    "origin": obj,
+                    "source": "gather_perceptible_objects"
+                } """
                 self.percepts_updated = True
 
         assert isinstance(self._percepts, dict), "Percepts store corrupted"
 
         gs = get_game_state()
-        if gs is not None and not gs.should_display_npc(self.owner):
-            return
+        debug_allowed = gs is not None and gs.should_display_npc(self.owner)
         #everything after this block is gated
-        
-        debug_print(#line 271
-        self.owner,
-        f"[SELF PERCEPT] tags={self._percepts['self']['data']['tags']} urgency={self._percepts['self']['data'].get('urgency')}",
-        category="percept"
-        )
+        if debug_allowed:
+            debug_print(
+            self.owner,
+            f"[SELF PERCEPT] tags={self._percepts['self']['data']['tags']} urgency={self._percepts['self']['data'].get('urgency')}",
+            category="percept"
+            )
 
         # --- determine current location if not passed ---
         if location is None:
@@ -287,38 +292,36 @@ class ObservationComponent:
             return
 
         if isinstance(location, Location):
+            #tmp
+            location = self.owner.location
+            debug_print(
+                self.owner,
+                f"[OBSERVE] loc={location} chars={len(getattr(location,'characters_there',[]))}",
+                category="percept"
+            )
+
 
             # --- perceive other characters in the same location ---
             for char in getattr(location, "characters_there", []):
-                if char is self:
-                    continue
-                self.add_percept_from(char)
-
-                """ debug_print(
-                npc,
-                f"[OBSERVE TRACE] Seeing {other.name} because source={source}",
-                category="perception"
-                ) """
-                #other and source still not defined here
+                if char is self.owner:
+                    continue#but doesnt this prevent duplicate self percepts?
+                self.add_percept_from(char, source="characters_there")
 
         # --- perceive additional objects if any (location-provided list preferred) ---
         if nearby_objects:
-            for obj in nearby_objects:#is this nearby_objects even populated?
-                self.add_percept_from(obj)
+            for obj in nearby_objects:
+                self.add_percept_from(obj, source="nearby_objects")
         else:
             # If caller didn't provide nearby_objects, ask the location for perceptibles.
             if hasattr(location, "list_perceptibles"):
                 for obj in location.list_perceptibles():
-                    self.add_percept_from(obj)
-            else:
-                # fallback to worldQueries
-                
-                for obj in get_nearby_objects(self, location=location):
-                    self.add_percept_from(obj)
+                    self.add_percept_from(obj, source="list_perceptibles")
+            
 
         # --- perceive a specific target if requested ---
         if target:
-            self.add_percept_from(target)#not used
+            self.add_percept_from(target, source="target")
+
 
         # --- mark update complete ---
         self.percepts_updated = True

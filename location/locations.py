@@ -8,7 +8,7 @@ from typing import List, Dict, Optional, Any, Union
 import logging
 
 from base.character import Character
-from base.location import Location
+from base.location import Location, CommercialLocation
 from base.faction import Faction
 from location.location_security import Security
 from objects.InWorldObjects import Toughness, Size
@@ -198,6 +198,11 @@ from inventory import Inventory
 from characters import Employee
 @dataclass
 class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
+    """
+    LEGACY TC1 MODEL.
+    Uses embedded cash_register.
+    TODO (TC3): migrate to Location.items.objects_present fixture model.
+    """
     name: str = "QQ Store"#placeholder/default
     tags: list[str] = field(default_factory=lambda: ["shop", "store", "commercial", "weapon", "ranged_weapon","pistol", "weapons", "food"])
     #Keep tags at class level (Shop(tags=["shop"])) for static traits like economic category.
@@ -233,10 +238,12 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
     is_powered: bool = False
     energy_cost: int = 0
     upkeep: int = 15
+
+    #Remove:
     cash_register: CashRegister = field(
             default_factory=lambda: CashRegister(
                 "Register",
-                Toughness.DURABLE,   # ✅ enum, not int
+                Toughness.DURABLE,
                 "currency",
                 Size.SMALL,
                 1000
@@ -1170,11 +1177,10 @@ class Factory(WorkplaceMixin, PerceptibleLocation):
 
 
 @dataclass
-class Cafe(WorkplaceMixin, PerceptibleLocation):
+class Cafe(CommercialLocation, WorkplaceMixin, PerceptibleLocation):
     name: str = "Metro Cafe"
     tags: list[str] = field(default_factory=lambda: ["workplace", "fun", "food", "social", "cafe"])
     description: str = "A cafe"
-    till: int = 0   #ATTN replace with CashRegister Component via augmentLocations.py
     is_shakedown_target: bool = True
     upkeep: int = 9
     categories: List[str] = field(default_factory=lambda: ["workplace"])

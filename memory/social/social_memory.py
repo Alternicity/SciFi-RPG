@@ -2,8 +2,6 @@
 from base.character import Character
 from dataclasses import dataclass, field
 
-
-
 from memory.social.social_relation import SocialRelation
 
 class SocialMemory:
@@ -40,5 +38,8 @@ class SocialMemory:
                 continue
             yield rel
 
+    def is_known(npc, other):
+        social = npc.mind.memory.semantic.get("social")
+        return social and social.has_relation_with(other)
 
 

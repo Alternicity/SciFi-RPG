@@ -82,8 +82,10 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             )
             civilian.wallet=Wallet(bankCardCash=random_cash)
             civilian.status.set_status("general_population", FactionStatus(StatusLevel.LOW, "Normie"))
-            civilian.home = home
-            civilian.residences = [home]
+
+            """ civilian.home = home
+            civilian.residences = [home] """
+
             civilian.is_employee = random.random() < 0.8
             civilian.mind = Mind(owner=civilian, capacity=civilian.intelligence)
             augment_character(civilian)
@@ -112,12 +114,8 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     # Print global constants so we can verify they aren't being overridden
     #debug_print(npc=None, message=f"[ECONOMY VARS] SHOP_PATRONS_MIN={SHOP_PATRONS_MIN} SHOP_PATRONS_MAX={SHOP_PATRONS_MAX} MAX_CIVILIANS_PER_LOCATION={MAX_CIVILIANS_PER_LOCATION}", category="economy")
 
-    # --- Assign logical start locations ---
-    for civ in civilians:
-        # RULE:
-        # 1) If employee in a NON-SHOP workplace → start at home 80% of time, workplace 20% of time.
-        # 2) If employee in a SHOP → ALWAYS start at home.
-        # 3) Non-employees → start at home only.
+    # --- Assign logical start locations REMOVED ---
+    """ for civ in civilians:
 
         wp = civ.employment.workplace
 
@@ -130,13 +128,10 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
                 civ.location = wp
                 add_character(wp, civ)
             else:
-                civ.location = civ.home
-                add_character(civ.home, civ)
+                civ.location = civ.home """
+                
 
-        else:
-            # Non-employees OR shop workers
-            civ.location = civ.home
-            add_character(civ.home, civ)
+        
 
     # Create Luna
     from luna_seed_memory import (
@@ -332,8 +327,9 @@ def assign_workplaces(civilians, workplace_locations):
 
 from debug_utils import debug_print#line 293, not inside any function
 
-def place_civilians_in_homes(civilians, families, all_locations, shops=None, populate_shops_after_worldgen=False):
-    """Place civilians in their home if known, else pick a random non-shop location."""
+"""Being phased out. Disabled, at least for TC2"""
+""" def place_civilians_in_homes(civilians, families, all_locations, shops=None, populate_shops_after_worldgen=False):
+    
     non_shop_locations = [loc for loc in all_locations if "shop" not in loc.__class__.__name__.lower()]
 
     for civ in civilians:
@@ -343,7 +339,8 @@ def place_civilians_in_homes(civilians, families, all_locations, shops=None, pop
             prev.characters_there.remove(civ)
 
         # Find or assign home
-        home = getattr(civ, "home", None)
+        home = civ.residences[0] if civ.residences else None
+
         if not home and getattr(civ, "family", None) and getattr(civ.family, "home", None):
             home = civ.family.home
 
@@ -357,19 +354,11 @@ def place_civilians_in_homes(civilians, families, all_locations, shops=None, pop
 
         civ.location = home
         # Track them in the location list so observe() sees them
-        add_character(home, civ)
-
-        # Debug, verbose 
-        """ debug_print(
-            civ,
-            f"Placed at {getattr(civ.location, 'name', 'None')} (home={bool(home)})",
-            category=["placement", "population"]) """
-
-
+        add_character(home, civ) 
 
     # Now populate shops **after** homes are assigned so we don't override home placement
     if populate_shops_after_worldgen and shops:
-        populate_shops_with_patrons(civilians, shops)
+        populate_shops_with_patrons(civilians, shops)"""
 
 
 def populate_shops_with_patrons(civilians, shops):

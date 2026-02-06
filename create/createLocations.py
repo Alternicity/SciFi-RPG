@@ -13,7 +13,7 @@ from weapons import Pistol
 from shop_name_generator import generate_shop_name
 import traceback
 from debug_utils import debug_print
-from augment.augmentLocations import seed_food_locations, seed_ambience_objects
+from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment
 game_state = get_game_state()
 
 def create_locations(region: Region, wealth: str) -> List[Location]:
@@ -143,7 +143,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     #get the cafes and retaurants here, 
     seed_food_locations(game_state.all_locations)
     seed_ambience_objects(game_state.all_locations)
-
+    seed_commercial_equipment(game_state.all_locations)
     return locations
 
 #this function is a mess, but currently unused

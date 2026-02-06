@@ -9,6 +9,7 @@ from characterActions import execute_action #not currently accessed
 from summary_utils import format_location
 from display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_waitress, display_civ_liberty, display_npc_vitals, summarize_action
 from memory.memory_entry import RegionKnowledge
+from memory.social.social_memory import SocialMemory
 from memory.ambience_utils import update_ambient_scene_memory
 from character_thought import Thought
 from ambience.ambience_and_psy_utils import compute_location_ambience
@@ -26,18 +27,34 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
         game_state.advance_hour()
         debug_print(None, f"[TIME] Hour {game_state.hour}, Day {game_state.day}", category="tick")
         debug_print(None, summarize_npc_turns(all_characters), category="tick")
-        for location in all_locations:
-                    location.recent_arrivals.clear()
+
+        
+
 
         # Each hour:
         for region in all_regions:
             for npc in region.characters_there:
+                
+                #tmp print
+                from location.locations import Cafe
+                # --- WORLD STATE CHECK (diagnostic) ---
+                if npc.location and isinstance(npc.location, Cafe):
+                    loc = npc.location
+                    print(
+                        f"[WORLD CHECK] npc={npc.name} "
+                        f"loc_id={id(loc)} "
+                        f"chars={[ (c.name, id(c)) for c in loc.characters_there ]}"
+                    )
+
                 #npc._observed_this_tick = False
                 begin_npc_turn(npc)
                 update_employee_presence(npc, game_state.hour)
                 if npc.is_player:
                     continue
                 
+                    #I thought here would be too late
+
+
                 # OBSERVE
                 npc.observe(region=region, location=npc.location)
 
@@ -85,6 +102,8 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                         # 3. Capture social snapshot
                         #This logic also encapsulated as a func in social_utils
                         social = char.mind.memory.semantic.get("social")
+                        assert isinstance(social, SocialMemory), f"{npc.name} has invalid social memory, from simulate_hours"
+
                         if not social:
                             continue
 
@@ -126,8 +145,6 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                                     current_hour=game_state.hour,
                                 )
                 
-
-
                 # THINK CYCLE
                 if hasattr(npc, 'ai') and npc.ai:
                     if role(npc) != "background":#GATE
@@ -136,7 +153,7 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                             npc.ai.think(npc.location.region)
                         npc.ai.promote_thoughts()
 
-        # ✅ NEW: TC2 snapshot displays
+        #TC2 snapshot displays
         DISPLAY_BY_DEBUG_ROLE = {
             "civilian_worker": display_civ_worker,
             "civilian_liberty": display_civ_liberty,
@@ -153,7 +170,7 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
 
                 #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
                     
-        # STEP 2: Choose and Execute Action
+        #Choose and Execute Action
         for npc in all_characters:
             if hasattr(npc, 'ai') and npc.ai:
                 if role(npc) != "background":
@@ -170,10 +187,9 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                         category="action"
                     )
 
-
-
-        # STEP 3: Post-Day DEBUG (single character)
+        # STEP 3: Post Stuff 
         for npc in all_characters:#ATTN
+
             end_npc_turn(npc)
 
             if npc is not debug_character:
@@ -205,6 +221,10 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
         if not hasattr(c, "motivation_manager"):
             print(f"[ERROR] Non-character in all_characters: {type(c)} -> {c}")
 
+    for location in all_locations:
+        location.recent_arrivals.clear()
+        # recent_arrivals lasts exactly one observation cycle/hour/tick
+
 def begin_npc_turn(npc):
     npc.just_arrived = False
     #npc.turn_start_tick = get_game_state().tick
@@ -217,19 +237,21 @@ def begin_npc_turn(npc):
     #effort = 1 → exhausted
 
     #npc.motivation_manager.sync_physiological_motivations()
-    tick = get_game_state().tick
+    tick = get_game_state().hour
     npc.motivation_manager.sync_motivations(tick)
 
 def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()
     npc.inventory.clear_recently_acquired()
-    #npc.last_action_tick = get_game_state().tick
+    npc.just_arrived = False
+
+    #npc.last_action_tick = get_game_state().hour
 
     # reset observation flag so next tick will allow a fresh observation
     """ if hasattr(npc, "_observed_this_tick"):
         npc._observed_this_tick = False """
 
-    game_state = get_game_state()#Needed for the lines below
+    game_state = get_game_state()
     debug_print(f"[TURN] Hour {game_state.hour}, Day {game_state.day}", category="tick")
 
 

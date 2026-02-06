@@ -39,6 +39,7 @@ class GameState:
         self.all_street_gangs = []
         self.corporations = []
         self.homes = [] #might need populating
+        self.homeless = []
         self.public_places = [] #might need populating
         self.all_regions = []
         self.all_locations = []

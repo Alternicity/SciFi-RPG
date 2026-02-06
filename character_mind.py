@@ -7,6 +7,7 @@ import random
 import itertools
 from character_thought import Thought
 from character_memory import Memory
+from memory.social.social_memory import SocialMemory
 from debug_utils import debug_print
 from create.create_game_state import get_game_state
 
@@ -19,6 +20,8 @@ class Mind:
         self.thoughts = deque(maxlen=capacity)
         self.corollaries = deque(maxlen=capacity)
         self.memory = Memory()
+        self.memory.semantic["social"] = SocialMemory(owner)
+
         self.recurrent_thought_traces = {}  # thought_type -> count (passive, unused for now)
         self.obsessions: List[Obsession] = []
         self.max_thinks_per_tick=1

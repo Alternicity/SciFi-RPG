@@ -89,7 +89,7 @@ class Location(LocationBase):
 
     
     def __post_init__(self):
-        # Any additional setup logic if needed
+        # Is this needed? It looks like a duplicate
         pass
     
     def get_front_of_house_staff(self):
@@ -144,3 +144,6 @@ class Location(LocationBase):
         return f"{self.name}"  # Just return the name directly
 
 
+class CommercialLocation:
+    """Marker mixin: location conducts transactions"""
+    register_initial_cash = 300

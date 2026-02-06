@@ -70,7 +70,7 @@ def create_all_characters(factions, all_locations, all_regions):
             #print(f"[ERROR] create_faction_characters() returned None for faction: {faction.name}")
             #uncomment this when populating corporation factions fully
 
-    from create.createCivilians import create_civilian_population, place_civilians_in_homes
+    from create.createCivilians import create_civilian_population
 
     factionless = next(f for f in factions if f.name == "Factionless")
     civilians = create_civilian_population(all_locations, all_regions, factionless)
@@ -79,9 +79,13 @@ def create_all_characters(factions, all_locations, all_regions):
 
 
     # After all civilians and locations exist:
-    families = assign_families_and_homes(game_state)#anomalous that game_state is passed as a parameter, its was made to be global
+    families = assign_families_and_homes(game_state)
+    game_state.families = families
+    
     shops = [loc for loc in all_locations if getattr(loc, "is_shop", False)]
-    place_civilians_in_homes(civilians, families, all_locations, shops, populate_shops_after_worldgen=True)
+
+    #on its way out
+    #place_civilians_in_homes(civilians, families, all_locations, shops, populate_shops_after_worldgen=True)
 
     # --- DIAGNOSTIC CHECK: After homes + shop patron placement ---
     #debug_print(None, "[DIAG] Checking all major faction HQs just after shop population...", "placement")

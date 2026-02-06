@@ -10,6 +10,9 @@ from characters import Civilian
 from base.character import Character
 from economy.economy import Ownership
 from create.create_game_state import get_game_state
+from world.placement import place_character
+game_state = get_game_state()
+
 @dataclass
 class Family:
     """Lightweight social unit tracking related civilians."""
@@ -53,14 +56,9 @@ class Family:
 
         self.members.append(character)
 
-
-
-
-
     #add update npc.loyalties code here
 
-
-def assign_families_and_homes(game_state):#anomalous that game_state is passed as a parameter, its was made to be global
+def assign_families_and_homes(game_state):
     """
     Groups civilians into families based on family name,
     assigns each family a residential location,
@@ -101,6 +99,7 @@ def assign_families_and_homes(game_state):#anomalous that game_state is passed a
         )
 
         family.add_member(char)
+        char.family = family
 
 
     debug_print(None, f"[FAMILY] Grouped {len(families_by_name)} family family_names.", "family")
@@ -123,16 +122,36 @@ def assign_families_and_homes(game_state):#anomalous that game_state is passed a
             continue
 
 
-        home = unassigned_residences.pop()
-        family.home = home
-        #eventually update npc.residences
+        locked_members = [c for c in family.members if getattr(c, "placement_locked", False)]
 
-        # Place each member at home
+        if locked_members:
+            target_region = locked_members[0].region
+            region_residences = [
+                r for r in unassigned_residences
+                if r.region is target_region
+            ]
+            if region_residences:
+                home = region_residences.pop()
+                unassigned_residences.remove(home)
+            else:
+                home = unassigned_residences.pop()
+        else:
+            home = unassigned_residences.pop()
+
+
+        family.home = home
+
         for civ in family.members:
-            civ.location = home
-            civ.region = home.region
-            if civ not in home.characters_there:
-                home.characters_there.append(civ)
+            civ.residences = [home]
+            civ.is_homeless = False
+            #add civ to home.characters_there here?
+            if getattr(civ, "placement_locked", False):
+                continue
+
+            place_character(civ, home)
+
+
+
 
  
     # -------------------------------
@@ -251,7 +270,10 @@ def assign_initial_location_from_family(npc):
 
     if home:
         npc.location = home
-        npc.region = home.region
+        location = npc.location
+        location.characters_there.append(npc)#does this look like it enforces the neceesary invariant correctly?
+        npc.region = npc.location.region #You  said this silently overrides region after it was set earlier. We didnt deal with this yet
+        
         return True
 
     debug_print(
@@ -261,4 +283,5 @@ def assign_initial_location_from_family(npc):
     )
 
     npc.is_homeless = True
+    game_state.homeless.append(npc)#append, or add? It is a list
     return False

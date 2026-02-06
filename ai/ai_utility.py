@@ -17,22 +17,42 @@ from create.create_game_state import get_game_state
 from focus_utils import set_attention_focus
 from ai.ai_utils import social_scan
 from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought
-
+game_state = get_game_state()
 class UtilityAI(BaseAI):
     def __init__(self, npc):
     #Core cognitive pipeline.
-        self.npc = npc
+        self.npc = npc#NOTE 1
         
     """ Filtering episodic memories and tagging/promoting important ones into thoughts.
         Generating motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
 
     def choose_action(self, region):
-        npc = self.npc
+        npc = self.npc#note 2
         anchor = npc.current_anchor
+
+        role_label = (
+            "MANAGER" if npc is game_state.civilian_worker else
+            "WAITRESS" if npc is game_state.civilian_waitress else
+            "LIBERTY" if npc is game_state.civilian_liberty else
+            npc.debug_role
+        )
+
+        debug_print(
+            npc,
+            f"[CHOOSE_ACTION] {npc.name} ({role_label}) "
+            f"anchor={anchor.type if anchor else None} "
+            f"tags={anchor.tags if anchor else None}",
+            category="anchor"
+        )
+
+
 
         if not anchor:
             return {"name": "idle"}
+
+        assert anchor.type is not None, f"{npc.name} anchor has no type: {anchor}"
+
 
         # 1. Immediate action?
         if hasattr(anchor, "propose_action"):
@@ -41,18 +61,25 @@ class UtilityAI(BaseAI):
                 return action
 
         # 2. Need to move?
-        target = anchor.resolve_target_location()
-        if target and npc.location != target:
+        target = anchor.resolve_target_location()#is it possible the ai is getting confused here? A different resolve_target_location?
+        if target and npc.location != target:#meaning that target is later not what we need it to be?
             return {
                 "name": "visit_location",
                 "params": {"destination": target}
             }
 
         # 3. Social/work hooks
-        if anchor.type == "work" and "social" in anchor.tags:
+        if anchor.type == "work":
+        #and "social" in anchor.tags:
             return {
                 "name": "social_action",
                 "params": {"anchor": anchor}
+            }
+        
+        # 4 Work
+        if anchor.type == "work" and npc.location == npc.employment.workplace:
+            return {
+                "name": "perform_work"
             }
 
         return {"name": "idle"}
@@ -186,7 +213,7 @@ class UtilityAI(BaseAI):
         from actions.npc_actions import (
             visit_location_auto,
             exit_location_auto,
-            buy_auto,#added
+            buy_auto,
             eat_auto,
             idle_auto
         )
@@ -213,6 +240,12 @@ class UtilityAI(BaseAI):
         if action_name == "social_action":
             execute_social_action(self.npc, action["params"]["anchor"])
             return
+
+        if action_name == "perform_work":
+            from employment.service_jobs.cafe_restaurant_work import work
+            work(npc)
+            return
+
 
         # --- generic routing ---
         action_map = {
@@ -359,7 +392,6 @@ class UtilityAI(BaseAI):
         
         # Create or update an anchor from that thought
         anchor = create_anchor_from_thought(npc, strongest, name=strongest.primary_tag() or "general")
-        #and here
 
         if not anchor:
             # Could happen if thought already anchored or duplicate detected

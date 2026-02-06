@@ -14,17 +14,22 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     npc = character
     gs = get_game_state()
 
-    
+    debug_print(
+            npc,
+            f"[VISIT] visit_location_auto npc={npc.name} role={npc.debug_role} "
+            f"from={npc.location} to={destination}",
+            category="visit"
+        )
+
     #update_employee_presence(npc, gs)
 
     import inspect
     caller = inspect.stack()[1]
     caller_info = f"{caller.function} @ {caller.filename}:{caller.lineno}"
 
-    # inside visit_auto() or the movement routine where you actually change civ.location
     debug_print(npc, f"[MOVE] {npc.name} -> {getattr(destination,'name',destination)} triggered_by={caller_info}", category="movement")
 
-    search_region = region or npc.region #search_region is not accessed
+    search_region = region or npc.region
     debug_print(npc, f"[VISIT] Arrived at {destination.name}", "visit")
 
     # Resolve destination by name if needed
@@ -40,20 +45,29 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     if destination is None:
         debug_print(npc, f"[VISIT] {npc.name} has no valid destination to visit (lookup failed).", category="visit")
         return False
-    
-    if npc.just_arrived:#but where is just_arrived set? This function would be ideal I think. It is set below, so this block ismaybe superfluous
-        return True   # Already here, don't re-visit
 
     # --- Core movement ---
     
     # Remove NPC from old location
-    if npc.previous_location and hasattr(npc.previous_location, "characters_there"):
-        if npc in npc.previous_location.characters_there:
-            npc.previous_location.characters_there.remove(npc)
+    old_location = npc.location
 
-    npc.previous_location = npc.location
+    # Remove from current location
+    if old_location and hasattr(old_location, "characters_there"):
+        if npc in old_location.characters_there:
+            old_location.characters_there.remove(npc)
+
+    npc.previous_location = old_location
     npc.location = destination
+    npc.region = destination.region
     npc.just_arrived = True
+
+    #the following track presence block move up to here
+    # --- Track presence ---
+    if hasattr(destination, "characters_there") and npc not in destination.characters_there:
+        destination.characters_there.append(npc)
+    if hasattr(destination, "recent_arrivals"):
+        destination.recent_arrivals.append(npc)
+
     # Entering or leaving workplace
     update_employee_presence(npc, gs)
 
@@ -70,11 +84,30 @@ def visit_location_auto(character, region=None, destination=None, destination_na
 
     debug_print(npc, f"[VISIT] {npc.name} arrived at {npc.location.name}", category="visit")
 
-    # --- Track presence ---
-    if hasattr(destination, "characters_there") and npc not in destination.characters_there:
-        destination.characters_there.append(npc)#is this still valid, or should we use add_character here?
-    if hasattr(destination, "recent_arrivals"):
-        destination.recent_arrivals.append(npc)
+    debug_print(
+        npc,
+        f"[MOVE] {npc.name} {npc.previous_location} -> {destination} | "
+        f"old_chars={len(getattr(old_location,'characters_there',[])) if old_location else None} "
+        f"new_chars={len(destination.characters_there)}",
+        category="visit"
+    )
+
+    #the assert block stays down here
+    assert npc in destination.characters_there, (f"{npc.name} not in {destination}.characters_there")
+
+    assert npc.location in npc.region.locations, (
+        f"{npc.name} is in {npc.location} which is not in region {npc.region.name}"
+    )
+
+    #tmp
+    from location.locations import Cafe
+    if isinstance(destination, Cafe):
+        print(
+            f"[VISIT CHECK] npc={npc.name} "
+            f"dest_id={id(destination)} "
+            f"chars={[ (c.name, id(c)) for c in destination.characters_there ]}"
+        )
+
 
     # --- Optional hour/day stamp ---
     hour = getattr(character, "current_hour", None)
@@ -83,8 +116,8 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     character.last_visit_timestamp = timestamp
 
     # --- Observation ---
-    if hasattr(character, "perceive_current_location"):
-        character.perceive_current_location()#line 48
+    """ if hasattr(character, "perceive_current_location"):
+        character.perceive_current_location() """
 
     # --- Episodic memory ---
     if hasattr(character, "mind") and hasattr(character.mind, "memory"):
@@ -352,15 +385,20 @@ def eat_auto(npc, region=None):
 
 def buy_auto(npc, region, *, item):
     location = npc.location
-    price = item.price
 
-    if not hasattr(location, "inventory"):
+    if not hasattr(location, "cash_register"):
+        debug_print(npc, "[BUY] No register here", category="error")
         return False
 
     if item not in location.items_available:
-        debug_print(npc, f"[ERROR] Item {item.name} no longer available", category="error")
-
+        debug_print(
+            npc,
+            f"[BUY] Item {item.name} no longer available",
+            category="error"
+        )
         return False
+
+    price = item.price
 
     # buyer pays
     if not npc.wallet.spend_bank(price):
@@ -368,21 +406,22 @@ def buy_auto(npc, region, *, item):
         return False
 
     # seller receives
-    seller = npc.location
-    seller.till += price
+    location.cash_register.deposit(price)
 
-    # remove item
+    # decrement stock
     item.quantity -= 1
     if item.quantity <= 0:
-        seller.items_available.remove(item)
+        location.items_available.remove(item)
+
     debug_print(
-            npc,
-            f"[BUY] Purchased {item.name} for {price}. "
-            f"Wallet now bank={npc.wallet.bankCardCash}, cash={npc.wallet.cash}",
-            category="action"
-        )
+        npc,
+        f"[BUY] Purchased {item.name} for {price}. "
+        f"Wallet now bank={npc.wallet.bankCardCash}, cash={npc.wallet.cash}",
+        category="action"
+    )
 
     return True
+
 
     """ npc.inventory.add_item(item.clone(quantity=1))
     item.quantity -= 1 """

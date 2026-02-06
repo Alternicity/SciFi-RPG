@@ -4,10 +4,11 @@ import random
 from create.create_game_state import get_game_state
 from debug_utils import debug_print
 game_state = get_game_state()
+from base.location import CommercialLocation
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
 from location.locations import Cafe, Restaurant
 from objects.food.prepared_food import Sandwich, Burger
-from objects.InWorldObjects import Pot
+from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
 from objects.trees_and_plants import BonsaiTree
 
 DEFAULT_SPECIALIZATION = "general"
@@ -105,19 +106,42 @@ def seed_food_locations(all_locations):
             loc.items_available.extend([sandwich, burger])
 
 def seed_commercial_equipment(all_locations):
-    """ if isinstance(loc, Cafe):
-        loc.add(CashRegister()) """
-    pass
+    for loc in all_locations:
+        if not isinstance(loc, CommercialLocation):
+            continue
+
+            #Objects like CashRegister lives in loc.items.objects_present
+
+        if any(isinstance(o, CashRegister) for o in loc.items.objects_present):
+            continue
+
+        register = CashRegister(
+            name=f"{loc.name} Register",
+            toughness=Toughness.DURABLE,
+            item_type=ItemType.GADGET,
+            size=Size.MEDIUM,
+            blackmarket_value=200,
+            initial_cash=getattr(loc, "register_initial_cash", 300),
+        )
+
+        loc.items.objects_present.append(register)
+        loc.cash_register = register  # optional convenience pointer
+
+
+
 
 def seed_ambience_objects(all_locations):
     for loc in all_locations:
         if isinstance(loc, Cafe):
+            # Prevent duplicate ambience
+            if any(isinstance(o, Pot) for o in loc.items.objects_present):
+                continue
+
             pot = Pot(quantity=1)
             bonsai = BonsaiTree()
-
             pot.add(bonsai)
-
             loc.items.objects_present.append(pot)
+
 
 
 

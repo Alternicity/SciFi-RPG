@@ -46,6 +46,7 @@ ROLE_PERMISSIONS = {
     },
     "civilian_waitress": {#added
         "percept_to_motivation": True,
+        "visit": True,
         "thought_to_motivation": True,
         "anchor_creation": True,
     },

@@ -69,7 +69,7 @@ class Memory:
 
         for category, memories in self.semantic.items():
             if not isinstance(memories, list):
-                print(f"[MEMORY DEBUG] Skipping non-list semantic category: {category}")
+                #print(f"[MEMORY DEBUG] Skipping non-MemoryEntry semantic category: {category}")
                 continue  # ← skip SocialMemory, ProceduralMemory, etc.
 
             for mem in memories:

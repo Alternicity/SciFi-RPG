@@ -607,7 +607,7 @@ def display_percepts_table(npc):
 
     table_data = []
 
-    for i, (key, v) in enumerate(npc.percepts.items()):
+    for i, (key, v) in enumerate(npc.percepts.items()):#not actually using location.characters.there
 
         # Step 1: Safely access nested data
         data = v.get("data", {})
@@ -647,6 +647,8 @@ def display_percepts_table(npc):
 
 
         origin = v.get("origin") or data.get("origin")
+        source = v.get("source", "UNKNOWN")
+
         # --- Unified, safe salience computation ---
         # Display is now anchor-centric: salience depends on the current anchor only.
         try:
@@ -687,7 +689,14 @@ def display_percepts_table(npc):
             ambience = origin_obj.modulated_ambience()
             if ambience:
                 top = max(ambience.items(), key=lambda x: x[1])
-                info = f"Enhances {top[0]}"
+                info = f"Enhances {top[0]} (via {source})"
+                #should the following code remain or be commented out?
+                source = v.get("source")
+                if source:
+                    info = f"Enhances {top[0]} (via {source})"
+                else:
+                    info = f"Enhances {top[0]} (via UNKNOWN)"
+
 
         # Append row
         table_data.append([
@@ -835,12 +844,44 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
         print(f"  Class: {npc.__class__.__name__}")
         print(f"  Race: {npc.race}, Sex: {npc.sex}")
     
+        # --- Family info ---
+        has_family = bool(getattr(npc, "family", None))
+        print(f"  Family: {'Yes' if has_family else 'No'}")
+
+        if npc.family:
+            partner = None
+            social = npc.mind.memory.semantic.get("social")
+            if social:
+                for rel in social.relations.values():
+                    if rel.is_partner:
+                        partner = rel.subject
+                        break
+
+
+            print(f"  Partner: {partner.name if partner else 'None'}")
+        else:
+            print("  Partner: N/A")
+
+        print("  Children: (not implemented)")
+
+
     # === LOCATION ===
     if NPC_VITALS_CONFIG.get("location", True):
         print(f"\n[LOCATION]")
         print(f"  Region: {npc.region.name if npc.region else 'None'}")
         print(f"  Current Location: {npc.location.name if npc.location else 'None'}")
         
+        # --- Home ---
+        home = npc.residences[0] if npc.residences else None
+
+        print(f"  Home: ", end="")
+        if npc.is_homeless:
+            print("Homeless")
+        elif home:
+            print(home.__class__.__name__)
+        else:
+            print("Unknown")
+
         if npc.current_destination and npc.current_destination != npc.location:
             print(f"  Destination: {npc.current_destination.name}")
         
@@ -861,7 +902,7 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
             # Fallback for NPCs without VitalsComponent
             print(f"  Hunger: {getattr(npc, 'hunger', 'N/A')}/20")
             print(f"  Effort: {getattr(npc, 'effort', 'N/A')}/20")
-            print(f"  Fun: {getattr(npc, 'fun', 'N/A')}/20")
+            print(f"  Fun: {getattr(npc, 'fun', 'N/A')}/20")#ATTN IS THIS NECESSARY?
     
     # === EMPLOYMENT ===
     if NPC_VITALS_CONFIG.get("employment", True):

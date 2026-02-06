@@ -2,6 +2,7 @@
 
 from create.create_game_state import get_game_state
 game_state = get_game_state
+from debug_utils import debug_print
 
 def get_socially_favoured(self):
     if self.partner:
@@ -20,6 +21,13 @@ def get_socially_favoured(self):
     return None #to be granular, maybe this function should return an identity and presumed location?
 
 def has_recent_interaction(a, b, *, window_hours=2):
+
+    debug_print(
+            a,
+            f"[RECENT INTERACTION] participants={a.name}, {b.name}",
+            category="interaction"
+        )
+
     social = a.mind.memory.semantic.get("social")
     if not social:
         return False
@@ -32,7 +40,7 @@ def has_recent_interaction(a, b, *, window_hours=2):
         window_hours=window_hours
     )
 
-def seed_social_relations(npc):
+def seed_social_relations(npc):#this is called in augment.augment_character.py in augment_character()
     social = npc.mind.memory.semantic.get("social")
     if not social:
         return
@@ -76,6 +84,8 @@ def seed_social_relations(npc):
 
 def capture_social_snapshot(char, location):
     social = char.mind.memory.semantic.get("social")
+    assert isinstance(social, SocialMemory), f"{npc.name} has invalid social memory, from capture_social_snapshot"
+    #SocialMemory and npc marked not defined. Does char refer to the active npc, or the other one? The subject or the object?
     if not social:
         return None
 

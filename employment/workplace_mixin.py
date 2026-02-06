@@ -10,7 +10,8 @@ class WorkplaceMixin:
         self.employees_there = []
         self.employees = []
 
-    def add_employee(self, employee):
+        #The functions here look suspicious, and might be superfluous
+    def add_employee(self, employee):#this function seemingly not called.
         if employee not in self.employees:
             self.employees.append(employee)
             """ You do not add the employee to employees_there here
@@ -26,16 +27,16 @@ class WorkplaceMixin:
             category="employment"
         )
 
-    def get_present_employees_at(location):
+    def get_present_employees_at(location):#not called
         if hasattr(location, "workplace") and location.workplace:
             return location.workplace.employees_there
         return []
 
     # Renamed to avoid confusion with dormant 'task system'
-    def get_duties_for_role(self, role):
+    def get_duties_for_role(self, role):#called only in select_duty()
         return role.responsibilities  # these are 'duties' now
 
-    def select_duty(self, employee):
+    def select_duty(self, employee):#Called only in run_workday_cycle
         duties = self.get_duties_for_role(employee.role)
         if not duties:
             return None
@@ -47,7 +48,7 @@ class WorkplaceMixin:
         # Future: dispatch to handler methods
         print(f"{employee.name} performs duty: {duty} at {self.name}")
 
-    #do not call, violates utilityAI
+    #do not call, violates utilityAI. Not called, deletion candidate
     def run_workday_cycle(self):
         """Called once per tick during work hours."""
         for employee in self.employees_there:

@@ -2,7 +2,7 @@
 
 from focus_utils import set_attention_focus
 from create.create_game_state import get_game_state
-
+from debug_utils import debug_print
 
 def greet_customer_auto(waitress, target):
     game_state = get_game_state()
@@ -19,4 +19,5 @@ def greet_customer_auto(waitress, target):
         kind="greet",
         new_type="customer"
     )
-
+    debug_print(waitress, f"[WAITRESS GREET] {waitress.name} Hello ", category = "employment")
+    #if known to teh waitress she could add targets name with {target.name} after the Hello?

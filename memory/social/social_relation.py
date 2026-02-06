@@ -43,3 +43,7 @@ class SocialRelation:
         if new_type and new_type != self.current_type:
             self.past_types.append(self.current_type)
             self.current_type = new_type
+
+    @property
+    def is_partner(self) -> bool:
+        return self.current_type == "partner"        

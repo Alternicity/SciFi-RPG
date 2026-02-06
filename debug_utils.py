@@ -10,6 +10,9 @@ from config import (
     SHOW_PRIMARY_LOGS,
     SHOW_SECONDARY_LOGS,
     SHOW_ATTRIBUTE_TEST_LOGS,
+
+    SHOW_TC2_LOGS,
+    SHOW_INTERACTION_LOGS,
     SHOW_CREATE_LOGS,
     SHOW_TEST_NPC_LOGS,
     SHOW_TICK_LOGS,
@@ -24,6 +27,7 @@ from config import (
     SHOW_DECISION_LOGS,
     SHOW_INSIGHT_LOGS,
     SHOW_PERCEPT_LOGS,
+    
     SHOW_INVENTORY_LOGS,
     SHOW_VISIT_LOGS,
     SHOW_FOCUS_LOGS,
@@ -57,6 +61,9 @@ DEBUG_FLAGS = {
     "test_npc": SHOW_TEST_NPC_LOGS,
     "tick": SHOW_TICK_LOGS,
     "attribute": SHOW_ATTRIBUTE_TEST_LOGS,
+
+    "tc2": SHOW_TC2_LOGS,
+    "interaction": SHOW_INTERACTION_LOGS,
     "think": SHOW_NPC_THINK_LOGS,
     "action": SHOW_ACTION_LOGS,
     "memory": SHOW_MEMORY_LOGS,
@@ -89,11 +96,11 @@ DEBUG_FLAGS = {
     
 # A second parallel dict for role filtering OUTPUT
 ROLE_FILTERS = {
-    "primary": False,#set to False for test case 2
+    "primary": False,#TC1 GangMemberset to False for test case 2
     "secondary": False,
     "civilian_worker": True,
     "civilian_liberty": True,
-    
+    "civilian_waitress": True,
 }
 
 """ Why move ROLE_FILTERS into config (per test case)?

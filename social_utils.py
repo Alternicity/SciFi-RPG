@@ -1,5 +1,6 @@
 #social_utils.py
 #in the root folder for now at least
+from focus_utils import set_attention_focus
 class Interaction:
     def __init__(self, a, b, context=None):
         self.a = a

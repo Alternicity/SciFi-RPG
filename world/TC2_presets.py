@@ -3,20 +3,20 @@ from employment.employee import EmployeeProfile
 from employment.roles import CAFE_MANAGER, WAITRESS
 from debug_utils import debug_print
 
-def setup_tc2_worker(worker, region, *, role):
-    
-    debug_print(
-        worker,
-        f"[SETUP] setup_tc2_worker ENTER role={role.name}",
-        category="employment"
-    )
-    
+def get_tc2_cafe(region):
     cafe = next(
         (loc for loc in region.locations if loc.__class__.__name__ == "Cafe"),
         None
     )
     if not cafe:
         raise RuntimeError("TC2 requires a Cafe in region")
+    return cafe
+
+
+
+def setup_tc2_worker(worker, region, *, role):
+    
+    cafe = get_tc2_cafe(region)
 
     worker.is_employee = True
 
@@ -24,9 +24,10 @@ def setup_tc2_worker(worker, region, *, role):
     worker.employment = EmployeeProfile(
         workplace=cafe,
         role=role,
+        #role_type not passed here, so it uses the default front_of_house
         shift="day",
-        shift_start=9,
-        shift_end=17
+        shift_start=1,
+        shift_end=4
     )
 
     # Register as employee (NOT arrival)
@@ -45,9 +46,7 @@ def setup_tc2_worker(worker, region, *, role):
     #And that the following line only applies to the waitress
     #worker.employment.role =WAITRESS
 
-    # Register worker with workplace (NOT arrival)
-    if hasattr(cafe, "employees"):
-        cafe.employees.append(worker)
+
 
 #Call after all characters are created
 def seed_tc2_presets(waitress, manager):

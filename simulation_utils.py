@@ -49,8 +49,6 @@ def setup_tc2_debug_npcs(
 
     game_state.show_background_debug = False
 
-    print("[DEBUG] TC2 debug NPCs registered (3 civilians only)")
-
 
 def pick_civilian(civilians, *, sex=None, exclude=None):
     candidates = []
@@ -76,13 +74,15 @@ def assign_fallback_location(npc, region):
         )
         return
 
-    # Prefer Park
-    park = next(
-        (loc for loc in region.locations if loc.__class__.__name__ == "Park"),
+    fallback = next(
+        (
+            loc for loc in region.locations
+            if loc.__class__.__name__ in ("Park", "VacantLot")
+        ),
         None
     )
 
-    if not park:
+    if not fallback:
         debug_print(
             npc,
             f"[HOUSING] No Park found in region '{region.name}' — NPC remains unhoused",
@@ -91,16 +91,21 @@ def assign_fallback_location(npc, region):
         npc.is_homeless = True
         return
 
-    npc.location = park
-    npc.region = region
+    npc.location = fallback#is it ok to set the homeless npcs location before their region (set below)?
+
+    #new
+    location = npc.location
+    location.characters_there.append(npc)#is this ok here? Do we need it gien the fallback.characters_there.append below?
+
+    npc.region = fallback.region
     npc.is_homeless = True
 
-    if hasattr(park, "characters_there"):
-        park.characters_there.append(npc)
+    if hasattr(fallback, "characters_there"):
+        fallback.characters_there.append(npc)#we already had this though?
 
     debug_print(
         npc,
-        f"[HOUSING] Assigned fallback location: {park.name}",
+        f"[HOUSING] Assigned fallback location: {fallback.name}",
         category=["housing"]
     )
 

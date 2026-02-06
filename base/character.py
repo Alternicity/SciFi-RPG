@@ -48,6 +48,7 @@ class Character(PerceptibleMixin, CharacterBase):
 
         self.region = region
         self.location = location
+        self.placement_locked = False #TC npc variable
         self.current_destination = location
         self.previous_location = None
         self.home_region = None
@@ -156,6 +157,10 @@ class Character(PerceptibleMixin, CharacterBase):
             )
         return self.observation_component.observe(*args, **kwargs)
 
+    @property
+    def home(self):#primary residence
+        return self.residences[0] if self.residences else None
+
         # compatibility shim — DO NOT REMOVE until migration is complete
     @property
     def percepts(self):
@@ -192,7 +197,7 @@ class Character(PerceptibleMixin, CharacterBase):
         return psy_factor * vibe_modifier
 
     def should_log_ambient_scene(self, loc, peak_tag, peak_power):
-        char=self#how do I set this up please?
+        char=self
         last = char.mind.memory.semantic.get("ambient_vibes", [])
         if not last:
             return True

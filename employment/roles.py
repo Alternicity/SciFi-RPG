@@ -36,7 +36,7 @@ COOK = EmployeeRole(
 
 WAITRESS = EmployeeRole(
     "waitress",
-    ["serve_food", "entertain", "clean_tables"],
+    ["serve_food", "entertain", "clean_tables"],#greet and social are not here, should they be?
     4,
 )
 

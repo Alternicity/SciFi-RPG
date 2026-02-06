@@ -6,7 +6,7 @@ from loader import load_names_from_csv
 from get_valid_races import get_valid_races
 from create.create_game_state import get_game_state
 
-def create_name(race, sex):#npc or character or member cannot be passed in due to ealier logic
+def create_name(race, sex):#npc or character or member cannot be passed in due to earlier logic
 
     """Generate a full name based on race and sex."""
     game_state = get_game_state()
@@ -27,7 +27,7 @@ def create_name(race, sex):#npc or character or member cannot be passed in due t
     male_names, female_names, family_names = load_names_from_csv(filepath)
     
 
-    if sex.lower() == "male":#should this be npc.sex? I think no bc that has  already been passed in.
+    if sex.lower() == "male":
         first_name = random.choice(male_names) if male_names else "Unknown"
 
     elif sex.lower() == "female":

@@ -10,14 +10,19 @@ if TYPE_CHECKING:
 @dataclass
 class EmployeeProfile:
     
-    shift_start: int = 9
-    shift_end: int = 17
+    shift_start: int = 1
+    shift_end: int = 4
     workplace: Optional["Location"] = None
     role: Optional[EmployeeRole] = None
     shift: str = "day"  # day/night
 
-    #hmmm
-    role: Literal["front_of_house", "back_of_house", "management", "labor"]
+    #was just role 
+    role_type: Literal[
+            "front_of_house",
+            "back_of_house",
+            "management",
+            "labor"
+        ] = "front_of_house"
 
     # Runtime state (ephemeral, not serialized)
     is_on_shift: bool = False

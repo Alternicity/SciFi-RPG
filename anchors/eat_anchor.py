@@ -38,11 +38,12 @@ class ProcureFood(Anchor):#needs to be set up tick 1 for civ liberty
 
 
 class EatAnchor(Anchor):
+    #one anch, many targets
     type = "eat"
 
     def resolve_target_location(self):
         npc = self.owner
-        return best_food_location(npc)
+        return best_food_location(npc)#this currently works
 
     def can_execute_here(self):
         """Is eating possible at the current location?"""
@@ -93,7 +94,7 @@ class EatAnchor(Anchor):
         if not item:
             return None
 
-        return {
+        return {#this type of logic block normally belongs in UtilityAi.choose_action() It got in here temporarily in the last dev push to get basic fodd buying working
             "name": "buy",
             "params": {
                 "item": item
