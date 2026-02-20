@@ -151,9 +151,24 @@ def extract_appearance_summary(obj, observer=None):
 
         elif isinstance(obj, Container):
             visible = obj.visible_contents(observer)
+
             if len(visible) == 1:
                 item = visible[0]
-                return f"{item.geometry}, {item.foliage_color}, zen presence"
+
+                # If item provides its own percept description, use it
+                if hasattr(item, "get_percept_data"):
+                    item_data = item.get_percept_data(observer=observer)#line 160
+                    return item_data.get("description", item.__class__.__name__)
+
+                # Fallback
+                return item.__class__.__name__
+
+            elif len(visible) > 1:
+                return f"{len(visible)} items"
+
+            else:
+                return obj.__class__.__name__
+
 
         elif hasattr(obj, "item_type"):
             # Likely ObjectInWorld or similar

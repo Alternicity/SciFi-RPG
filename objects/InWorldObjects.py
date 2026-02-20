@@ -22,11 +22,17 @@ class Size(Enum):
     MEDIUM = "medium"
     LARGE = "large"
 
-class ItemType(Enum): # I dont think this was adhered to
+class ItemType(Enum): 
     WEAPON = "Weapon"
     GADGET = "Gadget"
     ARMOR = "Armor"
     MEDKIT = "Medkit"
+    FURNITURE = "Furniture"
+    CONTAINER = "Container"
+    FOOD = "Food"
+    DRINK = "Drink"
+    PLANT ="Plant"
+
 
 # NOTE: The `item_type` attribute is only defined in concrete classes 
 # that directly instantiate objects (e.g., Pistol, Knife). 
@@ -41,7 +47,7 @@ valid_items = [
 ] 
 
 # Base class for all objects in the world
-class ObjectInWorld(PerceptibleMixin):
+class ObjectInWorld(PerceptibleMixin):#Ultimate base class
     is_concrete = False  # Abstract base
 
     placement_quality: str = "neutral"  # options: "perfect", "neutral", "poor"
@@ -49,6 +55,17 @@ class ObjectInWorld(PerceptibleMixin):
     def __init__(self, name, toughness, item_type, size, blackmarket_value,
                  price=0, damage_points=None, legality=True, quantity=1, **kwargs):
         super().__init__()
+
+        if not isinstance(toughness, Toughness):
+            raise TypeError(f"{name} initialized with invalid toughness: {toughness}")
+
+        if not isinstance(size, Size):
+            raise TypeError(f"{name} initialized with invalid size: {size}")
+
+        if not isinstance(item_type, ItemType):
+            raise TypeError(f"{name} initialized with invalid item_type: {item_type}")
+
+
         self.name = name
         self.base_ambience = {}
         self.toughness = toughness
@@ -62,10 +79,6 @@ class ObjectInWorld(PerceptibleMixin):
         self.quantity = quantity
         self.bloodstained = None  # Can be a character reference or ID string
         self.is_stolen =False
-
-        #tmp
-        assert isinstance(toughness, Enum), toughness
-        assert isinstance(size, Enum), size
 
     @property
     def tags(self):
@@ -88,7 +101,7 @@ class ObjectInWorld(PerceptibleMixin):
             "name": self.name,
             "type": self.__class__.__name__,
             "item_type": self.item_type,
-            "description": f"{self.name} ({self.item_type})",
+            "description": f"{self.name}",
             "region": getattr(getattr(self, "region", None), "name", None),
             "location": getattr(getattr(self, "location", None), "name", None),
             "sublocation": getattr(getattr(self, "sublocation", None), "name", None),
@@ -107,7 +120,7 @@ class ObjectInWorld(PerceptibleMixin):
             "quantity": self.quantity,
             "toughness": self.toughness.value if isinstance(self.toughness, Enum) else str(self.toughness),
             "size": self.size.value if isinstance(self.size, Enum) else str(self.size),
-            "details": f"{self.name} ({self.item_type})"
+            "details": f"{self.name} ({self.item_type.value})"
         }
 
 
@@ -429,7 +442,7 @@ class SmartPhone(ObjectInWorld):
             toughness=Toughness.FRAGILE,
             damage_points=15,
             legality=True,
-            item_type="gadget",
+            item_type=ItemType.GADGET,
             blackmarket_value=50,
             price=price,
             size=Size.POCKET_SIZED,
@@ -488,7 +501,7 @@ class CashRegister(ObjectInWorld):
             "origin": self,
             "tags": self.tags,
             "item_type": self.item_type,
-            "description": f"{self.name} ({self.item_type})"
+            "description": self.name
             
         }
 
@@ -576,7 +589,7 @@ class Vase(ObjectInWorld, Container):
             self,
             name=f"{material.title()} Vase",
             toughness=Toughness.FRAGILE,
-            item_type="container",
+            item_type=ItemType.CONTAINER,
             size=Size.MEDIUM,
             blackmarket_value=5,
             price=10,
@@ -622,7 +635,7 @@ class Pot(ObjectInWorld, Container):
             self,
             name=f"{material.title()} Pot",
             toughness=Toughness.DURABLE if material == "ceramic" else Toughness.FRAGILE,
-            item_type="container",
+            item_type=ItemType.CONTAINER,
             size=Size.SMALL,
             blackmarket_value=3,
             price=8,
@@ -643,7 +656,7 @@ class Pot(ObjectInWorld, Container):
             self.symbolism.append("rustic")
 
     def get_percept_data(self, observer=None):
-        base = super().get_percept_data(observer)
+        base = super().get_percept_data(observer)#line 647
         visible = self.visible_contents(observer)
 
         if len(visible) == 1:

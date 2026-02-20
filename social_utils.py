@@ -18,3 +18,4 @@ class Interaction:
 class ServiceInteraction(Interaction):
     def apply_norms(self):
     #politeness, service hierarchy
+        pass

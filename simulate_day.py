@@ -7,7 +7,7 @@ from ai.behaviour_roles import role
 from events import Robbery
 from characterActions import execute_action #not currently accessed
 from summary_utils import format_location
-from display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_waitress, display_civ_liberty, display_npc_vitals, summarize_action
+from display.display import display_region_knowledge_summary, display_percepts_table, summarize_npc_turns, display_civ_worker, display_civ_waitress, display_civ_liberty, display_npc_vitals, summarize_action
 from memory.memory_entry import RegionKnowledge
 from memory.social.social_memory import SocialMemory
 from memory.ambience_utils import update_ambient_scene_memory
@@ -231,7 +231,7 @@ def begin_npc_turn(npc):
     npc.mind.remove_thought_by_content("No focus")
 
     # ✅ passive physiological drift
-    npc.hunger = min(npc.hunger + 0.2, 20)
+    npc.hunger = min(npc.hunger + 2.0, 20)
     #hunger = 20 → starving
     npc.effort = max(npc.effort - 0.1, 1)
     #effort = 1 → exhausted

@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import List, Dict
 
-from objects.InWorldObjects import ObjectInWorld, Toughness, Size
+from objects.InWorldObjects import ObjectInWorld, Toughness, Size, ItemType
 
 VALID_FOLIAGE_COLORS = [
     "green", "gold", "red", "orange", "purple", 
@@ -50,7 +50,17 @@ class Plant(ObjectInWorld):
             "peace": self.resonance_factor * multiplier,
             "clarity": self.golden_ratio_influence * multiplier
         }
-    
+    def __post_init__(self):
+        ObjectInWorld.__init__(
+            self,
+            name=self.name,
+            item_type=ItemType.PLANT,
+            size=Size.SMALL,
+            toughness=Toughness.FRAGILE,
+            price=5,
+            blackmarket_value=1,
+        )
+        
     @property
     def tags(self):
         return ["plant"]

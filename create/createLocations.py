@@ -13,7 +13,7 @@ from weapons import Pistol
 from shop_name_generator import generate_shop_name
 import traceback
 from debug_utils import debug_print
-from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment
+from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment, seed_cafe_furniture
 game_state = get_game_state()
 
 def create_locations(region: Region, wealth: str) -> List[Location]:
@@ -73,6 +73,12 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
             except Exception as e:
                 debug_print(None, f"⚠️ Error creating ApartmentBlock in {region.name}: {e}", "create")
 
+
+    #2.5 Count ApartmentBlocks
+    ApartmentBlocks = [loc for loc in locations if hasattr(loc, "something") and hasattr(loc, "something_else_maybe")]
+
+    for ApartmentBlocks in ApartmentBlocks:
+        game_state.total_apartment_blocks += 1
 
     # 3. Shop naming + inventory injection
 
@@ -140,7 +146,8 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     game_state.all_locations.extend(locations)
 
 
-    #get the cafes and retaurants here, 
+    #get the cafes and retaurants here,
+    seed_cafe_furniture(game_state.all_locations)
     seed_food_locations(game_state.all_locations)
     seed_ambience_objects(game_state.all_locations)
     seed_commercial_equipment(game_state.all_locations)

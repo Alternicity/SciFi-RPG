@@ -10,6 +10,7 @@ MAX_CIVILIANS_PER_LOCATION = 5
 CIVILIANS_PER_REGION = 15
 SHOP_PATRONS_MIN = 2
 SHOP_PATRONS_MAX = 4
+HOMELESS_RATE = 0.05  # 5%
 
 class GameState:
     def __init__(self):
@@ -20,15 +21,19 @@ class GameState:
         self.hour = 0 # 1 hour
         self.day = 1
 
-        self.primary = None #the npc to suppress the output of
+        self.primary = None 
         self.secondary = None
         self.civilian_worker = None
         self.civilian_waitress = None
         self.civilian_liberty = None
+        self.civilian_passive = None
+
+
         #Recommendation (later): Remove individual fields and rely on debug_npcs only
 
         self.debug_npcs = {}
         self.show_background_debug = False
+        #or make civilian_backgroun just be a background npc, just placed in the cafe
 
         self.state = None
         self.civilians = []
@@ -40,6 +45,7 @@ class GameState:
         self.corporations = []
         self.homes = [] #might need populating
         self.homeless = []
+
         self.public_places = [] #might need populating
         self.all_regions = []
         self.all_locations = []

@@ -17,7 +17,7 @@ from location.location_security import Security #greyed, not access currently
 from visual_effects import loading_bar, RED, color_text
 from typing import List, Dict, Union
 import os
-from display import display_sellers
+from display.display import display_sellers
 from character_creation_funcs import create_all_characters
 import random
 from debug_utils import debug_print
@@ -35,7 +35,7 @@ def create_regions():
     from create.create_game_state import get_game_state
     from create.createLocations import create_locations
     from location.locations import Shop#now outdated, why is this here, but it is seemingly accessed, so deserve a look
-    from display import debug_display_all_shops
+    from display.display import debug_display_all_shops
 
 
     game_state = get_game_state()

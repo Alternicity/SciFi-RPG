@@ -200,8 +200,6 @@ class MotivationManager:
                 else:
                     motivation.suppress("off_shift")
 
-
-
     # 🔹 CLEANUP (optional but recommended)
     def cleanup_suppressed(self):
         # Optional: remove permanently suppressed motivations
@@ -225,7 +223,6 @@ class MotivationManager:
 
         return str(motivation_type)
 
-
     #  B — MOTIVATION CREATION / GETTERS
 
     def add(self, motivation: Motivation):
@@ -242,7 +239,6 @@ class MotivationManager:
             status_type=status_type
         )
 
-    
     def _create_motivation(self, mtype, urgency, target, source, status_type):
         """Internal helper for consistent Motivation creation."""
         new = Motivation(
@@ -262,11 +258,8 @@ class MotivationManager:
             if m.type == mtype:
                 return m
         return None
-
-
-
+    
     #  C — ADDING / UPDATING MOTIVATIONS
-
 
     def update_motivations(self, motivation_type, urgency=1, target=None, source=None, status_type=None):
         """

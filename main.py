@@ -22,7 +22,7 @@ def setup_game():
     from create.create import create_regions, create_factions
     from create.createLocations import create_locations
     from base.location import Location
-    from display import compare_locations, debug_display_all_shops
+    from display.display import compare_locations, debug_display_all_shops
 
     all_regions, all_locations = create_regions()
     game_state.all_regions = all_regions

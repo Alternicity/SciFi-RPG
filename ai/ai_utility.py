@@ -10,13 +10,14 @@ from time import time
 from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation, select_best_anchor, deduplicate_anchors
 
 from collections import defaultdict, deque
-from worldQueries import get_region_knowledge, location_sells_food
+from worldQueries import get_region_knowledge, location_sells_food, is_food_employee, find_food_employee_in_location
 from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print, debug_once
 from create.create_game_state import get_game_state
 from focus_utils import set_attention_focus
-from ai.ai_utils import social_scan
-from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought
+from ai.ai_utils import social_scan, resolve_contextual_focus
+from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought, select_food_from_location
+from anchors.eat_anchor import EatAnchor
 game_state = get_game_state()
 class UtilityAI(BaseAI):
     def __init__(self, npc):
@@ -28,7 +29,7 @@ class UtilityAI(BaseAI):
         Managing the “thinking” lifecycle. """
 
     def choose_action(self, region):
-        npc = self.npc#note 2
+        npc = self.npc
         anchor = npc.current_anchor
 
         role_label = (
@@ -40,50 +41,87 @@ class UtilityAI(BaseAI):
 
         debug_print(
             npc,
-            f"[CHOOSE_ACTION] {npc.name} ({role_label}) "
-            f"anchor={anchor.type if anchor else None} "
-            f"tags={anchor.tags if anchor else None}",
+            f"[ANCHOR] {npc.name} ({role_label}) "
+            f"class={anchor.__class__.__name__ if anchor else None} "
+            f"name={getattr(anchor,'name',None)} "
+            f"type={getattr(anchor,'type',None)} "
+            f"priority={getattr(anchor,'priority',None)} "
+            f"tags={getattr(anchor,'tags',None)} "
+            f"focus={npc.mind.attention_focus}",
             category="anchor"
         )
-
-
 
         if not anchor:
             return {"name": "idle"}
 
         assert anchor.type is not None, f"{npc.name} anchor has no type: {anchor}"
 
+        #1 This is a placeholder
 
-        # 1. Immediate action?
-        if hasattr(anchor, "propose_action"):
-            action = anchor.propose_action()
-            if action:
-                return action
-
-        # 2. Need to move?
-        target = anchor.resolve_target_location()#is it possible the ai is getting confused here? A different resolve_target_location?
-        if target and npc.location != target:#meaning that target is later not what we need it to be?
+        # 2. Movement?
+        target = anchor.resolve_target_location()
+        if target and npc.location != target:
             return {
                 "name": "visit_location",
                 "params": {"destination": target}
             }
 
-        # 3. Social/work hooks
+        #3 Work
         if anchor.type == "work":
-        #and "social" in anchor.tags:
+            if npc.location != npc.employment.workplace:
+                debug_print(npc, f"[EMPLOYMENT] {npc.name} is not at work when they should be, attempting to move to: {npc.employment.workplace}", category="employment")
+                return {
+                    "name": "visit_location",
+                    "params": {"destination": npc.employment.workplace}
+                }
+            return {"name": "perform_work"}
+
+
+        # 5. Buy Food
+        urgent = npc.motivation_manager.get_highest_priority_motivation()
+        hunger_thought = npc.mind.get_thought_with_tag("hunger")
+
+        if urgent and urgent.type == "eat" and hunger_thought:
+
+            if not location_sells_food(npc.location):
+                return {"name": "idle"}
+
+            seller = find_food_employee_in_location(npc.location)#find_food_employee_in_location calls is_food_employee but manager still sells food sometimes
+            if not seller:
+                debug_print(
+                    npc,
+                    f"[BUY BLOCK] No seller present at {npc.location.name}",
+                    category="buy"
+                )
+                return {"name": "idle"}
+
+            desired = hunger_thought.payload.get("desired_food")
+            item = select_food_from_location(npc, npc.location, desired)
+
+            if not item:
+                debug_print(
+                    npc,
+                    f"[BUY BLOCK] No item found for {desired}",#current goal is to see this print in output
+                    category="buy"
+                )
+                return {"name": "idle"}
+
+            # Focus is expressive only
+            if npc.mind.attention_focus != seller:
+                set_attention_focus(npc, character=seller)
+
+            debug_print(
+                npc,
+                f"[BUY] seller={seller.name} item={item}",
+                category="buy"
+            )
+
             return {
-                "name": "social_action",
-                "params": {"anchor": anchor}
-            }
-        
-        # 4 Work
-        if anchor.type == "work" and npc.location == npc.employment.workplace:
-            return {
-                "name": "perform_work"
+                "name": "buy",
+                "params": {"item": item}
             }
 
-        return {"name": "idle"}
-    
+        
     def _choose_procure_food(self, npc):
         # 1. Generate hunger thought
         generate_hunger_thought(npc)
@@ -126,7 +164,7 @@ class UtilityAI(BaseAI):
                 npc.mind.add_thought(
                     Thought(
                         subject=m.type,
-                        content=f"I need to {m.type.replace('_', ' ')}.",
+                        content=f"I need to {m.type.replace('_', ' ')}.",#in this case: eat
                         urgency=m.urgency,
                         tags=[m.type, "need"]
                     )
@@ -215,7 +253,10 @@ class UtilityAI(BaseAI):
             exit_location_auto,
             buy_auto,
             eat_auto,
-            idle_auto
+            idle_auto,
+        )
+        from actions.social_actions.greet import (
+            greet_customer_auto
         )
 
         if action_name == "visit_location":
@@ -237,13 +278,13 @@ class UtilityAI(BaseAI):
     
         
 
-        if action_name == "social_action":
+        if action_name == "social_action":#either waitress shoud greet from here
             execute_social_action(self.npc, action["params"]["anchor"])
             return
 
         if action_name == "perform_work":
             from employment.service_jobs.cafe_restaurant_work import work
-            work(npc)
+            work(npc)#or waitress should greet from here.
             return
 
 
@@ -253,6 +294,7 @@ class UtilityAI(BaseAI):
             "buy": buy_auto,
             "exit_location": exit_location_auto,
             "idle": idle_auto,
+            "greet": greet_customer_auto,#added
             }
 
         action_func = action_map.get(action_name)
@@ -390,6 +432,13 @@ class UtilityAI(BaseAI):
         # Pick the most urgent thought
         strongest = max(mind.thoughts, key=lambda t: (t.urgency, getattr(t, "timestamp", 0)))
         
+        # --- Anchor Priority Arbitration ---
+        current = npc.current_anchor
+        if current:
+            current_priority = getattr(current, "priority", 0)
+            if strongest.urgency <= current_priority:
+                return
+        
         # Create or update an anchor from that thought
         anchor = create_anchor_from_thought(npc, strongest, name=strongest.primary_tag() or "general")
 
@@ -419,7 +468,6 @@ class UtilityAI(BaseAI):
                 category="anchor"
             )
 
-
         #special casing, ok for now
         """ When should it go away?
         When:
@@ -432,9 +480,9 @@ class UtilityAI(BaseAI):
                 and "intention" in thought.tags
                 and not npc.current_anchor
             ):
-                anchor = Anchor(
+                anchor = EatAnchor(
                     name="eat",
-                    type="motivation",
+                    #type absent here. For specialized anchors, do not pass type at all.
                     weight=thought.urgency,
                     priority=1.0,
                     tags=["food", "eat"],
@@ -447,7 +495,7 @@ class UtilityAI(BaseAI):
 
                 debug_print(
                     npc,
-                    f"[ANCHOR] Hunger promoted to FoodAnchor (urgency={thought.urgency})",
+                    f"[ANCHOR] Hunger promoted to EatAnchor (urgency={thought.urgency})",
                     category="anchor"
                 )
 
@@ -469,7 +517,15 @@ class UtilityAI(BaseAI):
         #Scale urgency by the anchor’s weight, but clamp it to a maximum of 3
         #int() → converts it to an integer.
 
-        npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
+        top_motive = npc.motivation_manager.get_highest_priority_motivation()
+
+        if not top_motive:
+            return
+        
+        if anchor and anchor.type != top_motive.type:
+            #The above edited block was trying to reach the follwoing line:
+            # only allow urgency boost if thought aligns with top motive
+            npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
         
         # Set attention focus
         set_attention_focus(npc, anchor=None, thought=strongest, character=None)
@@ -600,11 +656,19 @@ class UtilityAI(BaseAI):
         from region.region import Region
         npc = self.npc
         percepts = npc.get_percepts()
+        
+        print(f"[DEBUG] Before generate_hunger_thought {self.npc.name} hunger={self.npc.hunger:.2f}")
         generate_hunger_thought(npc)
+        
         self.generate_motivation_thoughts()
         self.ensure_anchors_from_motivations()
+        
+        #marked for removal
+        #resolve_contextual_focus(npc)
+        #calls find food seller for this hungry npc, but returns nothing
+
         self.handle_failed_anchors()
-        self.select_current_anchor()
+        self.select_current_anchor()#lets review this also
 
         if not isinstance(region, Region):
             print(f"[DEBUG] {self.npc.name} UtilityAI def think calling observe with region={region}, location={self.npc.location}")
@@ -614,12 +678,9 @@ class UtilityAI(BaseAI):
         if region_knowledge:
             self.evaluate_turf_war_status(region_knowledge)
 
-        motivations = self.npc.motivation_manager.get_urgent_motivations()
+        motivations = self.npc.motivation_manager.get_urgent_motivations()#this is starting to seem unnecessary
         if not motivations:
-            #print(f"[THINK] {self.npc.name} has no urgent motivations.")
             return
-        
-        npc=self.npc
 
         if not getattr(npc, "current_anchor", None):
             motive = npc.motivation_manager.get_highest_priority_motivation()
@@ -628,24 +689,8 @@ class UtilityAI(BaseAI):
                 if anchor:
                     npc.current_anchor = anchor
                     
-        anchors = npc.anchors
-        deduplicate_anchors(npc, anchors)
+        npc.anchors = deduplicate_anchors(npc, npc.anchors)
 
-        #If we replace the following block, how will motivations initiate this thought?
-        #generate_hunger_thought() does not look up motivations
-
-        """ if npc.motivation_manager.has_motivation("eat"):
-            eat_motive = npc.motivation_manager.get_motivation("eat")
-
-            if eat_motive.urgency >= 7:   #
-                thought = generate_hunger_thought(npc)
-                if thought:
-                    npc.mind.add_thought(thought)
-                    debug_print(
-                        npc,
-                        "[FOOD] Hunger thought generated",
-                        category="food"
-                    ) """
 
         # Examine episodic memory for repeated events
         episodic_memories = self.npc.mind.memory.get_episodic()
@@ -669,9 +714,10 @@ class UtilityAI(BaseAI):
         )
 
         thoughts = self.npc.mind.get_all()
-        self.deduplicate_thoughts_by_type(thoughts)
+        self.deduplicate_thoughts_by_type(thoughts)#called once, in UtilityAI.think()
         self.npc.mind.remove_thought_by_content("No focus")
 
+        #why are we doing this here? Is it superfluous?
         self.npc.mind.thoughts = deque(thoughts, maxlen=self.npc.mind.thoughts.maxlen)
         #commit the cleaned working copy back into the canonical container
         """ It’s acceptable for now, but long-term:
@@ -688,8 +734,11 @@ class UtilityAI(BaseAI):
 
         print(f"[DEBUG] From UtilityAI, def think()")
         print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
-        print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
-        print(f"[DEBUG] Thoughts: {[str(t) for t in self.npc.mind.thoughts]}")
+
+        #following print is now verbose, since tables and chairs added to world, as they are not aggregated before printing
+        #print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
+        print(f"[DEBUG] Thoughts: {npc.name} {[str(t) for t in self.npc.mind.thoughts]}")#Perhaps we should upgrade this print to show more info, and be a debug_print, category think, 
+        #OR make use of the currently unused display_npc_mind for just waitress and liberty npcs
 
     def handle_failed_anchors(self):
         npc = self.npc

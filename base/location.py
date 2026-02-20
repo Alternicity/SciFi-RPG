@@ -18,8 +18,7 @@ class Location(LocationBase):
     name: str = "Unnamed Location"
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional[Any] = None
-    items: LocationItems = field(default_factory=LocationItems)#is this used?
-    #TMP
+    items: LocationItems = field(default_factory=LocationItems)
     is_shakedown_target: bool = False
     owner = None
     sublocations: Optional[List['Location']] = None

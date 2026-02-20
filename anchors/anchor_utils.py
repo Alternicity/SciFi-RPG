@@ -1,9 +1,7 @@
 #anchors.anchor_utils.py
 from __future__ import annotations
 from typing import Literal, List, Union, Dict, TYPE_CHECKING, Optional, Any
-import re
 
-from events import Event #maybe risky import
 from anchors.anchor import Anchor
 from anchors.work_anchor import WorkAnchor
 from anchors.eat_anchor import EatAnchor
@@ -14,7 +12,7 @@ from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print
 from create.create_game_state import get_game_state
 from weapons import Weapon, RangedWeapon
-from events import Event
+
 if TYPE_CHECKING:
     from character_thought import Thought
     from base.character import Character#not accessed
@@ -209,7 +207,7 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     if base_name == "work":
         anchor = WorkAnchor(
             name=base_name,
-            type="motivation",
+            
             weight=motivation.urgency,
             priority=motivation.urgency,
             tags=tags,
@@ -218,9 +216,11 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
         )
 
     elif base_name == "eat":
-        anchor = EatAnchor(
+        anchor = EatAnchor(#updated
             name=base_name,
-            type="motivation",
+            #type="motivation",
+            #When WOULD You Keep type=?
+            #Only if you do something like this later: EatAnchor(name="have_lunch"), type = "eat"
             weight=motivation.urgency,
             priority=motivation.urgency,
             tags=tags,
@@ -232,7 +232,7 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     elif base_name == "rob":
         anchor = RobberyAnchor(
             name=base_name,
-            type="motivation",
+            type="motivation",#legacy test case 1 / TC1 anchor crested with type indicating the origin function, here motivation
             weight=getattr(motivation, "urgency", 1.0),
             priority=getattr(motivation, "urgency", 1.0),
             tags=tags,
@@ -265,7 +265,7 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
 
         # --- Attach to NPC anchors (always) ---
         if anchor not in npc.anchors:
-            npc.anchors.append(anchor)#line 376
+            npc.anchors.append(anchor)
 
         # See when a thought-anchor or motivation-anchor is created without an expected partner
         related = [a.name for a in npc.anchors if a is not anchor]
@@ -323,32 +323,36 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
     with automatic naming, duplicate prevention, and anchoring flag.
     """
 
+    """ function should stay dumb:
+    Given a thought, produce an anchor """
+
     from character_thought import Thought
     from memory.memory_entry import MemoryEntry
     import time
 
     # --- Guard: skip invalid or already anchored thoughts ---
     if thought is None:
-        return None #is this suggested block meant to replace the subsequent one?
+        return None
 
     # Ensure the NPC has an anchors list
     if not hasattr(npc, "anchors"):
         npc.anchors = []
 
     # If thought already anchored, try to return the existing anchor if present
-    if getattr(thought, "anchored", False):#does class thought need an anchored attribute? "anchored" is relatively new to the codebase
+    if getattr(thought, "anchored", False):
         for a in getattr(npc, "anchors", []):
             if getattr(a, "source", None) is thought:
                 return a
         return None
 
     # Build a safe anchor name
-    # Preserve canonical motivation names ONLY
+    # Preserves canonical motivation names ONLY
     base_name = (
         name
         or thought.primary_tag()              # e.g. "rob", "visit", "explore"
         or getattr(thought, "subject", None)
         or "thought"
+        #type and tags are not set here
     )
 
     # Force safe canonical form
@@ -356,7 +360,7 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
 
     anchor_name = canonical  # <-- NO timestamp, NO content slug
 
-    #CANONICAL_ANCHORS now greyed ot, not accessed
+    #CANONICAL_ANCHORS now greyed out, not accessed
     """ CANONICAL_ANCHORS = {
         ("work", "finished"): "off_work",
     } """
@@ -398,7 +402,7 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
     anchor.target = getattr(origin, "location", None) if origin else None
 
     # --- Register the new anchor ---
-    npc.anchors.append(anchor)#line 500
+    npc.anchors.append(anchor)#npc.anchors - a reserve or store of anchors not the current anchor
     thought.anchored = True
 
     #defensive
@@ -533,3 +537,10 @@ def anchor_from_duty(npc, duty: str):
         source="employment",
         tags=["work"],
     )
+
+def add_anchor_unique(npc, new_anchor):
+    for a in npc.anchors:
+        if a.name == new_anchor.name:
+            return a
+    npc.anchors.append(new_anchor)
+    return new_anchor

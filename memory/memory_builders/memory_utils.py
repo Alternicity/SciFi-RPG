@@ -2,18 +2,21 @@
 
 def best_food_location(npc):
 
-
     food_kbs = npc.mind.memory.semantic.get("food_locations", [])
     if not food_kbs:
         return None
 
-    region = npc.location.region #better than npc.region
+    #sanity fallback
+    region = (
+        getattr(npc.location, "region", None)
+        or npc.region
+    )#here, like this?
+
     food_kb = food_kbs[0]  # later: choose by salience / region
 
     if not food_kb:
         return None
 
-    
     candidates = []
 
     for loc in region.locations:

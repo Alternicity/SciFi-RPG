@@ -3,8 +3,31 @@ from character_memory import MemoryEntry
 from base.location import Location
 from base.character import Character
 from anchors.anchor import Anchor
+from worldQueries import location_sells_food, find_seller_employee
+from debug_utils import debug_print
+from character_thought import Thought
 
-def encode_weapon_shop_memory(npc, shop: Location):
+def resolve_contextual_focus(npc):
+    #find other contextual stuff calls
+    urgent = npc.motivation_manager.get_highest_priority_motivation()
+
+    debug_print(
+    npc,
+    f"[MOTIVE DEBUG] {npc.name} "
+    f"urgent={urgent.type if urgent else None} "
+    f"urgency={urgent.urgency if urgent else None}",
+    category="motive"
+)
+
+    hunger_thought = npc.mind.get_thought_with_tag("hunger")
+
+    if urgent and urgent.type == "eat" and hunger_thought:#as per this dev push: "Motivation identity lives in .type"
+        #find_food_seller(npc)
+        pass
+    
+
+
+def encode_weapon_shop_memory(npc, shop: Location):#maybe move this logic to a seed block in simulation
     """
     Construct (but do NOT append) a MemoryEntry describing the shop selling ranged weapons.
     Caller should insert it into memory via add_semantic_unique() or add_semantic().

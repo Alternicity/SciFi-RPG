@@ -72,7 +72,7 @@ def generate_hunger_thought(npc):
         return None
 
     # --- hunger tiering ---
-    if npc.hunger > 7:
+    if npc.hunger > 7:#these values are higher than exists in npc.hunger at runtime
         choice = "burger"
         urgency = 8
     else:
@@ -84,7 +84,7 @@ def generate_hunger_thought(npc):
         subject="food",
         content=f"I'm hungry. I want a {choice}.",
         urgency=urgency,
-        tags=["hunger", "food", choice],
+        tags=["hunger", "food", "eat", choice],
         payload={"desired_food": choice},
     )
 
@@ -92,12 +92,31 @@ def generate_hunger_thought(npc):
     npc.mind.add_thought(thought)
 
     debug_print(
-        npc,
-        f"[THOUGHT] Generated hunger thought: {thought.content}",
-        category="think"
-    )
+            npc,
+            f"[THOUGHT] from generate_hunger_thought() {npc.name} Hunger={npc.hunger:.2f} Generated: {thought.content}",
+            category="think"
+        )
 
-    return thought
+    return thought#should this be returning thought.payload?
+
+def select_food_from_location(npc, location, desired_name=None):#might be deprecated
+    if not hasattr(location, "items_available"):
+        return None
+
+    if desired_name:
+        for item in location.items_available:
+            if getattr(item, "name", None) == desired_name:
+                return item
+
+    # fallback: first available
+    debug_print(
+            npc,#npc marked as not defined
+            f"[THOUGHT] from select_food_from_location fallback choice chosen",
+            category="think"
+        )
+
+    return location.items_available[0] if location.items_available else None
+
 
 def procure_food(npc):
     npc.anchors.add(ProcureFood(

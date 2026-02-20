@@ -144,8 +144,6 @@ class MotivationPresets:
 
     }
 
-
-
     @classmethod
     def for_class(cls, class_name: str):
         return cls._presets.get(class_name, [])

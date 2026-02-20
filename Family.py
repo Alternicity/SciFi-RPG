@@ -9,6 +9,7 @@ from base.location import Location
 from characters import Civilian
 from base.character import Character
 from economy.economy import Ownership
+from city_vars import HOMELESS_RATE
 from create.create_game_state import get_game_state
 from world.placement import place_character
 game_state = get_game_state()
@@ -70,6 +71,14 @@ def assign_families_and_homes(game_state):
     all_residences = [loc for loc in getattr(game_state, "all_locations", [])
                       if isinstance(loc, (House, ApartmentBlock))]
 
+    """ Right now:
+    ApartmentBlocks can hold unlimited families.
+    That means homelessness is only driven by your forced rate, not actual housing shortage.
+    If later you want emergent homelessness:
+    Give ApartmentBlock a capacity
+    Remove forced rate
+    Let shortage create homelessness naturally """
+
     if not all_characters or not all_residences:
         debug_print(None, "[FAMILY] No characters or residences to assign.", "family")
         game_state.families = []
@@ -78,6 +87,8 @@ def assign_families_and_homes(game_state):
 
     # 1. Group by family name
     families_by_name: Dict[str, Family] = {}
+
+    #enforce homelessness
 
     for c in all_characters:
         if not getattr(c, "family_name", None):
@@ -101,27 +112,42 @@ def assign_families_and_homes(game_state):
         family.add_member(char)
         char.family = family
 
-
     debug_print(None, f"[FAMILY] Grouped {len(families_by_name)} family family_names.", "family")
 
-    # 2. Assign homes
-    # -------------------------------
+    families_list = list(families_by_name.values())
+    random.shuffle(families_list)
+
+    
+    # 2. Enforce homelessness
+
+    num_forced_homeless = max(#edited
+        1 if HOMELESS_RATE > 0 else 0,
+        int(len(families_list) * HOMELESS_RATE)
+    )
+
+    forced_homeless_families = families_list[:num_forced_homeless]
     unassigned_residences = all_residences.copy()
     random.shuffle(unassigned_residences)
 
-    for family in families_by_name.values():
+    for family in families_list:
+        if family in forced_homeless_families:
+            #Forced homelessness (policy-driven)
+            mark_family_homeless(family)
+            continue
+
         if not unassigned_residences:
             debug_print(
                 None,
                 f"[FAMILY] No residence for family {family.family_name} (homeless family)",
-                category=["family", "housing", "warning"]
+                category=["family", "housing"]
             )
-            family.home = None
-            for civ in family.members:
-                civ.is_homeless = True
+
+            #Structural homelessness (housing shortage)
+            mark_family_homeless(family)
             continue
 
-
+        #Assign homes
+        #this block is indented the same as the preceding if blocks, should i unindent it one space?
         locked_members = [c for c in family.members if getattr(c, "placement_locked", False)]
 
         if locked_members:
@@ -130,14 +156,19 @@ def assign_families_and_homes(game_state):
                 r for r in unassigned_residences
                 if r.region is target_region
             ]
-            if region_residences:
-                home = region_residences.pop()
-                unassigned_residences.remove(home)
-            else:
-                home = unassigned_residences.pop()
-        else:
-            home = unassigned_residences.pop()
 
+            if region_residences:
+                home = random.choice(region_residences)
+            else:
+                home = random.choice(unassigned_residences)
+        else:
+            home = random.choice(unassigned_residences)
+
+
+        # Remove only if House
+        if isinstance(home, House):
+            unassigned_residences.remove(home)
+            #So, like this, ApartmentBlocks can hold however many families
 
         family.home = home
 
@@ -150,13 +181,7 @@ def assign_families_and_homes(game_state):
 
             place_character(civ, home)
 
-
-
-
- 
-    # -------------------------------
     # 3. Link partners (rough pass)
-    # -------------------------------
 
     for family in families_by_name.values():
         adults = family.adults
@@ -265,23 +290,38 @@ def assign_business_ownership(game_state):
             )
 
 def assign_initial_location_from_family(npc):
+    if getattr(npc, "placement_locked", False):
+        return False
     family = getattr(npc, "family", None)
     home = getattr(family, "home", None) if family else None
 
     if home:
         npc.location = home
-        location = npc.location
-        location.characters_there.append(npc)#does this look like it enforces the neceesary invariant correctly?
-        npc.region = npc.location.region #You  said this silently overrides region after it was set earlier. We didnt deal with this yet
-        
+        if npc not in home.characters_there:
+            home.characters_there.append(npc)
+
+        # ⚠️ DO NOT override region if already set
+        if npc.region is None:
+            npc.region = home.region
+         
+            debug_print(
+            npc,
+            f"[PLACEMENT] from assign_initial_location_from_family no region found for {npc.name} assigning to npc.home.region",
+            category=["placement"]
+        )
         return True
 
     debug_print(
         npc,
-        "[HOUSING] No family home assigned (homeless)",
-        category=["family", "housing", "warning"]
+        "[PLACEMENT] No family home assigned (homeless)",
+        category=["placement"]
     )
 
     npc.is_homeless = True
-    game_state.homeless.append(npc)#append, or add? It is a list
+    game_state.homeless.append(npc)
     return False
+
+def mark_family_homeless(family):
+    family.home = None
+    for civ in family.members:
+        civ.is_homeless = True

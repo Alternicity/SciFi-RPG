@@ -9,9 +9,6 @@ from anchors.anchor_utils import Anchor
 def update_employee_presence(npc, hour):
     #This function is idempotent and safe to call every hour
 
-    
-
-
     #Don’t create anchors in update_employee_presence
     emp = getattr(npc, "employment", None)
     if not emp or not emp.workplace:
@@ -33,21 +30,26 @@ def update_employee_presence(npc, hour):
 
     # --- Shift start ---
     if on_duty and not emp.is_on_shift:
-        emp.is_on_shift = True#is this working?
+        emp.is_on_shift = True
         emp.just_got_off_shift = False
 
     # Enter workplace
+    entry = None
     if on_duty and at_workplace and not present:
         workplace.employees_there.append(npc)
-        npc.mind.memory.add_episodic(
-            subject=npc,
-            verb="arrived_at_work",
+
+        entry = MemoryEntry(
+            subject=npc.name,
             object_=workplace.name,
+            verb="arrived_at_work",
             content=f"Arrived at work at {workplace.name}.",
             importance=2,
             tags=["work", "arrival"]
         )
-        debug_print(npc, f"[WORK] Started shift at {workplace.name}", category="employment")
+    if entry:
+        npc.mind.memory.add_episodic(entry)
+
+    debug_print(npc, f"[WORK] Started shift at {workplace.name}", category="employment")
 
     # Leave workplace
     if present and (not on_duty or not at_workplace):

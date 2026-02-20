@@ -2,12 +2,12 @@
 import random
 from characters import GangMember, Civilian
 from debug_utils import debug_print
-from display import display_top_motivations
+from display.display import display_top_motivations
 from simulation_utils import setup_debug_npcs_in_game_state, non_shop_or_cafe_locations, setup_tc2_debug_npcs, pick_civilian, assign_fallback_location
 from create.create_game_state import get_game_state
 game_state = get_game_state()
 from employment.roles import CAFE_MANAGER, WAITRESS
-from world.TC2_presets import setup_tc2_worker, get_tc2_cafe
+from world.TC2_presets import setup_tc2_worker, get_tc2_cafe, place_tc2_npc, setup_tc2_civilian_liberty, assign_tc2_staging_location, place_tc2_passive_npc
 from Family import assign_initial_location_from_family
 from augment.augmentLocations import reassign_shop_names_after_character_creation
 from world.placement import place_character#not accessed
@@ -140,17 +140,25 @@ def run_simulation(all_characters, num_days=10):
         inject_initial_shop_knowledge(debug_gang_npc2)
 
 
-    
+    debug_civilian_passive = pick_civilian(
+            civilians,
+            exclude={debug_civilian_worker, debug_civilian_liberty, debug_civilian_waitress}
+        )
+        #He is furniture with a pulse.
+    if debug_civilian_passive:
+        game_state.debug_npcs["civilian_passive"] = debug_civilian_passive
+        place_tc2_passive_npc(debug_civilian_passive, downtown_region)
+            
     if debug_civilian_worker:
         setup_tc2_worker(debug_civilian_worker, downtown_region, role=CAFE_MANAGER)
         debug_civilian_worker.motivation_manager.update_motivations("work", urgency=8)
         debug_civilian_worker.motivation_manager.update_motivations("eat", urgency=6)
         debug_civilian_worker.motivation_manager.update_motivations("have_fun", urgency=5)
         
-        assign_initial_location_from_family(debug_civilian_worker)
+        place_tc2_npc(debug_civilian_worker, downtown_region)
+        ensure_initial_placement(debug_civilian_worker, fallback_region=downtown_region)
+        debug_civilian_worker.placement_locked = True
         
-        ensure_initial_placement(debug_civilian_worker, fallback_region=downtown_region)#ensure this actually works, and provides a home
-        debug_civilian_worker.placement_locked = True#ensure this works
         
         inject_initial_region_knowledge(debug_civilian_worker)
         inject_food_location_knowledge(debug_civilian_worker)
@@ -165,15 +173,17 @@ def run_simulation(all_characters, num_days=10):
         debug_civilian_waitress.motivation_manager.update_motivations("work", urgency=8)
         debug_civilian_waitress.motivation_manager.update_motivations("eat", urgency=6)
         debug_civilian_waitress.motivation_manager.update_motivations("have_fun", urgency=5)
-        assign_initial_location_from_family(debug_civilian_waitress)
+
+        place_tc2_npc(debug_civilian_waitress, downtown_region)
         ensure_initial_placement(debug_civilian_waitress, fallback_region=downtown_region)
         debug_civilian_waitress.placement_locked = True
+        
 
         inject_food_location_knowledge(debug_civilian_waitress)
         inject_initial_shop_knowledge(debug_civilian_waitress)
         inject_initial_region_knowledge(debug_civilian_waitress)
 
-        print(#after replacing the second if statement above with assert, this prints block needed to be unindented
+        print(
             f"[PLACEMENT OK] Waitress {debug_civilian_waitress.name} "
             f"is in region.characters_there"
         )
@@ -200,50 +210,38 @@ def run_simulation(all_characters, num_days=10):
         debug_civilian_liberty.motivation_manager.update_motivations("find_partner", urgency=3)#but npc might automatically already have one
         debug_civilian_liberty.motivation_manager.update_motivations("have_fun", urgency=5)
 
-        assign_initial_location_from_family(debug_civilian_liberty)
-        ensure_initial_placement(debug_civilian_liberty, fallback_region=downtown_region)
+        setup_tc2_civilian_liberty(debug_civilian_liberty, region=downtown_region)
         debug_civilian_liberty.placement_locked = True
 
+        if not assign_tc2_staging_location(debug_civilian_liberty, downtown_region):
+            assign_fallback_location(debug_civilian_liberty, downtown_region)
+
+        ensure_initial_placement(debug_civilian_liberty, fallback_region=downtown_region)
+        place_tc2_npc(debug_civilian_liberty, downtown_region)
         inject_initial_region_knowledge(debug_civilian_liberty)
         inject_food_location_knowledge(debug_civilian_liberty)
         inject_initial_shop_knowledge(debug_civilian_liberty)
 
         #display_top_motivations(debug_civilian_liberty)
 
-        #handle homeless
-        for npc in all_characters:
-            if not isinstance(npc, Civilian):
-                continue
+    #handle homeless NOTE this might affect the TC1 GangMember npcs above - review
+    for npc in all_characters:
+        if not isinstance(npc, Civilian):#or not
+            continue
 
-            if npc.placement_locked:
-                continue
+        if npc.placement_locked:
+            continue
 
-            if npc.location is not None:
-                npc.region = npc.location.region
-
-
-            # No location → try fallback
-            if npc.placement_locked:
-                continue
-            assign_fallback_location(npc, npc.region or npc.home_region or downtown_region)
-
-            debug_print(
+        if npc.location is None and npc.is_homeless:
+            assign_fallback_location(
                 npc,
-                f"[PLACEMENT STATE] location={npc.location} region={getattr(npc.region,'name',None)}",
-                category=["placement"]
+                npc.region or npc.home_region or downtown_region
             )
 
-        for npc in all_characters:
-            if isinstance(npc, Civilian):
-                assert npc.region is not None, (
-                    f"{npc.name} ({npc.debug_role}) has no region "
-                    f"location={npc.location}"
-                )
-                assert npc.location is not None, f"{npc.name} has no location after placement"
-                if npc.location is None and npc.home is not None:
-                    raise RuntimeError(f"{npc.name} has home but no location")
+        if npc.location:
+            npc.region = npc.location.region
 
-                #the npc might automaically have a partner when that is assigned. We can leave this for now.
+        #the npc might automaically have a partner when that is assigned. We can leave this for now.
 
 
     """ debug_npcs = [
@@ -252,7 +250,7 @@ def run_simulation(all_characters, num_days=10):
     ]
     display_debug_npcs(debug_npcs) """
 
-    from display import debug_list_gang_hqs
+    from display.display import debug_list_gang_hqs
     #debug_list_gang_hqs()
     #nice print
 
@@ -270,8 +268,11 @@ def pick_random_npc(characters, cls, exclude=None):
                  if isinstance(c, cls) and c is not exclude),
                 None)
 
-def ensure_initial_placement(npc, *, fallback_region):
+def ensure_initial_placement(npc, *, fallback_region):#perhaps we dont call this for the civilian_passive
+    #You do NOT need to call ensure_initial_placement() for background civilians anymore.
+    #They are already placed in assign_families_and_homes().
     if assign_initial_location_from_family(npc):
         return
     #ensure test npcs region line here?
     assign_fallback_location(npc, fallback_region)
+

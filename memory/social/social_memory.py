@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 
 from memory.social.social_relation import SocialRelation
 
+#for social relations, but could be subclassed with 
+
 class SocialMemory:
     def __init__(self, owner):
         self.owner = owner
@@ -42,4 +44,9 @@ class SocialMemory:
         social = npc.mind.memory.semantic.get("social")
         return social and social.has_relation_with(other)
 
-
+class TableGraph(SocialMemory):
+    #Attributes for 
+    # table number / occupants
+    #etc
+    #I will also later create restaurant/dinner party scenarios with more complex social interactions
+    pass

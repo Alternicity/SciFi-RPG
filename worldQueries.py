@@ -1,6 +1,6 @@
 #worldQueries.py
 #location searches, filtering targets, etc.
-
+from character_thought import Thought
 from memory.memory_entry import RegionKnowledge
 from typing import Dict, List, Optional
 from debug_utils import debug_print
@@ -64,3 +64,35 @@ def location_sells_food(location):
     # Tag-based fallback
     tags = getattr(location, "tags", [])
     return "food" in tags or "restaurant" in tags or "cafe" in tags
+
+def find_seller_employee(location, *, role_type="front_of_house", on_shift=True):
+
+    #World query, stateless
+    for emp in getattr(location, "employees", []):
+        profile = getattr(emp, "employment", None)
+        if not profile:
+            continue
+        if role_type and profile.role_type != role_type:
+            continue
+        if on_shift and not profile.is_on_shift:
+            continue
+        return emp
+    return None#note returns nothing
+
+
+def find_food_employee_in_location(location):
+    for character in location.characters_there:
+        if is_food_employee(character, location):
+            return character
+    return None
+
+
+def is_food_employee(npc, location):
+    profile = getattr(npc, "employment", None)
+    if not profile:
+        return False
+
+    if profile.workplace != location:
+        return False
+
+    return profile.role_type == "front_of_house"

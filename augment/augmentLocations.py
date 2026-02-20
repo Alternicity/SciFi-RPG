@@ -8,7 +8,9 @@ from base.location import CommercialLocation
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
 from location.locations import Cafe, Restaurant
 from objects.food.prepared_food import Sandwich, Burger
+from objects.furniture import CafeChair, CafeTable
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
+
 from objects.trees_and_plants import BonsaiTree
 
 DEFAULT_SPECIALIZATION = "general"
@@ -143,6 +145,38 @@ def seed_ambience_objects(all_locations):
             loc.items.objects_present.append(pot)
 
 
+from objects.furniture import CafeTable, CafeChair
+from location.locations import Cafe
+
+
+def seed_cafe_furniture(all_locations):
+    for loc in all_locations:
+        if not isinstance(loc, Cafe):
+            continue
+
+        # Avoid duplicate seeding
+        if any(isinstance(o, CafeTable) for o in loc.items.objects_present):
+            continue
+
+        tables = []
+
+        for t in range(8):
+            table = CafeTable(name=f"Table {t+1}")
+            table.location = loc
+            table.region = loc.region
+
+            loc.items.objects_present.append(table)
+            tables.append(table)
+
+            # Add 4 chairs per table
+            for c in range(4):
+                chair = CafeChair(name=f"Chair {t+1}-{c+1}")
+                chair.location = loc
+                chair.region = loc.region
+
+                loc.items.objects_present.append(chair)
+
+        loc.tables = tables  # optional reference for later AI logic
 
 
 

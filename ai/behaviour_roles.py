@@ -34,10 +34,10 @@ ROLE_PERMISSIONS = {
         "thought_to_motivation": False,
         "anchor_creation": False,# until their anchors are defined
     },
-    "civilian_worker": {
-        "percept_to_motivation": True,
-        "thought_to_motivation": True,
-        "anchor_creation": True,
+    "civilian_worker": {#manager
+        "percept_to_motivation": False,
+        "thought_to_motivation": False,
+        "anchor_creation": False,
     },
     "civilian_liberty": {
         "percept_to_motivation": True,

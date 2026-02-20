@@ -195,7 +195,7 @@ class Vendor(PerceptibleLocation):
         #print(f"DEBUG: CorporateStore name = {self.name}")
 
 from inventory import Inventory
-from characters import Employee
+#from characters import Employee
 @dataclass
 class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
     """
@@ -240,15 +240,8 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
     upkeep: int = 15
 
     #Remove:
-    cash_register: CashRegister = field(
-            default_factory=lambda: CashRegister(
-                "Register",
-                Toughness.DURABLE,
-                "currency",
-                Size.SMALL,
-                1000
-            )
-        )
+    cash_register: Optional[CashRegister] = None
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1199,14 +1192,11 @@ class Cafe(CommercialLocation, WorkplaceMixin, PerceptibleLocation):
     allowed_roles = [COOK, CAFE_MANAGER, WAITRESS]
     """ Passive Thought Emission
     After each tick, locations emit ambience-derived thoughts based on character psy. """
-    
 
         # Add more logic if you want to further interact with the customer based on the cafe's attributes.
 
     def __post_init__(self):
         super().__post_init__()
-
-
 
     def __repr__(self):
             return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"

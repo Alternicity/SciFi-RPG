@@ -1,8 +1,8 @@
 #objects.food.prepared_food.py
 from dataclasses import dataclass
-from objects.InWorldObjects import ObjectInWorld, Size, Toughness
+from objects.InWorldObjects import ObjectInWorld, Size, Toughness, ItemType
 
-@dataclass
+@dataclass(init=False)
 class Food(ObjectInWorld):
     nutrition: int = 5
     price: int = 10
@@ -14,7 +14,7 @@ class Food(ObjectInWorld):
             toughness=Toughness.FRAGILE,
             damage_points=1,
             legality=True,
-            item_type="food",
+            item_type=ItemType.FOOD,
             blackmarket_value=0,
             price=price,
             size=Size.POCKET_SIZED,

@@ -79,6 +79,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.preferred_actions = preferred_actions if preferred_actions else {}
         self.is_alert = False
         self.posture = Posture.STANDING
+        self.seated_at = None
         self.intelligence = intelligence
         self.mind = None
         self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)#should be hour
@@ -265,6 +266,7 @@ class Character(PerceptibleMixin, CharacterBase):
             parts.append("bloodstained")
         if self.appearance.get("is_visibly_wounded"):
             parts.append("wounded")
+        
 
         parts.append(self.race)
         parts.append(self.sex)
@@ -323,7 +325,9 @@ class Character(PerceptibleMixin, CharacterBase):
                 tags.append("bloodstained")
             if self.is_visibly_wounded:
                 tags.append("wounded")
-                
+            if getattr(self, "seated_at", None):
+                tags.append("seated")
+            
             urgency = hunger.urgency if hunger else 1
 
             return {

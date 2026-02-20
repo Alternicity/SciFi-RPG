@@ -50,6 +50,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     
     # Remove NPC from old location
     old_location = npc.location
+    old_region = npc.region
 
     # Remove from current location
     if old_location and hasattr(old_location, "characters_there"):
@@ -59,6 +60,16 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     npc.previous_location = old_location
     npc.location = destination
     npc.region = destination.region
+
+    #tmp print until visit_region_auto() exists
+    if old_region and old_region is not npc.region:
+        debug_print(
+            npc,
+            f"[REGION DRIFT] {old_region.name} → {npc.region.name}",
+            category=["placement", "warning"]
+        )
+        
+
     npc.just_arrived = True
 
     #the following track presence block move up to here
@@ -71,7 +82,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     # Entering or leaving workplace
     update_employee_presence(npc, gs)
 
-    if npc.current_anchor and npc.current_anchor.name == "work":
+    if npc.current_anchor and npc.current_anchor.type == "work":
         debug_print(npc, "[ANCHOR] Work anchor satisfied — clearing", category="anchor")
         npc.current_anchor.active = False
         npc.current_anchor = None

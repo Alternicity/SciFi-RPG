@@ -4,6 +4,11 @@ from memory.memory_builders.memory_utils import best_food_location
 from create.create_game_state import get_game_state
 from worldQueries import location_sells_food
 from debug_utils import debug_print
+import random
+#dont import set_attention_focus
+
+from objects.furniture import CafeChair, CafeTable
+
 game_state = get_game_state()
 
 class ChooseFood(Anchor):
@@ -38,8 +43,12 @@ class ProcureFood(Anchor):#needs to be set up tick 1 for civ liberty
 
 
 class EatAnchor(Anchor):
-    #one anch, many targets
+    #we need to get a reference to the owner of the anchor here and set it to npc
+    #then we can set location to npc.location
+
+    #one anchor, many targets
     type = "eat"
+    name = "eat"
 
     def resolve_target_location(self):
         npc = self.owner
@@ -61,6 +70,10 @@ class EatAnchor(Anchor):
         Try to match desired food to what's available.
         Very thin adapter between desire and environment.
         """
+        npc = self.owner
+        location = npc.location
+
+        from focus_utils import set_attention_focus
         if not items_available:
             return None
 
@@ -76,31 +89,23 @@ class EatAnchor(Anchor):
                 category="think"
             )
 
+        free_chairs = [
+            obj for obj in location.items.objects_present#location not defined here
+            if isinstance(obj, CafeChair) and obj.is_free()
+        ]
+
+        if free_chairs:
+            chair = random.choice(free_chairs)
+            if chair.occupy(npc):#npc not defined here
+                npc.current_chair = chair
+                set_attention_focus(npc, character=None)  # optional reset
+
         # 2. Fallback: take first available item
-        # (Later this can be preference-weighted)
+        # I had to move this to after the free_chairs block
         return items_available[0]
 
-    def propose_action(self):
-        npc = self.owner
-        cafe = npc.location
-
-        if not hasattr(cafe, "items_available"):
-            return None
-
-        thought = npc.mind.get_thought_with_tag("hunger")
-        desired = thought.payload.get("desired_food") if thought else None
-
-        item = self._select_best_item(cafe.items_available, desired)
-        if not item:
-            return None
-
-        return {#this type of logic block normally belongs in UtilityAi.choose_action() It got in here temporarily in the last dev push to get basic fodd buying working
-            "name": "buy",
-            "params": {
-                "item": item
-            }
-        }
-
+    
+    #del
     # Legacy compatibility
-    def resolve_action(self):
-        return self.propose_action()
+"""     def resolve_action(self):
+        return self.propose_action() """

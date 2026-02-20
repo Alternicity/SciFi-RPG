@@ -1,7 +1,17 @@
 #anchors.social_anchors.basic_social_anchors.py
 from anchors.anchor_utils import Anchor
+from debug_utils import debug_print
 
 def create_greet_anchor(npc, target):#npc, not waitress
+    waitress = npc
+
+    waitress.mind.attention_focus = target
+    debug_print(
+        waitress,
+        f"[FOCUS] FROM create_greet_anchor: attention → customer {target.name}",
+        category="focus"
+    )
+
     anchor = Anchor(
         name="greet_person",   # 👍 generalized
         type="work",

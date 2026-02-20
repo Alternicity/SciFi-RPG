@@ -1,4 +1,4 @@
-#base/posture.py
+#base.posture.py
 from enum import Enum, auto
 
 class Posture(Enum):

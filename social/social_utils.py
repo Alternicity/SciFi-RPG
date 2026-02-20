@@ -3,7 +3,7 @@
 from create.create_game_state import get_game_state
 game_state = get_game_state
 from debug_utils import debug_print
-
+from memory.social.social_memory import SocialMemory
 def get_socially_favoured(self):
     if self.partner:
         return self.partner
@@ -28,7 +28,7 @@ def has_recent_interaction(a, b, *, window_hours=2):
             category="interaction"
         )
 
-    social = a.mind.memory.semantic.get("social")
+    social = a.mind.memory.semantic.get("social")#I think this should be episodic rather tahn semantic memory
     if not social:
         return False
 
@@ -83,9 +83,10 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
     link_faction_members(all_characters) """
 
 def capture_social_snapshot(char, location):
-    social = char.mind.memory.semantic.get("social")
+    social = char.mind.memory.semantic.get("social")#established social ties belong in npc semantic memory
     assert isinstance(social, SocialMemory), f"{npc.name} has invalid social memory, from capture_social_snapshot"
-    #SocialMemory and npc marked not defined. Does char refer to the active npc, or the other one? The subject or the object?
+    # npc marked not defined. Does char refer to the active npc, or the other one? The subject or the object?
+    
     if not social:
         return None
 

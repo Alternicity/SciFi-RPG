@@ -1,6 +1,6 @@
 #weapons.py split from InWorldObject to shorten file sizes
 
-from objects.InWorldObjects import ObjectInWorld, Size, Toughness
+from objects.InWorldObjects import ObjectInWorld, Size, Toughness, ItemType
 import logging
 
 valid_items = [
@@ -13,7 +13,7 @@ valid_items = [
 class Weapon(ObjectInWorld):
     is_concrete = False
     def __init__(self, name, toughness, price, size, blackmarket_value, damage_points, legality, damage, intimidation=1):
-        super().__init__(name=name, toughness=toughness, item_type="Weapon", size=size, blackmarket_value=blackmarket_value, price=price, damage_points=damage_points, legality=legality)
+        super().__init__(name=name, toughness=toughness, item_type=ItemType.WEAPON, size=size, blackmarket_value=blackmarket_value, price=price, damage_points=damage_points, legality=legality)
         self.damage = damage
         self.intimidation = intimidation  # Base intimidation factor
         self.name = name

@@ -53,7 +53,7 @@ class ObservationComponent:
             sorted_items = sorted(
                 self._percepts.items(), key=lambda kv: kv[1]["data"].get("salience", 0.0), reverse=True
             )
-            self._percepts = dict(sorted_items[:self.npc.observation])#this was just self.observation
+            self._percepts = dict(sorted_items[:self.npc.observation])
 
     @property
     def percepts(self):

@@ -17,7 +17,8 @@ Always read it inside a method that receives npc. """
 @dataclass
 class Anchor:
     name: str  # e.g., "rob", "join_faction"
-    type: Literal["motivation", "plan", "event", "object"]
+
+    type: Optional[str] = None
     weight: float = 1.0  # salience amplification factor
     priority: float = 1.0  # importance to current AI thinking
     enables: List[str] = field(default_factory=list)
@@ -42,6 +43,8 @@ class Anchor:
 
     def __post_init__(self):
         """Stamp simulation time (tick/day) on creation if possible."""
+        if self.type is None:
+            self.type = self.name
         try:
             state = get_game_state()
             self.hour_created = getattr(state, "hour", None)

@@ -4,7 +4,7 @@ from region.region_utils import get_all_regions
 import random
 from menu_utils import get_menu_choice, build_gameplay_menu, GameplayMenu
 from characterActions import visit_location
-from display import (
+from display.display import (
     show_character_details,
     display_selected_character_current_region,
     display_filtered_character_summary, display_character_summary, display_civilians, display_corporations, display_employees, display_gangs, display_character_whereabouts, display_state
@@ -152,7 +152,7 @@ def location_actions_options(player, location):
 def view_characters(all_characters, region): #this should be moved to display
     """Displays filtered character summaries."""
     print(f"DEBUG: From view_characters, type of characters = {type(all_characters)}")  # Check if it's iterable
-    from display import display_filtered_character_summary
+    from display.display import display_filtered_character_summary
     if not isinstance(all_characters, list):
         all_characters = [all_characters]  # Wrap single object in a list
     display_filtered_character_summary(all_characters)

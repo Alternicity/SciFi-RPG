@@ -1,6 +1,6 @@
 #menu_utils.py
 from tabulate import tabulate
-from display import display_world, show_shop_inventory
+from display.display import display_world, show_shop_inventory
 from typing import Dict, Any
 from create.create_game_state import get_game_state
 from objects.InWorldObjects import ObjectInWorld
@@ -43,7 +43,7 @@ def main_menu(all_locations, all_characters):
 
 
 from location.locations import Shop
-from display import display_employees
+from display.display import display_employees
 from typing import List
 
 class GameplayMenu:
@@ -73,7 +73,7 @@ class DisplayFactionsMenu:
         ]
 
 def get_display_factions_option_functions(self, game_state):
-    from display import display_corporations, display_gangs, display_state, display_civilians, display_filtered_character_summary
+    from display.display import display_corporations, display_gangs, display_state, display_civilians, display_filtered_character_summary
     return {
         1: ("Display Corporations", lambda: display_corporations(game_state.corporations)),
         2: ("Display Gangs", lambda: display_gangs(game_state)),
@@ -347,7 +347,7 @@ def get_user_choice(max_choice: int) -> int:
     return None
 
 from character_creation_funcs import player_character_options, instantiate_character
-from display import show_character_details
+from display.display import show_character_details
 
 #from main import get_all_regions, get_factions
 def select_character_menu():

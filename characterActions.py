@@ -233,7 +233,7 @@ def buy(character, shop, item):
         return
 
     # Show inventory and funds
-    from display import show_shop_inventory
+    from display.display import show_shop_inventory
     show_shop_inventory(character, shop)
     print(f"{character.name}'s bank card balance: ${character.wallet.bankCardCash}")
     print(f"{shop.name} current funds before purchase: ${shop.bankCardCash}")
@@ -302,7 +302,7 @@ def buy(character, shop, item):
 
     print(f"{character.name} bought a {item_name} for ${price}.")
     print(f"{character.name}'s wallet after purchase: ${character.wallet.bankCardCash}")
-    from display import show_character_details
+    from display.display import show_character_details
     show_character_details(character)
 
 

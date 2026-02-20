@@ -74,34 +74,34 @@ def assign_fallback_location(npc, region):
         )
         return
 
-    fallback = next(
-        (
-            loc for loc in region.locations
-            if loc.__class__.__name__ in ("Park", "VacantLot")
-        ),
-        None
-    )
+    fallback_candidates = [
+        loc for loc in region.locations
+        if loc.__class__.__name__ in ("Park", "VacantLot")
+    ]
+
+    if not fallback_candidates:
+        ...
+        return
+
+    fallback = random.choice(fallback_candidates)
+
+
 
     if not fallback:
         debug_print(
             npc,
-            f"[HOUSING] No Park found in region '{region.name}' — NPC remains unhoused",
+            f"[HOUSING] No Park or VacantLot found in region '{region.name}' — NPC remains unhoused",
             category=["housing", "warning"]
         )
         npc.is_homeless = True
         return
-
-    npc.location = fallback#is it ok to set the homeless npcs location before their region (set below)?
-
-    #new
-    location = npc.location
-    location.characters_there.append(npc)#is this ok here? Do we need it gien the fallback.characters_there.append below?
-
     npc.region = fallback.region
-    npc.is_homeless = True
+    npc.location = fallback
 
-    if hasattr(fallback, "characters_there"):
-        fallback.characters_there.append(npc)#we already had this though?
+    if hasattr(fallback, "characters_there") and npc not in fallback.characters_there:
+        fallback.characters_there.append(npc)
+
+    npc.is_homeless = True
 
     debug_print(
         npc,

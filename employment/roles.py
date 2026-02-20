@@ -9,6 +9,7 @@ from base.location import Location
 class EmployeeRole:
     name: str
     responsibilities: list
+    role_type: str
     priority: int = 5  
 
     def get_tasks(self, npc: "Character", workplace: "Location") -> List[str]:
@@ -35,9 +36,10 @@ COOK = EmployeeRole(
 )
 
 WAITRESS = EmployeeRole(
-    "waitress",
-    ["serve_food", "entertain", "clean_tables"],#greet and social are not here, should they be?
-    4,
+    name="waitress",
+    responsibilities=["serve_food", "entertain", "clean_tables"],
+    role_type="front_of_house",
+    priority=4,
 )
 
 RESTAURANT_MANAGER = EmployeeRole(
