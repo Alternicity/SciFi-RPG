@@ -23,7 +23,7 @@ def run_simulation(all_characters, num_days=10):
     from location.locations import Shop
 
     debug_npcs = []#not yet accessed
-    debug_print(None, "Debug system initialised successfully.", category="simulation")
+    #debug_print(None, "Debug system initialised successfully.", category="simulation")
     debug_print(None, f"\nRunning simulation for {num_days} days...\n", category="simulation")
 
     debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)
@@ -183,22 +183,12 @@ def run_simulation(all_characters, num_days=10):
         inject_initial_shop_knowledge(debug_civilian_waitress)
         inject_initial_region_knowledge(debug_civilian_waitress)
 
-        print(
-            f"[PLACEMENT OK] Waitress {debug_civilian_waitress.name} "
-            f"is in region.characters_there"
-        )
+        
     else:
         print(
             f"[PLACEMENT ERROR] Waitress {debug_civilian_waitress.name} "
             f"is NOT in region.characters_there"
         )
-
-    print(
-        f"[WAITRESS PLACEMENT STATE] "
-        f"location={debug_civilian_waitress.location} | "
-        f"region={debug_civilian_waitress.region}"
-    )
-
 
         #display_top_motivations(debug_civilian_waitress)
 

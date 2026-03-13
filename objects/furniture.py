@@ -2,6 +2,8 @@
 from objects.InWorldObjects import ObjectInWorld, Toughness, ItemType, Size
 from typing import Optional
 from base.character import Character
+from debug_utils import debug_print
+
 
 class Furniture(ObjectInWorld):
     is_concrete = False
@@ -92,8 +94,19 @@ class CafeTable(Furniture):
             toughness=Toughness.DURABLE,
         )
         
+    def has_any_occupants(self, location):
+        #from objects.furniture import CafeChair
+
+        chairs = [
+            obj for obj in location.items.objects_present
+            if isinstance(obj, CafeChair)
+            and obj.table is self
+            and not obj.is_free()
+        ]
+        return len(chairs) > 0
+
     def has_free_seating(self, location):
-        from objects.furniture import CafeChair
+        #from objects.furniture import CafeChair
 
         chairs = [
             obj for obj in location.items.objects_present
@@ -101,10 +114,27 @@ class CafeTable(Furniture):
             and obj.table is self
             and obj.is_free()
         ]
+        
+        #TMP
+        for obj in location.items.objects_present:
+            if isinstance(obj, CafeChair) and obj.table is self:
+                pass
+                #debug_print(None, f"[CHAIR DEBUG] {obj.name} occupied_by={obj.occupied_by}")
+
+        # TC2 rule: table must be completely empty
+        if self.has_any_occupants(location):
+            return False
 
         return len(chairs) > 0
 
-
+    def get_free_chair(self, location):
+        for obj in location.items.objects_present:
+            if isinstance(obj, CafeChair) and obj.table is self and obj.is_free():
+                return obj
+    
+    def occupied_chairs(self):
+        return [c for c in self.chairs if c.occupied_by]
+    
     @property
     def tags(self):
         return ["furniture", "table", "social", "surface"]
@@ -144,3 +174,36 @@ class Sofa:
     #Be cautious of adding untyped categorical attributes, ie str here
     #see CafeTable
     pass
+
+class CafeCounter(Furniture):
+    is_concrete = True
+
+    def __init__(self, name="Cafe Counter"):
+        super().__init__(
+            name=name,
+            size=Size.LARGE,
+            seating_capacity=1,  # manager behind counter
+            toughness=Toughness.DURABLE,
+        )
+
+        self.display_items = []     # visible goods
+        self.concealed_items = []   # hidden storage
+
+    @property
+    def tags(self):
+        return ["furniture", "counter", "service", "surface"]
+
+    def add_display_item(self, item):
+        self.display_items.append(item)
+
+    def add_concealed_item(self, item):
+        self.concealed_items.append(item)
+
+    def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+
+        if self.display_items:
+            item_names = ", ".join(i.name for i in self.display_items)
+            data["description"] += f" (Display: {item_names})"
+
+        return data

@@ -96,3 +96,20 @@ def is_food_employee(npc, location):
         return False
 
     return profile.role_type == "front_of_house"
+
+
+def get_default_public_space(self):
+
+    for loc in self.locations:
+        if getattr(loc, "is_public_facing", False):
+            return loc
+
+    from create.create_game_state import get_game_state
+    gs = get_game_state()
+
+    if gs.public_places:
+        return gs.public_places[0]
+
+    return None
+
+    

@@ -14,7 +14,6 @@ game_state = None
 all_regions = None
 factions = None
 
-
 def setup_game():
     global game_state, factions, all_regions
 

@@ -216,11 +216,9 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
         )
 
     elif base_name == "eat":
-        anchor = EatAnchor(#updated
+        anchor = EatAnchor(
             name=base_name,
-            #type="motivation",
-            #When WOULD You Keep type=?
-            #Only if you do something like this later: EatAnchor(name="have_lunch"), type = "eat"
+            type="motivation",
             weight=motivation.urgency,
             priority=motivation.urgency,
             tags=tags,

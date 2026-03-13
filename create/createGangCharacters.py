@@ -41,7 +41,7 @@ def create_gang_characters(faction, all_regions):
         faction.street_gang_start_location = start_location
 
         # Optional dramatic print
-        debug_print(npc=None, message=f"[INIT] Members of street gang '{faction.name}' will start at '{start_location.name}' in region '{region.name}'", category="create")
+        #debug_print(npc=None, message=f"[INIT] Members of street gang '{faction.name}' will start at '{start_location.name}' in region '{region.name}'", category="create")
 
         # Add to region's street gang list
         if faction not in region.region_street_gangs:

@@ -54,7 +54,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.home_region = None
         self.just_arrived = False
         self.just_left_location = False
-        
+        self.last_greeted_at = None
         self.name = name
         self.first_name = None
         self.family_name = None
@@ -455,6 +455,19 @@ class Character(PerceptibleMixin, CharacterBase):
         """Get the current location within the region."""
         return self.location.location
 
+    def has_effect(self, effect_name):
+        return any(e.name == effect_name for e in self.effects)
 
+    def has_effect_type(self, effect_type):
+        return any(isinstance(e, effect_type) for e in self.effects)
 
+    def get_effect(self, effect_type):
+        for e in self.effects:
+            if isinstance(e, effect_type):
+                return e
+        return None
 
+    def apply_effect(self, effect):
+        print("Applying:", effect.name)
+        effect.on_start(self)
+        self.effects.append(effect)

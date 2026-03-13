@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 @dataclass
 class EmployeeProfile:
     
-    shift_start: int = 1
-    shift_end: int = 4
+    shift_start: int = 1#hard coded and wrong
+    shift_end: int = 4#again hard coded
     workplace: Optional["Location"] = None
     role: Optional[EmployeeRole] = None
     shift: str = "day"  # day/night

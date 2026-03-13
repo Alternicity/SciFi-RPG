@@ -8,7 +8,7 @@ from base.location import CommercialLocation
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
 from location.locations import Cafe, Restaurant
 from objects.food.prepared_food import Sandwich, Burger
-from objects.furniture import CafeChair, CafeTable
+from objects.furniture import CafeChair, CafeTable, CafeCounter
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
 
 from objects.trees_and_plants import BonsaiTree
@@ -61,7 +61,7 @@ def reassign_shop_names_after_character_creation():
 
     used_names = set()
 
-    debug_print(None, f"[INFO] Reassigning names for {len(all_shops)} shops.", "shops")
+    #debug_print(None, f"[INFO] Reassigning names for {len(all_shops)} shops.", "shops")
 
     for shop in all_shops:
 
@@ -173,12 +173,20 @@ def seed_cafe_furniture(all_locations):
                 chair = CafeChair(name=f"Chair {t+1}-{c+1}")
                 chair.location = loc
                 chair.region = loc.region
+                chair.table = table
 
                 loc.items.objects_present.append(chair)
 
         loc.tables = tables  # optional reference for later AI logic
 
+        # Add counter if not present
+        if not any(isinstance(o, CafeCounter) for o in loc.items.objects_present):
+            counter = CafeCounter()
+            counter.location = loc
+            counter.region = loc.region
 
+            loc.items.objects_present.append(counter)
+            loc.counter = counter
 
 
 """ park_sublocs = [Playground(), Storeroom()]

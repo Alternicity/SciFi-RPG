@@ -49,8 +49,8 @@ class Inventory:
     def update_weapon_flags(self):
         #you can call inventory.update_weapon_flags() whenever an item is added, removed, or evaluated
         from weapons import MeleeWeapon, RangedWeapon
-        has_melee = any(isinstance(item, MeleeWeapon) for item in self.items)
-        has_ranged = any(isinstance(item, RangedWeapon) for item in self.items)
+        has_melee = any(isinstance(item, MeleeWeapon) for item in self.items.values())
+        has_ranged = any(isinstance(item, RangedWeapon) for item in self.items.values())
 
         if hasattr(self.owner, "hasRangedWeapon"):
             self.owner.hasRangedWeapon = has_ranged
@@ -89,15 +89,17 @@ class Inventory:
                 self.add_item(item)
 
     def ensure_owner(self, fallback=None):
-        npc =self.owner.npc
+        npc = getattr(self.owner, "npc", None)
+
         if not getattr(self, "owner", None):
             if fallback:
                 self.owner = fallback
-            elif hasattr(self, "owner"):
-                self.owner = self.owner
             else:
-                debug_print(npc, f"[inventory] Warning: Inventory {id(self)} still ownerless after ensure_owner()", category ="inventory")
-
+                debug_print(
+                    npc,
+                    f"[inventory] Warning: Inventory {id(self)} still ownerless after ensure_owner()",
+                    category="inventory"
+                )
 
     def clear_recently_acquired(self, current_day=None):
         if current_day is None:
@@ -148,7 +150,6 @@ class Inventory:
 
         # 2. Assign owner
         item.owner = self.owner
-        item.owner = getattr(self.owner, "name", None)
 
         # 3. Quantity logic for non-weapons
         if not isinstance(item, Weapon):
@@ -188,36 +189,46 @@ class Inventory:
         self.recently_acquired.append((item, state.day))
 
     def has_recently_acquired(self, item_type_or_tag: str) -> bool:
-        for item in self.recently_acquired:
+        for item, day in self.recently_acquired:#day not accessed, we could populate it via game_state
             tags = getattr(item, "tags", [])
             if item_type_or_tag in tags:
                 return True
-        return False
+        return False#once code debugged, perhaps this function needs a countdown timer. We could add an acquisition effect.
 
     def has_illegal_items(self):
         """Returns True if any item in the inventory is illegal (legality=False)."""
         return any(not item.legality for item in self.items.values())
 
-    def remove_item(self, item_name, quantity=1):
-    
-        item = self.items.get(item_name)
-        if not item:
-            return None
+    def remove_item(self, item, quantity=1):
 
-        # For weapons / non-stackable, remove exact key
-        if isinstance(item, Weapon):
-            key_to_remove = next((k for k, v in self.items.items() if v is item), None)
-            if key_to_remove:
-                return self.items.pop(key_to_remove)
-            else:
-                return None
-        else:
-            # For stackable items
-            removed_quantity = min(quantity, getattr(item, "quantity", 1))
-            item.quantity -= removed_quantity
-            if item.quantity <= 0:
-                self.items.pop(item_name)
-            return item
+        # non-stackable objects
+        for key, inv_item in list(self.items.items()):
+            if inv_item is item:
+
+                if inv_item in self.weapons:
+                    self.weapons.remove(inv_item)
+
+                removed = self.items.pop(key)
+                return removed
+
+        # stackable objects
+        for key, inv_item in list(self.items.items()):
+            if inv_item.name == item.name:
+
+                removed_quantity = min(quantity, getattr(inv_item, "quantity", 1))
+                inv_item.quantity -= removed_quantity
+
+                if inv_item.quantity <= 0:
+
+                    if inv_item in self.weapons:
+                        self.weapons.remove(inv_item)
+
+                    removed = self.items.pop(key)
+                    return removed
+
+                return inv_item
+
+        return None
 
     def display_inventory(self):
         if not self.items:
@@ -260,7 +271,7 @@ class Inventory:
                 self.owner.primary_weapon = best_weapon
                 #debug_print(self.owner, f"[INV] Primary weapon now {best_weapon.name}", category="inventory")
             
-            #Likely cruft
+
 #inventory.py
 #added as a utility function after class Inventory
 # --- DEBUG LAYER FOR add_item() ---
@@ -276,7 +287,18 @@ def debug_add_item(self, item, quantity=1):
         print("**************************************\n")
     return _old_add_item(self, item, quantity)
 
-Inventory.add_item = debug_add_item
+#Not indented under debug_add_item
+Inventory.add_item = debug_add_item#It looked weird, and I asked you about it. You called in Monkey-something
+
+def debug_inventory(npc):
+    for item in npc.inventory.items.values():
+        owner = getattr(item.owner, "name", item.owner)
+
+        debug_print(
+            npc,
+            f"[INV] {item.name} owner={owner} id={id(item)} qty={getattr(item,'quantity',1)}",
+            category="inventory"
+        )
 
 # Example Usage
 if __name__ == "__main__":

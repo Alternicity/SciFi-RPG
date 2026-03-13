@@ -125,7 +125,7 @@ class MotivationManager:
         npc = self.character
 
         # --- TERMINAL / CONDITIONAL SUPPRESSION ---
-        if mtype == "obtain_ranged_weapon":
+        if mtype == "obtain_ranged_weapon":#Being a general use class, this TC1/GangMember code will eventually have to move
             if npc.inventory.has_ranged_weapon():
                 # mark as suppressed, not forgotten
                 self.suppressed[mtype] = {
@@ -193,10 +193,18 @@ class MotivationManager:
     def sync_role_motivations(self, tick):
         npc = self.character
 
+        on_shift = (
+            npc.employment and 
+            npc.employment.on_duty(tick)
+        )
+
         for motivation in self.motivations:
             if motivation.type == "work":
-                if npc.employment and npc.employment.on_duty(tick):
+                if on_shift:
                     motivation.unsuppress()
+
+                    # Make work dominant while on shift
+                    self.deboost_others("work", amount=3)
                 else:
                     motivation.suppress("off_shift")
 

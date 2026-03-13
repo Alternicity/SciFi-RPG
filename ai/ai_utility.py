@@ -6,9 +6,9 @@ from character_think_utils import social_thoughts
 from actions.social_actions.dispatcher import execute_social_action
 from character_memory import Memory
 from time import time
-
+from location.locations import Cafe
 from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation, select_best_anchor, deduplicate_anchors
-
+from base.posture import Posture
 from collections import defaultdict, deque
 from worldQueries import get_region_knowledge, location_sells_food, is_food_employee, find_food_employee_in_location
 from memory.memory_entry import MemoryEntry
@@ -18,6 +18,8 @@ from focus_utils import set_attention_focus
 from ai.ai_utils import social_scan, resolve_contextual_focus
 from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought, select_food_from_location
 from anchors.eat_anchor import EatAnchor
+from character_components.npc_effects import MorningSettlingEffect
+
 game_state = get_game_state()
 class UtilityAI(BaseAI):
     def __init__(self, npc):
@@ -41,7 +43,15 @@ class UtilityAI(BaseAI):
 
         debug_print(
             npc,
-            f"[ANCHOR] {npc.name} ({role_label}) "
+            f"[ANCHOR, CHOOSE_ACTION] {npc.name} ({role_label}) "
+            f"class={anchor.__class__.__name__ if anchor else None} ",
+            
+            category="anchor"
+        )
+        #Full version of above print, more verbose
+        """ debug_print(
+            npc,
+            f"[ANCHOR, CHOOSE_ACTION] {npc.name} ({role_label}) "
             f"class={anchor.__class__.__name__ if anchor else None} "
             f"name={getattr(anchor,'name',None)} "
             f"type={getattr(anchor,'type',None)} "
@@ -49,7 +59,7 @@ class UtilityAI(BaseAI):
             f"tags={getattr(anchor,'tags',None)} "
             f"focus={npc.mind.attention_focus}",
             category="anchor"
-        )
+        ) """
 
         if not anchor:
             return {"name": "idle"}
@@ -58,16 +68,42 @@ class UtilityAI(BaseAI):
 
         #1 This is a placeholder
 
-        # 2. Movement?
-        target = anchor.resolve_target_location()
+        # 2. Movement
+        # Movement gate: morning settling
+        if npc.has_effect_type(MorningSettlingEffect) and npc.role == "civilian_liberty":
+            debug_print(
+                npc,
+                "[LIBERTY] Morning settling blocks travel.",
+                category="liberty"
+            )
+            return {"name": "idle"}
+
+        target = None
+        print("ANCHOR TYPE:", type(anchor))
+        if anchor and anchor.requires_movement():
+            
+            target = anchor.resolve_target_location()
+
         if target and npc.location != target:
             return {
                 "name": "visit_location",
                 "params": {"destination": target}
             }
 
+        #Added
+        leave_thought = npc.mind.get_thought_with_tag("leave_location")
+        if leave_thought:
+            outside = npc.location.region.get_default_public_space()#This line might neeed some work
+
+            return {
+                "name": "visit_location",
+                "params": {"destination": outside}#
+            }
+
+
+
         #3 Work
-        if anchor.type == "work":
+        if anchor.type == "work":#Should this be urgent motivation rather than work anchor?
             if npc.location != npc.employment.workplace:
                 debug_print(npc, f"[EMPLOYMENT] {npc.name} is not at work when they should be, attempting to move to: {npc.employment.workplace}", category="employment")
                 return {
@@ -77,6 +113,27 @@ class UtilityAI(BaseAI):
             return {"name": "perform_work"}
 
 
+        # 4.5 Eat if already holding food
+        from objects.food.prepared_food import Food
+
+        owned_food = [
+            item for item in npc.inventory#seems to relate to specifically the npcs inventory here
+            if isinstance(item, Food)
+        ]
+
+        if owned_food and npc.posture == Posture.SITTING:
+
+            debug_print(
+                npc,
+                f"[EAT DECISION] eating {owned_food[0].name}",
+                category="eat"
+            )
+
+            return {
+                "name": "eat",
+                "params": {"item": owned_food[0]}
+            }
+
         # 5. Buy Food
         urgent = npc.motivation_manager.get_highest_priority_motivation()
         hunger_thought = npc.mind.get_thought_with_tag("hunger")
@@ -85,8 +142,21 @@ class UtilityAI(BaseAI):
 
             if not location_sells_food(npc.location):
                 return {"name": "idle"}
+            
+            seller = find_food_employee_in_location(npc.location)
 
-            seller = find_food_employee_in_location(npc.location)#find_food_employee_in_location calls is_food_employee but manager still sells food sometimes
+            #new block
+            if npc.current_anchor and npc.current_anchor.name == "eat":
+            #if npc.current_anchor and "eat" in npc.current_anchor.tags:
+                dine_in = npc.mind.has_thought_with_tag("dine_in")
+                if dine_in and npc.posture != Posture.SITTING:
+                    sit_thought = npc.mind.get_thought_with_tag("sit")
+                    if sit_thought:
+                        return {
+                            "name": "sit",
+                            "params": {"table": sit_thought.payload.get("table")}
+                        }
+
             if not seller:
                 debug_print(
                     npc,
@@ -177,12 +247,15 @@ class UtilityAI(BaseAI):
         if not anchors:
             debug_print(npc, "[ANCHOR] No anchors available", category="anchor")
             npc.current_anchor = None
+
             return
 
         selected = select_best_anchor(npc, anchors)
 
         if selected:
             npc.current_anchor = selected
+            set_attention_focus(npc, anchor=selected)
+            
             debug_print(
                 npc,
                 f"[ANCHOR] Selected anchor: {selected.name}",
@@ -259,6 +332,8 @@ class UtilityAI(BaseAI):
             greet_customer_auto
         )
 
+        from actions.npc_bodily_actions import sit_auto
+
         if action_name == "visit_location":
             # Call visit location action
             try:
@@ -273,18 +348,16 @@ class UtilityAI(BaseAI):
             if npc.motivation_manager.has_motivation("visit"):
                 npc.motivation_manager.remove_motivation("visit")
             npc.mind.remove_thoughts_with_tag("visit")
-            debug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location.name}", category="visit")
+            #Sdebug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location.name}", category="visit")
             return result
     
-        
-
-        if action_name == "social_action":#either waitress shoud greet from here
+        if action_name == "social_action":
             execute_social_action(self.npc, action["params"]["anchor"])
             return
 
         if action_name == "perform_work":
             from employment.service_jobs.cafe_restaurant_work import work
-            work(npc)#or waitress should greet from here.
+            work(npc)
             return
 
 
@@ -294,7 +367,8 @@ class UtilityAI(BaseAI):
             "buy": buy_auto,
             "exit_location": exit_location_auto,
             "idle": idle_auto,
-            "greet": greet_customer_auto,#added
+            "greet": greet_customer_auto,
+            "sit": sit_auto,
             }
 
         action_func = action_map.get(action_name)
@@ -310,8 +384,17 @@ class UtilityAI(BaseAI):
 
         try:
             return action_func(npc, region, **params)
+        
         except Exception as e:
-            print(f"[ERROR] Executing action {action_name}: {e}")
+            import traceback
+
+            print(f"\n[ERROR] Executing action '{action_name}'")
+            print(f"NPC: {npc.name}")
+            print(f"Params: {params}")
+            print(f"Exception: {e}")
+            print("TRACEBACK:")
+            traceback.print_exc()
+            print()
 
 
     def score_action(self, action: dict, context: dict = None) -> float:
@@ -482,7 +565,7 @@ class UtilityAI(BaseAI):
             ):
                 anchor = EatAnchor(
                     name="eat",
-                    #type absent here. For specialized anchors, do not pass type at all.
+                    type="thought",
                     weight=thought.urgency,
                     priority=1.0,
                     tags=["food", "eat"],
@@ -492,7 +575,7 @@ class UtilityAI(BaseAI):
                 )
 
                 npc.current_anchor = anchor
-
+                set_attention_focus(npc, anchor=anchor)
                 debug_print(
                     npc,
                     f"[ANCHOR] Hunger promoted to EatAnchor (urgency={thought.urgency})",
@@ -651,7 +734,6 @@ class UtilityAI(BaseAI):
         """
         return False
 
-
     def think(self, region):
         from region.region import Region
         npc = self.npc
@@ -678,7 +760,7 @@ class UtilityAI(BaseAI):
         if region_knowledge:
             self.evaluate_turf_war_status(region_knowledge)
 
-        motivations = self.npc.motivation_manager.get_urgent_motivations()#this is starting to seem unnecessary
+        motivations = self.npc.motivation_manager.get_urgent_motivations()
         if not motivations:
             return
 
@@ -688,7 +770,8 @@ class UtilityAI(BaseAI):
                 anchor = create_anchor_from_motivation(npc, motive)
                 if anchor:
                     npc.current_anchor = anchor
-                    
+                    set_attention_focus(npc, anchor=anchor)
+
         npc.anchors = deduplicate_anchors(npc, npc.anchors)
 
 
@@ -710,16 +793,14 @@ class UtilityAI(BaseAI):
             "food_memory",
             npc,
             f"[MEMORY] food_sources={pretty}",
-            category="memory"
+            category="memory"#is this category enabled
         )
 
         thoughts = self.npc.mind.get_all()
         self.deduplicate_thoughts_by_type(thoughts)#called once, in UtilityAI.think()
         self.npc.mind.remove_thought_by_content("No focus")
 
-        #why are we doing this here? Is it superfluous?
-        self.npc.mind.thoughts = deque(thoughts, maxlen=self.npc.mind.thoughts.maxlen)
-        #commit the cleaned working copy back into the canonical container
+
         """ It’s acceptable for now, but long-term:
         Thought management should live inside Mind
         UtilityAI shouldn’t rebuild containers
@@ -730,15 +811,24 @@ class UtilityAI(BaseAI):
         social_scan(npc)
         social_thoughts(self)
         if not npc.current_anchor:
-            npc.current_anchor = self.select_current_anchor(npc)
+            self.select_current_anchor()
+            
 
-        print(f"[DEBUG] From UtilityAI, def think()")
+        #print(f"[DEBUG] From UtilityAI, def think()")
         print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
+        
+        print(f"[DEBUG] Thoughts: {npc.name} {[str(t) for t in self.npc.mind.thoughts]}")#I think the sit thought should show up here
+        #OR we could make use of the currently unused display_npc_mind for just waitress and liberty npcs
 
-        #following print is now verbose, since tables and chairs added to world, as they are not aggregated before printing
-        #print(f"[DEBUG] Percepts: {[p['data'].get('description') for p in percepts]}")
-        print(f"[DEBUG] Thoughts: {npc.name} {[str(t) for t in self.npc.mind.thoughts]}")#Perhaps we should upgrade this print to show more info, and be a debug_print, category think, 
-        #OR make use of the currently unused display_npc_mind for just waitress and liberty npcs
+        #TMP
+        if getattr(npc, "debug_role", None) == "civilian_liberty" and isinstance(npc.location, Cafe):
+            #if isinstance(npc.location, Cafe):
+            #slightly more scalable for above line
+            print(
+                f"[LIBERTY DEBUG] posture={npc.posture} "
+                f"anchor={getattr(npc.current_anchor,'name',None)} "
+                f"thoughts={[t.tags for t in npc.mind.thoughts]}"
+            )
 
     def handle_failed_anchors(self):
         npc = self.npc

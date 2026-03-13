@@ -9,6 +9,8 @@ import random
 from employment.employment import update_employee_presence
 from character_components.npc_effects import RecentMealEffect
 from employment.workplace_mixin import WorkplaceMixin
+from create.create_game_state import get_game_state
+game_state = get_game_state()
 
 def visit_location_auto(character, region=None, destination=None, destination_name=None, **kwargs):
     npc = character
@@ -80,7 +82,7 @@ def visit_location_auto(character, region=None, destination=None, destination_na
         destination.recent_arrivals.append(npc)
 
     # Entering or leaving workplace
-    update_employee_presence(npc, gs)
+    update_employee_presence(npc, game_state.hour)
 
     if npc.current_anchor and npc.current_anchor.type == "work":
         debug_print(npc, "[ANCHOR] Work anchor satisfied — clearing", category="anchor")
@@ -377,21 +379,71 @@ def steal_auto(npc, region, item=None):
 def exit_location_auto():
     print (f"npc exit location called")
 
-def eat_auto(npc, region=None):
+def eat_auto(npc, region=None, *, item):
 
-    #what exactly is self for an npc action function?
-    debug_print(npc, f"[EATING] eat_auto called for npc.{npc.name}", category="eat")
-
-    effect = RecentMealEffect()
-    effect.on_start(npc)
-    npc.effects.append(effect)
-
-    npc.memory.add_episodic(
-            subject=npc,
-            _object="food",
-            content=f"Ate at {npc.location.name}",
-            importance=1
+    debug_print(
+        npc,
+        f"[EATING] eat_auto called for {npc.name}",
+        category="eat"
     )
+
+    debug_print(
+        npc,
+        f"[EAT DEBUG] owner={getattr(item.owner,'name',None)} npc={npc.name}",
+        category="eat"
+    )
+
+    if item.owner != npc:
+        debug_print(npc, "[EAT] Ownership mismatch", category="eat")
+        return False
+
+    # reduce hunger immediately
+    npc.hunger = max(0, npc.hunger - item.nutrition)
+
+    # remove from inventory
+    try:
+        npc.inventory.remove_item(item)
+    except Exception as e:
+        print("REMOVE_ITEM CRASH:", e)
+        import traceback
+        traceback.print_exc()
+        raise
+
+    from inventory import debug_inventory
+    debug_inventory(npc)
+    debug_print(
+        npc,
+        f"[EAT] Ate {item.name} nutrition={item.nutrition} hunger now={npc.hunger}",
+        category="action"
+    )
+
+    # inventory debug
+    for inv in npc.inventory.items.values():
+        debug_print(
+            npc,
+            f"[INV] {inv.name} id={id(inv)} owner={getattr(inv.owner,'name',inv.owner)}",
+            category="eat"
+        )
+
+    # apply digestion effect
+    npc.apply_effect(RecentMealEffect())
+    npc.mind.remove_thoughts_with_tag("hunger")
+    npc.mind.remove_thoughts_with_tag("eat")
+
+    # memory
+    from memory.memory_entry import MemoryEntry
+
+    entry = MemoryEntry(
+        subject=npc,
+        object_=item,
+        details=f"Ate {item.name} at {npc.location.name}",
+        importance=1,
+        owner=npc,
+        tags=["eat", "food"]
+    )
+
+    npc.mind.memory.add_episodic(entry)
+
     return True
 
 def buy_auto(npc, region, *, item):
@@ -421,8 +473,27 @@ def buy_auto(npc, region, *, item):
 
     # decrement stock
     item.quantity -= 1
+    """ But item is also the template object in the shop list.
+    This means if multiple NPCs buy it simultaneously you may get weird behavior.
+    Eventually you'll want a stock item vs instance item separation, but that's not urgent. """
+
     if item.quantity <= 0:
         location.items_available.remove(item)
+
+
+    # create owned item
+    owned_food = item.__class__(quantity=1)
+    owned_food.owner = npc
+    owned_food.human_readable_id = f"{npc.name}'s {item.name}"
+
+    npc.inventory.add_item(owned_food, quantity=1)
+
+
+    debug_print(
+        npc,
+        f"[BUY DEBUG] owned_food id={id(owned_food)} owner={owned_food.owner.name}",
+        category="buy"
+    )
 
     debug_print(
         npc,

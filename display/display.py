@@ -625,10 +625,14 @@ def build_info_column(origin_obj, npc, v, anchor):
     # -------------------------
 
     elif hasattr(origin_obj, "seating_capacity"):
-        if origin_obj.occupants:
-            info = f"{len(origin_obj.occupants)}/{origin_obj.seating_capacity} seated"
-        else:
-            info = f"{origin_obj.seating_capacity} seats"
+
+        if hasattr(origin_obj, "chairs"):
+            occupied = sum(1 for c in origin_obj.chairs if c.occupied_by)
+
+            if occupied:
+                info = f"{occupied}/{origin_obj.seating_capacity} seated"
+            else:
+                info = f"{origin_obj.seating_capacity} seats"
 
     # -------------------------
     # Ambience Emitters
@@ -676,11 +680,10 @@ def display_percepts_table(npc):
         desc = data.get("description") or data.get("type") or "UNKNOWN"
 
         type_ = data.get("type", "—")
-        #this? 
 
         # Remove redundant type text
         if isinstance(desc, str) and type_ in desc:
-            desc = desc.replace(f": {type_}", "").replace(f"({type_})", "").strip()#is this failing?
+            desc = desc.replace(f": {type_}", "").replace(f"({type_})", "").strip()
 
         # Simplify verbose character description
         if isinstance(desc, str) and "," in desc and " of " in desc:
@@ -709,7 +712,7 @@ def display_percepts_table(npc):
 
     for table in buckets["occupied_tables"]:
 
-        seated = table.occupants
+        seated = table.get_occupants(npc.location)
 
         desc = table.name
         type_ = "CafeTable"
@@ -838,7 +841,7 @@ def display_sellers(shops: list):
     print(tabulate(rows, headers="keys", tablefmt="fancy_grid"))
 
 def debug_display_all_shops(all_regions):
-    print("[DEBUG] Displaying all shops:")
+    #print("[DEBUG] Displaying all shops:")
 
     all_shops = []
     for region in all_regions:
@@ -1355,3 +1358,29 @@ def summarize_action(action):
         summary_params[k] = getattr(v, "name", v)
 
     return f"{name}({summary_params})"
+
+
+def display_episodic_memories(npc, limit=5):
+    memories = npc.mind.memory.get_episodic()
+    if not memories:
+        print("No episodic memories.")
+        return
+
+    recent = memories[-limit:]
+
+    table = []
+    for mem in recent:
+        table.append([
+            mem.subject,
+            mem.verb,
+            mem.object_,
+            mem.importance,
+            ", ".join(mem.tags)
+        ])
+
+    print("\nRecent Episodic Memories")
+    print(tabulate(
+        table,
+        headers=["Subject", "Verb", "Object", "Importance", "Tags"],
+        tablefmt="simple"
+    ))

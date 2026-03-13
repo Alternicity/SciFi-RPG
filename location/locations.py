@@ -1246,7 +1246,8 @@ class Restaurant(WorkplaceMixin, PerceptibleLocation):
             "security": self.security.level,
             "is_open": self.is_open,
         }
-
+    def __repr__(self):
+        return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
 @dataclass
 class Park(WorkplaceMixin, PerceptibleLocation):
@@ -2038,7 +2039,7 @@ class Farm(WorkplaceMixin, PerceptibleLocation):
             self.inventory.add_item(item)
 
         for animal in self.livestock:
-            item = f"{animal}_products"
+            item = f"{animal}_products"#unused
             produced.append(item)
             self.goods_produced.append(item)
             self.inventory.add_item(item)

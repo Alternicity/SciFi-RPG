@@ -53,8 +53,8 @@ def summarize_civilians(civilians, regions):
     richest_region = max(region_wealth, key=region_wealth.get)
     richest_region_amount = region_wealth[richest_region]
 
-    # --- Print block ---
-    debug_print(None, "====== CIVILIAN SUMMARY ======", category="population")
+    # --- Print block --- NICE PRINT
+    """ debug_print(None, "====== CIVILIAN SUMMARY ======", category="population")
 
 
     debug_print(None, f"Total civilians: {len(civilians)}", category = "population")
@@ -66,7 +66,7 @@ def summarize_civilians(civilians, regions):
           f"(total wealth {richest_race_amount})", category = "population")
 
     debug_print(None, f"Richest region: {richest_region} "
-          f"(total wealth {richest_region_amount})", category = "population")
+          f"(total wealth {richest_region_amount})", category = "population") """
 
     # --- 5. Family statistics ---
 
@@ -100,8 +100,8 @@ def summarize_civilians(civilians, regions):
         elif isinstance(loc, VacantLot):
             vacantlot_residents += 1
 
-
-    debug_print(None, f"Total families: {total_families}", category="population")
+    #NICE PRINT
+    """ debug_print(None, f"Total families: {total_families}", category="population")
     debug_print(None, f"Civilians with family: {with_family}", category="population")
     debug_print(None, f"Civilians without family: {without_family}", category="population")
     debug_print(None, f"Homeless civilians: {homeless_count}", category="population")
@@ -109,7 +109,7 @@ def summarize_civilians(civilians, regions):
     debug_print(None, f"Living in House: {house_residents}", category="population")
     debug_print(None, f"Living in ApartmentBlock: {apartment_residents}", category="population")
     debug_print(None, f"Living in Park: {park_residents}", category="population")
-    debug_print(None, f"Living in VacantLot: {vacantlot_residents}", category="population")
+    debug_print(None, f"Living in VacantLot: {vacantlot_residents}", category="population") """
     
     all_locations = game_state.all_locations
 
@@ -120,9 +120,9 @@ def summarize_civilians(civilians, regions):
     total_apartment_blocks = sum(
         1 for l in all_locations if isinstance(l, ApartmentBlock)
     )
-
-    debug_print(None, f"Total Houses in world: {total_houses}", category="population")
+    #NICE PRINT
+    """ debug_print(None, f"Total Houses in world: {total_houses}", category="population")
     debug_print(None, f"Total ApartmentBlocks in world: {total_apartment_blocks}", category="population")
 
-    debug_print(None, "==============================", category="population")
+    debug_print(None, "==============================", category="population") """
 

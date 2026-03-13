@@ -270,13 +270,14 @@ class ObservationComponent:
 
         gs = get_game_state()
         debug_allowed = gs is not None and gs.should_display_npc(self.owner)
+
         #everything after this block is gated
-        if debug_allowed:
+        """ if debug_allowed:
             debug_print(
             self.owner,
             f"[SELF PERCEPT] tags={self._percepts['self']['data']['tags']} urgency={self._percepts['self']['data'].get('urgency')}",
             category="percept"
-            )
+            ) """
 
         # --- determine current location if not passed ---
         if location is None:

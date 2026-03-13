@@ -25,9 +25,9 @@ context cascades ("If I know X, I recall Y") """
 
 
 MEMORY_CATEGORIES = [
-    "events", "region_knowledge", "people", "awakening", "social", "employment", "gangs", "services", "stressors"
+    "events", "region_knowledge", "people", "awakening", "social", "employment", "gangs", "services", "stressors",
     "memory_entries", "enemies", "Objects", "procedures", "internal_architecture", "authority",
-    "shop_knowledge", "food_locations"
+    "shop_knowledge", "food_locations", "work"
 ]
 
 class Memory:
@@ -193,14 +193,27 @@ class Memory:
 
         self.semantic["memory_entries"].append(memory_entry)
 
+    #add_episodic and remember are a two-layer API
 
     def add_episodic(self, memory_entry: MemoryEntry, current_day: Optional[int] = None):
+        #Low-level API (for memory system)
+
         if current_day is not None:
             memory_entry.created_day = current_day
         self.episodic.append(memory_entry)
-        # Hook: could notify UtilityAI() or a subclass
-        # self.check_for_pattern(memory_entry)
-        #"Thats the third time Fido asked to go for a walk"
+
+    def remember_thing(self, subject, verb, object_, details="", importance=1, owner=None):#but there is a separate use case for event objects
+        #They are not currently in use but this function could be renamed to remember_thing or similar
+
+        #High-level API (for gameplay code)
+        entry = MemoryEntry(
+            subject=subject,
+            object_=object_,
+            details=details,
+            importance=importance,
+            owner=owner
+        )
+        self.add_episodic(entry)
 
     def add_semantic_unique(self, category: str, memory_entry, dedupe_key: str = "details") -> bool:
         """

@@ -28,9 +28,6 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
         debug_print(None, f"[TIME] Hour {game_state.hour}, Day {game_state.day}", category="tick")
         debug_print(None, summarize_npc_turns(all_characters), category="tick")
 
-        
-
-
         # Each hour:
         for region in all_regions:
             for npc in region.characters_there:
@@ -38,13 +35,13 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                 #tmp print
                 from location.locations import Cafe
                 # --- WORLD STATE CHECK (diagnostic) ---
-                if npc.location and isinstance(npc.location, Cafe):
+                if npc.location and isinstance(npc.location, Cafe):#using Cafe here is very specific, and will not generalize
                     loc = npc.location
-                    print(
+                    """ print(
                         f"[WORLD CHECK] npc={npc.name} "
                         f"loc_id={id(loc)} "
                         f"chars={[ (c.name, id(c)) for c in loc.characters_there ]}"
-                    )
+                    ) """
 
                 #npc._observed_this_tick = False
                 begin_npc_turn(npc)
@@ -63,8 +60,8 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                 if gs.day == 1 and gs.hour == 1:
                     if npc in gs.debug_npcs.values():
                         display_npc_vitals(npc)
-
-                for effect in npc.effects[:]:
+                # EFFECTS
+                for effect in npc.effects[:]:#iterates over a copy, allows removal inside loop
                     effect.on_tick(npc)
                     effect.remaining -= 1
                     if effect.remaining <= 0:
@@ -169,7 +166,7 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                 fn(dbg_npc)
 
                 #At some point, ensure you're calling npc.inventory.clear_recently_acquired() somewhere in the tick loop
-                    
+
         #Choose and Execute Action
         for npc in all_characters:
             if hasattr(npc, 'ai') and npc.ai:
@@ -177,18 +174,19 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                     npc.ai.evaluate_thoughts()
                     region = npc.location.region if hasattr(npc.location, 'region') else None
                     action = npc.ai.choose_action(region)
-                    if action:
-                        npc.ai.execute_action(action, region)
 
-                    debug_print(
-                        npc,
-                        f"[ACTIONx] {npc.name} finished {summarize_action(action)}, "
-                        f"current_location={npc.location.name}",
-                        category="action"
-                    )
+                    if action:
+                        result = npc.ai.execute_action(action, region)#result not accessed, but maybe thats ok
+
+                        """ debug_print(
+                            npc,
+                            f"[ACTIONx] {npc.name} finished {summarize_action(action)}, "
+                            f"current_location={npc.location.name}",
+                            category="action"
+                        ) """
 
         # STEP 3: Post Stuff 
-        for npc in all_characters:#ATTN
+        for npc in all_characters:
 
             end_npc_turn(npc)
 

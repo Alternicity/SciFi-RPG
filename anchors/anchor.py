@@ -14,11 +14,14 @@ Always read it inside a method that receives npc. """
 
 #The Anchor object becomes a harmonic attractor: it pulls salience into form.
 #context-aware decision filter
+
+""" You want:
+most salient object matching anchor.desired_tags """
 @dataclass
 class Anchor:
     name: str  # e.g., "rob", "join_faction"
-
     type: Optional[str] = None
+    
     weight: float = 1.0  # salience amplification factor
     priority: float = 1.0  # importance to current AI thinking
     enables: List[str] = field(default_factory=list)
@@ -33,6 +36,7 @@ class Anchor:
     target_object: Optional[Any] = None  # e.g., ObjectInWorld, Location, Region, Character
     # Simulation timing
     tick_created: Optional[int] = None
+    hour_created: Optional[int] = None
     day_created: Optional[int] = None
     target_location: Optional[Any] = None
     _warned_no_target: bool = False
@@ -57,6 +61,9 @@ class Anchor:
                 f"[ANCHOR INIT] Warning: Could not access game state for {self.name}: {e}",
                 category="anchor"
             )
+
+    def requires_movement(self):
+        return self.target_location is not None
 
     def resolve_target_location(self):
         npc = self.owner

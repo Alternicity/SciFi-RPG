@@ -16,11 +16,8 @@ class InventoryComponent:
     def clear_recently_acquired(self):
         return self.inventory.clear_recently_acquired()
 
-    def add_item(self, item, quantity=1):#ADDS OWNERSHIP
-        item.owner = self.owner.name
-        self.items.append(item)
-
-        return self.inventory.add_item(item)
+    def add_item(self, item, quantity=1):
+        return self.inventory.add_item(item, quantity)
 
     def has_item(self, item):
         return self.inventory.has_item(item)

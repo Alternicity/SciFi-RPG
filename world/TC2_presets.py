@@ -4,13 +4,13 @@ from employment.employee import EmployeeProfile
 from employment.roles import CAFE_MANAGER, WAITRESS
 from debug_utils import debug_print
 from world.placement import place_character
-
+from base.posture import Posture
 from objects.food.drinks import Coffee
 from objects.food.cutlery_crockery import Cup
 from location.locations import Cafe
 from objects.furniture import CafeTable, CafeChair
 
-
+from character_components.npc_effects import MorningSettlingEffect
 
 def get_tc2_cafe(region):
     cafe = next(
@@ -26,12 +26,13 @@ def setup_tc2_civilian_liberty(npc, region):
     npc.region = region
     npc.home_region = region
     npc.hunger = 5 #bump npc hunger here, perhaps we could add some random range that will result in burger some tests and sandwich on others.
-
-    debug_print(
+    npc.effects.append(MorningSettlingEffect())
+    npc.effects[-1].on_start(npc)
+"""     debug_print(
         npc,
         f"[TC2 CIVILIAN:LIBERTY SETUP] region={region.name}",
         category=["placement"]
-    )
+    ) """
 
 
 def setup_tc2_worker(worker, region, *, role):#civilian_manager
@@ -53,6 +54,15 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager
     # Register as employee (NOT arrival)
     if hasattr(cafe, "employees"):
         cafe.employees.append(worker)
+
+    # Attach to worker/manager to counter
+    if isinstance(worker.location, Cafe) and worker.employment.role == CAFE_MANAGER:
+        counter = getattr(worker.location, "counter", None)
+        if counter:
+            counter.seat(worker)
+            worker.posture = Posture.STANDING  # behind counter
+            worker.current_counter = counter
+
 
     debug_print(
         worker,
@@ -87,7 +97,7 @@ def place_tc2_passive_npc(npc, region):
 
     # Assign region + location
     npc.region = region
-    npc.location = cafe
+    npc.location = cafe#a fragile way to get the cafe in the downtown/TC2 region
     npc.seated_at = None
     
     cafe.characters_there.append(npc)
@@ -104,8 +114,8 @@ def place_tc2_passive_npc(npc, region):
     )
 
     if table:
-        npc.seated_at = table
-        table.occupants.append(npc)
+        from actions.npc_bodily_actions import sit_auto #actions.npc_bodily_actions marked Import cannot be resolved
+        sit_auto(npc, table=table)
 
     # Create drink
     cup = Cup()
@@ -122,11 +132,11 @@ def place_tc2_passive_npc(npc, region):
 
 def place_tc2_npc(npc, region):
     npc.region = region
-    debug_print(
+    """ debug_print(
         npc,
         f"[TC2 PLACEMENT] region={npc.region.name} location={npc.location}",
         category="placement"
-    )
+    ) """
 
 def assign_tc2_staging_location(npc, region):
     """

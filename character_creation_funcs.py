@@ -96,7 +96,7 @@ def create_all_characters(factions, all_locations, all_regions):
             occupants = [c.name for c in getattr(hq, "characters_there", [])]
             debug_print(None, f"[DIAG] HQ {hq.name} occupants: {occupants}", "placement")
 
-    debug_print(None, "[DIAG] Checking shop occupants after shop population...", "placement")
+    #debug_print(None, "[DIAG] Checking shop occupants after shop population...", "placement")
     for shop in shops:
         occupants = [c.name for c in shop.characters_there]
         #debug_print(None, f"[DIAG] SHOP (Currently) {shop.name} occupants: {occupants}",category=["placement", "economy"])

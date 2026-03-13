@@ -2,6 +2,13 @@
 from anchors.anchor_utils import Anchor
 from debug_utils import debug_print
 
+class GreetAnchor(Anchor):
+
+    def requires_movement(self):
+        return False
+    def resolve_target_location(self):
+        return None
+
 def create_greet_anchor(npc, target):#npc, not waitress
     waitress = npc
 
@@ -12,7 +19,7 @@ def create_greet_anchor(npc, target):#npc, not waitress
         category="focus"
     )
 
-    anchor = Anchor(
+    anchor = GreetAnchor(
         name="greet_person",   # 👍 generalized
         type="work",
         owner=npc,
@@ -26,3 +33,4 @@ def create_greet_anchor(npc, target):#npc, not waitress
 
     npc.current_anchor = anchor
     #This function would be used also, for example, by a hostess at a dinner party.
+

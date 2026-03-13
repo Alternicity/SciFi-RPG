@@ -43,12 +43,14 @@ class ProcureFood(Anchor):#needs to be set up tick 1 for civ liberty
 
 
 class EatAnchor(Anchor):
-    #we need to get a reference to the owner of the anchor here and set it to npc
-    #then we can set location to npc.location
 
     #one anchor, many targets
     type = "eat"
     name = "eat"
+
+    def requires_movement(self):
+        npc = self.owner
+        return not location_sells_food(npc.location)#not flips the boolean return of the function
 
     def resolve_target_location(self):
         npc = self.owner
@@ -76,6 +78,10 @@ class EatAnchor(Anchor):
         from focus_utils import set_attention_focus
         if not items_available:
             return None
+        from worldQueries import find_seller_employee
+        seller = find_seller_employee(npc.location)#added. It needs the above import though
+        if seller:
+            set_attention_focus(npc, character=seller)
 
         # 1. Exact match by name (or id)
         if desired_name:
@@ -89,19 +95,9 @@ class EatAnchor(Anchor):
                 category="think"
             )
 
-        free_chairs = [
-            obj for obj in location.items.objects_present#location not defined here
-            if isinstance(obj, CafeChair) and obj.is_free()
-        ]
-
-        if free_chairs:
-            chair = random.choice(free_chairs)
-            if chair.occupy(npc):#npc not defined here
-                npc.current_chair = chair
-                set_attention_focus(npc, character=None)  # optional reset
+        
 
         # 2. Fallback: take first available item
-        # I had to move this to after the free_chairs block
         return items_available[0]
 
     

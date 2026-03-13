@@ -27,7 +27,10 @@ from config import (
     SHOW_DECISION_LOGS,
     SHOW_INSIGHT_LOGS,
     SHOW_PERCEPT_LOGS,
+
     SHOW_EFFECT_LOGS,
+    SHOW_LIBERTY_LOGS,
+
     SHOW_INVENTORY_LOGS,
     SHOW_VISIT_LOGS,
     SHOW_FOCUS_LOGS,
@@ -75,7 +78,10 @@ DEBUG_FLAGS = {
     "decision": SHOW_DECISION_LOGS,
     "insight": SHOW_INSIGHT_LOGS,
     "percept": SHOW_PERCEPT_LOGS,
+
     "effect": SHOW_EFFECT_LOGS,
+    "liberty": SHOW_LIBERTY_LOGS,
+
     "inventory": SHOW_INVENTORY_LOGS,
     "visit": SHOW_VISIT_LOGS,
     "focus": SHOW_FOCUS_LOGS,

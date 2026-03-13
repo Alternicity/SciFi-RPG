@@ -75,7 +75,7 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
     Scan regions
     Create thoughts
     Create anchors
-    Assume other NPCs exist (yet) """
+    """
 
 #Future 
 """ def finalize_social_seeding(all_characters):

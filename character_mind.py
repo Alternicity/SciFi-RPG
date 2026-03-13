@@ -44,7 +44,10 @@ class Mind:
         It mimics short-term/working memory: older thoughts are automatically discarded. """
 
     def remove_thoughts_with_tag(self, tag):
-        self.thoughts = [t for t in self.thoughts if tag not in t.tags]
+        self.thoughts = deque(
+            (t for t in self.thoughts if tag not in getattr(t, "tags", [])),#is this deleting?
+            maxlen=self.thoughts.maxlen
+        )
 
     def deduplicate_thoughts(self, npc):#eventually ditch the npc
         seen = {}
@@ -173,6 +176,9 @@ class Mind:
 
         for existing in self.thoughts:
             if existing.content == thought.content:
+                #set(existing.tags) == set(thought.tags)
+                #alternative to the above line
+
                 # Update urgency if new one is stronger
                 if thought.urgency > existing.urgency:
                     existing.urgency = thought.urgency
@@ -182,7 +188,12 @@ class Mind:
         self.thoughts.append(thought)
 
         from focus_utils import set_attention_focus
-        set_attention_focus(self.owner, thought=thought)
+
+        owner = self.owner
+
+        # Only allow thought to set focus if no active anchor NOTE
+        if not getattr(owner, "current_anchor", None):
+            set_attention_focus(owner, thought=thought)
         
         #print(f"[MIND] Added thought: {thought.content}")
         """ You may eventually want to detect duplicates not just 
@@ -225,7 +236,7 @@ class Mind:
         if gs is not None and not gs.should_display_npc(self.owner):#GATE
             return
 
-        debug_print(self.owner, "[MIND] clear_stale_percepts() called — no action (placeholder)", "percept")
+        #debug_print(self.owner, "[MIND] clear_stale_percepts() called — no action (placeholder)", "percept")
 
         # In the future, check if any percept's object no longer exists or changed region/location.
         return
