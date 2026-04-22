@@ -1,21 +1,18 @@
 #motivation.motivation.py 
 from status import StatusLevel
 from debug_utils import debug_print
-
+CORE_MOTIVES = {"eat", "sleep", "work", "have_fun"}
 class Motivation:
-    def __init__(self, type, urgency=1, target=None, status_type=None, source=None):
+    def __init__(self, type, urgency=1, target=None, status_type=None, source=None, persistent=False):
         self.type = type  #  "join_gang"
         self.urgency = float(urgency)  # is this optimal, or should it just be self.urgency = urgency?
         self.target = target  #  "e.g. Red Fangs"
         self.status_type = status_type  #  "criminal"
         self.source = source  #  memory, event, etc.
-
+        self.persistent = persistent
         self.suppressed = False
         self.suppression_reason = None
-
-    def suppress(self, reason):
-        self.suppressed = True
-        self.suppression_reason = reason
+        
 
     def unsuppress(self):
         self.suppressed = False
@@ -100,7 +97,9 @@ VALID_MOTIVATIONS = {
 class MotivationManager:
     def __init__(self, character):
 
-        self.character = character
+        self.owner = character
+        self.character = character#backwards compatibility
+        
         self.motivations = []  #list of Motivation instances
         
         # optional global suppression bookkeeping
@@ -114,6 +113,42 @@ class MotivationManager:
         #   }
         # }
 
+
+    def set_urgency(self, type, value):
+        """
+        Set urgency for a motivation by type.
+        If multiple exist, update all (safe default).
+        """
+        updated = False
+
+        #New comment: Could we temporarily set value = 20 here for have_fun, to overwrite the passed in value, and see if that fixes the issue?
+        #and a print to indicate that this temporary measure has activated?
+        for m in self.motivations:
+            if m.type == type:
+                m.urgency = float(value)
+                updated = True
+        if type == "have_fun" and value <= 0:
+            print(f"[DEBUG] have_fun dropped to {value}")
+
+        matches = [m for m in self.motivations if m.type == type]#Is this ok here?
+
+        if len(matches) > 1:
+            print(f"[DUPLICATE MOTIVE] {type} count={len(matches)}")
+
+        return updated
+
+    def suppress(self, type, reason=None, duration=3):#line 134
+        """
+        Temporarily suppress a motivation for N ticks.
+        """
+        for m in self.motivations:
+            if m.type == type:
+                m.suppressed = True
+                m.suppression_reason = reason
+                m.suppression_timer = duration
+                return m
+        return None
+
     def consider_adding_motivation(
         self,
         mtype,
@@ -122,44 +157,42 @@ class MotivationManager:
         source=None,
         status_type=None,
     ):
-        npc = self.character
+        npc = self.owner
 
-        # --- TERMINAL / CONDITIONAL SUPPRESSION ---
-        if mtype == "obtain_ranged_weapon":#Being a general use class, this TC1/GangMember code will eventually have to move
-            if npc.inventory.has_ranged_weapon():
-                # mark as suppressed, not forgotten
-                self.suppressed[mtype] = {
-                    "reason": "already_armed",
-                    "until": "inventory_change",
-                }
-                debug_print(
-                    npc,
-                    f"[MOTIVE] Suppressed {mtype} (already armed)",
-                    category="motive",
-                )
-                return False
-            existing = self.get_motivation(mtype)
-            if existing:
-                old = existing.urgency
-                existing.urgency = max(existing.urgency, float(urgency))
-                debug_print(
-                    npc,
-                    f"[MOTIVE] Updated {mtype} urgency {old} → {existing.urgency} (source={source})",
-                    category="motive",
-                )
-                return existing
+        existing = self.get_motivation(mtype)
 
-            motive = self._create_motivation(mtype, urgency, target, source, status_type)
+        # --- EXISTING: update ---
+        if existing:
+            if getattr(existing, "suppressed", False):
+                return existing  # don't modify suppressed
+
+            old = existing.urgency
+            existing.urgency = max(existing.urgency, float(urgency))
+
             debug_print(
                 npc,
-                f"[MOTIVE] Added {mtype} (urgency={urgency}, source={source})",
+                f"[MOTIVE] Updated {mtype} {old} → {existing.urgency} (source={source})",
                 category="motive",
             )
-            return motive
+            return existing
+
+        # --- CREATE NEW ---
+        motive = self._create_motivation(
+            mtype, urgency, target, source, status_type
+        )
+
+        debug_print(
+            npc,
+            f"[MOTIVE] Added {mtype} (urgency={urgency}, source={source}, id={id(motive)})",
+            category="motive",
+        )
+
+        return motive
 
 
         # --- CLEAR SUPPRESSION IF CONDITION NO LONGER HOLDS ---
-        if mtype in self.suppressed:
+        #became unreachable after the above code was updated
+        """ if mtype in self.suppressed:
             del self.suppressed[mtype]#what is this doing? Will it run automatically
 
         # --- PASS THROUGH TO REAL ADD/UPDATE ---
@@ -170,19 +203,116 @@ class MotivationManager:
             source=source,
             status_type=status_type,
         )
-        return True
+        return True """
+
+    def get_top_motivation(self):
+        return self.get_highest_priority_motivation()
+
+    def debug_mind_state(npc):
+        top_mot = npc.motivation_manager.get_top_motivation()
+        top_thoughts = sorted(
+            npc.mind.thoughts,
+            key=lambda t: t.urgency,
+            reverse=True
+        )[:2]
+
+        print(f"\n[MIND DEBUG] {npc.name}")
+
+        if top_mot:
+            print(f"  Motivation: {top_mot.type} ({top_mot.urgency})")
+
+        print("  Thoughts:")
+        for t in top_thoughts:
+            print(f"    - {t.content} ({t.urgency})")
+
+        anchor = npc.current_anchor.name if npc.current_anchor else "None"
+        print(f"  Anchor: {anchor}")
+
+    def unsuppress(self, type):
+        for m in self.motivations:
+            if m.type == type:
+                m.suppressed = False
+                m.suppression_reason = None
+                m.suppression_timer = 0
+
+    def update_suppressions(self):
+        for m in self.motivations:
+            if getattr(m, "suppressed", False):
+                if not hasattr(m, "suppression_timer"):
+                    continue
+
+                m.suppression_timer -= 1
+
+                if m.suppression_timer <= 0:
+                    m.suppressed = False
+                    m.suppression_reason = None
+                    m.suppression_timer = 0
 
     # 🔹 MASTER SYNC — called once per tick
     def sync_motivations(self, tick):
+
+        self.update_suppressions()
+        self._debug_check("after update_suppressions")
+
         self.sync_physiological_motivations()
+        self._debug_check("after sync_physiological")
+
         self.sync_role_motivations(tick)
+        self._debug_check("after sync_role")  # 🔥 MOST IMPORTANT
+
         self.cleanup_suppressed()
+        self._debug_check("after cleanup")
+
+        self.deduplicate()
+        
+        if self.owner.debug_role in ("civilian_liberty", "civilian_worker", "civilian_waitress"):
+            assert any(m.type == "have_fun" for m in self.motivations), \
+                "have_fun vanished!"
+
+        """ types = [m.type for m in self.motivations]#But the above assert already fired, so here there are no have_fun motivations?
+
+        dupes = [t for t in set(types) if types.count(t) > 1]
+
+        if dupes:
+            print(f"[DUPLICATES DETECTED] {dupes}")
+            print([
+                (id(m), m.type, m.urgency, m.persistent)
+                for m in self.motivations
+                if m.type in dupes
+            ]) """
+            
+    #TMP, I hope
+    def _debug_check(self, stage):
+        types = [m.type for m in self.motivations]
+
+        if "have_fun" not in types:
+            print(f"[MISSING have_fun] at {stage}")
+            print([
+                (id(m), m.type, m.urgency, m.persistent)
+                for m in self.motivations
+            ])
+
+        dupes = [t for t in set(types) if types.count(t) > 1]
+
+        if dupes:
+            print(f"[DUPLICATES DETECTED at {stage}] {dupes}")
+            print([
+                (id(m), m.type, m.urgency, m.persistent)
+                for m in self.motivations
+                if m.type in dupes
+            ])
+
 
     # 🔹 PHYSIOLOGY
     def sync_physiological_motivations(self):
-        npc = self.character
+        npc = self.owner
 
-        if npc.hunger >= 5:
+        eat_motive = self.get_motivation("eat")
+
+        if eat_motive and eat_motive.suppressed:
+            return  # 🔥 HARD BLOCK
+
+        if npc.hunger >= 8 and not self.is_suppressed("eat"):
             self.consider_adding_motivation(
                 "eat",
                 urgency=npc.hunger,
@@ -191,27 +321,95 @@ class MotivationManager:
 
     # 🔹 ROLE / OBLIGATION
     def sync_role_motivations(self, tick):
-        npc = self.character
+        npc = self.owner
 
-        on_shift = (
-            npc.employment and 
-            npc.employment.on_duty(tick)
-        )
+        """ debug_print(
+            self.owner,
+            f"[ROLE SYNC START] {[(id(m), m.type, m.urgency, m.persistent) for m in self.motivations]}",
+            category="motive"
+        ) """
 
-        for motivation in self.motivations:
-            if motivation.type == "work":
-                if on_shift:
-                    motivation.unsuppress()
+        on_shift = npc.is_on_shift  # ✅ use unified state
 
-                    # Make work dominant while on shift
-                    self.deboost_others("work", amount=3)
-                else:
-                    motivation.suppress("off_shift")
+        if on_shift:
+            self.unsuppress("work")
 
-    # 🔹 CLEANUP (optional but recommended)
+            BLOCKED_DURING_WORK = {"have_fun", "sleep"}#This could be all motivations except work. Also:
+            """ eat removed from here, because it drives movement
+            it creates anchors
+            it prevents deadlock """
+
+            for m in self.motivations:
+                if m.type in BLOCKED_DURING_WORK:
+                    self.suppress(m.type, reason="working")
+
+        else:
+            self.suppress("work", reason="off_shift", duration=999)
+
+            # 🔥 release all others
+            for m in self.motivations:
+                if m.type != "work":
+                    self.unsuppress(m.type)
+
+        """ debug_print(
+            self.owner,
+            f"[ROLE SYNC END] {[(id(m), m.type, m.urgency, m.persistent) for m in self.motivations]}",
+            category="motive"
+        ) """
+    #tmp?
+    @property
+    def urgency(self):
+        return self._urgency
+
+    @urgency.setter
+    def urgency(self, value):
+        if self.type == "have_fun":
+            import traceback
+            print(f"[DEBUG SET] have_fun → {value}")
+            traceback.print_stack(limit=5)
+        self._urgency = value
+
+    def unsuppress(self, type):#See also the unsupress in class Motivation
+        for m in self.motivations:
+            if m.type == type:
+                m.unsuppress()
+                """ API is now:
+                self.suppress("XYZ")
+                self.unsuppress("XYZ") """
+
     def cleanup_suppressed(self):
-        # Optional: remove permanently suppressed motivations
-        pass
+        """ debug_print(
+            self.owner,
+            f"[MOTIVES BEFORE CLEANUP] {self.owner.name} {[(id(m), m.type, m.urgency, m.persistent) for m in self.motivations]}",
+            category="motive"
+        ) """
+
+        kept = []
+        removed = []
+
+        for m in self.motivations:
+            if m.persistent or m.urgency > 0 or getattr(m, "suppression_timer", 0) > 0:
+                kept.append(m)
+            else:
+                removed.append(m)
+
+        if removed:
+            debug_print(
+                self.owner,
+                f"[MOTIVE CLEANUP] {self.owner.name} removed={[(m.type, m.urgency) for m in removed]}",
+                category="motive"
+            )
+
+        self.motivations = kept
+
+        """ debug_print(
+            self.owner,
+            f"[MOTIVES AFTER CLEANUP] {self.owner.name} {[(id(m), m.type, m.urgency, m.persistent) for m in self.motivations]}",
+            category="motive"
+        ) """
+
+
+
 
     #  A — INPUT COERCION HELPERS
 
@@ -236,19 +434,81 @@ class MotivationManager:
     def add(self, motivation: Motivation):
         self.motivations.append(motivation)
         return motivation
+    
+    def is_suppressed(self, mtype):
+        m = self.get_motivation(mtype)
+        if not m:
+            return False
+        return getattr(m, "suppressed", False)
+    
+    def _create_motivation(self, mtype, urgency, target, source, status_type, persistent=False):
+        existing = self.get_motivation(mtype)
 
+        if existing:
+            # Merge instead of duplicate
+            existing.urgency = max(existing.urgency, float(urgency))
+            existing.persistent = existing.persistent or persistent
+
+            if target is not None:
+                existing.target = target
+            if source is not None:
+                existing.source = source
+            if status_type is not None:
+                existing.status_type = status_type
+
+            return existing
+
+        new = Motivation(
+            type=mtype,
+            urgency=float(urgency),
+            target=target,
+            source=source,
+            status_type=status_type,
+            persistent=persistent
+        )
+
+        self.motivations.append(new)
+        return new
+    
     def create_initial(self, mtype, urgency=1, target=None, source="initial", status_type=None):
-        #a rename of set_motivation()
+        """
+        Legacy initializer used during character creation.
+        Bypasses update logic and creates motivations directly.
+        """
+        #When upgrading see: motivation_presets.py for non test case npcs
+
+        """ Right now you have two paths:
+        create_initial() → direct creation
+        update_motivations() → smart merge
+        Long-term, you may want:
+        create_initial → just call update_motivations """
+
+        mtype = self._coerce_motivation_type(mtype)
+        persistent = mtype in CORE_MOTIVES
+
         return self._create_motivation(
             mtype=mtype,
             urgency=urgency,
             target=target,
             source=source,
-            status_type=status_type
+            status_type=status_type,
+            persistent=persistent
         )
 
-    def _create_motivation(self, mtype, urgency, target, source, status_type):
-        """Internal helper for consistent Motivation creation."""
+    def deduplicate(self):
+        seen = {}
+        for m in self.motivations:
+            if m.type not in seen:
+                seen[m.type] = m
+            else:
+                existing = seen[m.type]
+                existing.urgency = max(existing.urgency, m.urgency)
+                existing.persistent = existing.persistent or m.persistent
+
+        self.motivations = list(seen.values())
+
+    """def _create_motivation(self, mtype, urgency, target, source, status_type):
+
         new = Motivation(
             type=mtype,
             urgency=float(urgency),
@@ -257,7 +517,9 @@ class MotivationManager:
             status_type=status_type
         )
         self.motivations.append(new)
-        return new
+        if mtype == "have_fun":#motivation was marked as not defined here, so I changed it to mtype
+            print(f"[CREATE] from _create_motivation have_fun id={id(mtype)} persistent={mtype.persistent}")
+        return new """
 
     def get_motivation(self, motivation_type):
         """Return the Motivation object matching this type name."""
@@ -276,7 +538,14 @@ class MotivationManager:
           - urgency = max(existing.urgency, new urgency)
           - update target/source/status if provided
         """
+
         mtype = self._coerce_motivation_type(motivation_type)
+        persistent = mtype in CORE_MOTIVES
+        if mtype == "have_fun":
+            import traceback
+            print(f"[UPDATE CALL] have_fun urgency={urgency}")
+            #traceback.print_stack(limit=5)
+
         existing = self.get_motivation(mtype)
 
         if existing:
@@ -286,7 +555,7 @@ class MotivationManager:
             if status_type is not None: existing.status_type = status_type
             return existing
 
-        return self._create_motivation(mtype, urgency, target, source, status_type)
+        return self._create_motivation(mtype, urgency, target, source, status_type, persistent)
 
     def set_motivations(self, motivations_list):
         """Replace all existing motivations with a new list."""
@@ -320,24 +589,27 @@ class MotivationManager:
         """Alias for removal, clearer in some contexts."""
         self.motivations = [m for m in self.motivations if m.type != type_name]
 
-    def clear_highest_priority_motivation(self):
-        """Remove the highest-urgency motivation."""
-        if not self.motivations:
-            return None
-        top = max(self.motivations, key=lambda m: m.urgency)
-        self.motivations.remove(top)
+    def clear_highest_priority_motivation(self):#not yet adapted to permanent motivations
+        
+        top = self.get_highest_priority_motivation()
+        if top:
+            self.motivations.remove(top)
         return top
-
-
 
     #  E — QUERIES / SORTING
 
+    def get_highest_priority_motivation(self, exclude=None):
+        exclude = exclude or set()
 
-    def get_highest_priority_motivation(self):
-        active = [m for m in self.motivations if not m.suppressed]
-        if not active:
+        valid = [
+            m for m in self.motivations
+            if m.type not in exclude and not m.suppressed
+        ]
+
+        if not valid:
             return None
-        return max(active, key=lambda m: m.urgency)
+
+        return max(valid, key=lambda m: m.urgency)
 
     def get_top_motivations(self, n=2, include_zero=False):
         """
@@ -386,12 +658,10 @@ class MotivationManager:
         """
         for m in self.motivations:
             if m.type != except_type:
-                m.urgency = max(0, m.urgency - amount)
-
-
+                m.urgency = max(0.1, m.urgency - amount)
+                #the 0.1 is a clamp, preventing negative numbers, or zero
 
     #  F — DEBUG / DISPLAY
-
 
     def get_motivations_display(self):
         """Return simple strings suitable for debug output."""
@@ -402,3 +672,21 @@ class MotivationManager:
 class PoeticMotivation(Motivation):
     metaphor: str
     #You could later generate quests based on poetic triggers
+
+
+#Utility Functions
+def debug_motivations(npc, top=3):
+
+        mm = npc.motivation_manager
+        motivations = mm.sorted_by_urgency()
+
+        lines = [
+            f"{m.type}:{m.urgency:.1f}"
+            for m in motivations[:top]
+        ]
+
+        debug_print(
+            npc,
+            "[MOTIVATIONS] " + ", ".join(lines),
+            category="motivation"
+        )

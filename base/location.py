@@ -62,6 +62,14 @@ class Location(LocationBase):
         This is exactly what __post_init__ is for """
 
     @property
+    def social_tables(self):
+
+        return [
+            o for o in self.items.objects_present
+            if "social" in getattr(o, "tags", [])
+        ]
+
+    @property
     def objects_present(self):
         return self.items.objects_present
     
@@ -97,7 +105,7 @@ class Location(LocationBase):
             emp = getattr(c, "employment", None)#is this testing the self /locations attribute? OR just whether characters_there have this?
             if not emp:
                 continue
-            if emp.workplace is self and emp.role == "front_of_house":
+            if emp.workplace is self and emp.role_type == "front_of_house":#using emp.role_type to match to a string
                 staff.append(c)
         return staff
 

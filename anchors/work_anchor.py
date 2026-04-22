@@ -11,12 +11,12 @@ class WorkAnchor(Anchor):
     
     def resolve_target_location(self):
         npc = self.owner
-        if getattr(npc, "employment", None):
 
-            debug_print(
-                npc,
-                f"[WORK RESOLVE] {npc.name} is_on_shift={npc.employment.is_on_shift}",
-                category="anchor"
-            )
+        if not npc.employment or not npc.employment.is_on_shift:
+            return None
 
-            return npc.employment.workplace
+        return npc.employment.workplace
+        
+    def is_valid(self):#Should class Anchor have a version of this, making this an override?
+        npc = self.owner
+        return npc.employment and npc.employment.is_on_shift

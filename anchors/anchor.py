@@ -23,7 +23,7 @@ class Anchor:
     type: Optional[str] = None
     
     weight: float = 1.0  # salience amplification factor
-    priority: float = 1.0  # importance to current AI thinking
+    priority: float = 1.0  # importance to current AI thinking HMMMMM
     enables: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)  # used in tag-overlap salience logic
     owner: Optional[Any] = None  # populated with npc object at runtime

@@ -5,7 +5,7 @@ from typing import Literal, List, Union, Dict, TYPE_CHECKING, Optional, Any
 from anchors.anchor import Anchor
 from anchors.work_anchor import WorkAnchor
 from anchors.eat_anchor import EatAnchor
-
+from anchors.fun_anchor import FunAnchor
 from anchors.criminal.criminal_anchors import RobberyAnchor
 
 from memory.memory_entry import MemoryEntry
@@ -203,6 +203,9 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
 
     tags = getattr(motivation, "tags", []) or []
 
+    if getattr(motivation, "suppressed", False):#here?
+        return None
+
     # --- Create specialized anchors ---
     if base_name == "work":
         anchor = WorkAnchor(
@@ -216,12 +219,25 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
         )
 
     elif base_name == "eat":
+        if npc.motivation_manager.is_suppressed("eat"):
+            return None
         anchor = EatAnchor(
             name=base_name,
             type="motivation",
             weight=motivation.urgency,
             priority=motivation.urgency,
             tags=tags,
+            owner=npc,
+            source=motivation,
+        )
+
+    elif base_name == "have_fun":
+        anchor = FunAnchor(
+            name=base_name,
+            type="leisure",
+            weight=motivation.urgency,
+            priority=motivation.urgency,
+            tags=tags or ["leisure", "social"],
             owner=npc,
             source=motivation,
         )
@@ -353,10 +369,41 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
         #type and tags are not set here
     )
 
+    anchor_name = name or thought.primary_tag() or "general"#added
+    anchor_name = str(anchor_name).strip()
+
     # Force safe canonical form
     canonical = str(base_name).strip().lower()
 
-    anchor_name = canonical  # <-- NO timestamp, NO content slug
+    # 🔥 NEW: block suppressed motivations from thought promotion
+    if npc.motivation_manager.is_suppressed(anchor_name):
+        debug_print(
+            npc,
+            f"[ANCHOR BLOCK] Thought '{anchor_name}' suppressed — skipping",
+            category="anchor"
+        )
+        return None
+
+    # --- Reuse existing anchor if same name ---
+    for existing in npc.anchors:
+        if existing.name == canonical and getattr(existing, "target", None):#ATTN, anchors have no target, they calculate salience
+            # Boost instead of duplicating
+            existing.priority = max(existing.priority, getattr(thought, "urgency", 1.0))
+            existing.weight += getattr(thought, "weight", 0.5)
+
+            thought.anchored = True
+
+            debug_print(
+                npc,
+                f"[ANCHOR REUSE] Thought '{thought.content}' reinforced {existing.__class__.__name__}",
+                category="anchor"
+            )
+
+            return existing
+
+
+    anchor_name = canonical  # <-- NO timestamp, NO content slug (old comment)
+    #but there is also this
 
     #CANONICAL_ANCHORS now greyed out, not accessed
     """ CANONICAL_ANCHORS = {
@@ -542,3 +589,24 @@ def add_anchor_unique(npc, new_anchor):
             return a
     npc.anchors.append(new_anchor)
     return new_anchor
+
+def debug_anchor(anchor):
+    if not anchor:
+        return "Anchor=None"
+
+    src = None
+    if getattr(anchor, "source", None):
+        src = getattr(anchor.source, "type", None) or getattr(anchor.source, "name", None)
+
+    fields = {
+        "class": anchor.__class__.__name__,
+        "name": getattr(anchor, "name", None),
+        "type": getattr(anchor, "type", None),
+        "priority": getattr(anchor, "priority", None),
+        "weight": getattr(anchor, "weight", None),
+        "tags": getattr(anchor, "tags", None),
+        "source": src,
+        "owner": getattr(anchor.owner, "name", None),
+    }
+
+    return ", ".join(f"{k}={v}" for k, v in fields.items())

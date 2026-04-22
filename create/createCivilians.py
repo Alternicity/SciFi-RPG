@@ -24,6 +24,8 @@ from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from character_components.observation_component import ObservationComponent
 from augment.augment_character import augment_character
+from create.create_fun_prefs import create_fun_prefs
+from create.create_personality import create_personality
 
 def create_civilian_population(all_locations, all_regions, factionless, num_civilians=None):
     """Generate civilians and assign them logical locations."""
@@ -86,6 +88,9 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             """ civilian.home = home
             civilian.residences = [home] """
 
+            civilian.personality = create_personality(civilian)
+            civilian.fun_prefs = create_fun_prefs(civilian)
+            
             civilian.is_employee = random.random() < 0.8
             civilian.mind = Mind(owner=civilian, capacity=civilian.intelligence)
             augment_character(civilian)

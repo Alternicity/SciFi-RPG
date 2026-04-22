@@ -30,6 +30,16 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
                     source=thought,
                     status_type=getattr(template, "status_type", None),
                 )
+                npc.motivation_manager.consider_adding_motivation(motivation)
+                
+                if motivation.type == "have_fun":
+                    print(#this
+                        f"[CREATE] have_fun "
+                        f"id={id(motivation)} "
+                        f"urgency={motivation.urgency} "
+                        f"persistent={motivation.persistent} "
+                        f"source={motivation.source}"
+                    )
 
                 npc.motivation_manager.consider_adding_motivation(
                     motivation.type,
@@ -37,6 +47,8 @@ def promote_relevant_thoughts(npc, thoughts):  # thoughts is a deque of Thought 
                     target=motivation.target,
                     source=thought,
                 )
+
+                #should the print go here or in consider_adding_motivation?
 #character_think_utils.py
 def social_thoughts(self):
     #Purpose:“Who should I think about socially?”

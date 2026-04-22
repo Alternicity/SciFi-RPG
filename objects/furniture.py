@@ -3,9 +3,10 @@ from objects.InWorldObjects import ObjectInWorld, Toughness, ItemType, Size
 from typing import Optional
 from base.character import Character
 from debug_utils import debug_print
-
+from social.social_utils import social_scan
 
 class Furniture(ObjectInWorld):
+    #Add ambience?
     is_concrete = False
 
     def __init__(
@@ -77,15 +78,33 @@ class Furniture(ObjectInWorld):
         return data
 
 
-class Table:
-    pass
+class Table(Furniture):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.chairs = []
+
+    def add_chair(self, chair):
+        chair.table = self
+        self.chairs.append(chair)
+
+    def get_occupants(self):
+        return [c.occupied_by for c in self.chairs if c.occupied_by]
+
+    def has_free_seat(self):
+        return any(c.is_free() for c in self.chairs)
+
+    def get_free_chair(self):
+        for c in self.chairs:
+            if c.is_free():
+                return c
 
 class Chair:
     pass
 
 class CafeTable(Furniture):
     is_concrete = True
-
+    
     def __init__(self, name="Cafe Table"):
         super().__init__(
             name=name,
@@ -93,44 +112,23 @@ class CafeTable(Furniture):
             seating_capacity=4,
             toughness=Toughness.DURABLE,
         )
-        
+        self.chairs = []
+    
     def has_any_occupants(self, location):
-        #from objects.furniture import CafeChair
-
-        chairs = [
-            obj for obj in location.items.objects_present
-            if isinstance(obj, CafeChair)
-            and obj.table is self
-            and not obj.is_free()
-        ]
-        return len(chairs) > 0
+        return any(c.occupied_by for c in self.chairs)
 
     def has_free_seating(self, location):
-        #from objects.furniture import CafeChair
-
-        chairs = [
-            obj for obj in location.items.objects_present
-            if isinstance(obj, CafeChair)
-            and obj.table is self
-            and obj.is_free()
-        ]
-        
-        #TMP
-        for obj in location.items.objects_present:
-            if isinstance(obj, CafeChair) and obj.table is self:
-                pass
-                #debug_print(None, f"[CHAIR DEBUG] {obj.name} occupied_by={obj.occupied_by}")
 
         # TC2 rule: table must be completely empty
         if self.has_any_occupants(location):
             return False
 
-        return len(chairs) > 0
+        return any(c.is_free() for c in self.chairs)
 
-    def get_free_chair(self, location):
-        for obj in location.items.objects_present:
-            if isinstance(obj, CafeChair) and obj.table is self and obj.is_free():
-                return obj
+    def get_free_chair(self):
+        for chair in self.chairs:
+            if chair.is_free():
+                return chair
     
     def occupied_chairs(self):
         return [c for c in self.chairs if c.occupied_by]
@@ -159,11 +157,18 @@ class CafeChair(Furniture):
     def occupy(self, npc):
         if self.occupied_by is None:
             self.occupied_by = npc
+            npc.current_chair = self
+            npc.seated_at = self.table
             return True
         return False
 
     def vacate(self):
-        pass
+        npc = self.occupied_by
+        if npc:
+            npc.current_chair = None
+            npc.seated_at = None
+            social_scan(npc)#social_scan marked not defined
+        self.occupied_by = None
     
     @property
     def tags(self):

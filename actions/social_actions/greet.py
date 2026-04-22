@@ -36,25 +36,57 @@ def greet_customer_auto(waitress, target, session):
         if table.has_free_seating(location)
     ]
 
-    if target.posture == Posture.SITTING:#we could also add a recent_arrivals filter
-        return
+    is_sitting = target.posture == Posture.SITTING
 
-    if free_tables: #and not target.mind.has_thought_with_tag("sit"): line 43
-        chosen = free_tables[0]
-        debug_print(waitress, f"[HOST] Offering {chosen.name}", category="employment")#this print was not showing in output, so I commented part of line 43
-        if not target.mind.has_thought_with_tag("sit"):
-            target.mind.thoughts.append(
-                Thought(#this gets added
-                    subject=target,
-                    content=f"I should sit at {chosen.name}",
-                    tags=["sit", "dine_in"],
-                    payload={"table": chosen},
-                    urgency=6
-                )
-            )
-            debug_print(target, f"[DEBUG] Added SIT thought → {chosen.name}", category="employment")
-            #this print is not showing in output
+    if not is_sitting:
+        if not free_tables:
+            debug_print(waitress, "[HOST] No free tables", category="employment")
+            return
 
+        # ✅ NEW: skip greet if already seated AND already has sit/served thoughts
+        already_handled = (
+            target.posture == Posture.SITTING
+            and target.mind.has_thought_with_tag("sit")
+            and target.mind.has_thought_with_tag("served")
+        )
+        if already_handled:
+            return
+
+        debug_print(waitress, f"[HOST] Offering table", category="employment")
+
+        chosen = None  # ← initialize before conditional block
+
+        tables = [f for f in waitress.location.furniture if isinstance(f, CafeTable)]
+        for table in tables:
+            if table.has_free_seating(waitress.location):
+                chosen = table
+                break
+
+        if chosen is None:
+            debug_print(waitress, "[HOST] No free table found", category="employment")
+            return  # ← exit cleanly, no crash
+
+        debug_print(target, f"[DEBUG] Added SIT thought → {chosen.name}", category="employment")
+
+        target.mind.add_thought(Thought(
+            subject="sit",
+            content=f"I should sit at {chosen.name}",
+            origin="greet_customer_auto",
+            urgency=7,
+            tags=["sit", "dine_in"],
+            payload={"table": chosen}
+        ))
+
+        # Temporary: inject "served" here to unblock pipeline (Issue 2)
+        if not target.mind.has_thought_with_tag("served"):
+            target.mind.add_thought(Thought(
+                subject="served",
+                content="I have been served.",
+                origin="greet_customer_auto",
+                urgency=3,
+                tags=["served"],
+            ))
+            debug_print(target, f"[DEBUG] Added SERVED thought", category="employment")
 
     #if known to the waitress she could add targets name with {target.name} after the Hello?
     #debug_print(waitress, f"[WAITRESS GREET] {waitress.name} greets {target.name}", category="employment")

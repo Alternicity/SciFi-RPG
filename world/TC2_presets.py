@@ -45,11 +45,11 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager
     worker.employment = EmployeeProfile(
         workplace=cafe,
         role=role,
+        role_type=role.role_type,
         shift="day",
         shift_start=1,
         shift_end=4
     )
-
 
     # Register as employee (NOT arrival)
     if hasattr(cafe, "employees"):
@@ -63,7 +63,6 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager
             worker.posture = Posture.STANDING  # behind counter
             worker.current_counter = counter
 
-
     debug_print(
         worker,
         f"[EMPLOYMENT] Initialized as {role.name} at {cafe.name}",
@@ -72,7 +71,7 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager
 
     # Assign role explicitly (TC2 preset authority)
     #worker.employment.role = CAFE_MANAGER
-     #we now need to specify taht this applies to civilian_worker
+     #we now need to specify that this applies to civilian_worker
     #And that the following line only applies to the waitress
     #worker.employment.role =WAITRESS
 
@@ -132,27 +131,39 @@ def place_tc2_passive_npc(npc, region):
 
 def place_tc2_npc(npc, region):
     npc.region = region
-    """ debug_print(
-        npc,
-        f"[TC2 PLACEMENT] region={npc.region.name} location={npc.location}",
-        category="placement"
-    ) """
+
+    # 🔥 Ensure valid starting location in region
+    if not npc.location or npc.location.region != region:
+        candidates = [
+            loc for loc in region.locations
+            if loc.__class__.__name__ in ("House", "ApartmentBlock")
+        ]
+
+        if candidates:
+            location = random.choice(candidates)
+            place_character(npc, location)
+        else:
+            # fallback but STILL in region
+            fallback = random.choice(region.locations)
+            place_character(npc, fallback)
 
 def assign_tc2_staging_location(npc, region):
-    """
-    TC2-only placement.
-    Puts NPC somewhere sensible in-region but not in a Cafe, Park or Vacantlot
-    """
+
     candidates = [
         loc for loc in region.locations
-        if loc.__class__.__name__ not in ("Cafe", "Park", "VacantLot")
+        if "restaurant" not in loc.tags
+        and "cafe" not in loc.tags
+        and "park" not in loc.tags
+        and "vacant" not in loc.tags
     ]
 
     if not candidates:
         return False
 
     loc = random.choice(candidates)
+
     npc.location = loc
     npc.region = region
     loc.characters_there.append(npc)
+
     return True

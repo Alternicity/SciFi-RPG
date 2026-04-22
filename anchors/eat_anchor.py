@@ -100,8 +100,7 @@ class EatAnchor(Anchor):
         # 2. Fallback: take first available item
         return items_available[0]
 
+    def is_satisfied(self, npc):
+        from character_components.npc_effects import RecentMealEffect
+        return npc.has_effect_type(RecentMealEffect)
     
-    #del
-    # Legacy compatibility
-"""     def resolve_action(self):
-        return self.propose_action() """

@@ -54,6 +54,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.home_region = None
         self.just_arrived = False
         self.just_left_location = False
+        self.time_in_location = 0
         self.last_greeted_at = None
         self.name = name
         self.first_name = None
@@ -63,7 +64,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.is_player = False
         self.is_test_npc = False  # Deprecated
         self.effort = 10 #1-20 scale, 1 is very tired, 20 is high energy both mental and physical
-
+        self.personality = None
         self.effects = []  # list of effect objects
 
         self.is_peaceful_npc = False
@@ -106,7 +107,7 @@ class Character(PerceptibleMixin, CharacterBase):
         "overall_impression": self.overall_impression  # To be updated by observers
     }
         self.current_anchor = None
-        self.anchors = []
+        self.anchors = []#candidate for deletion, possible overengineering.
         self.self_esteem = 10  # Neutral starting value. Goes up with needs met, down with increasing hunger or
         #status loss, or lack of money, or failure, or bad personal events. Currently unused.
         self.observation = kwargs.get("observation", 10)  # Determines perception ability

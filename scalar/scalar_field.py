@@ -1,7 +1,7 @@
 #scalar_field.py
 
-import numpy as np
-import matplotlib.pyplot as plt
+import numpy as np#numpy marked not defined
+import matplotlib.pyplot as plt#matplotlib.pyplot marked not defined
 
 # Toggle this to enable/disable the module
 RUN_SCALAR_FIELD = False

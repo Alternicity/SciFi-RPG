@@ -15,24 +15,54 @@ from memory.memory_entry import MemoryEntry
 from debug_utils import debug_print, debug_once
 from create.create_game_state import get_game_state
 from focus_utils import set_attention_focus
-from ai.ai_utils import social_scan, resolve_contextual_focus
-from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought, select_food_from_location
+from social.social_utils import social_scan
+from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hunger_thought, select_food_from_location, generate_leave_location_thought, reduce_thought_urgency, get_current_urgencies, debug_urgency_state
+
 from anchors.eat_anchor import EatAnchor
 from character_components.npc_effects import MorningSettlingEffect
 
 game_state = get_game_state()
+gs = get_game_state()
 class UtilityAI(BaseAI):
     def __init__(self, npc):
-    #Core cognitive pipeline.
-        self.npc = npc#NOTE 1
+    #Core cognitive pipeline: eat, work, have_fun and sleep for npcs
+        self.npc = npc
         
-    """ Filtering episodic memories and tagging/promoting important ones into thoughts.
-        Generating motivations from urgent thoughts.
+    """ Dealing with core/basic motivations (eat/sleep/work/have_fun) and
+        Filtering episodic memories and tagging/promoting important ones into thoughts.
+        Generating other motivations from urgent thoughts.
         Managing the “thinking” lifecycle. """
 
     def choose_action(self, region):
         npc = self.npc
         anchor = npc.current_anchor
+        hour = game_state.hour#new
+
+        # 🔥 NEW: auto-clear satisfied anchors
+        if anchor and hasattr(anchor, "is_satisfied"):
+            if anchor.is_satisfied(npc):
+                debug_print(npc, f"[ANCHOR] {anchor.name} satisfied — clearing", category="anchor")
+                npc.current_anchor = None
+                anchor = None
+
+                if npc.employment and npc.employment.on_duty(hour):#perhaps this could/should be more general, ie use all CORE MOTIVES
+                    work_motive = npc.motivation_manager.get_motivation("work")
+                    
+                    if npc.current_anchor is None:
+                        if npc.employment and npc.employment.on_duty(hour):
+                            work_motive = npc.motivation_manager.get_motivation("work")
+                            if work_motive:
+                                from anchors.anchor_utils import create_anchor_from_motivation
+                                npc.current_anchor = create_anchor_from_motivation(npc, work_motive)
+
+
+        from anchors.anchor_utils import debug_anchor
+        debug_print(
+            npc,
+            f"[ANCHOR DEBUG] {debug_anchor(anchor)} | "
+            f"suppressed={npc.motivation_manager.is_suppressed(getattr(anchor, 'name', None)) if anchor else None}",
+            category="anchor"
+        )
 
         role_label = (
             "MANAGER" if npc is game_state.civilian_worker else
@@ -44,8 +74,9 @@ class UtilityAI(BaseAI):
         debug_print(
             npc,
             f"[ANCHOR, CHOOSE_ACTION] {npc.name} ({role_label}) "
-            f"class={anchor.__class__.__name__ if anchor else None} ",
-            
+            f"anchor_class={anchor.__class__.__name__ if anchor else None} "
+            f"anchor_name={getattr(anchor, 'name', None)} "
+            f"anchor_type={getattr(anchor, 'type', None)}",
             category="anchor"
         )
         #Full version of above print, more verbose
@@ -66,54 +97,7 @@ class UtilityAI(BaseAI):
 
         assert anchor.type is not None, f"{npc.name} anchor has no type: {anchor}"
 
-        #1 This is a placeholder
-
-        # 2. Movement
-        # Movement gate: morning settling
-        if npc.has_effect_type(MorningSettlingEffect) and npc.role == "civilian_liberty":
-            debug_print(
-                npc,
-                "[LIBERTY] Morning settling blocks travel.",
-                category="liberty"
-            )
-            return {"name": "idle"}
-
-        target = None
-        print("ANCHOR TYPE:", type(anchor))
-        if anchor and anchor.requires_movement():
-            
-            target = anchor.resolve_target_location()
-
-        if target and npc.location != target:
-            return {
-                "name": "visit_location",
-                "params": {"destination": target}
-            }
-
-        #Added
-        leave_thought = npc.mind.get_thought_with_tag("leave_location")
-        if leave_thought:
-            outside = npc.location.region.get_default_public_space()#This line might neeed some work
-
-            return {
-                "name": "visit_location",
-                "params": {"destination": outside}#
-            }
-
-
-
-        #3 Work
-        if anchor.type == "work":#Should this be urgent motivation rather than work anchor?
-            if npc.location != npc.employment.workplace:
-                debug_print(npc, f"[EMPLOYMENT] {npc.name} is not at work when they should be, attempting to move to: {npc.employment.workplace}", category="employment")
-                return {
-                    "name": "visit_location",
-                    "params": {"destination": npc.employment.workplace}
-                }
-            return {"name": "perform_work"}
-
-
-        # 4.5 Eat if already holding food
+        #1 Eat if already holding food
         from objects.food.prepared_food import Food
 
         owned_food = [
@@ -122,6 +106,10 @@ class UtilityAI(BaseAI):
         ]
 
         if owned_food and npc.posture == Posture.SITTING:
+            from character_components.npc_effects import RecentMealEffect
+            if npc.motivation_manager.is_suppressed("eat") or npc.has_effect_type(RecentMealEffect):
+                debug_print(npc, "[EAT BLOCK] Skipping — suppressed or recent meal", category="eat")
+                return None
 
             debug_print(
                 npc,
@@ -134,9 +122,100 @@ class UtilityAI(BaseAI):
                 "params": {"item": owned_food[0]}
             }
 
-        # 5. Buy Food
+        # 2. Movement
+        # Movement gate: morning settling, delays civilian_liberty from leaving home immeidately
+        if npc.has_effect_type(MorningSettlingEffect) and npc.role == "civilian_liberty":
+            debug_print(
+                npc,
+                "[LIBERTY] Morning settling blocks travel.",
+                category="liberty"
+            )
+            return {"name": "idle"}
+
+        target = None
+
+        #gating added for this temporary print
+        if npc is gs.civilian_liberty and game_state.hour % 3 == 0:
+            print("ANCHOR TYPE:", type(anchor))
+            urgencies = get_current_urgencies(npc)
+            print(
+                f"[URGENCY DEBUG] {npc.name} "
+                f"MOT={urgencies['motivation'][1]} "
+                f"THOUGHT={urgencies['thought'][1]} "
+                f"MAX={urgencies['max']}"
+                f"[URGENCY] EXCLUDING={urgencies['excluded']}"
+            )#This can definitely be re-used
+
+
+
+        # --- PRIMARY: Goal-driven movement ---
+        if anchor and anchor.requires_movement():
+            target = anchor.resolve_target_location()
+
+            if target and target != npc.location:
+                return {
+                    "name": "visit_location",
+                    "params": {"destination": target}
+                }#ok but on the subsequent tick, will they try and leave again? to a new location, as they will still have the
+            #anchor.requires_movement? We will see in testing.
+
+            # --- SECONDARY: Leave-location behaviour ---
+            
+        if not (anchor and anchor.requires_movement()):#either primary or secondary
+        #Only run leave logic if we are NOT already trying to move somewhere for a goal
+            leave_thought = npc.mind.get_thought_with_tag("leave_location")
+
+            if leave_thought:
+
+                if npc.current_anchor and npc.current_anchor.name == "eat":
+                    reduce_thought_urgency(npc, "leave_location", 1)
+
+                urgencies = get_current_urgencies(npc, exclude_thought=leave_thought)
+                current_max = urgencies["max"]
+
+                leave_score = leave_thought.urgency * 1.1
+
+                debug_urgency_state(npc, urgencies, context="leave_check")
+
+                debug_print(
+                    npc,
+                    f"[LEAVE CHECK] leave={leave_thought.urgency} (biased={leave_score:.1f}) vs max={current_max}",
+                    category="movement"
+                )
+
+                if leave_score > current_max:
+
+                    outside = npc.location.region.get_default_public_space()
+
+                    if npc.posture == Posture.SITTING:
+                        return {"name": "stand"}
+
+                    if outside and outside != npc.location:
+                        return {
+                            "name": "visit_location",
+                            "params": {"destination": outside}
+                        }
+                    #unify anchor priority vs thought urgency properly (old comment)
+                    #ALSO do anchors even need to have urgency, is it necessary?(new comment)
+            
+        #3 Work
         urgent = npc.motivation_manager.get_highest_priority_motivation()
-        hunger_thought = npc.mind.get_thought_with_tag("hunger")
+        if urgent.type == "work" and npc.employment.on_duty(hour):#edited, but see below
+
+            if npc.location != npc.employment.workplace:
+                debug_print(npc, f"[EMPLOYMENT] {npc.name} is not at work when they should be, attempting to move to: {npc.employment.workplace}", category="employment")
+                return {
+                    "name": "visit_location",
+                    "params": {"destination": npc.employment.workplace}
+                }
+            return {"name": "perform_work"}
+
+
+        
+
+        # 5. Buy Food
+        urgent = npc.motivation_manager.get_highest_priority_motivation()#the urgent variable is set again here for the civilian_liberty npc
+        hunger_thought = npc.mind.get_thought_with_tag("hunger")#assumes a hunger/eat thoght already exists
 
         if urgent and urgent.type == "eat" and hunger_thought:
 
@@ -145,7 +224,6 @@ class UtilityAI(BaseAI):
             
             seller = find_food_employee_in_location(npc.location)
 
-            #new block
             if npc.current_anchor and npc.current_anchor.name == "eat":
             #if npc.current_anchor and "eat" in npc.current_anchor.tags:
                 dine_in = npc.mind.has_thought_with_tag("dine_in")
@@ -168,10 +246,13 @@ class UtilityAI(BaseAI):
             desired = hunger_thought.payload.get("desired_food")
             item = select_food_from_location(npc, npc.location, desired)
 
+            if not seller:
+                return {"name": "idle"}
+
             if not item:
                 debug_print(
                     npc,
-                    f"[BUY BLOCK] No item found for {desired}",#current goal is to see this print in output
+                    f"[BUY BLOCK] No item found for {desired}",
                     category="buy"
                 )
                 return {"name": "idle"}
@@ -179,6 +260,10 @@ class UtilityAI(BaseAI):
             # Focus is expressive only
             if npc.mind.attention_focus != seller:
                 set_attention_focus(npc, character=seller)
+
+            if not npc.mind.has_thought_with_tag("served"):#we must ensure a thought with tag served is injected into the customers mind
+                debug_print(npc, "[BUY BLOCK] Not served yet", category="buy")
+                return {"name": "idle"}
 
             debug_print(
                 npc,
@@ -225,7 +310,7 @@ class UtilityAI(BaseAI):
         # 3. TC2 STOP POINT — resolution via anchors later
         return {"name": "idle"}
 
-    def generate_motivation_thoughts(self):
+    def generate_motivation_thoughts(self):#line 292
         npc = self.npc
         top_motivations = npc.motivation_manager.get_top_motivations(n=2)
 
@@ -234,7 +319,8 @@ class UtilityAI(BaseAI):
                 npc.mind.add_thought(
                     Thought(
                         subject=m.type,
-                        content=f"I need to {m.type.replace('_', ' ')}.",#in this case: eat
+                        content=f"I need to {m.type.replace('_', ' ')}.",#I think eat thought is created here,
+                        origin = "generate_motivation_thoughts",
                         urgency=m.urgency,
                         tags=[m.type, "need"]
                     )
@@ -243,7 +329,7 @@ class UtilityAI(BaseAI):
     def select_current_anchor(self):
         npc = self.npc
 
-        anchors = getattr(npc, "anchors", None)
+        anchors = getattr(npc, "anchors", None)#uses anchors, which I am wondering if is superfluous, an overengineered variable
         if not anchors:
             debug_print(npc, "[ANCHOR] No anchors available", category="anchor")
             npc.current_anchor = None
@@ -281,11 +367,7 @@ class UtilityAI(BaseAI):
         return {"name": "idle"}
     
     def _choose_have_fun(self, npc):
-        """
-        TC2 stub:
-        Fun is not spatially resolved yet.
-        Allow only social fun or idle.
-        """
+        
         # HARD GUARD — TC2 placeholder
         if not hasattr(npc, "fun_prefs") or npc.fun_prefs is None:
             debug_print(
@@ -332,7 +414,7 @@ class UtilityAI(BaseAI):
             greet_customer_auto
         )
 
-        from actions.npc_bodily_actions import sit_auto
+        from actions.npc_bodily_actions import sit_auto, stand_auto
 
         if action_name == "visit_location":
             # Call visit location action
@@ -347,8 +429,7 @@ class UtilityAI(BaseAI):
             # cleanup AFTER visiting
             if npc.motivation_manager.has_motivation("visit"):
                 npc.motivation_manager.remove_motivation("visit")
-            npc.mind.remove_thoughts_with_tag("visit")
-            #Sdebug_print(npc, f"[VISIT] execute_action returned {result} — location now {npc.location.name}", category="visit")
+            npc.mind.remove_thoughts_with_tag("visit")#NOTE - does the have_fun motivation also have this tag?
             return result
     
         if action_name == "social_action":
@@ -369,6 +450,7 @@ class UtilityAI(BaseAI):
             "idle": idle_auto,
             "greet": greet_customer_auto,
             "sit": sit_auto,
+            "stand":stand_auto,
             }
 
         action_func = action_map.get(action_name)
@@ -524,7 +606,8 @@ class UtilityAI(BaseAI):
         
         # Create or update an anchor from that thought
         anchor = create_anchor_from_thought(npc, strongest, name=strongest.primary_tag() or "general")
-
+        #insert anchor deduplication here? Or perhaps better inside create_anchor_from_thought() itself?
+        #Should also make sure we are not replacing a richly populated anchor with a a lesser populated one?
         if not anchor:
             # Could happen if thought already anchored or duplicate detected
             return
@@ -563,7 +646,8 @@ class UtilityAI(BaseAI):
                 and "intention" in thought.tags
                 and not npc.current_anchor
             ):
-                anchor = EatAnchor(
+                anchor = EatAnchor(#this is specific to eat, there is no corresponding have_fun block here. If we need to add it, 
+                    #then perahps this anchor creation block should be generalised
                     name="eat",
                     type="thought",
                     weight=thought.urgency,
@@ -605,14 +689,16 @@ class UtilityAI(BaseAI):
         if not top_motive:
             return
         
-        if anchor and anchor.type != top_motive.type:
-            #The above edited block was trying to reach the follwoing line:
-            # only allow urgency boost if thought aligns with top motive
+        if anchor and anchor.type != top_motive.type:#Should we be working from anchor here?
+
             npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
         
+        if anchor and anchor.name == "have_fun":
+            print("[ANCHOR→MOTIVE] from promote_thoughts have_fun via anchor.name")
+
         # Set attention focus
         set_attention_focus(npc, anchor=None, thought=strongest, character=None)
-        npc.default_focus = anchor
+        npc.default_focus = anchor#default_focus not used, it might be superfluous
         
         debug_print(
             npc,
@@ -627,7 +713,9 @@ class UtilityAI(BaseAI):
         event_counts = defaultdict(int)
         npc = self.npc
         for m in episodic_memories:
-            key = (m.subject, m.object_, m.verb, m.type)
+            obj_name = getattr(m.object_, "name", str(m.object_))
+            key = (m.subject, obj_name, m.verb, m.type)
+
             event_counts[key] += 1
 
             if event_counts[key] >= 3:
@@ -700,7 +788,7 @@ class UtilityAI(BaseAI):
         if loc:
             return {"name": "visit_location", "params": {"location": loc}} """
 
-    def matches_motivation(self, percept: dict, motivation) -> bool:
+    def matches_motivation(self, percept: dict, motivation) -> bool:#unused
         """
         Returns True if the percept is relevant to the given motivation.
         """
@@ -743,6 +831,7 @@ class UtilityAI(BaseAI):
         generate_hunger_thought(npc)
         
         self.generate_motivation_thoughts()
+        generate_leave_location_thought(npc)
         self.ensure_anchors_from_motivations()
         
         #marked for removal
@@ -764,7 +853,7 @@ class UtilityAI(BaseAI):
         if not motivations:
             return
 
-        if not getattr(npc, "current_anchor", None):
+        if not getattr(npc, "current_anchor", None):#does this block duplicate logic from ensure_anchors_from_motivations ?
             motive = npc.motivation_manager.get_highest_priority_motivation()
             if motive:
                 anchor = create_anchor_from_motivation(npc, motive)
@@ -933,8 +1022,7 @@ class UtilityAI(BaseAI):
         if not motivations:
             return
 
-        for motivation in motivations:#motivation currently not accessed
-            #anchor = create_anchor_from_motivation(self.npc, motivation)
+        for motivation in motivations:
             #removal cadidate. "Anchors are not percept-driven for TC2."
 
             for percept in percepts:

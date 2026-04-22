@@ -4,6 +4,7 @@ from anchors.anchor_utils import Anchor
 from anchors.eat_anchor import ProcureFood#but ProcureFood is a class, is that ok?
 from typing import Optional
 from create.create_game_state import get_game_state
+from character_components.npc_effects import RecentMealEffect
 game_state = get_game_state
 from debug_utils import debug_print
 
@@ -39,6 +40,123 @@ def extract_anchor_from_action(action: dict) -> Optional[Anchor]:#line 108
         #set the anchor in npc attribute
         return None
 
+def generate_leave_location_thought(npc):
+    location = npc.location
+    if not location:
+        return
+
+    t = npc.mind.get_thought_with_tag("leave_location")
+
+    if t:
+        if npc.time_in_location > 3:
+            t.urgency = min(10, t.urgency + 1)
+        return
+
+    if npc.current_anchor and npc.current_anchor.name in ["eat", "drink", "work"]:
+        # allow override if leaving is urgent
+        if npc.time_in_location < 3:
+            return
+
+    urgency = 0
+    if npc.time_in_location > 2:
+        urgency = 4
+    else:
+        urgency = 1
+
+    thought = Thought(
+        subject=location,
+        content=f"I should leave {location.name}.",
+        urgency=urgency,
+        tags=["leave_location", "movement"]
+    )
+
+    npc.mind.add_thought(thought)
+
+def reduce_thought_urgency(npc, tag, amount):
+    t = npc.mind.get_thought_with_tag(tag)
+    if t:
+        t.urgency = max(0, t.urgency - amount)
+
+def debug_urgency_state(npc, urgencies, context=""):
+    top_mot, mot_urg = urgencies["motivation"]
+    top_thought, thought_urg = urgencies["thought"]
+
+    thought_label = npc.mind.get_thought_label(top_thought)
+
+    if mot_urg >= thought_urg:
+        winner = f"mot:{getattr(top_mot, 'type', None)}"
+    else:
+        winner = f"thought:{thought_label}"
+
+    debug_print(
+        npc,
+        f"[URGENCY{':' + context if context else ''}] "
+        f"mot={getattr(top_mot, 'type', None)}:{mot_urg} "
+        f"thought={thought_label}:{thought_urg} "
+        f"→ winner={winner}",
+        category="debug"
+    )
+    
+def get_current_urgencies(npc, exclude_thought=None):
+    top_mot = npc.motivation_manager.get_top_motivation()
+    top_thought = npc.mind.get_most_urgent_thought()
+
+    mot_urg = top_mot.urgency if top_mot else 0
+
+    # --- Handle exclusion ---
+    if top_thought and top_thought == exclude_thought:
+        # Find next-best thought instead
+        other_thoughts = [
+            t for t in npc.mind.thoughts
+            if t is not exclude_thought
+        ]
+
+        if other_thoughts:
+            next_thought = max(other_thoughts, key=lambda t: t.urgency)
+            thought_urg = next_thought.urgency
+            top_thought = next_thought
+        else:
+            thought_urg = 0
+            top_thought = None
+    else:
+        thought_urg = top_thought.urgency if top_thought else 0
+
+    return {
+        "motivation": (top_mot, mot_urg),
+        "thought": (top_thought, thought_urg),
+        "excluded": exclude_thought,
+        "max": max(mot_urg, thought_urg)
+    }
+
+def choose_fun_location(npc):
+
+    best = None
+    best_score = -999
+
+    for loc in npc.region.locations:
+
+        score = getattr(loc, "fun_value", 0)
+
+        if "social" in getattr(loc, "tags", []):
+            score += npc.fun_prefs.get("social", 0)
+
+        for other in loc.characters_there:
+
+            rel = npc.mind.memory.semantic["social"].get_relation(other)
+
+            if rel.current_type == "friend":
+                score += 3
+
+            elif rel.current_type == "enemy":
+                score -= 3
+
+        if score > best_score:
+            best = loc
+            best_score = score
+
+    return best
+
+
 def rank_memory_locations_by_salience(npc, anchor, tag_filter=None, top_n=3):
     """
     Returns top_n locations from memory most salient to the current anchor.
@@ -61,45 +179,68 @@ def generate_hunger_thought(npc):
     Generate a subjective hunger thought based on internal hunger level.
     This does NOT trigger actions or anchors — it only represents experience.
     """
+    if npc.has_effect_type(RecentMealEffect):
+        return
 
-    # --- threshold gate ---
-    if npc.hunger <= 4:
-        return None
-
-    # --- deduplication guard ---
     # Prevents re-spawning the same hunger narrative every think()
-    if npc.mind.has_thought_with_tag("hunger"):
-        return None
+    #existing = npc.mind.get_thought_with_tag("hunger")
+    #existing now not accessed
+
+    """ if existing:
+        if npc.time_in_location > 3:
+            existing.urgency += 1
+        return """
 
     # --- hunger tiering ---
-    if npc.hunger > 7:#these values are higher than exists in npc.hunger at runtime
+    if npc.hunger > 6:
         choice = "burger"
-        urgency = 8
+        #urgency = 8
     else:
         choice = "sandwich"
-        urgency = 6
+        #urgency = 6
 
-    # --- construct subjective thought ---
-    thought = Thought(
+    if npc.has_effect_type(RecentMealEffect):
+        debug_print(
+            npc,
+            f"[THOUGHT] from generate_hunger_thought() {npc.name} Hunger under RecentMealEffect, no more food",
+            category="think"
+        )
+        return
+
+    if npc.hunger <= 6:   # ← slightly higher threshold helps stability
+        return
+
+    npc.mind.reinforce_or_create_thought(
+        "hunger",
+        amount=1,
+        subject=npc,
+        content=f"I feel hungry. Maybe a {choice}.",
+        tags=["hunger", "food", "eat"],
+    )
+
+    #but note we also have here:
+
+    # --- construct thought ---
+    #Chat insisting that this should be deleted
+    """ thought = Thought(
         subject="food",
         content=f"I'm hungry. I want a {choice}.",
         urgency=urgency,
         tags=["hunger", "food", "eat", choice],
         payload={"desired_food": choice},
     )
+    npc.mind.add_thought(thought) """
 
-    # --- register with mind ---
-    npc.mind.add_thought(thought)
-
-    debug_print(
+    """ debug_print(
             npc,
             f"[THOUGHT] from generate_hunger_thought() {npc.name} Hunger={npc.hunger:.2f} Generated: {thought.content}",
             category="think"
-        )
+        ) """
 
-    return thought#should this be returning thought.payload?
+    #return thought
+    return None
 
-def select_food_from_location(npc, location, desired_name=None):#might be deprecated
+def select_food_from_location(npc, location, desired_name=None):
     if not hasattr(location, "items_available"):
         return None
 

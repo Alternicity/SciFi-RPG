@@ -23,6 +23,17 @@ class RecentMealEffect(TimedEffect):
             f"[EFFECT] RecentMealEffect started: {npc.name} effort -2, concentration -1",
             category="effect"
         )
+        """ if npc.location and "coffee" in getattr(npc.location, "tags", []):
+            if not npc.mind.has_thought_with_tag("coffee"):
+                thought = Thought(
+                    subject="drink",
+                    content="A coffee would be nice.",
+                    urgency=3,
+                    tags=["drink", "coffee", "cafe"]
+                )
+
+            npc.mind.add_thought(thought) """
+        
 
     def on_tick(self, npc):
 
@@ -43,19 +54,12 @@ class RecentMealEffect(TimedEffect):
         npc.effort = min(20, npc.effort + 4)
         npc.concentration = min(20, npc.concentration + 2)
         
-        npc.mind.memory.add_episodic(
-            subject=npc,
+        npc.mind.memory.remember_thing(
+            subject=npc.name,
             verb="finished_meal",
             object_=npc.location.name,
-            importance=1
-        )
-        npc.mind.add_thought(#should this use a mind function rather than append?
-            Thought(
-                subject=npc.location,
-                content="Time to leave",
-                tags=["leave_location"],
-                urgency=5
-            )
+            importance=1,
+            owner=npc
         )
         debug_print(
             npc,

@@ -34,3 +34,7 @@ class KnowledgeBase:
 
         # Always ensure a tags attribute exists
         self.tags = kwargs.get("tags", [])
+
+class PersonalityBase():
+    #minimal
+    pass

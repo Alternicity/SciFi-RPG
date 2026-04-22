@@ -59,7 +59,10 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
                 
                 if gs.day == 1 and gs.hour == 1:
                     if npc in gs.debug_npcs.values():
-                        display_npc_vitals(npc)
+                        if npc not in gs.debug_vitals_displayed:
+                            display_npc_vitals(npc)
+                            gs.debug_vitals_displayed.add(npc)
+                            
                 # EFFECTS
                 for effect in npc.effects[:]:#iterates over a copy, allows removal inside loop
                     effect.on_tick(npc)
@@ -229,7 +232,8 @@ def begin_npc_turn(npc):
     npc.mind.remove_thought_by_content("No focus")
 
     # ✅ passive physiological drift
-    npc.hunger = min(npc.hunger + 2.0, 20)
+    npc.hunger = min(npc.hunger + 0.5, 20)#edited
+    
     #hunger = 20 → starving
     npc.effort = max(npc.effort - 0.1, 1)
     #effort = 1 → exhausted
@@ -237,7 +241,9 @@ def begin_npc_turn(npc):
     #npc.motivation_manager.sync_physiological_motivations()
     tick = get_game_state().hour
     npc.motivation_manager.sync_motivations(tick)
-
+    npc.time_in_location += 1#might be unused
+    npc.mind.decay_thoughts()
+    
 def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()
     npc.inventory.clear_recently_acquired()

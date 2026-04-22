@@ -1172,11 +1172,12 @@ class Factory(WorkplaceMixin, PerceptibleLocation):
 @dataclass
 class Cafe(CommercialLocation, WorkplaceMixin, PerceptibleLocation):
     name: str = "Metro Cafe"
-    tags: list[str] = field(default_factory=lambda: ["workplace", "fun", "food", "social", "cafe"])
+    tags: list[str] = field(default_factory=lambda: ["workplace", "fun", "food", "social", "cafe", "coffee"])
     description: str = "A cafe"
     is_shakedown_target: bool = True
     upkeep: int = 9
     categories: List[str] = field(default_factory=lambda: ["workplace"])
+    fun: int = 3#added
     ambience: Ambience = field(default_factory=lambda: Ambience({"social": 0.5, "fun": 0.3}))
     #add also to percepts. Good ambience might be calculated by the aggregate fun present
     """ self.ambience = Ambience({
@@ -1252,7 +1253,7 @@ class Restaurant(WorkplaceMixin, PerceptibleLocation):
 @dataclass
 class Park(WorkplaceMixin, PerceptibleLocation):
     name: str = "Green Park"
-    tags: list[str] = field(default_factory=lambda: ["fun", "social"])
+    tags: list[str] = field(default_factory=lambda: ["fun", "social", "park"])
     description: str = "A Park"
     categories: List[str] = field(default_factory=lambda: ["workplace", "public", "fun", "social"])
     upkeep: int = 15
@@ -1379,7 +1380,7 @@ class LunaSanctum(SanctumMixin, Park):
 @dataclass
 class Museum(WorkplaceMixin, PerceptibleLocation):
     name: str = "City Museum"
-    tags: list[str] = field(default_factory=lambda: ["public", "fun", "culture", "history"])
+    tags: list[str] = field(default_factory=lambda: ["public", "fun", "culture", "history", "knowledge"])
     description: str = "A Museum"
     upkeep: int = 45
     artifact_count: int = 50
@@ -1437,7 +1438,7 @@ class Museum(WorkplaceMixin, PerceptibleLocation):
 @dataclass
 class Library(WorkplaceMixin, PerceptibleLocation):
     name: str = "Public Library"
-    tags: list[str] = field(default_factory=lambda: ["books", "social"])
+    tags: list[str] = field(default_factory=lambda: ["books", "social", "knowledge"])
     description: str = "A Library"
     categories: List[str] = field(default_factory=lambda: ["public", "record", "workplace"])
     upkeep: int = 20

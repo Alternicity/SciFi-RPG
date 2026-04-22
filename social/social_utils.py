@@ -84,7 +84,7 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
 
 def capture_social_snapshot(char, location):
     social = char.mind.memory.semantic.get("social")#established social ties belong in npc semantic memory
-    assert isinstance(social, SocialMemory), f"{npc.name} has invalid social memory, from capture_social_snapshot"
+    assert isinstance(social, SocialMemory), f"{char.name} has invalid social memory"
     # npc marked not defined. Does char refer to the active npc, or the other one? The subject or the object?
     
     if not social:
@@ -101,3 +101,37 @@ def capture_social_snapshot(char, location):
             snapshot[rel.current_type].append(other.name)
 
     return snapshot
+
+
+def social_scan(npc):
+
+    loc = npc.location
+    if not loc:
+        return
+
+    social = npc.mind.memory.semantic.get("social")
+    if not social:
+        return
+
+    for other in loc.characters_there:
+
+        if other is npc:
+            continue
+
+        rel = social.get_relation(other)
+
+        # optional: record interaction time
+        gs = get_game_state()
+        rel.last_interaction_hour = gs.hour
+        rel.last_interaction_day = gs.day
+        """It should:
+
+        create relations
+        initialize counters
+        do nothing else
+
+        It should not:
+        create thoughts
+        create motivations
+        create anchors
+        interpret intent """

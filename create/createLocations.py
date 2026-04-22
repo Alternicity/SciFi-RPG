@@ -145,6 +145,9 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         game_state.all_locations = []
     game_state.all_locations.extend(locations)
 
+    for loc in locations:
+        if getattr(loc, "is_public_facing", False):
+            game_state.public_places.append(loc)
 
     #get the cafes and retaurants here,
     seed_cafe_furniture(game_state.all_locations)

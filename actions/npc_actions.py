@@ -1,6 +1,9 @@
 # actions.npc_actions.py
 from memory.memory_entry import MemoryEntry
-from debug_utils import debug_print, can_narrate#can_narrate greyed out not accessed
+
+from debug_utils import debug_print, can_narrate, print_region_fun
+#can_narrate greyed out not accessed
+
 import copy
 from character_thought import Thought
 from create.create_game_state import get_game_state
@@ -73,13 +76,22 @@ def visit_location_auto(character, region=None, destination=None, destination_na
         
 
     npc.just_arrived = True
+    npc.time_in_location = 0
 
+    npc.mind.remove_thoughts_with_tag("leave_location")
+
+    
     #the following track presence block move up to here
     # --- Track presence ---
     if hasattr(destination, "characters_there") and npc not in destination.characters_there:
         destination.characters_there.append(npc)
     if hasattr(destination, "recent_arrivals"):
         destination.recent_arrivals.append(npc)
+        debug_print(#added
+            npc,
+            f"[ARRIVAL] Added to recent_arrivals at {destination.name}",
+            category="visit"
+        )
 
     # Entering or leaving workplace
     update_employee_presence(npc, game_state.hour)
@@ -399,6 +411,37 @@ def eat_auto(npc, region=None, *, item):
 
     # reduce hunger immediately
     npc.hunger = max(0, npc.hunger - item.nutrition)
+    # soften hunger thought
+    npc.mind.reduce_thought_urgency("hunger", 5)
+
+    # 🔥 NEW: remove if no longer hungry
+    t = npc.mind.get_thought_with_tag("hunger")
+    if t and t.urgency <= 1:#edited
+        npc.mind.remove_thoughts_with_tag("hunger")
+
+    # reduce motivation strongly
+    npc.motivation_manager.set_urgency("eat", 0)
+
+    # 🔥 NEW: optional full suppression
+    npc.motivation_manager.suppress("eat", reason="recent_meal", duration=3)
+
+    # 🔥 Promote next motivation
+    next_m = npc.motivation_manager.get_highest_priority_motivation(exclude={"eat"})
+
+    if next_m:
+        boost = max(2, item.nutrition // 2)#attempting to boost the next motivation, ie have_fun
+        npc.motivation_manager.set_urgency(
+            next_m.type,
+            next_m.urgency + boost
+        )
+
+        debug_print(
+            npc,
+            f"[POST-EAT] Boosting {next_m.type} → {next_m.urgency}",
+            category="motive"
+        )
+
+
 
     # remove from inventory
     try:
@@ -427,9 +470,24 @@ def eat_auto(npc, region=None, *, item):
 
     # apply digestion effect
     npc.apply_effect(RecentMealEffect())
-    npc.mind.remove_thoughts_with_tag("hunger")
-    npc.mind.remove_thoughts_with_tag("eat")
 
+    # soften hunger instead of hard delete
+    npc.mind.reduce_thought_urgency("hunger", 5)
+
+    # reduce motivation strongly (not just resolve)
+    npc.motivation_manager.set_urgency("eat", 0)#hmm is this necessary here?
+
+    # inject leave pressure
+    leave_boost = 8 + item.nutrition // 2
+    npc.mind.reinforce_or_create_thought(
+        "leave_location",
+        amount=leave_boost,
+        content=f"I should leave {npc.location.name}.",
+        tags=["leave_location", "movement"]
+    )
+
+    #print_region_fun(npc.location.region)
+    
     # memory
     from memory.memory_entry import MemoryEntry
 
@@ -507,9 +565,6 @@ def buy_auto(npc, region, *, item):
 
     """ npc.inventory.add_item(item.clone(quantity=1))
     item.quantity -= 1 """
-
-
-
 
 
 def procure_food_auto(self):

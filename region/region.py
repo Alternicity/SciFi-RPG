@@ -4,6 +4,10 @@ from location.locations import Location
 from dataclasses import dataclass, field
 from typing import List, Optional
 import uuid
+import random
+from create.create_game_state import get_game_state
+
+
 @dataclass #when you add things here, update region_knowledge
 class Region(RegionBase):
     name: str
@@ -13,6 +17,7 @@ class Region(RegionBase):
     tags: List[str] = field(default_factory=list)
     shops: List[str] = field(default_factory=list)
     locations: list = field(default_factory=list)
+    public_places: list = field(default_factory=list)#list of location objects
     factions: List[str] = field(default_factory=list)#Strings? ATTN
     cultural_adjectives: List[str] = field(default_factory=list)
     danger_level: any = None
@@ -67,13 +72,28 @@ class Region(RegionBase):
         """Adds a location to this region and updates the location's region reference."""
         location.region = self
         self.locations.append(location)
-        from create.create_game_state import get_game_state
+        
         get_game_state().all_locations.append(location)
 
 
     def trigger_event(self, event_type: str):
         print(f"Event triggered: {event_type} in {self.name}")
         
+
+
+    def get_default_public_space(self):
+
+        if self.public_places:
+            return random.choice(self.public_places)
+
+        gs = get_game_state()
+
+        if gs.public_places:
+            return random.choice(gs.public_places)
+
+        return None
+
+
     def __repr__(self):
         return f"Region(name='{self.name}')"
 

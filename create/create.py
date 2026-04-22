@@ -89,10 +89,32 @@ def create_regions():
 
             region.locations = location_list
             region.shops = [loc for loc in location_list if isinstance(loc, Shop)]
+            region.public_places = []
+            # Ensure global lists exist
+            if not hasattr(game_state, "all_shops"):
+                game_state.all_shops = []
 
+            if not hasattr(game_state, "all_locations"):
+                game_state.all_locations = []
+
+            if not hasattr(game_state, "public_places"):
+                game_state.public_places = []
+
+            # Populate global + regional indexes
+            for loc in region.locations:#I added region here
+
+                game_state.all_locations.append(loc)
+
+                if hasattr(loc, "is_shop") and loc.is_shop:
+                    game_state.all_shops.append(loc)
+
+                if getattr(loc, "is_public_facing", False):
+                    region.public_places.append(loc)
+                    game_state.public_places.append(loc)
+            
             # Set region ref on each location
             for loc in location_list:
-                loc.region = region
+                loc.region = region#does this automatically update the loction entries in game_state?
 
             # Add into global flat list
             all_locations.extend(location_list)

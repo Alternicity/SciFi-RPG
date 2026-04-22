@@ -27,13 +27,11 @@ class GameState:
         self.civilian_waitress = None
         self.civilian_liberty = None
         self.civilian_passive = None
-
-
         #Recommendation (later): Remove individual fields and rely on debug_npcs only
-
+        self.debug_vitals_displayed = set()
         self.debug_npcs = {}
         self.show_background_debug = False
-        #or make civilian_backgroun just be a background npc, just placed in the cafe
+        #or make civilian_background just be a background npc, just placed in the cafe
 
         self.state = None
         self.civilians = []

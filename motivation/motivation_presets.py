@@ -59,7 +59,7 @@ class MotivationPresets:
                 Motivation("join_corporation", 2, target="good question"),
                 Motivation("virtue_signal", 5),
                 Motivation("increase_status", 4, status_type="corporate"),
-                Motivation("have_fun", 4, status_type="good question"),
+
             ],
 
         "CorporateSecurity": [
@@ -77,7 +77,7 @@ class MotivationPresets:
         "Civilian": [
                 Motivation("earn_money", 3),#admitedly this has some conceptual overlap with work, but could branch into entrepreneurial or invest type 
                 #Civilian motivations
-                Motivation("have_fun", 6, status_type="corporate"),
+
                 Motivation("protect_family", 6),
                 Motivation("increase_status", 2),
             ],       
@@ -127,7 +127,7 @@ class MotivationPresets:
 
         "SpecialChild": [#luna
                 Motivation("explore_math", 10),
-                Motivation("have_fun", 2),
+
                 Motivation("use_advanced_python_features", 10),
                 Motivation("stimulate_program", 2), #stimulate irl AI, and help me learn
                 Motivation("eat", 2),
@@ -137,7 +137,7 @@ class MotivationPresets:
 
         "Adepta": [
                 Motivation("earn_money", 3),
-                Motivation("have_fun", 6, status_type="civilian"),
+
                 Motivation("charm U7s", 20),
                 Motivation("increase_status", 2),
             ],

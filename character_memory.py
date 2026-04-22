@@ -202,12 +202,12 @@ class Memory:
             memory_entry.created_day = current_day
         self.episodic.append(memory_entry)
 
-    def remember_thing(self, subject, verb, object_, details="", importance=1, owner=None):#but there is a separate use case for event objects
-        #They are not currently in use but this function could be renamed to remember_thing or similar
+    def remember_thing(self, subject, verb, object_, details="", importance=1, owner=None):
 
         #High-level API (for gameplay code)
         entry = MemoryEntry(
             subject=subject,
+            verb=verb,
             object_=object_,
             details=details,
             importance=importance,

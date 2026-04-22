@@ -21,7 +21,7 @@ class MemoryEntry:
     subject: str #"subject does something to object_"
     object_: str #underscore to differentiate from reserved term object
     #Do memory entries need to capture bidirectional or dyadic info? BIDIRECTIONAL
-    details: str
+    details: str = ""
     owner: Optional[Any] = None
     source: Optional[Any] = None
     data: Optional[Any] = None

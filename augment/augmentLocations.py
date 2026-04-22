@@ -174,7 +174,7 @@ def seed_cafe_furniture(all_locations):
                 chair.location = loc
                 chair.region = loc.region
                 chair.table = table
-
+                table.chairs.append(chair)
                 loc.items.objects_present.append(chair)
 
         loc.tables = tables  # optional reference for later AI logic

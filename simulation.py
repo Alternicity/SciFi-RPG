@@ -15,7 +15,7 @@ from world.placement import place_character#not accessed
 """ from memory.memory_builders.food_sources_builder import build_food_sources
 from memory.memory_builders.shop_knowledge_builder import build_shop_knowledge
 from memory.memory_builders.region_knowledge_builder import build_region_knowledge """
-from memory.injectors.initial_memory_injectors import inject_initial_region_knowledge, inject_food_location_knowledge, inject_initial_shop_knowledge
+from memory.injectors.initial_memory_injectors import inject_initial_region_knowledge, inject_food_location_knowledge, inject_initial_shop_knowledge, inject_fun_prefs
 from population.population import summarize_civilians
 
 def run_simulation(all_characters, num_days=10):
@@ -175,8 +175,9 @@ def run_simulation(all_characters, num_days=10):
         debug_civilian_waitress.motivation_manager.update_motivations("have_fun", urgency=5)
 
         place_tc2_npc(debug_civilian_waitress, downtown_region)
-        ensure_initial_placement(debug_civilian_waitress, fallback_region=downtown_region)
         debug_civilian_waitress.placement_locked = True
+        ensure_initial_placement(debug_civilian_waitress, fallback_region=downtown_region)
+        #debug_civilian_waitress.placement_locked = True
         
 
         inject_food_location_knowledge(debug_civilian_waitress)
@@ -211,7 +212,7 @@ def run_simulation(all_characters, num_days=10):
         inject_initial_region_knowledge(debug_civilian_liberty)
         inject_food_location_knowledge(debug_civilian_liberty)
         inject_initial_shop_knowledge(debug_civilian_liberty)
-
+        inject_fun_prefs(debug_civilian_liberty)
         #display_top_motivations(debug_civilian_liberty)
 
     #handle homeless NOTE this might affect the TC1 GangMember npcs above - review
@@ -261,8 +262,10 @@ def pick_random_npc(characters, cls, exclude=None):
 def ensure_initial_placement(npc, *, fallback_region):#perhaps we dont call this for the civilian_passive
     #You do NOT need to call ensure_initial_placement() for background civilians anymore.
     #They are already placed in assign_families_and_homes().
+    if getattr(npc, "placement_locked", False):
+        return  # 🔥 DO NOTHING
+
     if assign_initial_location_from_family(npc):
         return
-    #ensure test npcs region line here?
-    assign_fallback_location(npc, fallback_region)
 
+    assign_fallback_location(npc, fallback_region)

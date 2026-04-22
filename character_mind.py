@@ -2,6 +2,7 @@
 from collections import deque
 from dataclasses import dataclass, field
 import time
+import random
 from typing import Optional, List, Any
 import random
 import itertools
@@ -43,11 +44,76 @@ class Mind:
         """ deque prevents memory bloat. 
         It mimics short-term/working memory: older thoughts are automatically discarded. """
 
-    def remove_thoughts_with_tag(self, tag):
-        self.thoughts = deque(
-            (t for t in self.thoughts if tag not in getattr(t, "tags", [])),#is this deleting?
-            maxlen=self.thoughts.maxlen
+    def reduce_thought_urgency(self, tag, amount=1):
+        t = self.get_thought_with_tag(tag)
+        if not t:
+            return None
+
+        t.urgency = max(0, t.urgency - amount)
+
+        # Optional cleanup: remove if fully cooled
+        if t.urgency == 0:
+            self.thoughts.remove(t)
+
+        return t
+
+    def decay_thoughts(self):
+        top_mot = self.owner.motivation_manager.get_top_motivation()
+        
+        for t in list(self.thoughts):
+
+            # --- protect focused thoughts ---
+            if self.attention_focus and t is self.attention_focus:
+                continue
+
+            if self.default_focus and t is self.default_focus:
+                continue
+
+            # --- optional: protect top motivation-aligned thought ---
+            
+
+            if top_mot and top_mot.type in t.tags:
+                continue
+
+            # --- 50% decay ---
+            if t.urgency > 0 and random.random() < 0.5:
+                t.urgency -= 1
+
+    def reinforce_or_create_thought(self, tag, amount=1, *, content=None, tags=None, subject=None, payload=None):
+
+        t = self.get_thought_with_tag(tag)
+
+        if t:
+            t.urgency += amount
+            # update payload if provided
+            if payload:
+                t.payload = payload
+            return t
+        
+        #Also adds a thought!
+        new_thought = Thought(#so should we remove tihs, and have this function do only what its name says? (old comment)
+            subject=subject or self.owner,
+            content=content or tag,
+            origin = "reinforce_or_create_thought",
+            urgency=amount,
+            tags=tags or [tag],
+            payload=payload,
         )
+        self.add_thought(new_thought)
+        return new_thought
+
+    def get_thought_label(thought):
+        if not thought:
+            return None
+        return thought.tags[0] if thought.tags else thought.content
+
+    def get_most_urgent_thought(self):
+        if not self.thoughts:
+            return None
+        return max(self.thoughts, key=lambda t: t.urgency)
+
+
+
 
     def deduplicate_thoughts(self, npc):#eventually ditch the npc
         seen = {}
@@ -71,6 +137,31 @@ class Mind:
 
         for t in removed:
             debug_print(self.owner, f"[MIND] Removed thought: {t.content}", "think")
+
+
+    #Rebuild the list, excluding anything with this tag
+    def remove_thoughts_with_tag(self, tag):
+        self.thoughts = deque(
+            (t for t in self.thoughts if tag not in (t.tags or [])),
+            maxlen=self.thoughts.maxlen
+        )
+
+    def remove_thought_with_tag(self, tag):#is this necessary, given the above function?
+
+        if not self.thoughts:
+            return
+
+        remaining = []
+
+        for thought in self.thoughts:
+
+            if tag not in getattr(thought, "tags", []):
+                remaining.append(thought)
+
+        self.thoughts.clear()
+
+        for thought in remaining:
+            self.thoughts.append(thought)
 
     def has_thought_with_tag(self, tag: str) -> bool:
         """
@@ -105,6 +196,17 @@ class Mind:
         )
         #This is idiomatic Python.
 
+    def get_thought_label(self, thought):
+        if not thought:
+            return None
+
+        # Prefer tags (cleaner)
+        if hasattr(thought, "tags") and thought.tags:
+            return thought.tags[0]
+
+        # Fallback to content
+        return str(thought.content)
+    
     def get_thought_with_tag(self, tag: str):
         for thought in self.thoughts:
             if hasattr(thought, "tags") and tag in thought.tags:

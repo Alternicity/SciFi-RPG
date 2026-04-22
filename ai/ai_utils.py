@@ -75,27 +75,3 @@ class DebugNPCRegistry:
         return self._by_role.values()
 
 
-def social_scan(npc):
-    #Ensure the social graph node exists for anyone co-present
-    loc = npc.location
-    if not loc:
-        return
-
-    for other in loc.characters_there:
-        if other is npc:
-            continue
-
-        # Ensure relation exists
-        social = npc.mind.memory.semantic.get("social")
-        social.get_relation(other)
-        """It should:
-
-        create relations
-        initialize counters
-        do nothing else
-
-        It should not:
-        create thoughts
-        create motivations
-        create anchors
-        interpret intent """

@@ -42,7 +42,7 @@ class Burger(Food):
     def __init__(self, quantity=1):
         super().__init__(
             name="Burger",
-            nutrition=5,
+            nutrition=12,
             price=10,
             quantity=quantity,
         )
@@ -51,7 +51,7 @@ class Sandwich(Food):
     def __init__(self, quantity=1):
         super().__init__(
             name="Sandwich",
-            nutrition=4,
+            nutrition=8,
             price=8,
             quantity=quantity,
         )

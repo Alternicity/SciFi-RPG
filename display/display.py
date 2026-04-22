@@ -829,6 +829,7 @@ def display_npc_mind(npc):
     print(tabulate(obsessions_data, headers=["Source", "Weight", "Tags"]))
 
 
+
 def display_sellers(shops: list):
     """Display a nicely formatted table of sellers (shops)."""
     if not shops:
@@ -891,7 +892,9 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
         print(f"  Debug Role: {getattr(npc, 'debug_role', 'N/A')}")
         print(f"  Class: {npc.__class__.__name__}")
         print(f"  Race: {npc.race}, Sex: {npc.sex}")
-    
+
+        
+
         # --- Family info ---
         has_family = bool(getattr(npc, "family", None))
         print(f"  Family: {'Yes' if has_family else 'No'}")
@@ -946,6 +949,42 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
             print(f"  Hunger: {v.hunger:.1f}/20 {_vitals_indicator(v.hunger, 'hunger')}")
             print(f"  Effort: {v.effort:.1f}/20 {_vitals_indicator(v.effort, 'effort')}")
             print(f"  Fun: {v.fun:.1f}/20 {_vitals_indicator(v.fun, 'fun')}")
+
+        if NPC_VITALS_CONFIG.get("fun prefs", True):
+            print(f"\n[FUN PREFERENCES]")
+
+            if hasattr(npc, "fun_prefs") and npc.fun_prefs:
+
+                fp = npc.fun_prefs
+
+                if hasattr(fp, "__dict__"):
+                    for k, v in fp.__dict__.items():
+                        print(f"  {k.capitalize()}: {v}")
+                else:
+                    print(f"  {fp}")
+
+            else:
+                print("  None")
+
+        if NPC_VITALS_CONFIG.get("Personality", True):
+            print(f"\n[PERSONALITY]")
+
+            if hasattr(npc, "personality") and npc.personality:
+
+                p = npc.personality
+
+                if hasattr(p, "as_dict"):
+                    traits = p.as_dict()
+                else:
+                    traits = p.__dict__
+
+                for trait, value in traits.items():
+                    print(f"  {trait.capitalize()}: {value}")
+
+            else:
+                print("  None")
+                
+
         else:
             # Fallback for NPCs without VitalsComponent
             print(f"  Hunger: {getattr(npc, 'hunger', 'N/A')}/20")
@@ -1062,13 +1101,13 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
         
         print(f"  Self-Esteem: {npc.self_esteem}/100")
         
-        if npc.fun_prefs:
-            print(f"  Fun Preferences: {npc.fun_prefs}")
+        """ if npc.fun_prefs:
+            print(f"  Fun Preferences: {npc.fun_prefs}") """
         
-        # === TIME CONTEXT ===
-        print(f"\n[TIME]")
-        print(f"  Hour: {game_state.hour}:00")
-        print(f"  Day: {game_state.day}")
+    # === TIME CONTEXT ===
+    print(f"\n[TIME]")
+    print(f"  Hour: {game_state.hour}:00")
+    print(f"  Day: {game_state.day}")
         
 
 def _vitals_indicator(value, vital_type):

@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 @dataclass
 class EmployeeProfile:
     
-    shift_start: int = 1#hard coded and wrong
-    shift_end: int = 4#again hard coded
+    shift_start: int = 1#hard coded and wrong, but ok for now
+    shift_end: int = 8#again hard coded
     workplace: Optional["Location"] = None
     role: Optional[EmployeeRole] = None
     shift: str = "day"  # day/night
@@ -22,7 +22,7 @@ class EmployeeProfile:
             "back_of_house",
             "management",
             "labor"
-        ] = "front_of_house"
+        ] = "front_of_house"#is this not a default? So far, waitress/front_of_house is the only one used
 
     # Runtime state (ephemeral, not serialized)
     is_on_shift: bool = False

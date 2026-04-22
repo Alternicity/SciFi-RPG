@@ -12,6 +12,9 @@ NPC_VITALS_CONFIG = {
     "focus": False,
     "thoughts": True,
     "memories": False,     # episodic + semantic
-    "social": False,
+    "social": True,#enabled
     "time": True,
+    #updated
+    "fun prefs": True,
+    "Personality": True,
 }

@@ -1,10 +1,25 @@
 #motivation.motivation_init.py
 
-from motivation.motivation import MotivationManager, Motivation
+from motivation.motivation import MotivationManager, Motivation, CORE_MOTIVES
 from motivation.motivation_presets import MotivationPresets
-
+from debug_utils import debug_print
 def initialize_motivations(character, passed_motivations=None):
+
+
     passed_motivations = passed_motivations or []
+
+    # ✅ Ensure core motivations always exist
+    for mtype in CORE_MOTIVES:
+        character.motivation_manager.create_initial(mtype, urgency=1)
+
+        if mtype in CORE_MOTIVES and getattr(character, "debug", False):#I replaced self with character
+            persistent = mtype in CORE_MOTIVES
+            debug_print(
+                character.owner,
+                f"[CORE CREATED] {mtype} persistent={persistent}",#persistent is marked as not defined here
+                category="motive"
+            )
+
     # 1 - Apply inline motivations first
     if passed_motivations:
         for m in passed_motivations:

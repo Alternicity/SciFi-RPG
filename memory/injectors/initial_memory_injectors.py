@@ -5,6 +5,7 @@ from memory.memory_builders.shop_knowledge_builder import build_shop_knowledge
 from memory.memory_builders.food_sources_builder import build_food_sources
 from memory.social.social_memory import SocialMemory
 from memory.encoders.shop_memory_encoder import encode_shop_knowledge
+from fun.fun_prefs import FunPreferences
 
 from create.create_game_state import get_game_state
 game_state = get_game_state()
@@ -14,6 +15,11 @@ def inject_initial_region_knowledge(npc):
     for region in game_state.all_regions:
         rk = build_region_knowledge(region, npc)
         npc.mind.memory.semantic["region_knowledge"].append(rk)
+
+
+
+def inject_fun_prefs(npc):
+    npc.fun_prefs = FunPreferences()
 
 #When shops are more specialized, npcs will need to know which shop sells what.
 #I will have to build also an encode_XYZ_shop_memory()

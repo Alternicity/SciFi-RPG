@@ -227,3 +227,9 @@ def narration_enabled(entity=None, *, tc1=False):
         return True
 
     return getattr(entity, "debug_role", None) == "primary"
+
+def print_region_fun(region):
+    print(f"\n[FUN MAP] Region: {region.name}")
+
+    for loc in region.locations:
+        print(f"{loc.name:20} fun={loc.fun}")

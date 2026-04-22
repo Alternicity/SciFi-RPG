@@ -29,3 +29,11 @@ def generate_black_swan(threshold, impact_range):
         return random.uniform(impact_range[0], impact_range[1])
     return None  # No event
 
+def generate_stat(mean=10, std_dev=3, min_val=1, max_val=20):
+
+    value = random.gauss(mean, std_dev)
+
+    value = int(round(value))
+
+    return max(min_val, min(max_val, value))
+
