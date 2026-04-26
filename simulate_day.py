@@ -26,7 +26,7 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
     for _ in range(num_days):
         game_state.advance_hour()
         debug_print(None, f"[TIME] Hour {game_state.hour}, Day {game_state.day}", category="tick")
-        debug_print(None, summarize_npc_turns(all_characters), category="tick")
+        #debug_print(None, summarize_npc_turns(all_characters), category="tick")
 
         # Each hour:
         for region in all_regions:
@@ -155,7 +155,7 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
 
         #TC2 snapshot displays
         DISPLAY_BY_DEBUG_ROLE = {
-            "civilian_worker": display_civ_worker,
+            #"civilian_worker": display_civ_worker,
             "civilian_liberty": display_civ_liberty,
             "civilian_waitress": display_civ_waitress,
         }

@@ -1027,8 +1027,8 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
         else:
             print(f"  No active motivations")
     
-    # === ANCHORS ===
-    if NPC_VITALS_CONFIG.get("anchors", True):
+    # === ANCHORS === DEPRECATED
+    """ if NPC_VITALS_CONFIG.get("anchors", True):
         print(f"\n[ANCHORS]")
         if hasattr(npc, 'anchors') and npc.anchors:
             for anchor in npc.anchors:
@@ -1036,7 +1036,7 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
                 if anchor.enables:
                     print(f"    Enables: {', '.join(anchor.enables)}")
         else:
-            print(f"  No anchors")
+            print(f"  No anchors") """
     
     # === FOCUS ===
     if NPC_VITALS_CONFIG.get("focus", True):

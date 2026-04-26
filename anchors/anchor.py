@@ -86,6 +86,9 @@ class Anchor:
         )
         return self.target_location
 
+    def is_valid(self):
+        return True  # base case: valid unless overridden
+
     def _coerce_to_percept(self, percept_data, npc) -> dict:
         """
         Normalize any input (dict, object, or string) into a percept-like dict.

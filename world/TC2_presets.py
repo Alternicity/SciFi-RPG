@@ -35,7 +35,7 @@ def setup_tc2_civilian_liberty(npc, region):
     ) """
 
 
-def setup_tc2_worker(worker, region, *, role):#civilian_manager
+def setup_tc2_worker(worker, region, *, role):#civilian_manager, and civilian_waitress
     
     cafe = get_tc2_cafe(region)
 

@@ -7,7 +7,7 @@ from actions.social_actions.dispatcher import execute_social_action
 from character_memory import Memory
 from time import time
 from location.locations import Cafe
-from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation, select_best_anchor, deduplicate_anchors
+from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation
 from base.posture import Posture
 from collections import defaultdict, deque
 from worldQueries import get_region_knowledge, location_sells_food, is_food_employee, find_food_employee_in_location
@@ -92,12 +92,24 @@ class UtilityAI(BaseAI):
             category="anchor"
         ) """
 
-        if not anchor:
+        if not anchor:#line 95
             return {"name": "idle"}
 
         assert anchor.type is not None, f"{npc.name} anchor has no type: {anchor}"
 
-        #1 Eat if already holding food
+        #1 Work
+        urgent = npc.motivation_manager.get_highest_priority_motivation()
+        if urgent.type == "work" and npc.employment.on_duty(hour):#edited, but see below
+
+            if npc.location != npc.employment.workplace:
+                debug_print(npc, f"[EMPLOYMENT] {npc.name} is not at work when they should be, attempting to move to: {npc.employment.workplace}", category="employment")
+                return {
+                    "name": "visit_location",
+                    "params": {"destination": npc.employment.workplace}
+                }
+            return {"name": "perform_work"}
+
+        #2 Eat if already holding food
         from objects.food.prepared_food import Food
 
         owned_food = [
@@ -122,7 +134,7 @@ class UtilityAI(BaseAI):
                 "params": {"item": owned_food[0]}
             }
 
-        # 2. Movement
+        #3. Movement
         # Movement gate: morning settling, delays civilian_liberty from leaving home immeidately
         if npc.has_effect_type(MorningSettlingEffect) and npc.role == "civilian_liberty":
             debug_print(
@@ -146,7 +158,11 @@ class UtilityAI(BaseAI):
                 f"[URGENCY] EXCLUDING={urgencies['excluded']}"
             )#This can definitely be re-used
 
-
+        debug_print(npc, 
+        f"[MOVEMENT DEBUG] anchor={getattr(anchor,'name',None)} "
+        f"requires_movement={anchor.requires_movement() if anchor else None} "
+        f"target={anchor.resolve_target_location() if anchor else None}",
+        category="visit")
 
         # --- PRIMARY: Goal-driven movement ---
         if anchor and anchor.requires_movement():
@@ -163,59 +179,38 @@ class UtilityAI(BaseAI):
             
         if not (anchor and anchor.requires_movement()):#either primary or secondary
         #Only run leave logic if we are NOT already trying to move somewhere for a goal
-            leave_thought = npc.mind.get_thought_with_tag("leave_location")
+            leave_thought = npc.mind.get_thought_with_tag("leave_location")#your suggestion would overwrite from here? Line 176
 
             if leave_thought:
-
-                if npc.current_anchor and npc.current_anchor.name == "eat":
-                    reduce_thought_urgency(npc, "leave_location", 1)
-
                 urgencies = get_current_urgencies(npc, exclude_thought=leave_thought)
                 current_max = urgencies["max"]
-
                 leave_score = leave_thought.urgency * 1.1
 
-                debug_urgency_state(npc, urgencies, context="leave_check")
-
-                debug_print(
-                    npc,
-                    f"[LEAVE CHECK] leave={leave_thought.urgency} (biased={leave_score:.1f}) vs max={current_max}",
-                    category="movement"
-                )
+                debug_print(npc, f"[LEAVE CHECK] leave={leave_thought.urgency} "
+                            f"(biased={leave_score:.1f}) vs max={current_max}", 
+                            category="movement")
 
                 if leave_score > current_max:
-
-                    outside = npc.location.region.get_default_public_space()
-
                     if npc.posture == Posture.SITTING:
                         return {"name": "stand"}
-
-                    if outside and outside != npc.location:
+                    
+                    # Use anchor target if available, otherwise fall back
+                    destination = None
+                    if npc.current_anchor and hasattr(npc.current_anchor, "resolve_target_location"):
+                        destination = npc.current_anchor.resolve_target_location()
+                    
+                    if destination and destination != npc.location:
                         return {
                             "name": "visit_location",
-                            "params": {"destination": outside}
+                            "params": {"destination": destination}
                         }
-                    #unify anchor priority vs thought urgency properly (old comment)
-                    #ALSO do anchors even need to have urgency, is it necessary?(new comment)
-            
-        #3 Work
+
+            if not anchor:
+                return {"name": "idle"}
+
+        #4. Buy Food
         urgent = npc.motivation_manager.get_highest_priority_motivation()
-        if urgent.type == "work" and npc.employment.on_duty(hour):#edited, but see below
-
-            if npc.location != npc.employment.workplace:
-                debug_print(npc, f"[EMPLOYMENT] {npc.name} is not at work when they should be, attempting to move to: {npc.employment.workplace}", category="employment")
-                return {
-                    "name": "visit_location",
-                    "params": {"destination": npc.employment.workplace}
-                }
-            return {"name": "perform_work"}
-
-
-        
-
-        # 5. Buy Food
-        urgent = npc.motivation_manager.get_highest_priority_motivation()#the urgent variable is set again here for the civilian_liberty npc
-        hunger_thought = npc.mind.get_thought_with_tag("hunger")#assumes a hunger/eat thoght already exists
+        hunger_thought = npc.mind.get_thought_with_tag("hunger")
 
         if urgent and urgent.type == "eat" and hunger_thought:
 
@@ -225,7 +220,6 @@ class UtilityAI(BaseAI):
             seller = find_food_employee_in_location(npc.location)
 
             if npc.current_anchor and npc.current_anchor.name == "eat":
-            #if npc.current_anchor and "eat" in npc.current_anchor.tags:
                 dine_in = npc.mind.has_thought_with_tag("dine_in")
                 if dine_in and npc.posture != Posture.SITTING:
                     sit_thought = npc.mind.get_thought_with_tag("sit")
@@ -261,7 +255,7 @@ class UtilityAI(BaseAI):
             if npc.mind.attention_focus != seller:
                 set_attention_focus(npc, character=seller)
 
-            if not npc.mind.has_thought_with_tag("served"):#we must ensure a thought with tag served is injected into the customers mind
+            if not npc.mind.has_thought_with_tag("served"):
                 debug_print(npc, "[BUY BLOCK] Not served yet", category="buy")
                 return {"name": "idle"}
 
@@ -328,32 +322,22 @@ class UtilityAI(BaseAI):
 
     def select_current_anchor(self):
         npc = self.npc
-
-        anchors = getattr(npc, "anchors", None)#uses anchors, which I am wondering if is superfluous, an overengineered variable
-        if not anchors:
-            debug_print(npc, "[ANCHOR] No anchors available", category="anchor")
+        top = npc.motivation_manager.get_highest_priority_motivation()
+        if not top:
             npc.current_anchor = None
-
             return
 
-        selected = select_best_anchor(npc, anchors)
+        # Reuse existing if already aligned
+        if npc.current_anchor and npc.current_anchor.name == top.type:
+            return
 
-        if selected:
-            npc.current_anchor = selected
-            set_attention_focus(npc, anchor=selected)
-            
-            debug_print(
-                npc,
-                f"[ANCHOR] Selected anchor: {selected.name}",
-                category="anchor"
-            )
+        anchor = create_anchor_from_motivation(npc, top)
+        if anchor:
+            npc.current_anchor = anchor
+            set_attention_focus(npc, anchor=anchor)
+            debug_print(npc, f"[ANCHOR] From select_current_anchor: Selected anchor: {anchor.name}", category="anchor")
         else:
             npc.current_anchor = None
-            debug_print(
-                npc,
-                "[ANCHOR] No suitable anchor selected",
-                category="anchor"
-            )
 
     def _choose_earn_money(self, npc):
         wp = npc.employment.workplace
@@ -367,29 +351,9 @@ class UtilityAI(BaseAI):
         return {"name": "idle"}
     
     def _choose_have_fun(self, npc):
-        
-        # HARD GUARD — TC2 placeholder
-        if not hasattr(npc, "fun_prefs") or npc.fun_prefs is None:
-            debug_print(
-                npc,
-                "[FUN] Fun system not initialized — skipping have_fun",
-                category="fun"
-            )
-            return {"name": "idle"}
-
-        prefs = npc.fun_prefs or {}
-
-        # 1️⃣ Social fun (safe)
-        if prefs.get("social", 0) > 5:
-            friend = npc.get_close_friend() if hasattr(npc, "get_close_friend") else None
-            if friend and hasattr(friend, "location"):
-                return {
-                    "name": "visit_location",
-                    "params": {"destination": friend.location}
-                }
-
-        # 2️⃣ Everything else disabled for now
-        return {"name": "idle"}
+        # Anchor system handles targeting via FunAnchor.resolve_target_location()
+        # This method exists for future override points (social fun, events, etc.)
+        return None  # fall through to anchor-based movement in choose_action
 
 
     def execute_action(self, action, region):
@@ -584,6 +548,13 @@ class UtilityAI(BaseAI):
         mind = npc.mind
         game_state = get_game_state()
 
+        # Don't overwrite a valid, active anchor with higher or equal priority
+        current = npc.current_anchor
+        if current and hasattr(current, "is_valid"):
+            if current.is_valid() and getattr(current, "priority", 0) >= 5:
+                return  # anchor is doing its job, don't interfere
+
+
         # Guard: only promote once per tick
         if getattr(npc, "_last_promote_hour", -1) == game_state.hour:
             return
@@ -600,9 +571,8 @@ class UtilityAI(BaseAI):
         # --- Anchor Priority Arbitration ---
         current = npc.current_anchor
         if current:
-            current_priority = getattr(current, "priority", 0)
-            if strongest.urgency <= current_priority:
-                return
+            if strongest.urgency <= getattr(current, "priority", 0):
+                return  # nothing more urgent to promote
         
         # Create or update an anchor from that thought
         anchor = create_anchor_from_thought(npc, strongest, name=strongest.primary_tag() or "general")
@@ -623,8 +593,7 @@ class UtilityAI(BaseAI):
         if not has_enabler:
             debug_print(
                 npc,
-                f"[ANCHOR-PROMOTE] '{anchor.name}' promoted without enabler relationship. "
-                f"Existing anchors: {[a.name for a in npc.anchors]}",
+                f"[ANCHOR-PROMOTE] '{anchor.name}' promoted without enabler relationship. ",
                 category="anchor"
             )
         else:
@@ -832,11 +801,6 @@ class UtilityAI(BaseAI):
         
         self.generate_motivation_thoughts()
         generate_leave_location_thought(npc)
-        self.ensure_anchors_from_motivations()
-        
-        #marked for removal
-        #resolve_contextual_focus(npc)
-        #calls find food seller for this hungry npc, but returns nothing
 
         self.handle_failed_anchors()
         self.select_current_anchor()#lets review this also
@@ -853,16 +817,13 @@ class UtilityAI(BaseAI):
         if not motivations:
             return
 
-        if not getattr(npc, "current_anchor", None):#does this block duplicate logic from ensure_anchors_from_motivations ?
+        if not getattr(npc, "current_anchor", None):
             motive = npc.motivation_manager.get_highest_priority_motivation()
             if motive:
                 anchor = create_anchor_from_motivation(npc, motive)
                 if anchor:
                     npc.current_anchor = anchor
                     set_attention_focus(npc, anchor=anchor)
-
-        npc.anchors = deduplicate_anchors(npc, npc.anchors)
-
 
         # Examine episodic memory for repeated events
         episodic_memories = self.npc.mind.memory.get_episodic()
@@ -925,6 +886,11 @@ class UtilityAI(BaseAI):
         if not anchor:
             return
 
+        # Don't flag anchors that are simply inactive/off-shift
+        if hasattr(anchor, "is_valid") and not anchor.is_valid():
+            npc.current_anchor = None  # clear stale anchor cleanly
+            return
+
         if anchor.resolve_target_location() is None:
             if not npc.mind.has_thought_with_tag("planning"):
                 npc.mind.add_thought(
@@ -973,17 +939,6 @@ class UtilityAI(BaseAI):
             scored.sort(key=lambda x: x[1], reverse=True)
             return scored[0][0]  # best origin
         return None
-
-    def ensure_anchors_from_motivations(self):
-        npc = self.npc
-        motivations = npc.motivation_manager.get_top_motivations()
-
-        for m in motivations:
-            if not any(a.name == m.type for a in npc.anchors):
-                anchor = create_anchor_from_motivation(npc, m)
-                if anchor:
-                    npc.anchors.append(anchor)
-
 
     def evaluate_turf_war_status(self, region_knowledge):
         # Basic version — maybe no-op or minimal response

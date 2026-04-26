@@ -121,8 +121,6 @@ class MotivationManager:
         """
         updated = False
 
-        #New comment: Could we temporarily set value = 20 here for have_fun, to overwrite the passed in value, and see if that fixes the issue?
-        #and a print to indicate that this temporary measure has activated?
         for m in self.motivations:
             if m.type == type:
                 m.urgency = float(value)
@@ -329,12 +327,12 @@ class MotivationManager:
             category="motive"
         ) """
 
-        on_shift = npc.is_on_shift  # ✅ use unified state
+        on_shift = npc.is_on_shift  # use unified state
 
         if on_shift:
             self.unsuppress("work")
 
-            BLOCKED_DURING_WORK = {"have_fun", "sleep"}#This could be all motivations except work. Also:
+            BLOCKED_DURING_WORK = {"have_fun", "sleep", "eat"}#This could be all motivations except work. Also:
             """ eat removed from here, because it drives movement
             it creates anchors
             it prevents deadlock """

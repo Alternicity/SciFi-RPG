@@ -45,7 +45,7 @@ def inject_initial_food_preferences(npc):
         fs.nutrition_value = random.randint(1, 3)
         fs.considers_nutrition = True
 
-#call this from all character instantiation blocks
+#eventually call this from all character instantiation blocks
 def inject_initial_social_memory(npc):
     if npc.mind.memory.semantic["social"]:
         return  # already exists

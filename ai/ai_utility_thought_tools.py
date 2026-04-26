@@ -46,7 +46,19 @@ def generate_leave_location_thought(npc):
         return
 
     t = npc.mind.get_thought_with_tag("leave_location")
-
+    # Boost urgency significantly if purpose is fulfilled
+    if npc.location_purpose_fulfilled:
+        if t:
+            t.urgency = min(10, t.urgency + 3)
+        else:
+            npc.mind.add_thought(Thought(
+                subject=location,
+                content=f"I should leave {location.name}.",
+                urgency=7,  # high — purpose done
+                tags=["leave_location", "movement"]
+            ))
+        return
+    # Original time-based logic as fallback
     if t:
         if npc.time_in_location > 3:
             t.urgency = min(10, t.urgency + 1)
@@ -260,12 +272,7 @@ def select_food_from_location(npc, location, desired_name=None):
 
 
 def procure_food(npc):
-    npc.anchors.add(ProcureFood(
-        name="procure_food",
-        type="motivation",
-        owner=npc,
-        priority=1.5
-    ))
+    pass
     """Then downstream:
     ChooseFoodVenue
     BuyIngredients

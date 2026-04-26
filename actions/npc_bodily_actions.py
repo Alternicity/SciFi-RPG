@@ -37,7 +37,8 @@ def sit_auto(npc, region=None, chair=None, table=None, **kwargs):
                 f"[ACTION] {npc.name} sits at {chair.table.name} ({chair.name}) posture now: {npc.posture}",
                 category="action"
             )
-
+            npc.mind.remove_thoughts_with_tag("sit")
+            npc.mind.remove_thoughts_with_tag("dine_in")
             return True
 
     return False

@@ -28,7 +28,7 @@ def run_simulation(all_characters, num_days=10):
 
     debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)
     debug_gang_npc2 = next((c for c in all_characters if isinstance(c, GangMember) and c is not debug_gang_npc), None)
-    #The Gangmembers use the old selection pattern, but are currently unused and ignore in TC2
+    #The Gangmembers use the old selection pattern, but are currently unused and ignored in TC2
 
     civilians = [c for c in all_characters if isinstance(c, Civilian)]
     debug_civilian_worker = pick_civilian(civilians)

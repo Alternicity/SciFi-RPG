@@ -9,6 +9,7 @@ from character_thought import Thought
 from base.posture import Posture
 
 def greet_customer_auto(waitress, target, session):
+    from objects.furniture import CafeTable
     game_state = get_game_state()
     location = waitress.location
 
@@ -56,7 +57,7 @@ def greet_customer_auto(waitress, target, session):
 
         chosen = None  # ← initialize before conditional block
 
-        tables = [f for f in waitress.location.furniture if isinstance(f, CafeTable)]
+        tables = [f for f in waitress.location.items.objects_present if isinstance(f, CafeTable)]#updated
         for table in tables:
             if table.has_free_seating(waitress.location):
                 chosen = table
@@ -78,6 +79,7 @@ def greet_customer_auto(waitress, target, session):
         ))
 
         # Temporary: inject "served" here to unblock pipeline (Issue 2)
+        ## TODO TC3: move served injection to serve_food_auto
         if not target.mind.has_thought_with_tag("served"):
             target.mind.add_thought(Thought(
                 subject="served",

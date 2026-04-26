@@ -28,8 +28,7 @@ def create_greet_anchor(npc, target):#npc, not waitress
         priority=1.2,
         tags=["social", "service", "greeting"]
     )
-    if anchor not in npc.anchors:
-        npc.anchors.append(anchor)
+
 
     npc.current_anchor = anchor
     #This function would be used also, for example, by a hostess at a dinner party.

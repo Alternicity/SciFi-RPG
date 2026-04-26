@@ -20,3 +20,8 @@ class WorkAnchor(Anchor):
     def is_valid(self):#Should class Anchor have a version of this, making this an override?
         npc = self.owner
         return npc.employment and npc.employment.is_on_shift
+    
+    def is_satisfied(self, npc):
+        # Satisfied only when shift is over, not just when arrived
+        hour = get_game_state().hour
+        return not npc.employment.on_duty(hour)

@@ -1253,9 +1253,9 @@ class Restaurant(WorkplaceMixin, PerceptibleLocation):
 @dataclass
 class Park(WorkplaceMixin, PerceptibleLocation):
     name: str = "Green Park"
-    tags: list[str] = field(default_factory=lambda: ["fun", "social", "park"])
+    tags: list[str] = field(default_factory=lambda: ["fun", "social", "park", "nature"])
     description: str = "A Park"
-    categories: List[str] = field(default_factory=lambda: ["workplace", "public", "fun", "social"])
+    categories: List[str] = field(default_factory=lambda: ["workplace", "public", "fun", "social", "nature"])
     upkeep: int = 15
     ambience_level: int = 1
     fun: int = 1

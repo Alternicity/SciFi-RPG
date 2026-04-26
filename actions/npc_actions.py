@@ -77,8 +77,16 @@ def visit_location_auto(character, region=None, destination=None, destination_na
 
     npc.just_arrived = True
     npc.time_in_location = 0
+    # derive purpose from current top motivation
+    top = npc.motivation_manager.get_highest_priority_motivation()
+    if top:
+        npc.location_purpose = top.type
+        npc.location_purpose_fulfilled = False
 
     npc.mind.remove_thoughts_with_tag("leave_location")
+    npc.location_purpose_fulfilled = False  # reset for new location
+    npc.location_purpose = None
+
 
     
     #the following track presence block move up to here
@@ -127,11 +135,12 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     #tmp
     from location.locations import Cafe
     if isinstance(destination, Cafe):
-        print(
+        pass
+        """ print(
             f"[VISIT CHECK] npc={npc.name} "
             f"dest_id={id(destination)} "
             f"chars={[ (c.name, id(c)) for c in destination.characters_there ]}"
-        )
+        ) """
 
 
     # --- Optional hour/day stamp ---
@@ -414,6 +423,9 @@ def eat_auto(npc, region=None, *, item):
     # soften hunger thought
     npc.mind.reduce_thought_urgency("hunger", 5)
 
+    if npc.location_purpose == "eat":
+        npc.location_purpose_fulfilled = True
+
     # 🔥 NEW: remove if no longer hungry
     t = npc.mind.get_thought_with_tag("hunger")
     if t and t.urgency <= 1:#edited
@@ -421,27 +433,20 @@ def eat_auto(npc, region=None, *, item):
 
     # reduce motivation strongly
     npc.motivation_manager.set_urgency("eat", 0)
-
+    
     # 🔥 NEW: optional full suppression
     npc.motivation_manager.suppress("eat", reason="recent_meal", duration=3)
 
     # 🔥 Promote next motivation
     next_m = npc.motivation_manager.get_highest_priority_motivation(exclude={"eat"})
 
-    if next_m:
-        boost = max(2, item.nutrition // 2)#attempting to boost the next motivation, ie have_fun
-        npc.motivation_manager.set_urgency(
-            next_m.type,
-            next_m.urgency + boost
-        )
-
-        debug_print(
-            npc,
-            f"[POST-EAT] Boosting {next_m.type} → {next_m.urgency}",
-            category="motive"
-        )
-
-
+    # TC2 Specific targeted have_fun boost
+    fun_m = npc.motivation_manager.get_motivation("have_fun")
+    if fun_m:
+        boost = max(2, item.nutrition // 2)
+        npc.motivation_manager.set_urgency("have_fun", fun_m.urgency + boost)
+        #In the future we could initialize problematic protect_family very low, but boost it hugely when necessary
+        debug_print(npc, f"[POST-EAT] Boosting have_fun → {fun_m.urgency + boost}", category="motive")
 
     # remove from inventory
     try:

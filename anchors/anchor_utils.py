@@ -17,40 +17,6 @@ if TYPE_CHECKING:
     from character_thought import Thought
     from base.character import Character#not accessed
 
-#utilty functions
-def select_best_anchor(npc, anchors):
-    if not anchors:
-        return None
-    
-    anchors = deduplicate_anchors(npc, anchors)
-    viable = [a for a in anchors if not getattr(a, "blocked", False)]
-    if not viable:
-        return None
-
-    return max(viable, key=lambda a: getattr(a, "urgency", 0))
-
-def deduplicate_anchors(npc, anchors):
-        """
-        Keep strongest anchor per name.
-        Ensures npc.current_anchor remains valid.
-        """
-        seen = {}
-
-        for anchor in anchors:
-            key = anchor.name
-            if key not in seen or anchor.priority > seen[key].priority:
-                seen[key] = anchor
-
-        deduped = list(seen.values())
-
-        # Re-link current_anchor if needed
-        if npc.current_anchor:
-            npc.current_anchor = seen.get(
-                npc.current_anchor.name,
-                npc.current_anchor
-            )
-        return deduped
-
 class just_got_off_shift(Anchor):
     def __init__(self, **kwargs):
         kwargs.setdefault("name", "just_got_off_shift")
@@ -166,7 +132,10 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
     Handles automatic naming, deduplication, memory logging,
     and specialized subclasses (RobberyAnchor, ObtainWeaponAnchor).
     """
-
+    UNIMPLEMENTED_MOTIVATIONS = {"protect_family", "earn_money", "find_partner"}
+    if motivation.type in UNIMPLEMENTED_MOTIVATIONS:
+        return None
+    
     # --- Guard invalid inputs ---
     if motivation is None:
         return None
@@ -179,18 +148,16 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
         )
         return None
 
-    if not hasattr(npc, "anchors") or npc.anchors is None:
-        npc.anchors = []
 
     # --- Auto naming fallback ---
     base_name = getattr(motivation, "type", None) or getattr(motivation, "name", None) or "UnnamedMotivation"
     base_name = str(base_name).strip()
 
-    # --- Deduplicate by existing anchors ---
-    if hasattr(npc, "anchors"):
-        for existing in npc.anchors:
-            if getattr(existing, "source", None) is motivation:
-                return existing
+    # ✅ Single suppression check — covers all motivation types
+    if npc.motivation_manager.is_suppressed(base_name):
+        debug_print(npc, f"[ANCHOR SKIP] '{base_name}' suppressed", category="anchor")
+        return None
+    #replaces the scattered per-branch checks
 
     # --- Deduplicate by memory (avoid spam) ---
     existing_memory = [
@@ -203,7 +170,7 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
 
     tags = getattr(motivation, "tags", []) or []
 
-    if getattr(motivation, "suppressed", False):#here?
+    if getattr(motivation, "suppressed", False):
         return None
 
     # --- Create specialized anchors ---
@@ -219,8 +186,8 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
         )
 
     elif base_name == "eat":
-        if npc.motivation_manager.is_suppressed("eat"):
-            return None
+        """ if npc.motivation_manager.is_suppressed("eat"):
+            return None """
         anchor = EatAnchor(
             name=base_name,
             type="motivation",
@@ -277,16 +244,13 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
             source=motivation,
         )
 
-        # --- Attach to NPC anchors (always) ---
-        if anchor not in npc.anchors:
-            npc.anchors.append(anchor)
 
-        # See when a thought-anchor or motivation-anchor is created without an expected partner
+        """ #anchors is deprecated so the following is commented, deprecated as well
         related = [a.name for a in npc.anchors if a is not anchor]
         if base_name == "rob" and not any("obtain_ranged_weapon" in r for r in related):
             debug_print(npc, f"[ANCHOR] Created '{base_name}' with NO obtain_ranged_weapon enabler", category="anchor")
         elif base_name == "obtain_ranged_weapon" and not any("rob" in r for r in related):
-            debug_print(npc, f"[ANCHOR] Created '{base_name}' with NO rob anchor partner", category="anchor")
+            debug_print(npc, f"[ANCHOR] Created '{base_name}' with NO rob anchor partner", category="anchor") """
 
 
     # --- Update motivation manager ---
@@ -348,10 +312,6 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
     if thought is None:
         return None
 
-    # Ensure the NPC has an anchors list
-    if not hasattr(npc, "anchors"):
-        npc.anchors = []
-
     # If thought already anchored, try to return the existing anchor if present
     if getattr(thought, "anchored", False):
         for a in getattr(npc, "anchors", []):
@@ -363,13 +323,13 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
     # Preserves canonical motivation names ONLY
     base_name = (
         name
-        or thought.primary_tag()              # e.g. "rob", "visit", "explore"
+        or thought.primary_tag()
         or getattr(thought, "subject", None)
         or "thought"
         #type and tags are not set here
     )
 
-    anchor_name = name or thought.primary_tag() or "general"#added
+    anchor_name = name or thought.primary_tag() or "general"
     anchor_name = str(anchor_name).strip()
 
     # Force safe canonical form
@@ -384,32 +344,8 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
         )
         return None
 
-    # --- Reuse existing anchor if same name ---
-    for existing in npc.anchors:
-        if existing.name == canonical and getattr(existing, "target", None):#ATTN, anchors have no target, they calculate salience
-            # Boost instead of duplicating
-            existing.priority = max(existing.priority, getattr(thought, "urgency", 1.0))
-            existing.weight += getattr(thought, "weight", 0.5)
-
-            thought.anchored = True
-
-            debug_print(
-                npc,
-                f"[ANCHOR REUSE] Thought '{thought.content}' reinforced {existing.__class__.__name__}",
-                category="anchor"
-            )
-
-            return existing
-
-
     anchor_name = canonical  # <-- NO timestamp, NO content slug (old comment)
     #but there is also this
-
-    #CANONICAL_ANCHORS now greyed out, not accessed
-    """ CANONICAL_ANCHORS = {
-        ("work", "finished"): "off_work",
-    } """
-    #Save for later, Thought(predicate=...) is reliably populated and we want data-driven canonicalization
 
     # --- Canonical override (TC2 transitional) ---
     if thought.subject == "work" and (
@@ -430,6 +366,14 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
         for a in npc.anchors:
             if getattr(a, "source", None) is thought or a.name in existing_memory[0].details:
                 return a
+            
+    if anchor_name == "work":
+        from anchors.work_anchor import WorkAnchor
+        anchor = WorkAnchor(name="work", type="thought", 
+                            weight=thought.urgency, priority=thought.urgency,
+                            owner=npc, source=thought)
+        # don't append to npc.anchors, just return
+        return anchor
 
     # --- Create the anchor ---
     anchor = Anchor(
@@ -447,12 +391,10 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
     anchor.target = getattr(origin, "location", None) if origin else None
 
     # --- Register the new anchor ---
-    npc.anchors.append(anchor)#npc.anchors - a reserve or store of anchors not the current anchor
+    # Only set current_anchor if nothing is set, or this is more urgent
+    if not npc.current_anchor or anchor.priority > npc.current_anchor.priority:
+        npc.current_anchor = anchor
     thought.anchored = True
-
-    #defensive
-    if not hasattr(npc, "anchors") or npc.anchors is None:
-        npc.anchors = []
 
     # Add memory entry with explicit target (prefer anchor.target, fallback to anchor.name)
     target_value = getattr(anchor, "target", None) or anchor.name
@@ -583,12 +525,12 @@ def anchor_from_duty(npc, duty: str):
         tags=["work"],
     )
 
-def add_anchor_unique(npc, new_anchor):
+""" def add_anchor_unique(npc, new_anchor):
     for a in npc.anchors:
         if a.name == new_anchor.name:
             return a
     npc.anchors.append(new_anchor)
-    return new_anchor
+    return new_anchor """
 
 def debug_anchor(anchor):
     if not anchor:
