@@ -293,9 +293,7 @@ def create_corp_factions(num_corps, all_regions):
 def create_factions(all_regions, all_locations):
     from create.create_game_state import get_game_state
     game_state = get_game_state()
-    #print(f"create_factions() called from {__name__}")
 
-    #print("all_regions content:", [region.name for region in all_regions])
     factions = []  # Store created factions
 
     # Find downtown region
@@ -347,7 +345,10 @@ def create_factions(all_regions, all_locations):
         for m in gang.members:
             print(f"    Member: {m.name}  | location={m.location.name if m.location else None}") """
 
-
+    # Augment locations now that corps exist
+    from augment.augmentLocations import assign_location_ownership, assign_location_names
+    assign_location_ownership(game_state.all_locations, corp_factions)
+    assign_location_names(game_state.all_locations)
 
     return factions, all_characters
 

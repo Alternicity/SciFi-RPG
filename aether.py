@@ -18,4 +18,6 @@ class AethericEntity:
     cognizant_characters: List["Character"] = field(default_factory=list)
 
 #Luna dreams it enough → It crosses the aether → It becomes real
+#High psy characters wil be able to manifest (instantiate) potential objects from the aether, into the #reality" of the sim,
+#Or block them from manifesting.
 

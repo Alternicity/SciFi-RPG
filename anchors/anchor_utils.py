@@ -159,14 +159,14 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
         return None
     #replaces the scattered per-branch checks
 
-    # --- Deduplicate by memory (avoid spam) ---
+    """ # --- Deduplicate by memory (avoid spam) ---
     existing_memory = [
         m for m in npc.mind.memory.episodic
         if m.type == "anchor_creation"
         and base_name in (m.details or "")
     ]
     if existing_memory:
-        return None
+        return None """
 
     tags = getattr(motivation, "tags", []) or []
 

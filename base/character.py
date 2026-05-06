@@ -50,7 +50,8 @@ class Character(PerceptibleMixin, CharacterBase):
         self.location = location
         self.placement_locked = False #TC npc variable
         self.current_destination = location
-        self.previous_location = None
+        self.previous_location = None#we also have this
+        self.recently_visited = []  # list of (location, tick) tuples, max last 3
         self.home_region = None
         self.just_arrived = False
         self.just_left_location = False
@@ -73,6 +74,9 @@ class Character(PerceptibleMixin, CharacterBase):
         self.has_plot_armour = False#rare, currently unused
         self.ai = ai  # added at instantiation as a component
         self.residences = []
+
+        self.current_bed = None
+
         self.is_homeless = False
         self.base_preferred_actions = {}
         self._initial_motivations = motivations

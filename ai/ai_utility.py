@@ -109,6 +109,12 @@ class UtilityAI(BaseAI):
                 }
             return {"name": "perform_work"}
 
+
+        if urgent.type == "sleep":
+            if npc.location == getattr(npc, "home", None):
+                return {"name": "sleep"}
+            # else SleepAnchor handles movement via requires_movement()
+
         #2 Eat if already holding food
         from objects.food.prepared_food import Food
 
@@ -134,6 +140,28 @@ class UtilityAI(BaseAI):
                 "params": {"item": owned_food[0]}
             }
 
+        # Sleep block
+        urgent = npc.motivation_manager.get_highest_priority_motivation()
+        if urgent and urgent.type == "sleep":
+            home = getattr(npc, "home", None)
+            if home is None:
+                # Homeless — sleep at current location if it has a bed or bench
+                from objects.furniture import Bed
+                from objects.furniture import Bench  # park bench fallback
+                has_rest = any(
+                    isinstance(o, (Bed, Bench)) 
+                    for o in npc.location.items.objects_present
+                )
+                if has_rest:
+                    return {"name": "sleep"}
+                return {"name": "idle"}  # nowhere to sleep
+            
+            if npc.location != home:
+                return {"name": "visit_location", "params": {"destination": home}}
+            
+            return {"name": "sleep"}
+
+
         #3. Movement
         # Movement gate: morning settling, delays civilian_liberty from leaving home immeidately
         if npc.has_effect_type(MorningSettlingEffect) and npc.role == "civilian_liberty":
@@ -158,15 +186,16 @@ class UtilityAI(BaseAI):
                 f"[URGENCY] EXCLUDING={urgencies['excluded']}"
             )#This can definitely be re-used
 
-        debug_print(npc, 
+        """ debug_print(npc, 
         f"[MOVEMENT DEBUG] anchor={getattr(anchor,'name',None)} "
         f"requires_movement={anchor.requires_movement() if anchor else None} "
         f"target={anchor.resolve_target_location() if anchor else None}",
-        category="visit")
+        category="visit") """
 
         # --- PRIMARY: Goal-driven movement ---
         if anchor and anchor.requires_movement():
             target = anchor.resolve_target_location()
+            debug_print(npc, f"[MOVE] {anchor.name} → {getattr(target,'name','None')}", category="visit")
 
             if target and target != npc.location:
                 return {
@@ -207,6 +236,23 @@ class UtilityAI(BaseAI):
 
             if not anchor:
                 return {"name": "idle"}
+
+
+        # EatAnchor.resolve_target_location() returns best_food_location(npc)
+        # If that returns the current location, requires_movement() returns False
+        # but if current location has no food, NPC gets stuck
+        
+        #TMP guard:
+        # In choose_action, after leave check, before buy block:
+            if urgent and urgent.type == "eat" and not location_sells_food(npc.location):
+                # Force movement to food location
+                from memory.memory_builders import best_food_location
+                food_loc = best_food_location(npc)
+                if food_loc and food_loc != npc.location:
+                    return {"name": "visit_location", "params": {"destination": food_loc}}
+            """ This is essentially what EatAnchor.requires_movement() should already do — but the guard catches the case where
+            the anchor system misfires due to bad starting location """
+
 
         #4. Buy Food
         urgent = npc.motivation_manager.get_highest_priority_motivation()
@@ -255,6 +301,17 @@ class UtilityAI(BaseAI):
             if npc.mind.attention_focus != seller:
                 set_attention_focus(npc, character=seller)
 
+            if (npc.employment and npc.employment.workplace == npc.location 
+                    and not npc.employment.is_on_shift):
+                if not npc.mind.has_thought_with_tag("served"):
+                    npc.mind.add_thought(Thought(
+                        subject="served",
+                        content="I know how this place works.",
+                        urgency=2,
+                        tags=["served"],
+                        origin="employee_self_serve"
+                    ))
+
             if not npc.mind.has_thought_with_tag("served"):
                 debug_print(npc, "[BUY BLOCK] Not served yet", category="buy")
                 return {"name": "idle"}
@@ -269,7 +326,14 @@ class UtilityAI(BaseAI):
                 "name": "buy",
                 "params": {"item": item}
             }
-
+        
+        # 5. Have fun at current location
+        urgent = npc.motivation_manager.get_highest_priority_motivation()
+        if urgent and urgent.type == "have_fun":
+            if "fun" in getattr(npc.location, "tags", []):
+                # Pick a fun activity based on what's available
+                from actions.npc_actions import have_fun_auto
+                return {"name": "have_fun", "params": {}}
         
     def _choose_procure_food(self, npc):
         # 1. Generate hunger thought
@@ -373,6 +437,11 @@ class UtilityAI(BaseAI):
             buy_auto,
             eat_auto,
             idle_auto,
+            read_auto,
+            have_fun_auto,
+            stroll_auto,
+            exercise_auto,
+            sleep_auto,
         )
         from actions.social_actions.greet import (
             greet_customer_auto
@@ -384,7 +453,6 @@ class UtilityAI(BaseAI):
             # Call visit location action
             try:
                 result = visit_location_auto(npc, region, **params)
-                debug_print(npc, f"[ACTION] Visit Location from UtilityAI.execute_action, Result: {result}", category="visit")
 
             except Exception as e:
                 print(f"[ERROR] visit_location_auto failed: {e}")
@@ -415,6 +483,11 @@ class UtilityAI(BaseAI):
             "greet": greet_customer_auto,
             "sit": sit_auto,
             "stand":stand_auto,
+            "read":read_auto,
+            "have_fun": have_fun_auto,
+            "stroll": stroll_auto,
+            "exercise": exercise_auto,
+            "sleep": sleep_auto,
             }
 
         action_func = action_map.get(action_name)
@@ -541,19 +614,18 @@ class UtilityAI(BaseAI):
 
         return score
 
-
     def promote_thoughts(self):
-        #Don’t special-case employment inside promote_thoughts
         npc = self.npc
         mind = npc.mind
         game_state = get_game_state()
-
+        
+        
+        
         # Don't overwrite a valid, active anchor with higher or equal priority
         current = npc.current_anchor
         if current and hasattr(current, "is_valid"):
             if current.is_valid() and getattr(current, "priority", 0) >= 5:
                 return  # anchor is doing its job, don't interfere
-
 
         # Guard: only promote once per tick
         if getattr(npc, "_last_promote_hour", -1) == game_state.hour:
@@ -567,7 +639,12 @@ class UtilityAI(BaseAI):
 
         # Pick the most urgent thought
         strongest = max(mind.thoughts, key=lambda t: (t.urgency, getattr(t, "timestamp", 0)))
-        
+
+        THOUGHT_TAGS_NEVER_ANCHOR = {"leave_location", "movement", "ambience", 
+                              "frustration", "error", "planning"}
+        if any(tag in THOUGHT_TAGS_NEVER_ANCHOR for tag in getattr(strongest, "tags", [])):
+            return  # these thought types are handled by choose_action directly
+
         # --- Anchor Priority Arbitration ---
         current = npc.current_anchor
         if current:
@@ -616,7 +693,7 @@ class UtilityAI(BaseAI):
                 and not npc.current_anchor
             ):
                 anchor = EatAnchor(#this is specific to eat, there is no corresponding have_fun block here. If we need to add it, 
-                    #then perahps this anchor creation block should be generalised
+                    #then perhaps this anchor creation block should be generalised
                     name="eat",
                     type="thought",
                     weight=thought.urgency,
@@ -687,9 +764,10 @@ class UtilityAI(BaseAI):
 
             event_counts[key] += 1
 
-            if event_counts[key] >= 3:
-                debug_print(npc, f"[INSIGHT] {m.subject} has done {m.verb} {event_counts[key]} times.", category = "insight")
-            
+            if event_counts[key] >= 5 and event_counts[key] % 5 == 0:
+                pass
+                #debug_print(npc, f"[INSIGHT] {m.subject} '{m.verb}' × {event_counts[key]}", category="insight")
+                #wait for an analysis harness
             if (
                 m.verb == "finished_shift"
                 and not npc.mind.has_recent_thought("finished_shift")

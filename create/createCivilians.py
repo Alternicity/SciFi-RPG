@@ -77,8 +77,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
                 sex=sex,
                 location=None,  # Assigned later
                 race=race,
-                faction=factionless,#Is this not working?
-                #motivations=[("idle", 1)],
+                faction=factionless,
                 wallet=None,
                 status=CharacterStatus()
             )

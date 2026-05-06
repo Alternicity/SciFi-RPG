@@ -99,8 +99,49 @@ class Table(Furniture):
             if c.is_free():
                 return c
 
-class Chair:
-    pass
+class Chair(Furniture):
+    is_concrete = False  # base class
+
+    def __init__(self, name="Chair", size=Size.MEDIUM, toughness=Toughness.NORMAL):
+        super().__init__(
+            name=name,
+            size=size,
+            seating_capacity=1,
+            toughness=toughness,
+        )
+        self.occupied_by: Optional["Character"] = None
+        self.table = None  # optional link (can be None)
+
+    def is_free(self):
+        return self.occupied_by is None
+
+    def occupy(self, npc):
+        if self.occupied_by is None:
+            self.occupied_by = npc
+            npc.current_chair = self
+
+            # Only set if part of a table
+            if self.table:
+                npc.seated_at = self.table
+
+            return True
+        return False
+
+    def vacate(self):
+        npc = self.occupied_by
+        if npc:
+            npc.current_chair = None
+            npc.seated_at = None
+
+            # FIX: avoid hard dependency
+            if hasattr(npc, "social_scan"):
+                npc.social_scan()
+
+        self.occupied_by = None
+
+    @property
+    def tags(self):
+        return ["furniture", "chair", "seating"]
 
 class CafeTable(Furniture):
     is_concrete = True
@@ -138,47 +179,36 @@ class CafeTable(Furniture):
         return ["furniture", "table", "social", "surface"]
 
 
-class CafeChair(Furniture):
+class CafeChair(Chair):
     is_concrete = True
 
     def __init__(self, name="Cafe Chair"):
         super().__init__(
             name=name,
             size=Size.MEDIUM,
-            seating_capacity=1,
             toughness=Toughness.NORMAL,
         )
-        self.occupied_by: Optional["Character"] = None
-        self.table = None
 
-    def is_free(self):
-        return self.occupied_by is None
+class Bench(Chair):
+    is_concrete = True
 
-    def occupy(self, npc):
-        if self.occupied_by is None:
-            self.occupied_by = npc
-            npc.current_chair = self
-            npc.seated_at = self.table
-            return True
-        return False
+    def __init__(self, name="Bench", capacity=2):
+        super().__init__(name=name, size=Size.LARGE, toughness=Toughness.DURABLE)
+        self.seating_capacity = capacity
 
-    def vacate(self):
-        npc = self.occupied_by
-        if npc:
-            npc.current_chair = None
-            npc.seated_at = None
-            social_scan(npc)#social_scan marked not defined
-        self.occupied_by = None
-    
-    @property
-    def tags(self):
-        return ["furniture", "chair", "seating"]
+class Sofa(Chair):
+    is_concrete = True
 
-
-class Sofa:
+    def __init__(self, name="Sofa", capacity=3):
+        super().__init__(
+            name=name,
+            size=Size.LARGE,
+            toughness=Toughness.DURABLE,
+        )
+        self.seating_capacity = capacity
     #Be cautious of adding untyped categorical attributes, ie str here
     #see CafeTable
-    pass
+
 
 class CafeCounter(Furniture):
     is_concrete = True
@@ -212,3 +242,37 @@ class CafeCounter(Furniture):
             data["description"] += f" (Display: {item_names})"
 
         return data
+
+# objects/furniture.py
+
+class Bed(Furniture):
+    is_concrete = True
+
+    def __init__(self, name="Bed", capacity=1):
+        super().__init__(
+            name=name,
+            size=Size.LARGE,
+            toughness=Toughness.DURABLE,
+            seating_capacity=capacity,
+        )
+        self.occupied_by = None
+        self.base_ambience = {"peace": 0.3, "rest": 0.4}
+
+    def is_free(self):
+        return self.occupied_by is None
+
+    def occupy(self, npc):
+        if self.is_free():
+            self.occupied_by = npc
+            npc.current_bed = self
+            return True
+        return False
+
+    def vacate(self):
+        if self.occupied_by:
+            self.occupied_by.current_bed = None
+        self.occupied_by = None
+
+    @property
+    def tags(self):
+        return ["furniture", "bed", "rest", "sleep"]

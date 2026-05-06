@@ -63,11 +63,6 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager, and civilian_wa
             worker.posture = Posture.STANDING  # behind counter
             worker.current_counter = counter
 
-    debug_print(
-        worker,
-        f"[EMPLOYMENT] Initialized as {role.name} at {cafe.name}",
-        category="employment"
-    )
 
     # Assign role explicitly (TC2 preset authority)
     #worker.employment.role = CAFE_MANAGER

@@ -25,17 +25,17 @@ def main_menu(all_locations, all_characters):
         if choice == 0:  # User chose "Play/Test Game"
             selected_character, region = select_character_menu()
             if selected_character:
-                from game import gameplay  # Import gameplay here to avoid circular imports
+                from game import gameplay
                 gameplay(selected_character, region)  # Start gameplay
 
         elif choice == 1:  # User chose "Show World"
             from create import all_regions
-            display_world(all_regions)#We should inspect and update htis function
+            display_world(all_regions)
         elif choice == 2:  # 
             from simulation import run_simulation
-            run_simulation(all_characters, num_days=int(input("How many days to simulate? ")))
+            run_simulation(all_characters, num_ticks=int(input("How many ticks to simulate? ")))
 
-        elif choice == 4:  # User chose "Exit"
+        elif choice == 3:  # User chose "Exit"
             print("Exiting game...")
             break  # Exit the loop and end the program
         else:

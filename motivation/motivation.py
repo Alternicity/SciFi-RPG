@@ -305,8 +305,8 @@ class MotivationManager:
     def sync_physiological_motivations(self):
         npc = self.owner
 
+        # Eat
         eat_motive = self.get_motivation("eat")
-
         if eat_motive and eat_motive.suppressed:
             return  # 🔥 HARD BLOCK
 
@@ -316,7 +316,14 @@ class MotivationManager:
                 urgency=npc.hunger,
                 source="physiology"
             )
-
+        # Sleep — rises as effort decays
+        effort = getattr(npc, "effort", 10)
+        if effort <= 6 and not self.is_suppressed("sleep"):
+            sleep_urgency = max(1, round((10 - effort) * 1.2))
+            self.consider_adding_motivation("sleep", urgency=sleep_urgency, source="physiology")
+            debug_print(npc, f"[PHYSIO] sleep urgency={sleep_urgency} effort={effort:.1f}", 
+                        category="motive")
+        
     # 🔹 ROLE / OBLIGATION
     def sync_role_motivations(self, tick):
         npc = self.owner
@@ -539,10 +546,6 @@ class MotivationManager:
 
         mtype = self._coerce_motivation_type(motivation_type)
         persistent = mtype in CORE_MOTIVES
-        if mtype == "have_fun":
-            import traceback
-            print(f"[UPDATE CALL] have_fun urgency={urgency}")
-            #traceback.print_stack(limit=5)
 
         existing = self.get_motivation(mtype)
 

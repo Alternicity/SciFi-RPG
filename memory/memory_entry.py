@@ -99,6 +99,13 @@ if TYPE_CHECKING:
     from base.faction import Faction
     from events import Event
 
+@dataclass#for the future, when 20+ books and NPCs discussing what they've read, promote add:
+class KnowledgeMemory(MemoryEntry):
+    source_title: str = ""
+    knowledge_type: str = "general"
+    subject_tags: List[str] = field(default_factory=list)
+    psy_resonance_experienced: float = 0.0
+
 
 #when you add or update an existing RegionKnowledge, call rk.touch(current_hour)
 @dataclass

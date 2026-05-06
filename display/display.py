@@ -646,122 +646,152 @@ def build_info_column(origin_obj, npc, v, anchor):
 
     return info
 
+def display_percepts_compact(npc):
+    """File-friendly percept summary, no tabulate."""
+    gs = get_game_state()
+    if gs and not gs.should_display_npc(npc):
+        return
 
+    buckets = collect_display_buckets(npc)
+    parts = []
+
+    for origin, data, v in buckets["normal_rows"]:
+        name = getattr(origin, "name", data.get("type", "?"))
+        cls = origin.__class__.__name__
+        parts.append(f"{name}({cls})")
+
+    if buckets["empty_tables"]:
+        parts.append(f"{len(buckets['empty_tables'])}xEmptyTable")
+
+    for t in buckets["occupied_tables"]:
+        n = len(t.get_occupants(npc.location))
+        parts.append(f"{t.name}({n}seated)")
+
+    debug_print(npc, f"[PERCEPTS] {' | '.join(parts)}", category="percept")
+
+USE_TABULATE = False  # flip to True when you want pretty tables in terminal
 def display_percepts_table(npc):
     """
     Prints a clean tabular debug summary of an NPC's percepts.
     Only intended for debug characters or test NPCs.
     """
+    if USE_TABULATE:
+        # existing tabulate code
     
-    if npc is None:
-        return
-    
-    gs = get_game_state()
-    if gs and not gs.should_display_npc(npc):
-        return
-    
-    debug_print(
-        npc,
-        f"Percepts table after observation: {npc.name}, debug_role={getattr(npc, 'debug_role', None)}",
-        category="percept"
-    )
+                
+        if npc is None:
+            return
+        
+        gs = get_game_state()
+        if gs and not gs.should_display_npc(npc):
+            return
+        
+        debug_print(
+            npc,
+            f"Percepts table after observation: {npc.name}, debug_role={getattr(npc, 'debug_role', None)}",
+            category="percept"
+        )
 
-    role = getattr(npc, "debug_role", None)
-    if role is None or not ROLE_FILTERS.get(role, False):
-        return
-    
-    anchor = getattr(npc, "current_anchor", None)
+        role = getattr(npc, "debug_role", None)
+        if role is None or not ROLE_FILTERS.get(role, False):
+            return
+        
+        anchor = getattr(npc, "current_anchor", None)
 
-    buckets = collect_display_buckets(npc)
-    table_data = []
+        buckets = collect_display_buckets(npc)
+        table_data = []
 
-    for origin, data, v in buckets["normal_rows"]:
+        for origin, data, v in buckets["normal_rows"]:
 
-        desc = data.get("description") or data.get("type") or "UNKNOWN"
+            desc = data.get("description") or data.get("type") or "UNKNOWN"
 
-        type_ = data.get("type", "—")
+            type_ = data.get("type", "—")
 
-        # Remove redundant type text
-        if isinstance(desc, str) and type_ in desc:
-            desc = desc.replace(f": {type_}", "").replace(f"({type_})", "").strip()
+            # Remove redundant type text
+            if isinstance(desc, str) and type_ in desc:
+                desc = desc.replace(f": {type_}", "").replace(f"({type_})", "").strip()
 
-        # Simplify verbose character description
-        if isinstance(desc, str) and "," in desc and " of " in desc:
-            desc = desc.split(",")[0]
+            # Simplify verbose character description
+            if isinstance(desc, str) and "," in desc and " of " in desc:
+                desc = desc.split(",")[0]
 
-        # Location controlling faction
-        from base.location import Location
-        if type_ == "Location" and isinstance(origin, Location):
-            faction = getattr(origin, "controlling_faction", None)
-            if faction:
-                desc = f"{origin.name}, {faction.name}"
+            # Location controlling faction
+            from base.location import Location
+            if type_ == "Location" and isinstance(origin, Location):
+                faction = getattr(origin, "controlling_faction", None)
+                if faction:
+                    desc = f"{origin.name}, {faction.name}"
+                else:
+                    desc = origin.name
+
+            appearance = extract_appearance_summary(origin) if origin else "[MISSING]"
+
+            info = build_info_column(origin, npc, v, anchor)
+
+            table_data.append([
+                desc, # Percept
+                type_, #Class
+                appearance, #Description
+                info, #info
+            ])
+
+
+        for table in buckets["occupied_tables"]:
+
+            seated = table.get_occupants(npc.location)
+
+            desc = table.name
+            type_ = "CafeTable"
+            appearance = f"Occupied ({len(seated)})"
+
+            occupant_descriptions = [
+                f"{o.race}, {o.sex}" for o in seated
+            ]
+
+            info = ", ".join(occupant_descriptions)
+
+            table_data.append([
+                desc,
+                type_,
+                appearance,
+                info,
+            ])
+
+        empty_tables = buckets["empty_tables"]
+
+        if empty_tables:
+
+            count = len(empty_tables)
+
+            numbers = []
+            for t in empty_tables:
+                parts = t.name.split()
+                if parts[-1].isdigit():
+                    numbers.append(int(parts[-1]))
+
+            numbers.sort()
+
+            if numbers:
+                appearance = f"Tables {numbers[0]}-{numbers[-1]}"
             else:
-                desc = origin.name
+                appearance = f"{count} tables"
 
-        appearance = extract_appearance_summary(origin) if origin else "[MISSING]"
+            table_data.append([
+                f"Tables (x{count})",
+                "CafeTables",
+                appearance,
+                "Empty Tables",
+            ])
 
-        info = build_info_column(origin, npc, v, anchor)
+        print(tabulate(
+            table_data,
+            headers=["Percept", "Class", "Description", "Info"],
+            tablefmt="rounded_outline"
+        ))
+    else:
+        display_percepts_compact(npc)
 
-        table_data.append([
-            desc, # Percept
-            type_, #Class
-            appearance, #Description
-            info, #info
-        ])
 
-
-    for table in buckets["occupied_tables"]:
-
-        seated = table.get_occupants(npc.location)
-
-        desc = table.name
-        type_ = "CafeTable"
-        appearance = f"Occupied ({len(seated)})"
-
-        occupant_descriptions = [
-            f"{o.race}, {o.sex}" for o in seated
-        ]
-
-        info = ", ".join(occupant_descriptions)
-
-        table_data.append([
-            desc,
-            type_,
-            appearance,
-            info,
-        ])
-
-    empty_tables = buckets["empty_tables"]
-
-    if empty_tables:
-
-        count = len(empty_tables)
-
-        numbers = []
-        for t in empty_tables:
-            parts = t.name.split()
-            if parts[-1].isdigit():
-                numbers.append(int(parts[-1]))
-
-        numbers.sort()
-
-        if numbers:
-            appearance = f"Tables {numbers[0]}-{numbers[-1]}"
-        else:
-            appearance = f"{count} tables"
-
-        table_data.append([
-            f"Tables (x{count})",
-            "CafeTables",
-            appearance,
-            "Empty Tables",
-        ])
-
-    print(tabulate(
-        table_data,
-        headers=["Percept", "Class", "Description", "Info"],
-        tablefmt="rounded_outline"
-    ))
 
 def display_npc_mind(npc):
     thoughts_data = []
@@ -1349,7 +1379,7 @@ def display_civ_liberty(npc):
         f" | €{npc.wallet.balance if npc.wallet else '—'}"
         f" | motive={urgent_str}"
         f" | esteem={npc.self_esteem}"
-        f" | anchor={npc.current_anchor.__class__.__name__ if npc.current_anchor else '—'}"
+        #f" | anchor={npc.current_anchor.__class__.__name__ if npc.current_anchor else '—'}"#it would be useful to comment out this line
         f" | favoured={favoured_name}"
     )
 

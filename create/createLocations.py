@@ -13,7 +13,7 @@ from weapons import Pistol
 from shop_name_generator import generate_shop_name
 import traceback
 from debug_utils import debug_print
-from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment, seed_cafe_furniture
+from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment, seed_cafe_furniture, seed_sports_centre_equipment, seed_park_objects, seed_library_books, seed_library_furniture
 game_state = get_game_state()
 
 def create_locations(region: Region, wealth: str) -> List[Location]:
@@ -86,7 +86,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     
     for shop in shops:
         
-        family_surnames = game_state.extant_family_names#family_surnames not accessed
+        family_surnames = game_state.extant_family_names#family_surnames not actually accessed here
         specialization = None
         shop.name = generate_shop_name(specialization=None, region_name=region.name,)
         shop.inventory.owner = shop
@@ -149,11 +149,15 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         if getattr(loc, "is_public_facing", False):
             game_state.public_places.append(loc)
 
-    #get the cafes and retaurants here,
     seed_cafe_furniture(game_state.all_locations)
     seed_food_locations(game_state.all_locations)
     seed_ambience_objects(game_state.all_locations)
     seed_commercial_equipment(game_state.all_locations)
+    seed_sports_centre_equipment(game_state.all_locations)
+    seed_park_objects(game_state.all_locations)
+    seed_library_books(game_state.all_locations)
+    seed_library_furniture(game_state.all_locations)
+
     return locations
 
 #this function is a mess, but currently unused

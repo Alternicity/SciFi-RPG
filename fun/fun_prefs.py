@@ -7,4 +7,4 @@ class FunPreferences:
         self.social = random.randint(1,10)
         self.nature = random.randint(1,10)
         self.learning = random.randint(1,10)
-        self.sport = random.randint(1,10)
+        self.sport = random.randint(1,2)

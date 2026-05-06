@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 import uuid
 from random import random
 from typing import List, Optional, Union, Any
-from memory_entry import memory_departing_party
-
-from base_classes import Character
+from memory.memory_entry import memory_departing_party
+from debug_utils import debug_print
+from base.character import Character
 
 @dataclass
 class DreamEntity:
@@ -35,6 +35,30 @@ class Dream:
     is_aetheric: bool = False
 
 #dreamlet is a corollory dream
+
+
+def consolidate_sleep_memories(npc):
+    """Promote high-importance episodic memories toward semantic."""
+    important = [
+        m for m in npc.mind.memory.episodic
+        if getattr(m, "importance", 0) >= 3
+        and m.type not in ("anchor_creation",)
+    ]
+    for m in important[:3]:
+        debug_print(npc, f"[SLEEP] Consolidating: {m.details[:50]}", category="sleep")
+        # Future: actually move to semantic["procedures"] or similar
+
+
+def maybe_dream(npc):
+    """Stub — full dream generation deferred."""
+    from dream import generate_dream_for
+    psy = getattr(npc, "psy", 0)
+    if psy > 8:
+        dream = generate_dream_for(npc)
+        debug_print(npc, f"[DREAM] {npc.name} dreams: theme={dream.theme} tone={dream.tone}",
+                    category="sleep")
+        # Future: dream effects on mood, memory, psy
+
 
 #Example Dream Generator
 def generate_dream_for(character):

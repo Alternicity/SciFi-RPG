@@ -1,5 +1,6 @@
 #anchors.fun_anchor.py
 from anchors.anchor import Anchor
+from debug_utils import debug_print
 
 class FunAnchor(Anchor):
     type = "leisure"
@@ -18,40 +19,61 @@ class FunAnchor(Anchor):
         return target != npc.location
 
     def resolve_target_location(self):
-        #When you do add NPC-as-fun-source later, it fits naturally as a second resolver 
         npc = self.owner
-        if not hasattr(npc, "fun_prefs") or npc.fun_prefs is None:
-            # Fallback: any location tagged fun that isn't current
-            candidates = [
-                loc for loc in npc.region.locations
-                if "fun" in getattr(loc, "tags", [])
-                and loc != npc.location
-            ]
-            return candidates[0] if candidates else None
+        recent_locs = {id(loc) for loc, _ in getattr(npc, "recently_visited", [])}
 
-        best = None
-        best_score = -999
-        prefs = npc.fun_prefs
-
-        # Map location classes to preference attributes
         PREF_MAP = {
             "Park": "nature",
-            "SportsCentre": "sport", 
+            "SportsCentre": "sport",
             "Library": "learning",
-            "Park": "social",
+            "Cafe": "social",
         }
 
+        prefs = getattr(npc, "fun_prefs", None)
+        best = None
+        best_score = -999
+        scores = []
+
+        # Primary pass — exclude recently visited
         for loc in npc.region.locations:
             if loc == npc.location:
                 continue
+            if id(loc) in recent_locs:
+                continue
+            if loc.__class__.__name__ not in PREF_MAP:
+                continue
+
             base_fun = getattr(loc, "fun", 0)
-            class_name = loc.__class__.__name__
-            pref_key = PREF_MAP.get(class_name, None)
-            pref_bonus = getattr(prefs, pref_key, 0) if pref_key else 0
+            pref_key = PREF_MAP[loc.__class__.__name__]
+            pref_bonus = getattr(prefs, pref_key, 0) if prefs else 0
             score = base_fun + pref_bonus
+            scores.append((loc.name, score))
 
             if score > best_score:
                 best_score = score
                 best = loc
 
+        # Fallback pass — all fun locations recently visited, ignore recency
+        if best is None:
+            npc.recently_visited.clear()
+            for loc in npc.region.locations:
+                if loc == npc.location:
+                    continue
+                if loc.__class__.__name__ not in PREF_MAP:
+                    continue
+
+                base_fun = getattr(loc, "fun", 0)
+                pref_key = PREF_MAP[loc.__class__.__name__]
+                pref_bonus = getattr(prefs, pref_key, 0) if prefs else 0
+                score = base_fun + pref_bonus
+                scores.append((loc.name, score))
+
+                if score > best_score:
+                    best_score = score
+                    best = loc
+
+        scores.sort(key=lambda x: -x[1])
+        summary = " | ".join(f"{name}={sc}" for name, sc in scores)
+        debug_print(npc, f"[FUN TARGET] {summary} → {best.name if best else 'None'}",
+                    category="fun")
         return best

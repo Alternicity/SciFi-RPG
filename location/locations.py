@@ -1258,7 +1258,7 @@ class Park(WorkplaceMixin, PerceptibleLocation):
     categories: List[str] = field(default_factory=lambda: ["workplace", "public", "fun", "social", "nature"])
     upkeep: int = 15
     ambience_level: int = 1
-    fun: int = 1
+    fun: int = 2
 
     items_available: List[Any] = field(default_factory=list) #relevant? park toys?
     inventory: Inventory = field(default_factory=Inventory)
@@ -1447,7 +1447,7 @@ class Library(WorkplaceMixin, PerceptibleLocation):
     genres_available: List[str] = field(default_factory=list)  # List of genres
     inventory: Inventory = field(default_factory=Inventory) #overlap
 
-    fun: int = 2
+    fun: int = 3
     is_concrete: bool = True
     secret_entrance: bool = False
     is_powered: bool = True
@@ -1745,7 +1745,7 @@ class SportsCentre(WorkplaceMixin, PerceptibleLocation):
     items_available: List[str] = field(default_factory=list)
     inventory: Inventory = field(default_factory=Inventory)
     ambience_level: int = 1
-    fun: int = 1
+    fun: int = 3
     is_concrete: bool = True
     secret_entrance: bool = False
     is_powered: bool = False

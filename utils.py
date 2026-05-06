@@ -53,7 +53,7 @@ def create_corporation(data):
     """Create a Corporation object."""
     if "name" not in data:
         raise ValueError("Missing required attribute 'name' for Corporation.")
-    return Corporation(name=data["name"])#what does this do?
+    return Corporation(name=data["name"])
 
 def create_weapon(data): #Might still be useful, but need updating
     """Create a Weapon object."""

@@ -1,0 +1,12 @@
+{
+  "name": "Freya Fjell",
+  "race": "WhiteAryanNordic",
+  "sex": "female",
+  "strength": 8,
+  "fun_prefs": {
+    "social": 6,
+    "nature": 8,
+    "learning": 1,
+    "sport": 1
+  }
+}

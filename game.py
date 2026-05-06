@@ -14,6 +14,6 @@ def game(all_regions):
         print("No character selected. Returning to main menu.")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":#is this perhaps an artifact of the programs early development?
     game()
 

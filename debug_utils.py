@@ -1,4 +1,6 @@
 # debug_utils.py
+import sys
+import os
 from create.create_game_state import get_game_state
 game_state = get_game_state()
 
@@ -128,36 +130,63 @@ That is impossible if filters are hard-coded. """
 #ALL categories in the print must be enabled.
 # NOTE: is_test_npc is deprecated.
 # Do not use for debug filtering; use debug_role + ROLE_FILTERS instead.
+
+
+# Module-level file handle — opened once, not per call
+_log_file = None
+
+def init_log_file(path="/home/stuart/Documents/Sim Logs/sim_log.txt"):
+    """Call once at simulation start."""
+    global _log_file
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    _log_file = open(path, "w", encoding="utf-8")
+
+def close_log_file():
+    """Call at simulation end."""
+    global _log_file
+    if _log_file:
+        _log_file.close()
+        _log_file = None
+
+def _write(line):
+    """Write to file if open, always print to terminal."""
+    if _log_file:
+        _log_file.write(line + "\n")
+        _log_file.flush()
+    else:
+        print(line)
+
 def debug_print(npc=None, message="", category="general", level="DEBUG"):
     if not DEBUG_MODE:
         return
     if not message:
         return
+
     gs = get_game_state()
 
-    # ---- System-level message ----
-    if npc is None or not hasattr(npc, "id"):
-        categories = [category] if isinstance(category, str) else list(category)
-        for cat in categories:
-            if cat in DEBUG_FLAGS and not DEBUG_FLAGS[cat]:
-                return
-        print(f"[{','.join(categories)}] System: {message}")
-        return
-
-    # ---- NPC-gated message ----
-    if gs and not gs.should_display_npc(npc):
-        return
-
     categories = [category] if isinstance(category, str) else list(category)
+    cat_str = ",".join(categories)
+
+    # Check category flags
     for cat in categories:
         if cat in DEBUG_FLAGS and not DEBUG_FLAGS[cat]:
             return
 
+    # System-level message
+    if npc is None or not hasattr(npc, "id"):
+        _write(f"[{cat_str}] System: {message}")
+        return
+
+    # NPC display gate
+    if gs and not gs.should_display_npc(npc):
+        return
+
+    # Role filter
     role = getattr(npc, "debug_role", None)
     if role is not None and not ROLE_FILTERS.get(role, False):
         return
 
-    print(f"[{','.join(categories)}] {npc.name}: {message}")
+    _write(f"[{cat_str}] {npc.name}: {message}")
 
 
 

@@ -6,11 +6,11 @@ from debug_utils import debug_print
 game_state = get_game_state()
 from base.location import CommercialLocation
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
-from location.locations import Cafe, Restaurant
+from location.locations import Cafe, Restaurant, Library, Park, LunaSanctum, SportsCentre
 from objects.food.prepared_food import Sandwich, Burger
-from objects.furniture import CafeChair, CafeTable, CafeCounter
+from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
-
+from objects.trees_and_plants import GoldenRatioTree, Plant, Tree
 from objects.trees_and_plants import BonsaiTree
 
 DEFAULT_SPECIALIZATION = "general"
@@ -47,6 +47,106 @@ SPECIALIZATION_KEYWORDS = {#apparently not used in this file, or anywhere, yet. 
 
 spec_suffixes = ["Armory", "Emporium", "Outlet", "Depot", "Mart", "Bazaar", "Vault", "Shop", "Store"]
 family_surnames = game_state.extant_family_names
+# augment/augment_locations.py
+
+def assign_location_names(all_locations):
+    from world.location_names import LIBRARY_NAMES, PARK_NAMES, generate_cafe_name
+    
+    lib_names = list(LIBRARY_NAMES)
+    park_names = list(PARK_NAMES)
+    
+    for loc in all_locations:
+        if isinstance(loc, Library) and loc.name == "Public Library":
+            if lib_names:
+                loc.name = lib_names.pop(0)
+        elif isinstance(loc, Park) and loc.name == "Green Park":
+            if park_names:
+                loc.name = park_names.pop(0)
+        elif isinstance(loc, Cafe) and loc.name == "Metro Cafe":
+            loc.name = generate_cafe_name()
+
+def assign_location_ownership(all_locations, all_corporations):
+    """Assign corporations to commercial locations that lack owners."""
+    sports_centres = [loc for loc in all_locations if isinstance(loc, SportsCentre)]
+    
+    if not all_corporations:
+        return
+    
+    for loc in sports_centres:
+        if getattr(loc, "owner", None) is None:
+            corp = random.choice(all_corporations)
+            loc.owner = corp
+            # Name derives from owner
+            loc.name = f"{corp.name} Arena"
+
+
+def seed_park_objects(all_locations):
+    
+    for loc in all_locations:
+        if not isinstance(loc, Park):
+            continue
+        if isinstance(loc, LunaSanctum):
+            continue  # Luna's park gets seeded separately
+
+        # Trees
+        for i in range(3):
+            tree = Tree(
+                name=f"Park Tree {i+1}",
+                foliage_color=random.choice(["green", "gold", "purple"]),
+                resonance_factor=random.uniform(0.8, 1.4),
+            )
+            loc.items.objects_present.append(tree)
+
+        # One special tree
+        spiral = GoldenRatioTree()
+        loc.items.objects_present.append(spiral)
+
+        # Benches (use base Chair for now)
+        for i in range(4):
+            bench = Chair(name=f"Park Bench {i+1}")
+            bench.location = loc
+            loc.items.objects_present.append(bench)
+
+        # Ambient boost from trees
+        tree_resonance = sum(
+            getattr(t, "resonance_factor", 1.0)
+            for t in loc.items.objects_present
+            if isinstance(t, Tree)
+        )
+        loc.fun = min(8, 1 + int(tree_resonance))
+
+def seed_library_furniture(all_locations):
+    for loc in all_locations:
+        if not isinstance(loc, Library):
+            continue
+        if any(isinstance(o, Table) for o in loc.items.objects_present):
+            continue  # already seeded
+
+        for t in range(4):  # 4 reading tables
+            table = Table(
+                name=f"Reading Table {t+1}",
+                size=Size.LARGE,
+                seating_capacity=2,  # intimate, focused
+                toughness=Toughness.DURABLE,
+            )
+            table.location = loc
+            table.region = loc.region
+            loc.items.objects_present.append(table)
+
+            for c in range(2):
+                chair = Chair(name=f"Reading Chair {t+1}-{c+1}")
+                chair.table = table
+                chair.location = loc
+                table.chairs.append(chair)
+                loc.items.objects_present.append(chair)
+
+def seed_library_books(all_locations):
+    from world.books_catalogue import LIBRARY_COLLECTION
+    for loc in all_locations:
+        if not isinstance(loc, Library):
+            continue
+        for book in LIBRARY_COLLECTION:
+            loc.items.objects_present.append(book)
 
 def reassign_shop_names_after_character_creation():
     game_state = get_game_state()
@@ -191,3 +291,56 @@ def seed_cafe_furniture(all_locations):
 
 """ park_sublocs = [Playground(), Storeroom()]
 nightclub_sublocs = [DanceFloor(), Storeroom(), Office()] """
+
+
+def seed_sports_centre_equipment(all_locations):
+    from objects.sports_objects import PoolTable, BowlingLane, PoolCue
+    from location.locations import SportsCentre
+
+    for loc in all_locations:
+        if not isinstance(loc, SportsCentre):
+            continue
+        if any(isinstance(o, PoolTable) for o in loc.items.objects_present):
+            continue  # already seeded
+
+        # 2 pool tables
+        for i in range(1, 3):
+            table = PoolTable(name=f"Pool Table {i}")
+            table.location = loc
+            table.region = loc.region
+            loc.items.objects_present.append(table)
+            # Add cues to location inventory too
+            for cue in table.cues:
+                cue.location = loc
+                loc.items.objects_present.append(cue)
+
+        # 3 bowling lanes
+        for i in range(1, 4):
+            lane = BowlingLane(lane_number=i)
+            lane.location = loc
+            lane.region = loc.region
+            loc.items.objects_present.append(lane)
+
+        # Boost fun value from equipment
+        loc.fun = 4
+
+def seed_residential_furniture(all_locations):
+    from objects.furniture import Bed
+    from location.locations import House, ApartmentBlock
+
+    for loc in all_locations:
+        if not isinstance(loc, (House, ApartmentBlock)):#stopgap until sublocations exist.
+            continue
+        if any(isinstance(o, Bed) for o in loc.items.objects_present):
+            continue
+
+        if isinstance(loc, House):
+            beds = 2
+        else:
+            beds = 4  # shared block — multiple beds until sublocations exist
+
+        for i in range(beds):
+            bed = Bed(name=f"Bed {i+1}")
+            bed.location = loc
+            bed.region = loc.region
+            loc.items.objects_present.append(bed)

@@ -17,13 +17,13 @@ from debug_utils import debug_print
 from base.character import Character
 from employment.employment import update_employee_presence
 
-def simulate_hours(all_characters, num_days=1, debug_character=None):
+def simulate_hours(all_characters, num_ticks=1, debug_character=None):
     game_state = get_game_state()
     all_regions = game_state.all_regions
     all_locations = game_state.all_locations
     day = game_state.day
 
-    for _ in range(num_days):
+    for _ in range(num_ticks):
         game_state.advance_hour()
         debug_print(None, f"[TIME] Hour {game_state.hour}, Day {game_state.day}", category="tick")
         #debug_print(None, summarize_npc_turns(all_characters), category="tick")
@@ -155,9 +155,9 @@ def simulate_hours(all_characters, num_days=1, debug_character=None):
 
         #TC2 snapshot displays
         DISPLAY_BY_DEBUG_ROLE = {
-            #"civilian_worker": display_civ_worker,
             "civilian_liberty": display_civ_liberty,
             "civilian_waitress": display_civ_waitress,
+            # civilian_worker omitted — suppresses his display entirely
         }
 
         for dbg_npc in gs.debug_npcs.values():
@@ -235,7 +235,11 @@ def begin_npc_turn(npc):
     npc.hunger = min(npc.hunger + 0.5, 20)#edited
     
     #hunger = 20 → starving
-    npc.effort = max(npc.effort - 0.1, 1)
+    #npc.effort = max(npc.effort - 0.1, 1)
+    #original
+
+    npc.effort = max(npc.effort - 1.0, 1)  # 10x normal for testing sleep
+    #Revert after confirming the flow works.
     #effort = 1 → exhausted
 
     #npc.motivation_manager.sync_physiological_motivations()
@@ -243,7 +247,8 @@ def begin_npc_turn(npc):
     npc.motivation_manager.sync_motivations(tick)
     npc.time_in_location += 1#might be unused
     npc.mind.decay_thoughts()
-    
+    _tick_fun(npc)
+
 def end_npc_turn(npc):
     npc.mind.clear_stale_percepts()
     npc.inventory.clear_recently_acquired()
@@ -258,7 +263,34 @@ def end_npc_turn(npc):
     game_state = get_game_state()
     debug_print(f"[TURN] Hour {game_state.hour}, Day {game_state.day}", category="tick")
 
+def _tick_fun(npc):
+    loc = npc.location
+    gs = get_game_state()
+    if getattr(npc, "_last_fun_tick", -1) == gs.hour:
+        return
+    npc._last_fun_tick = gs.hour#to avoid duplicate fun gains in a single tick/hour
+    
+    if not loc:
+        return
+    if "fun" not in getattr(loc, "tags", []):
+        return
+    if npc.motivation_manager.is_suppressed("have_fun"):
+        return
 
+    # Only gain fun if have_fun is the active purpose
+    if npc.location_purpose != "have_fun":
+        return
+
+    gain = getattr(loc, "fun", 1)
+    npc.fun = min(20, npc.fun + gain)
+
+    debug_print(npc, f"[FUN] +{gain} at {loc.name}, fun now={npc.fun}", category="fun")
+
+    if npc.fun >= 10:
+        npc.motivation_manager.set_urgency("have_fun", 2)
+        npc.motivation_manager.suppress("have_fun", reason="satisfied", duration=4)
+        npc.location_purpose_fulfilled = True
+        debug_print(npc, f"[FUN] Satisfied at {loc.name}", category="fun")
     
     
 

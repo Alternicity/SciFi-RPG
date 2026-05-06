@@ -52,11 +52,11 @@ def update_employee_presence(npc, hour):
             npc,
             workplace
         )
-        debug_print(
+        """ debug_print(
             npc,
             f"[WORK SESSION] Created new session",
             category="employment"
-        )
+        ) """
         workplace.employees_there.append(npc)
 
         npc.mind.memory.add_episodic(

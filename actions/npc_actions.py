@@ -15,33 +15,221 @@ from employment.workplace_mixin import WorkplaceMixin
 from create.create_game_state import get_game_state
 game_state = get_game_state()
 
+def have_fun_auto(npc, region=None):
+    loc = npc.location
+    cls = loc.__class__.__name__
+
+    if cls == "Library":
+        from world.books import Book
+        books_here = [
+            o for o in loc.items.objects_present
+            if isinstance(o, Book)
+        ]
+        if books_here:
+            book = random.choice(books_here)
+            return read_auto(npc, region, item=book)
+
+    if cls == "Park" or "nature" in getattr(loc, "tags", []):
+        return stroll_auto(npc, region)
+
+    if cls == "SportsCentre" or "sport" in getattr(loc, "tags", []):
+        return exercise_auto(npc, region)
+
+    # Generic fallback for SportsCentre, Cafe, etc.
+    debug_print(npc, f"[FUN] {npc.name} enjoys being at {loc.name}", category="fun")
+
+    entry = MemoryEntry(
+        subject=npc.name,
+        verb="enjoyed",
+        object_=loc.name,
+        details=f"Spent leisure time at {loc.name}.",
+        importance=1,
+        tags=["fun", "leisure"],
+        type="experience",
+    )
+    npc.mind.memory.add_episodic(entry)
+    return True
+
+
+# actions/npc_actions.py
+
+def exercise_auto(npc, region=None):
+    """NPC uses sports equipment at a SportsCentre."""
+    from objects.sports_objects import PoolTable, BowlingLane
+    import random
+
+    loc = npc.location
+
+    # Find free equipment, prefer pool table then bowling
+    pool_tables = [
+        o for o in loc.items.objects_present
+        if isinstance(o, PoolTable) and o.is_free()
+    ]
+    lanes = [
+        o for o in loc.items.objects_present
+        if isinstance(o, BowlingLane) and o.is_free()
+    ]
+
+    if pool_tables:
+        table = random.choice(pool_tables)
+        table.occupy(npc)
+        npc.current_sports_equipment = table  # track for vacating later
+
+        debug_print(
+            npc,
+            f"[EXERCISE] {npc.name} plays pool at {table.name}",
+            category="fun"
+        )
+        verb = "played_pool"
+        detail = f"Played pool at {table.name} in {loc.name}."
+
+    elif lanes:
+        lane = random.choice(lanes)
+        lane.occupy(npc)
+        npc.current_sports_equipment = lane
+
+        pins = lane.roll()
+        debug_print(
+            npc,
+            f"[EXERCISE] {npc.name} bowls at {lane.name} — {pins} pins",
+            category="fun"
+        )
+        verb = "went_bowling"
+        detail = f"Bowled at {lane.name}, knocked down {pins} pins."
+
+    else:
+        # All equipment occupied — generic activity
+        npc.current_sports_equipment = None
+        debug_print(npc, f"[EXERCISE] {npc.name} works out at {loc.name}", category="fun")
+        verb = "exercised"
+        detail = f"Worked out at {loc.name}."
+
+    entry = MemoryEntry(
+        subject=npc.name,
+        verb=verb,
+        object_=loc.name,
+        details=detail,
+        importance=1,
+        tags=["fun", "sport", "leisure"],
+        type="experience",
+    )
+    npc.mind.memory.add_episodic(entry)
+    return True
+
+def stroll_auto(npc, region=None):
+    """NPC wanders and enjoys the park environment."""
+    loc = npc.location
+
+    # Absorb ambience from trees and plants
+    from objects.trees_and_plants import Tree, Plant
+    nature_objects = [
+        o for o in loc.items.objects_present
+        if isinstance(o, (Tree, Plant))
+    ]
+
+    resonance = sum(getattr(o, "resonance_factor", 1.0) for o in nature_objects)
+    psy_gain = sum(getattr(o, "golden_ratio_influence", 0.0) for o in nature_objects)
+
+    # Boost psy for sensitive NPCs
+    if psy_gain > 0 and getattr(npc, "psy", 0) > 5:
+        npc.psy = min(20, npc.psy + psy_gain * 0.1)
+        debug_print(npc, f"[STROLL] Psy resonance +{psy_gain:.1f}", category="fun")
+
+    debug_print(
+        npc,
+        f"[STROLL] {npc.name} strolls through {loc.name} "
+        f"(resonance={resonance:.1f}, {len(nature_objects)} nature objects)",
+        category="fun"
+    )
+
+    entry = MemoryEntry(
+        subject=npc.name,
+        verb="strolled",
+        object_=loc.name,
+        details=f"Wandered through {loc.name}, felt the resonance of nature.",
+        importance=1,
+        tags=["fun", "nature", "leisure"],
+        type="experience",
+    )
+    npc.mind.memory.add_episodic(entry)
+    return True
+
+def read_auto(npc, region=None, *, item):
+    """NPC reads a book."""
+
+    if item is None:
+        debug_print(npc, "[READ] No book provided", category="fun")
+        return False
+    
+    if not hasattr(item, "get_knowledge_payload"):
+        return False
+
+    payload = item.get_knowledge_payload()
+
+    # Reduce have_fun urgency slightly (they're enjoying themselves)
+    npc.motivation_manager.set_urgency(
+        "have_fun",
+        max(1, npc.motivation_manager.get_motivation("have_fun").urgency - 1)
+    )
+
+    # Boost fun stat
+    npc.fun = min(10, npc.fun + 2)
+
+    # Psy effect on sensitive NPCs
+    psy_res = payload.get("psy_resonance", 0)
+    if psy_res > 0 and getattr(npc, "psy", 0) > 5:
+        npc.psy = min(20, npc.psy + psy_res)
+        debug_print(npc, f"[PSY] {npc.name} resonates with '{item.title}' +{psy_res}", category="psy")
+
+    # Create a memory of reading this
+    entry = MemoryEntry(
+        subject=npc.name,
+        verb="read",
+        object_=item.title,
+        details=f"Read '{item.title}' at {npc.location.name}",
+        tags=["reading", "knowledge"] + payload.get("subject_tags", []),
+        importance=2 + int(psy_res),
+        type="knowledge_acquisition",
+        payload=payload,
+    )
+    npc.mind.memory.add_episodic(entry)
+
+    # Redacted books create a specific thought
+    if item.is_redacted and not npc.mind.has_thought_with_tag("redacted_content"):
+        npc.mind.add_thought(Thought(
+            subject="knowledge",
+            content=f"Pages are missing from '{item.title}'. Why?",
+            urgency=3,
+            tags=["redacted_content", "curiosity", "mystery"]
+        ))
+
+    debug_print(npc, f"[READ] {npc.name} read '{item.title}' fun={npc.fun}", category="fun")
+    return True
+
+
 def visit_location_auto(character, region=None, destination=None, destination_name=None, **kwargs):
     npc = character
     gs = get_game_state()
 
     debug_print(
             npc,
-            f"[VISIT] visit_location_auto npc={npc.name} role={npc.debug_role} "
-            f"from={npc.location} to={destination}",
+            f"[VISIT] {npc.name} role={npc.debug_role} "
+            f"from={npc.location} to={destination.name}",
             category="visit"
         )
-
-    #update_employee_presence(npc, gs)
 
     import inspect
     caller = inspect.stack()[1]
     caller_info = f"{caller.function} @ {caller.filename}:{caller.lineno}"
 
-    debug_print(npc, f"[MOVE] {npc.name} -> {getattr(destination,'name',destination)} triggered_by={caller_info}", category="movement")
-
     search_region = region or npc.region
-    debug_print(npc, f"[VISIT] Arrived at {destination.name}", "visit")
+    #debug_print(npc, f"[VISIT] Arrived at {destination.name}", "visit")
 
     # Resolve destination by name if needed
     #This code seems odd. If this function is called there should a priori be a destination location
     if destination is None and destination_name:
         destination = search_region.get_location_by_name(destination_name)
-        debug_print(npc, f"[VISIT] Resolved destination_name='{destination_name}' to {destination}", category="visit")
+        #debug_print(npc, f"[VISIT] Resolved destination_name='{destination_name}' to {destination}", category="visit")
     elif destination is None and "destination_name" in kwargs:
         destination = search_region.get_location_by_name(kwargs["destination_name"])
         debug_print(npc, f"[VISIT] Resolved from kwargs destination_name='{kwargs['destination_name']}' to {destination}", category="visit")
@@ -50,6 +238,12 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     if destination is None:
         debug_print(npc, f"[VISIT] {npc.name} has no valid destination to visit (lookup failed).", category="visit")
         return False
+
+    #vacate an pool table etc
+    equipment = getattr(npc, "current_sports_equipment", None)
+    if equipment and hasattr(equipment, "vacate"):
+        equipment.vacate(npc)
+        npc.current_sports_equipment = None
 
     # --- Core movement ---
     
@@ -77,17 +271,23 @@ def visit_location_auto(character, region=None, destination=None, destination_na
 
     npc.just_arrived = True
     npc.time_in_location = 0
+    npc.recently_visited.append((npc.location, gs.hour))
+    npc.recently_visited = npc.recently_visited[-3:]  # keep last 3
+
+
     # derive purpose from current top motivation
     top = npc.motivation_manager.get_highest_priority_motivation()
-    if top:
-        npc.location_purpose = top.type
+    new_purpose = str(top.type) if top else None
+
+    # Only reset fulfilled if purpose changes
+    if new_purpose != npc.location_purpose:
+        npc.location_purpose = new_purpose
         npc.location_purpose_fulfilled = False
+    # If same purpose, preserve fulfilled state
 
-    npc.mind.remove_thoughts_with_tag("leave_location")
-    npc.location_purpose_fulfilled = False  # reset for new location
-    npc.location_purpose = None
+        print(f"[VISIT RESET] {npc.name} purpose_fulfilled reset at {destination}")
 
-
+    npc.mind.remove_thoughts_with_tag("leave_location")#likly source
     
     #the following track presence block move up to here
     # --- Track presence ---
@@ -95,11 +295,11 @@ def visit_location_auto(character, region=None, destination=None, destination_na
         destination.characters_there.append(npc)
     if hasattr(destination, "recent_arrivals"):
         destination.recent_arrivals.append(npc)
-        debug_print(#added
+        """ debug_print(
             npc,
             f"[ARRIVAL] Added to recent_arrivals at {destination.name}",
             category="visit"
-        )
+        ) """
 
     # Entering or leaving workplace
     update_employee_presence(npc, game_state.hour)
@@ -422,9 +622,13 @@ def eat_auto(npc, region=None, *, item):
     npc.hunger = max(0, npc.hunger - item.nutrition)
     # soften hunger thought
     npc.mind.reduce_thought_urgency("hunger", 5)
-
+    
+    #tmp
+    
+    print(f"[EAT PURPOSE CHECK] purpose='{npc.location_purpose}' type={type(npc.location_purpose)} == 'eat': {npc.location_purpose == 'eat'}")
     if npc.location_purpose == "eat":
         npc.location_purpose_fulfilled = True
+    print(f"[EAT COMPLETE] location_purpose={npc.location_purpose} fulfilled={npc.location_purpose_fulfilled}")
 
     # 🔥 NEW: remove if no longer hungry
     t = npc.mind.get_thought_with_tag("hunger")
@@ -447,7 +651,7 @@ def eat_auto(npc, region=None, *, item):
         npc.motivation_manager.set_urgency("have_fun", fun_m.urgency + boost)
         #In the future we could initialize problematic protect_family very low, but boost it hugely when necessary
         debug_print(npc, f"[POST-EAT] Boosting have_fun → {fun_m.urgency + boost}", category="motive")
-
+        #print(f"[POST-EAT RAW] have_fun boost firing")
     # remove from inventory
     try:
         npc.inventory.remove_item(item)
@@ -577,9 +781,7 @@ def procure_food_auto(self):
     debug_print(npc, f"[EATING] procure_food_auto called for {npc.name}", category="eat")
     
 
-def have_fun_auto(self):
-    npc = self
-    debug_print(npc, f"[FUN] have_fun_auto called for {npc.name}", category="fun")
+
 
 def idle_auto(npc, region=None, **kwargs):
     pass

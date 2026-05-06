@@ -51,7 +51,7 @@ def main():
     all_regions, factions, all_characters, all_locations = setup_game()
 
     main_menu(all_locations, all_characters)
-    game()
+    #game()
 
 def get_all_regions():
     global all_regions

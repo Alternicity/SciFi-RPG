@@ -11,10 +11,10 @@ DEBUG_TC2 = True          # current focus
 
 ENABLED_DEBUG_CATEGORIES = {"test_npc"}  # Only logs for test NPCs
 
+
+
 # Individual subsystem toggles
 SHOW_TICK_LOGS = True
-
-
 
 # Test NPC visibility
 SHOW_TEST_NPC_LOGS = True   # keep this True so test NPCs still show

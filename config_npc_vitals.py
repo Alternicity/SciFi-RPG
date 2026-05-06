@@ -6,15 +6,14 @@ NPC_VITALS_CONFIG = {
     "location": True,
     "vitals": True,
     "employment": True,
-    "finances": True,
+    "finances": False,
     "motivations": True,
     "anchors": False,
     "focus": False,
-    "thoughts": True,
-    "memories": False,     # episodic + semantic
+    "thoughts": False,
+    "memories": False,
     "social": True,#enabled
     "time": True,
-    #updated
     "fun prefs": True,
-    "Personality": True,
+    "Personality": False,
 }
