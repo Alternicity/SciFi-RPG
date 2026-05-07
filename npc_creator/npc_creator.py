@@ -4,6 +4,7 @@ from tkinter import ttk
 import json
 import sys
 import os
+from tkinter import messagebox
 
 # Fix imports
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -68,16 +69,72 @@ class NPCCreator:
         self.sport_slider = tk.Scale(fun_tab, from_=1, to=10, orient="horizontal")
         self.sport_slider.pack()
 
+
+        self.personality_vars = {
+            "extroversion": tk.IntVar(value=10),
+            "curiosity": tk.IntVar(value=10),
+            "discipline": tk.IntVar(value=10),
+            "agreeableness": tk.IntVar(value=10),
+            "neuroticism": tk.IntVar(value=10),
+        }
+
+        # --- Personality Tab ---
+        personality_tab = ttk.Frame(notebook)
+        notebook.add(personality_tab, text="Personality")
+
+        self.personality_vars = {}
+        self.personality_pool = 60
+
+        ttk.Label(personality_tab, text=f"Points Remaining: {self.personality_pool}").pack()
+        self.pool_label = ttk.Label(personality_tab)
+        self.pool_label.pack()
+
+        for trait in ["extroversion", "curiosity", "discipline", "agreeableness", "neuroticism"]:
+            ttk.Label(personality_tab, text=trait.capitalize()).pack()
+
+            var = tk.IntVar(value=10)
+            self.personality_vars[trait] = var
+
+            slider = tk.Scale(
+                personality_tab,
+                from_=1,
+                to=20,
+                orient="horizontal",
+                variable=var,
+                var.trace_add("write", lambda *args, t=trait: self.on_personality_change(t))#this isnt right, it is marked
+            )
+            slider.pack()
+
         # --- Save Button ---
         save_button = ttk.Button(root, text="Save NPC", command=self.save_npc)
         save_button.pack(pady=10)
+
+    def update_personality_pool(self):
+        total = sum(var.get() for var in self.personality_vars.values())
+        remaining = self.personality_pool - total
+
+        self.pool_label.config(text=f"Points Remaining: {remaining}")
+
+        self.previous_personality = {#is this the right placefor this block?
+            trait: 10 for trait in self.personality_vars
+        }
+
+
+        # Optional: enforce hard limit
+        if remaining < 0:
+            self.pool_label.config(foreground="red")
+        else:
+            self.pool_label.config(foreground="black")
 
     def generate_name(self):
         race = self.race_combo.get()
         sex = self.sex_combo.get()
 
         if not race or not sex:
-            print("Select race and sex first")
+            messagebox.showerror(
+                "Select race and sex first"
+            )
+
             return
 
         first, family, full = create_name(race, sex)
@@ -93,7 +150,10 @@ class NPCCreator:
         ]
 
         if len(set(prefs)) == 1:
-            print("Fun prefs must vary")
+            messagebox.showerror(
+                "Invalid Preferences",
+                "Fun preferences must vary."
+            )
             return
 
         data = {
@@ -106,19 +166,46 @@ class NPCCreator:
                 "nature": prefs[1],
                 "learning": prefs[2],
                 "sport": prefs[3],
+            "personality": {
+                trait: var.get()
+                for trait, var in self.personality_vars.items()
             }
+            }
+            
         }
+
 
         with open("npc.json", "w") as f:
             json.dump(data, f, indent=2)
 
-        print("Saved npc.json")
+        messagebox.showerror("Saved npc.json")#not reaally an error, is this ok?
 
+    def on_personality_change(self, changed_trait):#added inside class NPCCreator
+
+        if self.updating:
+            return
+
+        self.updating = True
+
+        total = sum(var.get() for var in self.personality_vars.values())
+
+        if total > self.personality_pool:
+            # revert
+            self.personality_vars[changed_trait].set(
+                self.previous_personality[changed_trait]
+            )
+        else:
+            # accept change
+            self.previous_personality[changed_trait] = self.personality_vars[changed_trait].get()
+
+        self.update_personality_pool()
 
 def launch_creator_ui():
     root = tk.Tk()
     app = NPCCreator(root)
     root.mainloop()
+
+
 
 
 if __name__ == "__main__":

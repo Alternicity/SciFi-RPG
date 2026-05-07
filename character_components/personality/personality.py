@@ -8,13 +8,13 @@ class Personality(PersonalityBase):
                  curiosity,
                  discipline,
                  agreeableness,
-                 boldness):
+                 neuroticism):
 
         self.extroversion = extroversion
         self.curiosity = curiosity
         self.discipline = discipline
         self.agreeableness = agreeableness
-        self.boldness = boldness
+        self.neuroticism = neuroticism
 
     def as_dict(self):
         return {
@@ -22,5 +22,5 @@ class Personality(PersonalityBase):
             "curiosity": self.curiosity,
             "discipline": self.discipline,
             "agreeableness": self.agreeableness,
-            "boldness": self.boldness
+            "neuroticism": self.neuroticism
         }

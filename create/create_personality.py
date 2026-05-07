@@ -15,5 +15,5 @@ def create_personality(npc=None):
         curiosity=generate_stat(),
         discipline=generate_stat(),
         agreeableness=generate_stat(),
-        boldness=generate_stat()
+        neuroticism=generate_stat()
     )

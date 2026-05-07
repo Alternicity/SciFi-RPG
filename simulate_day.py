@@ -63,13 +63,20 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):
                             display_npc_vitals(npc)
                             gs.debug_vitals_displayed.add(npc)
                             
-                # EFFECTS
+                """ # EFFECTS
                 for effect in npc.effects[:]:#iterates over a copy, allows removal inside loop
                     effect.on_tick(npc)
                     effect.remaining -= 1
                     if effect.remaining <= 0:
                         effect.on_end(npc)
+                        npc.effects.remove(effect) """
+                for effect in npc.effects[:]:
+                    effect.remaining -= 1
+                    if effect.remaining <= 0:
+                        effect.on_end(npc)
                         npc.effects.remove(effect)
+                    else:
+                        effect.on_tick(npc)
 
                 if npc in gs.debug_npcs.values():
                     display_percepts_table(npc)#I wonder if effects will show up here via self percept

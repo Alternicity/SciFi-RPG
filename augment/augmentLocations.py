@@ -86,8 +86,11 @@ def seed_park_objects(all_locations):
         if not isinstance(loc, Park):
             continue
         if isinstance(loc, LunaSanctum):
-            continue  # Luna's park gets seeded separately
+            continue  # Luna's park gets seeded separately. Unique sublocation to be later incorprated
 
+        if any(isinstance(o, Tree) for o in loc.items.objects_present):#added
+            continue  # already seeded
+            #But will this mean that the park ends up with exactly 1 tree?
         # Trees
         for i in range(3):
             tree = Tree(

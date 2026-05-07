@@ -105,17 +105,9 @@ def sleep_auto(npc, region=None):
     else:
         debug_print(npc, f"[SLEEP] {npc.name} sleeps without a bed", category="sleep")
 
-    npc.posture = Posture.LYING
-
-    # Restore effort
-    npc.effort = min(20, npc.effort + 8)
-    
-    # Suppress sleep motivation
-    npc.motivation_manager.set_urgency("sleep", 0)
-    npc.motivation_manager.suppress("sleep", reason="just_slept", duration=6)
-
-    # Reset fun (new day, fresh slate)
-    npc.fun = max(1, npc.fun - 5)
+    # Apply the effect — it handles posture, recovery, and wakeup
+    effect = SleepEffect(duration=3)
+    npc.apply_effect(effect)#oops i only just added this - see second test in this prompt
 
     # Memory consolidation — move important episodic to semantic
     consolidate_sleep_memories(npc)

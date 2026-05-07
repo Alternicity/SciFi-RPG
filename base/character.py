@@ -4,7 +4,7 @@ from base.posture import Posture
 from base.self_awareness_levels import SelfAwarenessLevel
 from perception.perceptibility import PerceptibleMixin
 from typing import Callable, Any
-
+from debug_utils import debug_print
 class Character(PerceptibleMixin, CharacterBase):
     
     VALID_SEXES = ("male", "female")  # Class-level constant
@@ -475,6 +475,8 @@ class Character(PerceptibleMixin, CharacterBase):
         return None
 
     def apply_effect(self, effect):
-        print("Applying:", effect.name)
+        debug_print(self, f"Applying effect: {effect.name}", category="effect")
         effect.on_start(self)
         self.effects.append(effect)
+
+        

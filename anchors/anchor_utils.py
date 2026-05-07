@@ -209,6 +209,18 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
             source=motivation,
         )
 
+    elif base_name == "sleep":
+        from anchors.sleep_anchor import SleepAnchor
+        anchor = SleepAnchor(
+            name=base_name,
+            type="motivation",
+            weight=motivation.urgency,
+            priority=motivation.urgency,
+            tags=tags,
+            owner=npc,
+            source=motivation,
+        )
+
     #TC1 Anchors
     elif base_name == "rob":
         anchor = RobberyAnchor(

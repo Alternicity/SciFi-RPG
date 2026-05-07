@@ -206,7 +206,7 @@ def run_simulation(all_characters, num_ticks=10):
             setup_tc2_civilian_liberty(debug_civilian_liberty, region=downtown_region)
             debug_civilian_liberty.placement_locked = True
 
-            if not assign_tc2_staging_location(debug_civilian_liberty, downtown_region):
+            if not assign_tc2_staging_location(debug_civilian_liberty, downtown_region):#I dont see the point of this function for this npc
                 assign_fallback_location(debug_civilian_liberty, downtown_region)
 
             ensure_initial_placement(debug_civilian_liberty, fallback_region=downtown_region)

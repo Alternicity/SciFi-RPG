@@ -176,15 +176,18 @@ class UtilityAI(BaseAI):
 
         #gating added for this temporary print
         if npc is gs.civilian_liberty and game_state.hour % 3 == 0:
-            print("ANCHOR TYPE:", type(anchor))
+            debug_print(npc, f"ANCHOR TYPE:", category="anchor")
+            #debug_print(npc, f"[THOUGHTS] Recent thoughts: {thought_contents}", category="anchor")
             urgencies = get_current_urgencies(npc)
-            print(
+            debug_print(npc,
                 f"[URGENCY DEBUG] {npc.name} "
                 f"MOT={urgencies['motivation'][1]} "
                 f"THOUGHT={urgencies['thought'][1]} "
                 f"MAX={urgencies['max']}"
-                f"[URGENCY] EXCLUDING={urgencies['excluded']}"
-            )#This can definitely be re-used
+                f"[URGENCY] EXCLUDING={urgencies['excluded']}",
+                category="insight"
+            )
+            #This can definitely be re-used
 
         """ debug_print(npc, 
         f"[MOVEMENT DEBUG] anchor={getattr(anchor,'name',None)} "
@@ -425,7 +428,7 @@ class UtilityAI(BaseAI):
         npc = self.npc
         # Ensure action is a dict
         if not isinstance(action, dict):
-            print(f"[ERROR] From UtilityAI Action must be a dict, got: {action}")
+            debug_print(npc, f"[ERROR] From UtilityAI Action must be a dict, got: {action}", "category = action")
             return
 
         action_name = action.get("name", "").lower()
@@ -441,8 +444,8 @@ class UtilityAI(BaseAI):
             have_fun_auto,
             stroll_auto,
             exercise_auto,
-            sleep_auto,
         )
+        from actions.npc_bodily_actions import sleep_auto
         from actions.social_actions.greet import (
             greet_customer_auto
         )
@@ -455,7 +458,7 @@ class UtilityAI(BaseAI):
                 result = visit_location_auto(npc, region, **params)
 
             except Exception as e:
-                print(f"[ERROR] visit_location_auto failed: {e}")
+                debug_print(npc, f"[ERROR] visit_location_auto failed: {e}", category="verify")
                 return
             
             # cleanup AFTER visiting
@@ -495,7 +498,7 @@ class UtilityAI(BaseAI):
             debug_print(npc, f"[EXECUTE] Unknown action '{action_name}' — skipping.", category="action")
             return
 
-        debug_print(
+        debug_print(#included here as reference
             npc,
             f"[EXECUTE UTILITYAI] Dispatching {action_name} with params={params}",
             category="action"
@@ -641,7 +644,7 @@ class UtilityAI(BaseAI):
         strongest = max(mind.thoughts, key=lambda t: (t.urgency, getattr(t, "timestamp", 0)))
 
         THOUGHT_TAGS_NEVER_ANCHOR = {"leave_location", "movement", "ambience", 
-                              "frustration", "error", "planning"}
+                              "frustration", "error", "slepp", "planning"}
         if any(tag in THOUGHT_TAGS_NEVER_ANCHOR for tag in getattr(strongest, "tags", [])):
             return  # these thought types are handled by choose_action directly
 
@@ -740,7 +743,8 @@ class UtilityAI(BaseAI):
             npc.motivation_manager.update_motivations(motivation_type=anchor.name, urgency=urgency_delta)
         
         if anchor and anchor.name == "have_fun":
-            print("[ANCHOR→MOTIVE] from promote_thoughts have_fun via anchor.name")
+            debug_print(npc, f"[ANCHOR→MOTIVE] from promote_thoughts have_fun via anchor.name", category="think")
+            
 
         # Set attention focus
         set_attention_focus(npc, anchor=None, thought=strongest, character=None)
@@ -840,7 +844,7 @@ class UtilityAI(BaseAI):
         Returns True if the percept is relevant to the given motivation.
         """
         if not isinstance(percept, dict):
-            print(f"[BUG] Expected percept to be dict, got {type(percept)}: {percept}")
+            debug_print(npc, f"[BUG] Expected percept to be dict, got {type(percept)}: {percept}", category="think")
             return False
         
         percept_tags = percept.get("tags", [])
@@ -874,7 +878,8 @@ class UtilityAI(BaseAI):
         npc = self.npc
         percepts = npc.get_percepts()
         
-        print(f"[DEBUG] Before generate_hunger_thought {self.npc.name} hunger={self.npc.hunger:.2f}")
+        debug_print(npc, f"[DEBUG] Before generate_hunger_thought {self.npc.name} hunger={self.npc.hunger:.2f}", category="think")
+
         generate_hunger_thought(npc)
         
         self.generate_motivation_thoughts()
@@ -884,8 +889,8 @@ class UtilityAI(BaseAI):
         self.select_current_anchor()#lets review this also
 
         if not isinstance(region, Region):
-            print(f"[DEBUG] {self.npc.name} UtilityAI def think calling observe with region={region}, location={self.npc.location}")
-            print(f"[UtilityAI] Bad region: {region} ({type(region).__name__}) for {self.npc.name}")
+            debug_print(npc, f"[DEBUG] {self.npc.name} UtilityAI def think calling observe with region={region}, location={self.npc.location}", category="think")
+            debug_print(npc, f"[UtilityAI] Bad region: {region} ({type(region).__name__}) for {self.npc.name}", category="think")
 
         region_knowledge = get_region_knowledge(self.npc.mind.memory.semantic, region.name)
         if region_knowledge:
@@ -941,21 +946,21 @@ class UtilityAI(BaseAI):
         if not npc.current_anchor:
             self.select_current_anchor()
             
-
-        #print(f"[DEBUG] From UtilityAI, def think()")
-        print(f"[DEBUG] {self.npc.name} in {self.npc.location.name}")
+        debug_print(npc, f"[DEBUG] {self.npc.name} in {self.npc.location.name}", category="think")
         
-        print(f"[DEBUG] Thoughts: {npc.name} {[str(t) for t in self.npc.mind.thoughts]}")#I think the sit thought should show up here
-        #OR we could make use of the currently unused display_npc_mind for just waitress and liberty npcs
+        debug_print(npc, f"[DEBUG] Thoughts: {npc.name} {[str(t) for t in self.npc.mind.thoughts]}", category="think")
+
+        
+
 
         #TMP
         if getattr(npc, "debug_role", None) == "civilian_liberty" and isinstance(npc.location, Cafe):
             #if isinstance(npc.location, Cafe):
             #slightly more scalable for above line
-            print(
+            debug_print(npc,
                 f"[LIBERTY DEBUG] posture={npc.posture} "
                 f"anchor={getattr(npc.current_anchor,'name',None)} "
-                f"thoughts={[t.tags for t in npc.mind.thoughts]}"
+                f"thoughts={[t.tags for t in npc.mind.thoughts]}" , category="think"
             )
 
     def handle_failed_anchors(self):
@@ -1029,12 +1034,15 @@ class UtilityAI(BaseAI):
         region_knowledge = get_region_knowledge(npc.mind.memory.semantic, region_name)
 
         if not region_knowledge:
-            print(f"[UtilityAI] No region knowledge for {region_name}")
+            debug_print(npc, f"[UtilityAI] No region knowledge for {region_name}", category="anchor")
             return []
 
         for loc_name in region_knowledge.locations:
             location = npc.region.get_location_by_name(loc_name)
-            print(f"[DEBUG] from find_known_locations_by_tags Couldn't find location: {loc_name}")
+            debug_print(npc, f"[DEBUG] from find_known_locations_by_tags Couldn't find location: {loc_name}", category="anchor")
+
+            #debug_print(npc, f"[THOUGHTS] Recent thoughts: {thought_contents}", category="anchor")
+
             if not location:
                 continue
 
@@ -1141,7 +1149,9 @@ class UtilityAI(BaseAI):
                     )
                     npc.mind.add(thought)
                     npc.is_alert = True
-                    print(f"[THREAT] {npc.name} became alert due to memory: {memory.name}")
+
+                    debug_print(npc, f"[THREAT] {npc.name} became alert due to memory: {memory.name}", category="memory")
+                    
 
     def get_salience(self, item):#possiblby deprecated in favor of anchors
         return item.salience_for(self.npc)

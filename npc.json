@@ -1,12 +1,19 @@
 {
-  "name": "Freya Fjell",
-  "race": "WhiteAryanNordic",
-  "sex": "female",
-  "strength": 8,
+  "name": "Yusuf Silva",
+  "race": "Terran",
+  "sex": "male",
+  "strength": 14,
   "fun_prefs": {
-    "social": 6,
-    "nature": 8,
-    "learning": 1,
-    "sport": 1
+    "social": 5,
+    "nature": 1,
+    "learning": 8,
+    "sport": 1,
+    "personality": {
+      "extroversion": 14,
+      "curiosity": 13,
+      "discipline": 7,
+      "agreeableness": 1,
+      "neuroticism": 16
+    }
   }
 }

@@ -1019,7 +1019,7 @@ def display_npc_vitals(npc, show_memories=True, show_thoughts=True):
             # Fallback for NPCs without VitalsComponent
             print(f"  Hunger: {getattr(npc, 'hunger', 'N/A')}/20")
             print(f"  Effort: {getattr(npc, 'effort', 'N/A')}/20")
-            print(f"  Fun: {getattr(npc, 'fun', 'N/A')}/20")#ATTN IS THIS NECESSARY?
+            print(f"  Fun: {getattr(npc, 'fun', 'N/A')}/20")
     
     # === EMPLOYMENT ===
     if NPC_VITALS_CONFIG.get("employment", True):

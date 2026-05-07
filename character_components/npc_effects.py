@@ -1,7 +1,7 @@
 #character_components.npc_effects.py
 from debug_utils import debug_print
 from character_thought import Thought
-
+from base.posture import Posture
 class TimedEffect:
     def __init__(self, name, duration):
         self.name = name
@@ -124,4 +124,63 @@ class MorningSettlingEffect(TimedEffect):
             npc,
             "[LIBERTY] Morning settling complete.",
             category="liberty"
+        )
+
+class SleepEffect(TimedEffect):
+    
+    def __init__(self, duration=3):
+        super().__init__("sleeping", duration=duration)
+
+    def on_start(self, npc):
+        npc.posture = Posture.LYING
+        # Immediate rest bonus
+        npc.effort = min(20, npc.effort + 4)
+        npc.concentration = min(20, getattr(npc, "concentration", 10) + 2)
+        debug_print(
+            npc,
+            f"[EFFECT] SleepEffect started: {npc.name} lies down, effort +4",
+            category="effect"
+        )
+
+    def on_tick(self, npc):
+        # Gradual recovery each tick
+        npc.effort = min(20, npc.effort + 2)
+        npc.hunger = min(20, npc.hunger + 0.3)  # slow hunger creep overnight
+        debug_print(
+            npc,
+            f"[SLEEP] recovering → effort={npc.effort:.1f}",
+            category="effect"
+        )
+
+    def on_end(self, npc):
+
+        npc.posture = Posture.STANDING
+
+        # Final recovery burst
+        npc.effort = min(20, npc.effort + 3)
+        npc.concentration = min(20, getattr(npc, "concentration", 10) + 3)
+
+        # Suppress sleep motivation now that it's satisfied
+        npc.motivation_manager.set_urgency("sleep", 0)
+        npc.motivation_manager.suppress("sleep", reason="just_slept", duration=6)
+        #did you mean the above line?
+        #should we instrument this?
+
+        # Clear bed occupancy
+        bed = getattr(npc, "current_bed", None)
+        if bed and hasattr(bed, "vacate"):
+            bed.vacate()
+
+        npc.mind.memory.remember_thing(
+            subject=npc.name,
+            verb="woke_up",
+            object_=npc.location.name,
+            importance=1,
+            owner=npc
+        )
+
+        debug_print(
+            npc,
+            f"[EFFECT] SleepEffect ended: {npc.name} wakes up, effort={npc.effort:.1f}",
+            category="effect"
         )
