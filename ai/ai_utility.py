@@ -7,7 +7,7 @@ from actions.social_actions.dispatcher import execute_social_action
 from character_memory import Memory
 from time import time
 from location.locations import Cafe
-from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought, create_anchor_from_motivation
+from anchors.anchor_utils import Anchor, create_anchor_from_motivation, create_anchor_from_thought
 from base.posture import Posture
 from collections import defaultdict, deque
 from worldQueries import get_region_knowledge, location_sells_food, is_food_employee, find_food_employee_in_location
@@ -20,7 +20,7 @@ from ai.ai_utility_thought_tools import extract_anchor_from_action, generate_hun
 
 from anchors.eat_anchor import EatAnchor
 from character_components.npc_effects import MorningSettlingEffect
-
+#When you get the gaming PC, Ollama + Continue.dev would give you a functional local AI coding assistant that understands your codebase.
 game_state = get_game_state()
 gs = get_game_state()
 class UtilityAI(BaseAI):
@@ -38,23 +38,19 @@ class UtilityAI(BaseAI):
         anchor = npc.current_anchor
         hour = game_state.hour#new
 
-        # 🔥 NEW: auto-clear satisfied anchors
+        #auto-clear satisfied anchors
         if anchor and hasattr(anchor, "is_satisfied"):
             if anchor.is_satisfied(npc):
                 debug_print(npc, f"[ANCHOR] {anchor.name} satisfied — clearing", category="anchor")
                 npc.current_anchor = None
                 anchor = None
 
-                if npc.employment and npc.employment.on_duty(hour):#perhaps this could/should be more general, ie use all CORE MOTIVES
-                    work_motive = npc.motivation_manager.get_motivation("work")
-                    
-                    if npc.current_anchor is None:
-                        if npc.employment and npc.employment.on_duty(hour):
-                            work_motive = npc.motivation_manager.get_motivation("work")
-                            if work_motive:
-                                from anchors.anchor_utils import create_anchor_from_motivation
-                                npc.current_anchor = create_anchor_from_motivation(npc, work_motive)
-
+                if npc.employment and npc.employment.on_duty(hour):
+                    work_motive = npc.motivation_manager.get_motivation("work")#perhaps this could/should be more general, ie use all CORE MOTIVES
+                    if work_motive:
+                        npc.current_anchor = create_anchor_from_motivation(npc, work_motive)
+                        anchor = npc.current_anchor
+            
 
         from anchors.anchor_utils import debug_anchor
         debug_print(
@@ -506,17 +502,15 @@ class UtilityAI(BaseAI):
 
         try:
             return action_func(npc, region, **params)
-        
+
         except Exception as e:
             import traceback
-
-            print(f"\n[ERROR] Executing action '{action_name}'")
-            print(f"NPC: {npc.name}")
-            print(f"Params: {params}")
-            print(f"Exception: {e}")
-            print("TRACEBACK:")
-            traceback.print_exc()
-            print()
+            tb_str = traceback.format_exc()
+            debug_print(
+                npc,
+                f"[ERROR] Action '{action_name}' failed: {e}\n{tb_str}",
+                category="action"
+            )
 
 
     def score_action(self, action: dict, context: dict = None) -> float:

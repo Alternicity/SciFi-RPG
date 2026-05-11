@@ -13,7 +13,7 @@ from weapons import Pistol
 from shop_name_generator import generate_shop_name
 import traceback
 from debug_utils import debug_print
-from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment, seed_cafe_furniture, seed_sports_centre_equipment, seed_park_objects, seed_library_books, seed_library_furniture
+from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment, seed_cafe_furniture, seed_sports_centre_equipment, seed_park_objects, seed_library_books, seed_library_furniture, seed_residential_furniture
 game_state = get_game_state()
 
 def create_locations(region: Region, wealth: str) -> List[Location]:
@@ -75,10 +75,9 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
 
 
     #2.5 Count ApartmentBlocks
-    ApartmentBlocks = [loc for loc in locations if hasattr(loc, "something") and hasattr(loc, "something_else_maybe")]
-
-    for ApartmentBlocks in ApartmentBlocks:
-        game_state.total_apartment_blocks += 1
+    apartment_count = sum(1 for loc in locations if isinstance(loc, ApartmentBlock))
+    if hasattr(game_state, "total_apartment_blocks"):
+        game_state.total_apartment_blocks += apartment_count
 
     # 3. Shop naming + inventory injection
 
@@ -149,6 +148,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         if getattr(loc, "is_public_facing", False):
             game_state.public_places.append(loc)
 
+    seed_residential_furniture(game_state.all_locations)
     seed_cafe_furniture(game_state.all_locations)
     seed_food_locations(game_state.all_locations)
     seed_ambience_objects(game_state.all_locations)

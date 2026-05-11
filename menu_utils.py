@@ -16,7 +16,7 @@ def main_menu(all_locations, all_characters):
         """Display the main menu and return the user choice. Not a gameplay menu itself"""
         print("\n=== Main Menu ===")
         print("1: Play/Test Game")
-        print("2: Show world")
+        print("2: Launch GUI")
         print("3: Run Simulation")
         print("4: Exit")
 
@@ -28,9 +28,10 @@ def main_menu(all_locations, all_characters):
                 from game import gameplay
                 gameplay(selected_character, region)  # Start gameplay
 
-        elif choice == 1:  # User chose "Show World"
-            from create import all_regions
-            display_world(all_regions)
+        elif choice == 1:  # User chose "Launch GUI"
+            from GUI.launch_observer_mode import launch_observer_mode
+            launch_observer_mode(game_state)
+            
         elif choice == 2:  # 
             from simulation import run_simulation
             run_simulation(all_characters, num_ticks=int(input("How many ticks to simulate? ")))

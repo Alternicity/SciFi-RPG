@@ -1,0 +1,19 @@
+#GUI.gui_logs.txt
+#code hereLoading mode: npc
+Loading mode: city
+Loading mode: faction
+Loading mode: debug
+Loading mode: npc
+Loading mode: city
+Loading mode: npc
+Loading mode: npc
+Loading mode: npc
+Loading mode: city
+Loading mode: npc
+Loading mode: npc
+Loading mode: npc
+Loading mode: city
+Loading mode: npc
+Loading mode: npc
+Loading mode: npc
+Loading mode: npc

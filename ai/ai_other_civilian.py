@@ -1,4 +1,4 @@
-#ai_civilian.py
+#ai_other_civilian.py
 
 from ai.ai_utility import UtilityAI
 from worldQueries import get_region_knowledge

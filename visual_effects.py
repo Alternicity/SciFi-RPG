@@ -1,3 +1,5 @@
+
+#visual_effects.py
 import time
 import sys
 
@@ -27,7 +29,11 @@ def loading_bar(dot_count=3, delay=.5):
     for _ in range(dot_count):
         print(".", end="", flush=True)
         time.sleep(delay)
-    print()  # Move to the next line afterward
+    print()
+
+
+# Move to the next line afterward
     """ Usage:
 print("Loading", end="", flush=True)
 loading_bar() """
+

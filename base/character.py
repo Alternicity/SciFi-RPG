@@ -91,7 +91,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.mind = None
         self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)#should be hour
         self._last_promote_hour = -1 #promoting thoughts to anchor should happen only once
-        self.curiosity = None
+        self.curiosity = None#See big five code
         self.concentration = concentration
         self.task_manager = None#undeveloped system, utilityAI does not use this. Tasks will be recipes issued by high status
         #npcs to their subordinates, please ignore for now.

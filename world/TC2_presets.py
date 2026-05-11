@@ -9,7 +9,7 @@ from objects.food.drinks import Coffee
 from objects.food.cutlery_crockery import Cup
 from location.locations import Cafe
 from objects.furniture import CafeTable, CafeChair
-
+from create.create_game_state import get_game_state
 from character_components.npc_effects import MorningSettlingEffect
 
 def get_tc2_cafe(region):
@@ -25,15 +25,24 @@ def get_tc2_cafe(region):
 def setup_tc2_civilian_liberty(npc, region):
     npc.region = region
     npc.home_region = region
-    npc.hunger = 5 #bump npc hunger here, perhaps we could add some random range that will result in burger some tests and sandwich on others.
+    npc.hunger = 5#bump npc hunger here, perhaps we could add some random range that will result in burger some tests and sandwich on others.
     npc.effects.append(MorningSettlingEffect())
     npc.effects[-1].on_start(npc)
-"""     debug_print(
-        npc,
-        f"[TC2 CIVILIAN:LIBERTY SETUP] region={region.name}",
-        category=["placement"]
-    ) """
 
+    # Force home to be in the correct region
+    home_candidates = [
+        loc for loc in region.locations
+        if loc.__class__.__name__ in ("House", "ApartmentBlock")
+    ]
+    if home_candidates:
+        chosen_home = random.choice(home_candidates)
+        npc.residences = [chosen_home]      # sets npc.home via property
+        npc.location = chosen_home
+        if npc not in chosen_home.characters_there:
+            chosen_home.characters_there.append(npc)
+        gs = get_game_state()
+        gs.reserved_homes[npc.id] = chosen_home
+#bump npc hunger here, perhaps we could add some random range that will result in burger some tests and sandwich on others.
 
 def setup_tc2_worker(worker, region, *, role):#civilian_manager, and civilian_waitress
     
@@ -55,6 +64,22 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager, and civilian_wa
     if hasattr(cafe, "employees"):
         cafe.employees.append(worker)
 
+    # Force home to correct region
+    home_candidates = [
+        loc for loc in region.locations
+        if loc.__class__.__name__ in ("House", "ApartmentBlock")
+    ]
+    if home_candidates:
+        chosen_home = random.choice(home_candidates)
+        if chosen_home not in worker.residences:
+            worker.residences = [chosen_home]  # set as primary residence
+        worker.location = chosen_home
+        if worker not in chosen_home.characters_there:
+            chosen_home.characters_there.append(worker)
+
+        gs = get_game_state()
+        gs.reserved_homes[worker.id] = chosen_home
+
     # Attach to worker/manager to counter
     if isinstance(worker.location, Cafe) and worker.employment.role == CAFE_MANAGER:
         counter = getattr(worker.location, "counter", None)
@@ -62,15 +87,6 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager, and civilian_wa
             counter.seat(worker)
             worker.posture = Posture.STANDING  # behind counter
             worker.current_counter = counter
-
-
-    # Assign role explicitly (TC2 preset authority)
-    #worker.employment.role = CAFE_MANAGER
-     #we now need to specify that this applies to civilian_worker
-    #And that the following line only applies to the waitress
-    #worker.employment.role =WAITRESS
-
-
 
 #Call after all characters are created
 def seed_tc2_presets(waitress, manager):

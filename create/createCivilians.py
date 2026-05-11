@@ -13,7 +13,7 @@ from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
 from motivation.motivation_presets import MotivationPresets #not accessed here
 from motivation.motivation_init import initialize_motivations
 from status import CharacterStatus, FactionStatus, StatusLevel
-from ai.ai_civilian import AdeptaAI
+from ai.ai_other_civilian import AdeptaAI
 from utils import normalize_location_regions, get_region_for_location, find_location_by_type
 from city_vars import CIVILIANS_PER_REGION, SHOP_PATRONS_MIN, SHOP_PATRONS_MAX, MAX_CIVILIANS_PER_LOCATION
 from debug_utils import debug_print, add_character

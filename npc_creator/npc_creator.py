@@ -6,8 +6,16 @@ import sys
 import os
 from tkinter import messagebox
 
-# Fix imports
+# Fix imports - existing code, is this deprecated?
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+BASE_DIR = os.path.dirname(__file__)
+SAVE_DIR = os.path.join(
+    BASE_DIR,
+    "saved_npcs"
+)
+os.makedirs(SAVE_DIR, exist_ok=True)
+
 
 from base.character import Character
 from create.create_character_names import create_name
@@ -17,6 +25,21 @@ class NPCCreator:
     def __init__(self, root):
         self.root = root
         self.root.title("NPC Creator")
+        self.core_stats = [
+            "strength",
+            "agility",
+            "intelligence",
+            "concentration",
+            "luck",
+            "psy",
+            "charisma",
+            "toughness",
+            "observation"
+        ]
+        
+        self.stat_vars = {}
+        self.stat_labels = {}
+        self.previous_stats = {}
 
         notebook = ttk.Notebook(root)
         notebook.pack(fill="both", expand=True)
@@ -44,13 +67,42 @@ class NPCCreator:
         stats_tab = ttk.Frame(notebook)
         notebook.add(stats_tab, text="Stats")
 
-        ttk.Label(stats_tab, text="Strength").pack()
-        self.strength_slider = tk.Scale(stats_tab, from_=1, to=20, orient="horizontal")
-        self.strength_slider.set(10)
-        self.strength_slider.pack()
+        self.stat_vars = {}
+        self.stat_labels = {}
+
+        BASE_STAT = 10
+        STAT_POOL = 25
+
+        self.remaining_points = tk.IntVar(value=STAT_POOL)
+
+        ttk.Label(stats_tab, text="Points Remaining:").grid(row=0, column=0, sticky="w")
+        self.points_label = ttk.Label(stats_tab, textvariable=self.remaining_points)
+        self.points_label.grid(row=0, column=1, sticky="w")
+
+        for row, stat in enumerate(self.core_stats, start=1):
+
+            ttk.Label(stats_tab, text=stat.capitalize()).grid(row=row, column=0, sticky="w")
+
+            var = tk.IntVar(value=BASE_STAT)
+            self.stat_vars[stat] = var
+
+            slider = tk.Scale(
+                stats_tab,
+                from_=1,
+                to=20,
+                orient="horizontal",
+                variable=var,
+                command=lambda val, s=stat: self.update_stat_pool(s)
+            )
+
+            slider.grid(row=row, column=1, sticky="ew")
+
+        stats_tab.columnconfigure(1, weight=1)
+        self.stat_vars[stat] = var
+        self.previous_stats[stat] = BASE_STAT
 
         # --- Fun Prefs Tab ---
-        fun_tab = ttk.Frame(notebook)
+        fun_tab = ttk.Frame(notebook)#notebook not defined here
         notebook.add(fun_tab, text="Fun Prefs")
 
         ttk.Label(fun_tab, text="Social").pack()
@@ -69,45 +121,130 @@ class NPCCreator:
         self.sport_slider = tk.Scale(fun_tab, from_=1, to=10, orient="horizontal")
         self.sport_slider.pack()
 
-
-        self.personality_vars = {
-            "extroversion": tk.IntVar(value=10),
-            "curiosity": tk.IntVar(value=10),
-            "discipline": tk.IntVar(value=10),
-            "agreeableness": tk.IntVar(value=10),
-            "neuroticism": tk.IntVar(value=10),
-        }
-
         # --- Personality Tab ---
         personality_tab = ttk.Frame(notebook)
         notebook.add(personality_tab, text="Personality")
+        personality_frame = ttk.LabelFrame(#parent container,widgets go INSIDE it
+            personality_tab,
+            text="Personality Traits"
+        )
+        personality_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
 
         self.personality_vars = {}
         self.personality_pool = 60
+        self.updating = False
 
-        ttk.Label(personality_tab, text=f"Points Remaining: {self.personality_pool}").pack()
-        self.pool_label = ttk.Label(personality_tab)
-        self.pool_label.pack()
+        #ttk.Label(personality_tab, text=f"Points Remaining: {self.personality_pool}").pack()
+        self.pool_label = ttk.Label(
+            personality_frame,
+            text=f"Points Remaining: {self.personality_pool}"
+        )
 
-        for trait in ["extroversion", "curiosity", "discipline", "agreeableness", "neuroticism"]:
-            ttk.Label(personality_tab, text=trait.capitalize()).pack()
+        self.pool_label.grid(
+            row=0,
+            column=0,
+            columnspan=2,#Label/Slider  
+            pady=(0, 10)
+        )
+        #The pool label should span both columns
+        traits = [
+            "extroversion",
+            "curiosity",
+            "discipline",
+            "agreeableness",
+            "neuroticism"
+        ]
+
+        for row, trait in enumerate(traits, start=1):
 
             var = tk.IntVar(value=10)
             self.personality_vars[trait] = var
 
+            label = ttk.Label(
+                personality_frame,
+                text=trait.capitalize()
+            )
+
+            label.grid(
+                row=row,
+                column=0,
+                sticky="w",
+                padx=5,
+                pady=5
+            )
+
             slider = tk.Scale(
-                personality_tab,
+                personality_frame,
                 from_=1,
                 to=20,
                 orient="horizontal",
-                variable=var,
-                var.trace_add("write", lambda *args, t=trait: self.on_personality_change(t))#this isnt right, it is marked
+                variable=var
             )
-            slider.pack()
 
+            slider.grid(
+                row=row,
+                column=1,
+                sticky="ew",
+                padx=5,
+                pady=5
+            )
+
+            var.trace_add(
+                "write",
+                lambda *args, t=trait: self.on_personality_change(t)
+            )
+            
+        # Allow slider column expansion
+        personality_frame.columnconfigure(1, weight=1)
+
+        self.previous_personality = {#self not defined
+            trait: var.get()
+            for trait, var in self.personality_vars.items()
+        }
+
+            
         # --- Save Button ---
-        save_button = ttk.Button(root, text="Save NPC", command=self.save_npc)
+        save_button = ttk.Button(root, text="Save NPC", command=self.save_npc)#root not defined here
         save_button.pack(pady=10)
+
+
+
+    def update_stat_pool(self, changed_stat):
+
+        BASE_STAT = 10
+        STAT_POOL = 25
+
+        total_spent = sum(
+            var.get() - BASE_STAT
+            for var in self.stat_vars.values()
+        )
+
+        remaining = STAT_POOL - total_spent
+
+        # ❌ invalid move → revert
+        if remaining < 0:
+
+            self.stat_vars[changed_stat].set(
+                self.previous_stats[changed_stat]
+            )
+
+            total_spent = sum(
+                var.get() - BASE_STAT
+                for var in self.stat_vars.values()
+            )
+
+            remaining = STAT_POOL - total_spent
+
+        # ✅ valid move → commit
+        else:
+            self.previous_stats[changed_stat] = \
+                self.stat_vars[changed_stat].get()
+
+        self.remaining_points.set(remaining)
+
+
+
 
     def update_personality_pool(self):
         total = sum(var.get() for var in self.personality_vars.values())
@@ -115,9 +252,6 @@ class NPCCreator:
 
         self.pool_label.config(text=f"Points Remaining: {remaining}")
 
-        self.previous_personality = {#is this the right placefor this block?
-            trait: 10 for trait in self.personality_vars
-        }
 
 
         # Optional: enforce hard limit
@@ -142,6 +276,9 @@ class NPCCreator:
         self.name_entry.insert(0, full)
 
     def save_npc(self):
+        
+        
+        
         prefs = [
             self.social_slider.get(),
             self.nature_slider.get(),
@@ -149,8 +286,11 @@ class NPCCreator:
             self.sport_slider.get()
         ]
 
-        if len(set(prefs)) == 1:
-            messagebox.showerror(
+        if len(set(prefs)) != len(prefs):
+            """ print("Fun prefs must all differ")
+            return """
+
+            messagebox.showerror(#the exisitng code used messagebox
                 "Invalid Preferences",
                 "Fun preferences must vary."
             )
@@ -160,25 +300,41 @@ class NPCCreator:
             "name": self.name_entry.get(),
             "race": self.race_combo.get(),
             "sex": self.sex_combo.get(),
-            "strength": self.strength_slider.get(),
+            
+            "stats": {
+                stat: var.get()
+                for stat, var in self.stat_vars.items()
+            },
+
+            "personality": {
+                trait: var.get()
+                for trait, var in self.personality_vars.items()
+            },
+
             "fun_prefs": {
                 "social": prefs[0],
                 "nature": prefs[1],
                 "learning": prefs[2],
                 "sport": prefs[3],
-            "personality": {
-                trait: var.get()
-                for trait, var in self.personality_vars.items()
             }
-            }
-            
         }
+        
+        if not data["name"]:
+            messagebox.showerror(
+                "Missing Name",
+                "NPC must have a name."
+            )
+            return
+        
+        filepath = os.path.join(SAVE_DIR, f"{data['name']}.json")
 
-
-        with open("npc.json", "w") as f:
+        with open(filepath, "w") as f:
             json.dump(data, f, indent=2)
 
-        messagebox.showerror("Saved npc.json")#not reaally an error, is this ok?
+        messagebox.showinfo(
+            "Success",
+            f"Saved {data['name']}.json"
+        )
 
     def on_personality_change(self, changed_trait):#added inside class NPCCreator
 
@@ -190,15 +346,17 @@ class NPCCreator:
         total = sum(var.get() for var in self.personality_vars.values())
 
         if total > self.personality_pool:
-            # revert
+            # ❌ invalid → revert ONLY the changed one
             self.personality_vars[changed_trait].set(
                 self.previous_personality[changed_trait]
             )
-        else:
-            # accept change
-            self.previous_personality[changed_trait] = self.personality_vars[changed_trait].get()
-
+        # ✅ valid → commit new value
+        self.previous_personality[changed_trait] = \
+        self.personality_vars[changed_trait].get()
         self.update_personality_pool()
+        self.updating = False
+
+#utility functions
 
 def launch_creator_ui():
     root = tk.Tk()

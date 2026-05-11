@@ -162,9 +162,14 @@ class SleepEffect(TimedEffect):
 
         # Suppress sleep motivation now that it's satisfied
         npc.motivation_manager.set_urgency("sleep", 0)
-        npc.motivation_manager.suppress("sleep", reason="just_slept", duration=6)
-        #did you mean the above line?
-        #should we instrument this?
+
+        #npc.motivation_manager.suppress("sleep", reason="just_slept", duration=6)
+
+        result = npc.motivation_manager.suppress("sleep", reason="just_slept", duration=6)
+        debug_print(npc, f"[SLEEP] Suppressed sleep: {result is not None}", category="sleep")
+        # Also briefly suppress have_fun so NPC doesn't immediately run off
+        npc.motivation_manager.suppress("have_fun", reason="just_woke", duration=2)
+
 
         # Clear bed occupancy
         bed = getattr(npc, "current_bed", None)
@@ -181,6 +186,6 @@ class SleepEffect(TimedEffect):
 
         debug_print(
             npc,
-            f"[EFFECT] SleepEffect ended: {npc.name} wakes up, effort={npc.effort:.1f}",
+            f"[EFFECT] SleepEffect ended: {npc.name}, effort={npc.effort:.1f}",
             category="effect"
         )

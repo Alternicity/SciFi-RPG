@@ -154,12 +154,13 @@ def run_simulation(all_characters, num_ticks=10):
                 
         if debug_civilian_worker:
             setup_tc2_worker(debug_civilian_worker, downtown_region, role=CAFE_MANAGER)
+            ## setup_tc2_worker now handles home and location
             debug_civilian_worker.motivation_manager.update_motivations("work", urgency=8)
             debug_civilian_worker.motivation_manager.update_motivations("eat", urgency=6)
             debug_civilian_worker.motivation_manager.update_motivations("have_fun", urgency=5)
             
-            place_tc2_npc(debug_civilian_worker, downtown_region)
-            ensure_initial_placement(debug_civilian_worker, fallback_region=downtown_region)
+            """ place_tc2_npc(debug_civilian_worker, downtown_region)
+            ensure_initial_placement(debug_civilian_worker, fallback_region=downtown_region) """
             debug_civilian_worker.placement_locked = True
             
             
@@ -172,15 +173,13 @@ def run_simulation(all_characters, num_ticks=10):
             if debug_civilian_waitress is debug_civilian_worker:
                 raise RuntimeError("Waitress and worker resolved to the same NPC")
             setup_tc2_worker(debug_civilian_waitress, downtown_region, role=WAITRESS)
+            ## setup_tc2_worker now handles home and location
 
             debug_civilian_waitress.motivation_manager.update_motivations("work", urgency=8)
             debug_civilian_waitress.motivation_manager.update_motivations("eat", urgency=6)
             debug_civilian_waitress.motivation_manager.update_motivations("have_fun", urgency=5)
 
-            place_tc2_npc(debug_civilian_waitress, downtown_region)
             debug_civilian_waitress.placement_locked = True
-            ensure_initial_placement(debug_civilian_waitress, fallback_region=downtown_region)
-            #debug_civilian_waitress.placement_locked = True
             
             inject_food_location_knowledge(debug_civilian_waitress)
             inject_initial_shop_knowledge(debug_civilian_waitress)
@@ -206,11 +205,6 @@ def run_simulation(all_characters, num_ticks=10):
             setup_tc2_civilian_liberty(debug_civilian_liberty, region=downtown_region)
             debug_civilian_liberty.placement_locked = True
 
-            if not assign_tc2_staging_location(debug_civilian_liberty, downtown_region):#I dont see the point of this function for this npc
-                assign_fallback_location(debug_civilian_liberty, downtown_region)
-
-            ensure_initial_placement(debug_civilian_liberty, fallback_region=downtown_region)
-            place_tc2_npc(debug_civilian_liberty, downtown_region)
             inject_initial_region_knowledge(debug_civilian_liberty)
             inject_food_location_knowledge(debug_civilian_liberty)
             inject_initial_shop_knowledge(debug_civilian_liberty)

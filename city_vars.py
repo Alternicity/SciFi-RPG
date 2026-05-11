@@ -33,6 +33,8 @@ class GameState:
         self.show_background_debug = False
         #or make civilian_background just be a background npc, just placed in the cafe
 
+        self.reserved_homes = {}
+
         self.state = None
         self.civilians = []
         self.families = []

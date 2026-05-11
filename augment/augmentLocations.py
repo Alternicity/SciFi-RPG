@@ -10,9 +10,8 @@ from location.locations import Cafe, Restaurant, Library, Park, LunaSanctum, Spo
 from objects.food.prepared_food import Sandwich, Burger
 from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
-from objects.trees_and_plants import GoldenRatioTree, Plant, Tree
+from objects.trees_and_plants import GoldenRatioTree, Plant, Tree, OakTree, DustPalm, EchoWillow
 from objects.trees_and_plants import BonsaiTree
-
 DEFAULT_SPECIALIZATION = "general"
 
 SUPPORTED_SPECIALIZATIONS = [
@@ -92,31 +91,38 @@ def seed_park_objects(all_locations):
             continue  # already seeded
             #But will this mean that the park ends up with exactly 1 tree?
         # Trees
-        for i in range(3):
-            tree = Tree(
-                name=f"Park Tree {i+1}",
-                foliage_color=random.choice(["green", "gold", "purple"]),
-                resonance_factor=random.uniform(0.8, 1.4),
-            )
+       # 2-3 mundane trees
+        mundane = [OakTree, DustPalm]
+        for i, cls in enumerate(random.choices(mundane, k=3)):
+            tree = cls()
+            tree.name = f"{tree.name} {i+1}"
+            tree.location = loc
             loc.items.objects_present.append(tree)
 
-        # One special tree
-        spiral = GoldenRatioTree()
-        loc.items.objects_present.append(spiral)
+        # One special tree — sometimes GoldenRatio, sometimes EchoWillow
+        special_cls = random.choice([GoldenRatioTree, EchoWillow])
+        special = special_cls()
+        special.location = loc
+        loc.items.objects_present.append(special)
 
-        # Benches (use base Chair for now)
+        # Benches
         for i in range(4):
             bench = Chair(name=f"Park Bench {i+1}")
             bench.location = loc
             loc.items.objects_present.append(bench)
 
-        # Ambient boost from trees
-        tree_resonance = sum(
+        loc.fun = min(8, 1 + sum(
             getattr(t, "resonance_factor", 1.0)
             for t in loc.items.objects_present
             if isinstance(t, Tree)
-        )
-        loc.fun = min(8, 1 + int(tree_resonance))
+        ))
+
+        # One special tree
+        """ spiral = GoldenRatioTree()
+        loc.items.objects_present.append(spiral) """
+
+        # Ambient boost from trees
+
 
 def seed_library_furniture(all_locations):
     for loc in all_locations:

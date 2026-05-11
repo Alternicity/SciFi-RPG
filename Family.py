@@ -58,7 +58,7 @@ class Family:
         self.members.append(character)
 
     #add update npc.loyalties code here
-
+#utility functions
 def assign_families_and_homes(game_state):
     """
     Groups civilians into families based on family name,
@@ -66,10 +66,21 @@ def assign_families_and_homes(game_state):
     and links partners probabilistically.
     """
     all_characters = getattr(game_state, "all_characters", [])
+    regions = getattr(game_state, "all_regions", [])#regions greyed out, not accessed
 
-    regions = getattr(game_state, "all_regions", [])
-    all_residences = [loc for loc in getattr(game_state, "all_locations", [])
-                      if isinstance(loc, (House, ApartmentBlock))]
+    all_residences = [
+        loc for loc in getattr(game_state, "all_locations", [])
+        if isinstance(loc, (House, ApartmentBlock))
+    ]
+
+    # Filter out reserved homes AFTER all_residences is defined
+    reserved = {id(loc) for loc in game_state.reserved_homes.values()}
+    all_residences = [loc for loc in all_residences if id(loc) not in reserved]
+
+    if not all_characters or not all_residences:
+        debug_print(None, "[FAMILY] No characters or residences to assign.", "family")
+        game_state.families = []
+        return []
 
     """ Right now:
     ApartmentBlocks can hold unlimited families.
@@ -79,11 +90,9 @@ def assign_families_and_homes(game_state):
     Remove forced rate
     Let shortage create homelessness naturally """
 
-    if not all_characters or not all_residences:
-        debug_print(None, "[FAMILY] No characters or residences to assign.", "family")
-        game_state.families = []
-        return []
-
+    #0.5 reserved housing
+    """ reserved = set(gs.reserved_homes.values())
+    candidates = [loc for loc in candidates if loc not in reserved] """
 
     # 1. Group by family name
     families_by_name: Dict[str, Family] = {}

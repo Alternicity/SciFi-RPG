@@ -274,23 +274,6 @@ def create_anchor_from_motivation(npc, motivation) -> "Anchor":
             urgency=urgency_delta
         )
 
-    # --- Register anchor in NPC memory once ---
-    memory_entry = MemoryEntry(
-        subject=npc.name,
-        object_="anchor",
-        verb="generated",
-        details=f"Anchor {anchor.name} from motivation '{base_name}'",
-        tags=["anchor", "motivation"],
-        target=anchor,
-        importance=getattr(motivation, "urgency", 0.0),
-        type="anchor_creation",
-        initial_memory_type="episodic",
-        function_reference=None,
-        implementation_path=None,
-        associated_function=None,
-    )
-    npc.mind.memory.add_episodic(memory_entry)
-
     debug_print(
             npc,
             f"[ANCHOR] Created '{anchor.name}' from motivation "

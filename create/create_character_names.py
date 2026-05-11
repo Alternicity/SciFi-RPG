@@ -18,11 +18,16 @@ def create_name(race, sex):#npc or character or member cannot be passed in due t
     if race not in valid_races:
         raise ValueError(f"Invalid race '{race}'. Must be one of: {valid_races}")
     
+    #recent test
     filepath = os.path.join(BASE_CHARACTERNAMES_DIR, f"{race}Names.txt")
+    #filepath = "BROKEN_TEST_PATH"
+    #Ive tried this test with both filepath lines
 
-    if not os.path.exists(filepath):
+    if not os.path.exists(filepath):#not usually tr
         print(f"❌ ERROR: File not found! {filepath}")
-        return "Unknown Unknown"
+
+        #return "Unknown Unknown"
+        return "Unknown", "Unknown", "Unknown Unknown"#the other ai suggested this change, it said the above line is a bug
 
     male_names, female_names, family_names = load_names_from_csv(filepath)
     

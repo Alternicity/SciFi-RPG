@@ -63,3 +63,5 @@ def get_factions():
 
 if __name__ == "__main__":
     main()
+
+#Linux sometimes strips executable state after edits.

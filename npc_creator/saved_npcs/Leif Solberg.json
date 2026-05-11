@@ -1,0 +1,29 @@
+{
+  "name": "Leif Solberg",
+  "race": "WhiteAryanNordic",
+  "sex": "male",
+  "stats": {
+    "strength": 20,
+    "agility": 10,
+    "intelligence": 6,
+    "concentration": 14,
+    "luck": 10,
+    "psy": 10,
+    "charisma": 15,
+    "toughness": 10,
+    "observation": 20
+  },
+  "personality": {
+    "extroversion": 10,
+    "curiosity": 15,
+    "discipline": 15,
+    "agreeableness": 10,
+    "neuroticism": 10
+  },
+  "fun_prefs": {
+    "social": 2,
+    "nature": 10,
+    "learning": 1,
+    "sport": 6
+  }
+}

@@ -128,3 +128,31 @@ class Xanphil(ObjectInWorld):
             "symbolism": self.symbolism
         })
         return base
+
+# Normal Trees
+@dataclass
+class OakTree(Tree):
+    name: str = "Oak Tree"
+    foliage_color: str = "green"
+    resonance_factor: float = 1.1
+    is_deciduous: bool = True
+
+@dataclass  
+class DustPalm(Tree):
+    """Colony-world tree — adapted to arid conditions."""
+    name: str = "Dust Palm"
+    foliage_color: str = "silver"
+    resonance_factor: float = 0.9
+    is_deciduous: bool = False
+    is_imaginary: bool = False
+    tags: List[str] = field(default_factory=lambda: ["plant", "natural", "colony"])
+
+@dataclass
+class EchoWillow(Tree):
+    """Bioluminescent, psy-reactive. Imaginary."""
+    name: str = "Echo Willow"
+    foliage_color: str = "iridescent"
+    resonance_factor: float = 1.8
+    golden_ratio_influence: float = 0.8
+    is_imaginary: bool = True
+    tags: List[str] = field(default_factory=lambda: ["plant", "natural", "psy", "imaginary"])
