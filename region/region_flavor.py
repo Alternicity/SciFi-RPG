@@ -10,4 +10,4 @@ REGION_CULTURAL_ADJECTIVES = {
     "downtown": ["Metro", "Central"],
 }
 
-#Import this inside augment Shop names
+#Initially for augmenting Shop names

@@ -4,7 +4,12 @@
 
 ## Core Philosophy
 
-TC2 is a simulation-first sci-fi RPG focused on emergent NPC behaviour, faction dynamics, social systems, and psychological modelling.
+The simulation-is focused on emergent NPC behaviour, faction dynamics, social systems, and psychological modelling.
+TC1 is a GangMember centred development involving aquiring a ranged_weapon and robbing a shop. Likey currently broken
+TC2, ie test case 2, is an npc normal life development - work, eat, have_fun and sleep. Rough draft is finished but needs polish
+#GUI development with tkinter was happening in a decoupled way but reecntly necessitated a refactor in world setup and early program flow.
+
+
 
 The project prioritizes:
 
@@ -28,7 +33,7 @@ The simulation is intended to support:
 
 # Core AI Direction
 
-TC2 primarily uses Utility AI.
+The sim primarily uses Utility AI.
 
 NPCs evaluate:
 
@@ -67,7 +72,7 @@ without requiring entirely separate AI paradigms.
 
 ## Faction Systems
 
-* gang structures
+* gang and corporation structures
 * status systems
 * reputation
 * territorial dynamics
@@ -85,7 +90,7 @@ Current GUI development focuses on:
 
 # Architectural Strategy
 
-TC2 avoids large refactors unless necessary.
+The sim avoids large refactors unless necessary.
 
 Preferred approach:
 
@@ -100,3 +105,71 @@ The project values:
 * debuggability
 * system interoperability
 * long-term extensibility
+
+---
+
+# Scenario / World Setup Architecture
+
+The simulation now supports modular world scenario setup.
+
+Scenario modules live in:
+
+world/scenarios/
+
+Examples:
+
+* setup_tc1.py
+* setup_tc2.py
+* setup_normal_stuff.py
+
+These scenario modules:
+
+* seed NPCs
+* inject motivations
+* place characters
+* configure relationships
+* augment regions
+* prepare test environments
+
+Scenarios are applied during early startup:
+
+main.py
+→ setup_game()
+→ apply_scenarios(all_characters)
+
+This architecture allows:
+
+* modular test cases
+* future GUI toggles
+* selective simulation presets
+* cleaner separation of setup and runtime logic
+* reduced simulation.py complexity
+Scenario modules are responsible for:
+
+* selecting debug/test NPCs
+* assigning regions and locations
+* injecting motivations
+* seeding memories
+* configuring employment
+* placing furniture or environmental props
+* creating special test conditions
+
+Scenario setup occurs before simulation ticks begin.
+
+Current scenarios include:
+
+* TC1 — gang/crime behaviour testing
+* TC2 — civilian normal life simulation
+
+Scenarios are applied through:
+
+apply_scenarios(all_characters)
+
+Long-term direction may include:
+
+* pluggable world modules
+* faction injectors
+* economic presets
+* government systems
+* environmental modifiers
+* corporation/worldpack style additions

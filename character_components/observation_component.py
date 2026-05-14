@@ -211,7 +211,8 @@ class ObservationComponent:
         game_state = get_game_state()
         current_hour = game_state.hour#this was already here, and seems correct
 
-        
+        #print(f"{self.owner.name} observing... from ObservationComponent def observe")
+
         assert hasattr(self, "_percepts") and isinstance(self._percepts, dict)
         """ guards the whole function
         Not tied to self-percept logic
@@ -238,6 +239,9 @@ class ObservationComponent:
 
         # --- perceive self (always included) ---
         self_percept = self.owner.get_percept_data(observer=self.owner)
+
+        
+
         #canonical insertion point for internal state → percept → thought
 
         if self_percept:
@@ -254,6 +258,8 @@ class ObservationComponent:
                     continue
                 
                 self.add_percept_from(obj, source="gather_perceptible_objects")
+
+                
 
                 """ percept = obj.get_percept_data(observer=self.owner)
                 if not percept:
@@ -305,7 +311,7 @@ class ObservationComponent:
             # --- perceive other characters in the same location ---
             for char in getattr(location, "characters_there", []):
                 if char is self.owner:
-                    continue#but doesnt this prevent duplicate self percepts?
+                    continue# prevent duplicate self percepts?
                 self.add_percept_from(char, source="characters_there")
 
         # --- perceive additional objects if any (location-provided list preferred) ---
@@ -317,7 +323,9 @@ class ObservationComponent:
             if hasattr(location, "list_perceptibles"):
                 for obj in location.list_perceptibles():
                     self.add_percept_from(obj, source="list_perceptibles")
-            
+        
+        
+
 
         # --- perceive a specific target if requested ---
         if target:

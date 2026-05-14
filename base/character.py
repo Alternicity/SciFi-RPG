@@ -159,6 +159,9 @@ class Character(PerceptibleMixin, CharacterBase):
 
     def observe(self, *args, **kwargs):
         """Delegates the actual observation logic to the ObservationComponent."""
+
+        #print(f"{self.name} observing... from class Character def observe")
+
         if not hasattr(self, "observation_component") or self.observation_component is None:
             raise RuntimeError(
                 f"{self.__class__.__name__} has no ObservationComponent but observe() was called."

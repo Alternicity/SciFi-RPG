@@ -60,12 +60,7 @@ class UtilityAI(BaseAI):
             category="anchor"
         )
 
-        role_label = (
-            "MANAGER" if npc is game_state.civilian_worker else
-            "WAITRESS" if npc is game_state.civilian_waitress else
-            "LIBERTY" if npc is game_state.civilian_liberty else
-            npc.debug_role
-        )
+        role_label = getattr(npc, "debug_role", "NPC")
 
         debug_print(
             npc,
@@ -171,7 +166,7 @@ class UtilityAI(BaseAI):
         target = None
 
         #gating added for this temporary print
-        if npc is gs.civilian_liberty and game_state.hour % 3 == 0:
+        if getattr(npc, "debug_role", None) == "civilian_liberty" and game_state.hour % 3 == 0:
             debug_print(npc, f"ANCHOR TYPE:", category="anchor")
             #debug_print(npc, f"[THOUGHTS] Recent thoughts: {thought_contents}", category="anchor")
             urgencies = get_current_urgencies(npc)

@@ -16,8 +16,6 @@ def inject_initial_region_knowledge(npc):
         rk = build_region_knowledge(region, npc)
         npc.mind.memory.semantic["region_knowledge"].append(rk)
 
-
-
 def inject_fun_prefs(npc):
     npc.fun_prefs = FunPreferences()
 

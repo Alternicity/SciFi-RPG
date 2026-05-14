@@ -58,7 +58,7 @@ def create_regions():
             
             region_obj = Region(
                 name=region_name.lower().replace(" ", ""),
-                name_for_player=region_name,
+                name_for_player=region_name.capitalize(),
                 shops=[],
                 locations=[],
                 factions=[],

@@ -21,20 +21,27 @@ class GameState:
         self.hour = 0 # 1 hour
         self.day = 1
 
-        self.primary = None 
+        #now obsolete architecture.
+        """ self.primary = None 
         self.secondary = None
+
         self.civilian_worker = None
         self.civilian_waitress = None
         self.civilian_liberty = None
-        self.civilian_passive = None
+        self.civilian_passive = None """
+
+        #in future use only:
+        self.debug_npcs = {}
+
+
         #Recommendation (later): Remove individual fields and rely on debug_npcs only
         self.debug_vitals_displayed = set()
-        self.debug_npcs = {}
+
         self.show_background_debug = False
         #or make civilian_background just be a background npc, just placed in the cafe
 
         self.reserved_homes = {}
-
+        self.scenarios = []
         self.state = None
         self.civilians = []
         self.families = []

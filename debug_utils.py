@@ -135,7 +135,7 @@ That is impossible if filters are hard-coded. """
 # Module-level file handle — opened once, not per call
 _log_file = None
 
-def init_log_file(path="/home/stuart/Documents/Sim Logs/sim_log.txt"):
+def init_log_file(path="/home/stuart/Documents/Sim Logs/sim_log.txt"):#move to project dir, pin in vs code
     """Call once at simulation start."""
     global _log_file
     os.makedirs(os.path.dirname(path), exist_ok=True)

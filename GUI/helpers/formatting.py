@@ -7,3 +7,4 @@ def format_motivation_text(motive):
 
 def format_status_text(status):
     pass
+#seemingly unused, possibly legacy code to be deprecated?

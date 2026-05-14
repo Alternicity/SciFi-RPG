@@ -1,3 +1,4 @@
+#faction.py
 from characters import Boss, CEO, Captain, Manager, Employee, GangMember
 from goals import Goal
 from tasks.tasks import Task

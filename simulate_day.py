@@ -205,7 +205,8 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):
             for mem in npc.mind.memory.episodic:
                 pass
 
-        debug_print(npc, f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})", category="think")#ATTN :are there more than one?
+        #debug_print(npc, f"[DEBUG] debug_character is: {debug_character.name} (id={id(debug_character)})", category="think")
+        #debug_character no longer present here
         
 
         if npc is debug_character:#is debug_character even set? Should we instead use an npc attribute lookup?

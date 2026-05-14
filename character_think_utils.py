@@ -99,3 +99,16 @@ def debug_recent_thoughts(npc, mind, n=5):
 
     if corollary_map:
         debug_print(npc, f"[THOUGHTS] Corollary structure: {corollary_map}", category="think")
+
+def build_colony_doubt_thought(npc):
+
+    return Thought(
+        subject=npc.name,
+        content=(
+            "Something about the colony history "
+            "doesn't feel complete."
+        ),
+        urgency=35,
+        tags=["history", "doubt", "colony"],
+        source="seeded_debug_thought"
+    )

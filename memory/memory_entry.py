@@ -184,6 +184,15 @@ class RegionKnowledge:
     def summary(self) -> str:
         return f"{self.character_or_faction.name}'s view of {self.region_name}: {len(self.locations)} locations, {len(self.region_gangs)} gangs"
 
+    def __repr__(self):
+
+        return (
+            f"RegionKnowledge("
+            f"{self.region_name}, "
+            f"{len(self.locations)} locations, "
+            f"{len(self.known_characters)} known characters"
+            f")"
+        )
 
 
 

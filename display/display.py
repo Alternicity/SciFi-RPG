@@ -37,11 +37,11 @@ logger = logging.getLogger(__name__)
 
 
 
-def load_region_mappings():
+""" def load_region_mappings():
     # List of region names
     valid_regions = ["North", "East", "West", "South", "Central"]
     region_mappings = {}
-    return region_mappings
+    return region_mappings """
 
 def select_region_menu(regions: List[Union['Region', 'UndevelopedRegion']]):
     """Displays region selection and returns the selected region."""
@@ -669,7 +669,7 @@ def display_percepts_compact(npc):
 
     debug_print(npc, f"[PERCEPTS] {' | '.join(parts)}", category="percept")
 
-USE_TABULATE = False  # flip to True when you want pretty tables in terminal
+USE_TABULATE = True  # flip to True when you want pretty tables in terminal
 def display_percepts_table(npc):
     """
     Prints a clean tabular debug summary of an NPC's percepts.
