@@ -319,7 +319,7 @@ def create_factions(all_regions, all_locations):
 
     for faction in gang_factions:
         if faction.type.lower() == "gang":
-            faction.is_vengeful = True  # ✅ gangs are aggressive by default
+            faction.is_vengeful = True  # Add to GUI faction mode, overview tab
         else:
             faction.is_vengeful = False
 

@@ -35,8 +35,6 @@ class MotivationPresets:
     
     tag_to_motivation_presets = {
     "rob": Motivation("rob", 4, status_type="criminal"),
-    #commenting out the rob above does not solve the GangMember steal/rob herding
-      #does the ai actually need status_type?
     "steal": Motivation("steal", 4, status_type="criminal"),
     "weapon": Motivation("obtain_ranged_weapon", 4),
     "shop": Motivation("visit", 4),

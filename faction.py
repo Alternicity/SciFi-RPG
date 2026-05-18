@@ -22,6 +22,27 @@ class Corporation(Faction):
         self.security = []
         self.employees = []
         self.members = []  # All employees, accountants, security, managers (not CEO)
+        self.assassins = []
+
+    def get_leader(self):
+        return self.CEO
+
+    def get_mid_tier(self):
+        return self.managers
+
+    def get_workers(self):
+        return (
+            self.employees
+            + self.security
+            + self.accountants
+            + self.assassins
+        )
+
+    def iter_hierarchy(self):
+        yield ("CEO", [self.get_leader()] if self.get_leader() else [])
+        yield ("Management", self.get_mid_tier())
+        yield ("Workers", self.get_workers())
+
 
     def add_CEO(self, ceo):
         self.CEO = ceo
@@ -42,6 +63,10 @@ class Corporation(Faction):
         self.employees.append(employee)
         self.members.append(employee)
 
+    def add_assassin(self, assassin):#added
+        self.assassins.append(assassin)
+        self.members.append(assassin)
+
 class Gang(Faction):
     def __init__(self, name, violence_disposition, race):
         super().__init__(name, type="gang")
@@ -56,13 +81,28 @@ class Gang(Faction):
         self.is_street_gang = False
         self.street_gang_start_location = None
 
+    def get_leader(self):
+        return self.boss
+
+    def get_mid_tier(self):
+        return self.captains
+
+    def get_workers(self):
+        return self.members
+    
+    def iter_hierarchy(self):
+        yield ("Boss", [self.get_leader()] if self.get_leader() else [])
+        yield ("Captains", self.get_mid_tier())
+        yield ("Gangsters", self.get_workers())
+
     def add_boss(self, boss):
         if boss.race == self.race:  # Ensure race matches
             self.boss = boss
             boss.faction = self  # Assign faction to the boss
         else:
             raise ValueError(f"Boss race '{boss.race}' does not match gang race '{self.race}'.")
-
+        
+from config import STATE_RACE
 class State(Faction):
     def __init__(self, name, resources, laws, region=None):
         super().__init__(name, type="state")
@@ -73,8 +113,37 @@ class State(Faction):
         self.HQ = None 
         self.state_staff = []
         self.members = []
+        self.race = STATE_RACE
+        #self.leader
+    
+    def get_leader(self):
+        vip_types = ("VIP",)
+        for member in self.state_staff:
+            if member.__class__.__name__ in vip_types:
+                return member
+        return None
+        #Should become one VIP
 
-     
+    def get_mid_tier(self):
+
+        return [
+            m for m in self.state_staff
+            if m.__class__.__name__
+            in ("Manager", "Taxman", "Detective")
+        ]
+
+    def get_workers(self):
+
+        return [
+            m for m in self.state_staff
+            if m.__class__.__name__
+            in ("Employee", "RiotCop")
+        ]
+    
+    def iter_hierarchy(self):
+        yield ("VIP", [self.get_leader()] if self.get_leader() else [])
+        yield ("Mid Tier", self.get_mid_tier())
+        yield ("Low Tier", self.get_workers())
 
     def update_laws(self, new_law):
         self.laws.append(new_law)

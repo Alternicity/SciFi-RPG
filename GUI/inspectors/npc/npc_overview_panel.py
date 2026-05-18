@@ -56,7 +56,7 @@ def build_overview_panel(gui, parent):
 
 def refresh_overview_panel(gui):
 
-    npc = gui.selected_npc
+    npc = gui.active_context["npc"]
 
     if not npc:
         return

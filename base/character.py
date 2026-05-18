@@ -20,7 +20,10 @@ class Character(PerceptibleMixin, CharacterBase):
         location,
         is_player=False,
         ai=None,
-        motivations=None,
+
+        #motivations=None,
+        #very old, maybe not used
+
         preferred_actions=None,
         behaviors=None, #unused, possibly deprecate in favour of preferred_actions, as it overlaps
         partner=None,
@@ -79,7 +82,10 @@ class Character(PerceptibleMixin, CharacterBase):
 
         self.is_homeless = False
         self.base_preferred_actions = {}
-        self._initial_motivations = motivations
+
+        #self._initial_motivations = motivations
+        #probably deprecatred
+
         self.motivation_manager = None
         self.skills = self.default_skills()
         # Individual character preferences (overrides base)

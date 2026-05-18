@@ -51,7 +51,7 @@ def build_percepts_panel(gui, parent):
 
 def refresh_percepts_panel(gui):
     #print("refresh_percepts_panel called")
-    npc = gui.selected_npc
+    npc = gui.active_context["npc"]
     
     if not npc:
         return

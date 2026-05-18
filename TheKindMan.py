@@ -145,7 +145,7 @@ U7s.task_manager = TaskManager(U7s)
 U7s.employment = EmployeeProfile()
 U7s.faction = factionless
 U7s.motivation_manager = MotivationManager(U7s)
-initialize_motivations(U7s, passed_motivations=[("idle", 1)])
+
 U7s.inventory_component = InventoryComponent(U7s)
 U7s.observation_component = ObservationComponent(owner=U7s)
 U7s.append(U7s)

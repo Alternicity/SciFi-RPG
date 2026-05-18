@@ -122,7 +122,7 @@ def build_faction_overview_panel(gui, parent):
 
 def refresh_faction_overview(gui):
 
-    faction = gui.selected_faction
+    faction = gui.active_context["faction"]
 
     if not faction:
         return

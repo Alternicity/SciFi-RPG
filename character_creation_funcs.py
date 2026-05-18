@@ -35,8 +35,8 @@ def create_faction_characters(faction, all_regions, factions=None):
     if isinstance(faction, Gang):
         return create_gang_characters(faction, all_regions)
     elif isinstance(faction, Corporation):
-        #return create_corporation_characters(faction, factions)
-        #uncomment to create corp characters
+        return create_corporation_characters(faction, factions)
+        #comment THE ABOVE RETURN to SUPRESS corp characters
         
         return []  # corporations intentionally have no characters (yet)
     
@@ -314,7 +314,7 @@ def instantiate_character(char_data, all_regions, factions):
     character.task_manager = TaskManager(character)
     character.employment = EmployeeProfile()
     character.motivation_manager = MotivationManager(character)
-    character.inventory_component = InventoryComponent(owner=character)
+    character.inventory_component = InventoryComponent(character)
 
     knife = Knife()
     character.inventory.add_item(knife)

@@ -15,7 +15,10 @@ from config import (
     SHOW_BUY_LOGS,
     SHOW_TC2_LOGS,
     SHOW_INTERACTION_LOGS,
+
+    SHOW_CREATE_FACTION_LOGS,
     SHOW_CREATE_LOGS,
+    
     SHOW_TEST_NPC_LOGS,
     SHOW_TICK_LOGS,
     SHOW_NPC_THINK_LOGS,
@@ -58,7 +61,10 @@ from config import (
 DEBUG_FLAGS = {
     "fun": SHOW_FUN_LOGS,
     "eat": SHOW_EAT_LOGS,
+
     "create": SHOW_CREATE_LOGS,
+    "create_faction": SHOW_CREATE_FACTION_LOGS,
+    
     "primary": SHOW_PRIMARY_LOGS,
     "secondary": SHOW_SECONDARY_LOGS,
     "faction": SHOW_FACTION_LOGS,
@@ -135,7 +141,7 @@ That is impossible if filters are hard-coded. """
 # Module-level file handle — opened once, not per call
 _log_file = None
 
-def init_log_file(path="/home/stuart/Documents/Sim Logs/sim_log.txt"):#move to project dir, pin in vs code
+def init_log_file(path="/home/stuart/SciFi-RPG/logs/sim_log.txt"):
     """Call once at simulation start."""
     global _log_file
     os.makedirs(os.path.dirname(path), exist_ok=True)

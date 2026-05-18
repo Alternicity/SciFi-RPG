@@ -20,8 +20,11 @@ from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 
-from create.create_game_state import get_game_state
-game_state = get_game_state()
+from config import ENABLE_FACTION_CHARACTERS
+
+#marked for deletion apparently
+""" from create.create_game_state import get_game_state
+game_state = get_game_state() """
 
 #no ai import here
 def create_gang_characters(faction, all_regions):
@@ -56,64 +59,71 @@ def create_gang_characters(faction, all_regions):
     race = faction.race#double check this
     first_name, family_name, full_name = create_name(race, sex)
     
-    #uncomment
-    """ boss = Boss(
-        name=full_name,
-        first_name=first_name,
-        family_name=family_name,
-        race=faction.race,
-        sex=sex,
-        faction=faction,
-        region=faction.region,
-        location=None,
-        motivations=[("idle", 1)],
-        status=status
-    )
-    if faction.is_street_gang and faction.street_gang_start_location:
-        boss.location = faction.street_gang_start_location
-    elif faction.HQ:
-        boss.location = faction.HQ
-    else:
-        print(f"[ERROR] {faction.name} has no HQ and no valid start location.")
-
-    faction.boss = boss  # <-- Store boss reference in gang
-    characters.append(boss)
-    faction.region.characters_there.append(boss)
-    boss.mind = Mind(owner=boss, capacity=boss.intelligence)
-    augment_character(boss)
-    boss.curiosity = Curiosity(base_score=boss.intelligence // 2)
-    boss.task_manager = TaskManager(boss)
-    boss.employment = EmployeeProfile()
-    initialize_motivations(boss, member.motivations)
-    boss.inventory_component = InventoryComponent(owner=boss)
-    boss.observation_component = ObservationComponent(owner=boss)
-    family_name = boss.family_name
-            if family_name not in game_state.extant_family_names:
-                game_state.extant_family_names.append(family_name)
-                
-      """
-#not neccesary to uncomment to restore gang chars instantiation
-    """ if faction.HQ:
-        faction.boss.location = faction.HQ #it seems this works for Bosses
-        faction.boss.region = faction.HQ.region
-    else:
+    if ENABLE_FACTION_CHARACTERS:
+        boss = Boss(
+            name=full_name,
+            first_name=first_name,
+            family_name=family_name,
+            race=faction.race,
+            sex=sex,
+            faction=faction,
+            region=faction.region,
+            location=None,
+            
+            status=status
+        )
         if faction.is_street_gang and faction.street_gang_start_location:
-            faction.boss.location = faction.street_gang_start_location
-            faction.boss.region = faction.region
+            boss.location = faction.street_gang_start_location
+        elif faction.HQ:
+            boss.location = faction.HQ
         else:
-            print(f"[ERROR] {faction.name} has no HQ and no street_gang_start_location. Boss location is undefined.")
-            faction.boss.location = None
-            faction.boss.region = faction.region """
-#uncomment
-    """ from create_game_state import get_game_state
+            print(f"[ERROR] {faction.name} has no HQ and no valid start location.")
+
+        faction.boss = boss  # <-- Store boss reference in gang
+        characters.append(boss)
+        faction.region.characters_there.append(boss)
+        boss.mind = Mind(owner=boss, capacity=boss.intelligence)
+        augment_character(boss)
+        boss.curiosity = Curiosity(base_score=boss.intelligence // 2)
+        boss.task_manager = TaskManager(boss)
+        boss.employment = EmployeeProfile()
+
+        initialize_motivations(boss, passed_motivations=[("idle", 1)])
+        #MotivationPresets.for_class("Boss")
+        #Later
+
+        boss.inventory_component = InventoryComponent(boss)
+
+        boss.observation_component = ObservationComponent(owner=boss)
+        family_name = boss.family_name
+        """ if family_name not in game_state.extant_family_names:
+            game_state.extant_family_names.append(family_name) """
+            
+        
+        #not neccesary to uncomment to restore gang chars instantiation
+        if faction.HQ:
+            faction.boss.location = faction.HQ #it seems this works for Bosses
+            faction.boss.region = faction.HQ.region
+        else:
+            if faction.is_street_gang and faction.street_gang_start_location:
+                faction.boss.location = faction.street_gang_start_location
+                faction.boss.region = faction.region
+            else:
+                print(f"[ERROR] {faction.name} has no HQ and no street_gang_start_location. Boss location is undefined.")
+                faction.boss.location = None
+                faction.boss.region = faction.region
+
+    from create.create_game_state import get_game_state
     game_state = get_game_state()
     for gang in game_state.gangs:
         if gang.name == faction.name:
             gang.add_boss(boss)
-            break """
+            break
 
     # Captains
-    for _ in range(random.randint(0, 0)):#not instantiating
+    #for _ in range(random.randint(0, 0)):#not instantiating
+    from config import GANG_CAPTAIN_RANGE
+    for _ in range(random.randint(*GANG_CAPTAIN_RANGE)):
         status = CharacterStatus()
         status.set_status("criminal", FactionStatus(StatusLevel.MID, "Captain"))
         
@@ -130,7 +140,7 @@ def create_gang_characters(faction, all_regions):
             faction=faction,
             region=faction.region,
             location=None,
-            motivations=[("idle", 1)],
+            
 
             status=status
         )
@@ -142,8 +152,10 @@ def create_gang_characters(faction, all_regions):
         captain.curiosity = Curiosity(base_score=captain.intelligence // 2)
         captain.task_manager = TaskManager(captain)
         captain.employment = EmployeeProfile()
-        initialize_motivations(captain, member.motivations)
-        captain.inventory_component = InventoryComponent(owner=captain)
+
+        initialize_motivations(captain, passed_motivations=[("idle", 1)])
+        captain.inventory_component = InventoryComponent(captain)
+
         captain.observation_component = ObservationComponent(owner=captain)
         if faction.is_street_gang and faction.street_gang_start_location:
             captain.location = faction.street_gang_start_location
@@ -177,6 +189,7 @@ def create_gang_characters(faction, all_regions):
         origin=faction.region,
         status=status
     )
+        initialize_motivations(member, passed_motivations=[("idle", 1)])
         member.inventory_component = InventoryComponent(member)#added as a component
         knife = Knife()
         member.inventory.add_item(knife)#function adds ownership also, so I must check how in light of name changes above

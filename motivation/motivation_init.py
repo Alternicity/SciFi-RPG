@@ -5,6 +5,8 @@ from motivation.motivation_presets import MotivationPresets
 from debug_utils import debug_print
 def initialize_motivations(character, passed_motivations=None):
 
+    if character.motivation_manager is None:
+        character.motivation_manager = MotivationManager(character)
 
     passed_motivations = passed_motivations or []
 
@@ -12,13 +14,11 @@ def initialize_motivations(character, passed_motivations=None):
     for mtype in CORE_MOTIVES:
         character.motivation_manager.create_initial(mtype, urgency=1)
 
-        if mtype in CORE_MOTIVES and getattr(character, "debug", False):#I replaced self with character
-            persistent = mtype in CORE_MOTIVES
-            debug_print(
-                character.owner,
-                f"[CORE CREATED] {mtype} persistent={persistent}",#persistent is marked as not defined here
-                category="motive"
-            )
+        debug_print(
+            character,
+            f"[CORE CREATED] {mtype} persistent=True",
+            category="motive"
+        )
 
     # 1 - Apply inline motivations first
     if passed_motivations:

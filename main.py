@@ -51,7 +51,7 @@ def main():
     all_regions, factions, all_characters, all_locations = setup_game()
     from world.scenarios.apply_scenarios import apply_scenarios
 
-    apply_scenarios(all_characters)#from here
+    apply_scenarios(all_characters)
 
     main_menu(all_locations, all_characters)
     #game()

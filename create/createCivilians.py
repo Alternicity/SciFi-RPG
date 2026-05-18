@@ -98,7 +98,9 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             civilian.employment = EmployeeProfile(shift_start=9, shift_end = 5)
             civilian.faction = factionless
             civilian.motivation_manager = MotivationManager(civilian)
+
             initialize_motivations(civilian, passed_motivations=[("idle", 1)])
+
             civilian.inventory_component = InventoryComponent(civilian)
             civilian.observation_component = ObservationComponent(owner=civilian)
             civilians.append(civilian)
@@ -166,7 +168,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
         region=factionless.region,
         location=location,        #ATTN npcs are placed with add_character() now
 
-        motivations=[("idle", 1)],
+
         status=status,
         intelligence=20,  # Override default
         concentration = 20,
@@ -197,7 +199,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     luna.task_manager = TaskManager(luna)
     luna.employment = EmployeeProfile()
     initialize_motivations(luna, SpecialChild.motivations)
-    luna.inventory_component = InventoryComponent(owner=luna)
+    luna.inventory_component = InventoryComponent(luna)
     luna.observation_component = ObservationComponent(owner=luna)
     #maybe set Lunas faction to factionless here
     from character_memory import Memory
@@ -237,7 +239,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
         faction=factionless,
         region=park_location.region,
         location=park_location,
-        motivations=[("idle", 1)],
+
         status=status,
         intelligence=10,  # Override default
         concentration = 9,
@@ -269,7 +271,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     #Ava.task_manager = TaskManager(Ava)
     #Ava.employment = EmployeeProfile()
     #initialize_motivations(Ava, Adepta.motivations)
-    #Ava.inventory_component = InventoryComponent(owner=Ava)
+    #Ava.inventory_component = InventoryComponent(Ava)
     #Ava.observation_component = ObservationComponent(owner=Ava)
     #faction.members.append(Ava)
     #game_state.civilians.append(Ava)

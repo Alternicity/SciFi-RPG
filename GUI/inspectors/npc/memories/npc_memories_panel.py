@@ -30,7 +30,7 @@ def build_memories_panel(gui, parent):
 
 def refresh_memories_panel(gui):
 
-    npc = gui.selected_npc
+    npc = gui.active_context["npc"]
 
     if not npc:
         return

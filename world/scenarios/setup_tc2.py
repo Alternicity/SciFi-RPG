@@ -18,7 +18,7 @@ from character_components.npc_effects import MorningSettlingEffect
 
 
 def setup_tc2_world(all_characters):#line 20
-    civilians = [c for c in all_characters if isinstance(c, Civilian)]#all characters is not here, marked not defined
+    civilians = [c for c in all_characters if isinstance(c, Civilian)]
     debug_civilian_worker = pick_civilian(civilians)
     debug_civilian_liberty = pick_civilian(
         civilians,

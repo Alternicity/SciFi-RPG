@@ -55,7 +55,8 @@ class Boss(Character):
 
         wallet = kwargs.pop("wallet", generate_wallet("Boss"))
         super().__init__(
-            name=name, race=race, sex=sex, faction=faction,  region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, faction=faction,  region=region,
             location=location,  status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs
         )
         self.first_name = first_name
@@ -127,7 +128,8 @@ class CEO(Character):
         wallet = kwargs.pop("wallet", generate_wallet("CEO"))
         # Call parent constructor
         super().__init__(
-            name=name, race=race, sex=sex, faction=faction, region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, faction=faction, region=region,
             location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs # Pass remaining keyword arguments safely
         )
         self.first_name = first_name
@@ -190,7 +192,8 @@ class Captain(Character):
         default_loyalties.update(loyalties or {})
         wallet = kwargs.pop("wallet", generate_wallet("Captain"))
         super().__init__(
-            name=name, race=race, sex=sex, faction=faction,  region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, faction=faction,  region=region,
             location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs
         )
         self.first_name = first_name
@@ -250,7 +253,8 @@ class Manager(Character):
         kwargs["primary_status_domain"] = "corporate"
 
         super().__init__(
-            name=name, race=race, sex=sex, faction=faction,  region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, faction=faction,  region=region,
             location=location, wallet=wallet, status=status, loyalties=default_loyalties, fun=fun,
             hunger=hunger, motivations=motivations or self.default_motivations, **kwargs
         )
@@ -299,7 +303,7 @@ class Manager(Character):
     
 class Subordinate(Character):
     """Intermediate class for characters with a superior (e.g. gang members, guards, etc.)"""
-    def __init__(self, name, race, sex, region, location,
+    def __init__(self, name, first_name, family_name, race, sex, region, location,
                  superior=None, loyalty=50, morale=5,
                  wallet=None, ai=None, **kwargs):
 
@@ -308,7 +312,8 @@ class Subordinate(Character):
         ai = ai or UtilityAI(self) if not getattr(self, "is_player", False) else None
 
         super().__init__(
-            name=name, race=race, sex=sex, region=region, location=location,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, region=region, location=location,
             wallet=wallet, ai=ai, morale=morale, **kwargs
         )
         """self.first_name = first_name
@@ -355,7 +360,8 @@ class Employee(Subordinate):
 
         # --- Call parent constructor ---
         super().__init__(
-            name=name, race=race, sex=sex, region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, region=region,
             location=location, faction=faction, strength=strength, agility=agility,
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness,
             morale=morale, position=position, status=status, wallet=wallet,
@@ -415,7 +421,8 @@ class CorporateSecurity(Subordinate):
         kwargs["primary_status_domain"] = "corporate"
         wallet = kwargs.pop("wallet", generate_wallet("CorporateSecurity"))
         super().__init__(
-            name=name, race=race, sex=sex,  region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex,  region=region,
             location=location, faction=faction, strength=strength, agility=agility, 
             intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
             morale=morale, wallet=wallet, position=position, 
@@ -480,7 +487,7 @@ class CorporateAssasin(CorporateSecurity):
         default_loyalties.update(loyalties or {})
         wallet = kwargs.pop("wallet", generate_wallet("CorporateAssasin"))
         super().__init__(
-            name=name, race=race, sex=sex,  region=region,
+            name=name, first_name=first_name, family_name=family_name, race=race, sex=sex,  region=region,
             location=location, faction=faction, strength=strength, agility=agility, 
             intelligence=intelligence, luck=0, psy=0, toughness=toughness, 
             morale=morale, wallet=wallet, position=position, 
@@ -558,7 +565,8 @@ class GangMember(Subordinate):
         kwargs.setdefault("primary_status_domain", "criminal")
 
         super().__init__(
-                name=name, race=race, sex=sex, region=region,
+                name=name, first_name=first_name,
+                family_name=family_name, race=race, sex=sex, region=region,
                 location=location, faction=faction, wallet=wallet, strength=strength, agility=agility, #line 545
                 intelligence=intelligence, luck=luck, psy=psy, toughness=toughness, 
                 morale=morale, position=position, 
@@ -667,7 +675,8 @@ class RiotCop(Character):
         kwargs["primary_status_domain"] = "state"
         wallet = kwargs.pop("wallet", generate_wallet("RiotCop"))
         super().__init__(
-            name=name, race=race, sex=sex, region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, region=region,
             location=location, faction=faction,
             fun=fun, hunger=hunger, strength=15, agility=4, intelligence=5, 
             luck=0, psy=0, toughness=toughness, morale=8, 
@@ -744,7 +753,8 @@ class Civilian(Character):
         kwargs.setdefault("faction", Faction)
 
         super().__init__(
-            name=name, race=race, sex=sex, region=region, location=location,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, region=region, location=location,
             strength=strength, agility=agility, intelligence=intelligence,
             luck=luck, psy=psy, toughness=toughness, morale=morale,
             position=position, status=status, motivations=motivations or self.default_motivations,
@@ -842,6 +852,8 @@ class VIP(Civilian):
         wallet = kwargs.pop("wallet", generate_wallet("VIP"))
         super().__init__(
             name=name,
+            first_name=first_name,
+            family_name=family_name,
             race=race,
             sex=sex,
             strength=strength,
@@ -935,9 +947,6 @@ class Child(Civilian):
             sex=sex,
             region=region,
             location=location,
-            
-            
-            
             strength=strength,
             agility=agility,
             intelligence=intelligence,
@@ -1044,6 +1053,8 @@ class Influencer(Civilian):
         wallet = kwargs.pop("wallet", generate_wallet("Influencer"))
         super().__init__(
             name=name,
+            first_name=first_name,
+            family_name=family_name,
             race=race,
             sex=sex,
             faction=faction,
@@ -1143,6 +1154,8 @@ class Babe(Civilian):
         wallet = kwargs.pop("wallet", generate_wallet("Babe"))
         super().__init__(
             name=name,
+            first_name=first_name,
+            family_name=family_name,
             race=race,
             sex=sex,
             faction=faction,
@@ -1259,6 +1272,8 @@ class Adepta(Civilian):
         wallet = kwargs.pop("wallet", generate_wallet("Babe"))
         super().__init__(
             name=name,
+            first_name=first_name,
+            family_name=family_name,
             race=race,
             sex=sex,
             faction=faction,
@@ -1376,6 +1391,8 @@ class Detective(Character): #Subordinate? Of the state?
         wallet = kwargs.pop("wallet", generate_wallet("dealer"))
         super().__init__(
             name=name,
+            first_name=first_name,
+            family_name=family_name,
             race=race,
             sex=sex,
             region=region,
@@ -1477,7 +1494,8 @@ class Taxman(Character):
         
         wallet = kwargs.pop("wallet", generate_wallet("dealer"))
         super().__init__(
-            name=name, race=race, sex=sex, region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, region=region,
             location=location, faction=faction, wallet=wallet, loyalties=default_loyalties, fun=fun,
             hunger=hunger, preferred_actions=preferred_actions, status=status, motivations=motivations or self.default_motivations, **kwargs
         )
@@ -1552,7 +1570,8 @@ class Accountant(Character):
         
         wallet = kwargs.pop("wallet", generate_wallet("dealer"))
         super().__init__(
-            name=name, race=race, sex=sex, faction=faction, region=region,
+            name=name, first_name=first_name,
+            family_name=family_name, race=race, sex=sex, faction=faction, region=region,
             location=location, wallet=wallet, loyalties=default_loyalties, fun=fun,
             hunger=hunger, status=status, motivations=motivations or self.default_motivations, **kwargs
         )

@@ -1,6 +1,29 @@
 # config.py
 # Global game settings and constants
 
+# State / Government defaults
+STATE_RACE = "Terran"
+#note, should this be reflected in game_state.state_race later?
+
+#non TC2 faction npcs
+ENABLE_FACTION_CHARACTERS = True
+
+GANG_BOSS_COUNT = 1
+GANG_CAPTAIN_RANGE = (1, 2)
+GANG_MEMBER_RANGE = (3, 6)
+
+#not yet used
+CORP_MANAGER_RANGE = (1, 2)
+CORP_EMPLOYEE_RANGE = (3, 5)
+CORP_SECURITY_RANGE = (1, 2)
+CORP_ACCOUNTANT_RANGE = (1, 1)
+
+STATE_VIP_RANGE = (1, 1)
+STATE_MANAGER_RANGE = (1, 2)
+STATE_EMPLOYEE_RANGE = (2, 4)
+STATE_POLICE_RANGE = (2, 4)
+
+
 DEBUG_MODE = True  # Master switch for all debug printing
 DEBUG_TC1 = False         # legacy TC1 narration
 DEBUG_TC2 = True          # current focus
@@ -20,7 +43,9 @@ SHOW_TICK_LOGS = True
 SHOW_TEST_NPC_LOGS = True   # keep this True so test NPCs still show
 # ^ only relevant when npc.is_test_npc == True
 
-SHOW_CREATE_LOGS = True
+SHOW_CREATE_LOGS = True#already exists
+SHOW_CREATE_FACTION_LOGS = True#added
+
 SHOW_FUN_LOGS = True
 SHOW_EAT_LOGS = True
 SHOW_FACTION_LOGS = True

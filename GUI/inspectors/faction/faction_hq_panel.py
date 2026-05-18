@@ -23,7 +23,7 @@ def build_faction_hq_panel(gui, parent):
 
 def refresh_faction_hq_panel(gui):
 
-    faction = gui.selected_faction
+    faction = gui.active_context["faction"]
 
     if not faction:
 

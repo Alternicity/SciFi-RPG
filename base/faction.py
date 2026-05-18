@@ -17,6 +17,15 @@ class Faction(FactionBase):
         self.violence_disposition = violence_disposition
         self.enemies = {}  # Key: Faction name or object, Value: hostility level 1-10
 
+    def get_leader(self):
+        return None
+
+    def get_mid_tier(self):
+        return []
+
+    def get_workers(self):
+        return []
+
     def add_member(self, member, rank="low", wage=100, perceived_loyalty=1.0):
         if not hasattr(member, "name"):
 
@@ -106,7 +115,7 @@ class Faction(FactionBase):
     def __repr__(self):
         return f"{self.name} {self.type.capitalize()}"
     
-class Factionless(Faction):
+class Factionless(Faction):#dummy faction
     def __init__(self, name="Factionless", violence_disposition=1):
         super().__init__(name=name, type="neutral")
         self.violence_disposition = violence_disposition
@@ -116,3 +125,10 @@ class Factionless(Faction):
         self.resources = {}
         self.region = None
         self.members = {}#changed, see above
+
+    #might be uneccesary, Might just exist to catch calls
+    def iter_hierarchy(self):
+        yield ("Leader", [self.get_leader()] if self.get_leader() else [])
+        yield ("Management", self.get_mid_tier())
+        yield ("Workers", self.get_workers())
+        #Hierarchy doesnt exists here conceptually, so this might need to change.
