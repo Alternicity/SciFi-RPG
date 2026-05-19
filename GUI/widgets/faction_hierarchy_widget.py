@@ -4,7 +4,6 @@ import tkinter as tk
 
 from GUI.inspectors.faction.faction_characters_panel import make_entry
 
-
 class FactionHierarchyWidget:
 
     def __init__(self, gui, parent):
@@ -52,6 +51,3 @@ class FactionHierarchyWidget:
                 npc.name,
                 npc
             )
-        print("STATE STAFF:")
-        for m in faction.state_staff:
-            print(type(m).__name__, m.name)

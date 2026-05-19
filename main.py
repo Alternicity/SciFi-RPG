@@ -22,7 +22,8 @@ def setup_game():
     from create.createLocations import create_locations
     from base.location import Location
     from display.display import compare_locations, debug_display_all_shops
-
+    from augment.augment_state import augment_municipal_buildings
+    
     all_regions, all_locations = create_regions()
     game_state.all_regions = all_regions
 
@@ -37,10 +38,10 @@ def setup_game():
     factions, all_characters = create_factions(all_regions, all_locations)
     game_state.factions = factions
     game_state.all_characters = all_characters
-
+    #maybe augment_municipal_buildings call should go here?
     reassign_shop_names_after_character_creation()
     link_family_shops(game_state)
-    #here
+    augment_municipal_buildings()
     debug_display_all_shops(all_regions)
     
     print(f"Game setup complete. Total characters: {len(game_state.all_characters)}")

@@ -22,7 +22,7 @@ def build_faction_hq_panel(gui, parent):
 
 
 def refresh_faction_hq_panel(gui):
-
+    from faction import State
     faction = gui.active_context["faction"]
 
     if not faction:
@@ -33,13 +33,40 @@ def refresh_faction_hq_panel(gui):
 
         return
 
+    if isinstance(faction, State):
+
+        buildings = faction.government_buildings#depends on either class faction, or class State have government_buildings populated
+
+        if not buildings:
+            text = "No government buildings"
+
+        else:
+
+            lines = ["Government Buildings\n"]
+
+            for building in buildings:
+
+                region_name = getattr(
+                    building.region,
+                    "name",
+                    "Unknown"
+                )
+
+                lines.append(
+                    f"{region_name}: {building.name}"
+                )
+
+            text = "\n".join(lines)
+
+        gui.faction_hq_text.config(text=text)
+
+        return
 
     hq = getattr(
         faction,
         "HQ",
         None
     )
-
 
     if not hq:
 

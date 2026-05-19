@@ -669,7 +669,7 @@ def display_percepts_compact(npc):
 
     debug_print(npc, f"[PERCEPTS] {' | '.join(parts)}", category="percept")
 
-USE_TABULATE = True  # flip to True when you want pretty tables in terminal
+USE_TABULATE = False  # flip to True when you want pretty tables in terminal
 def display_percepts_table(npc):
     """
     Prints a clean tabular debug summary of an NPC's percepts.

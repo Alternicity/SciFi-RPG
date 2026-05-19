@@ -26,11 +26,9 @@ class TC2GUI:
         self.root = root
         self.game_state = game_state
 
-        
-
         # --- single source of truth for UI state ---
         self.active_context = {
-            "mode": "city",
+            "mode": "npc",
             "faction": None,
             "npc": None,
             "entity": None
@@ -49,12 +47,10 @@ class TC2GUI:
         self.main_notebook = ttk.Notebook(root)
         self.main_notebook.pack(fill="both", expand=True)
 
-        self.mode_var = tk.StringVar(#line 52
-            value=self.active_context["mode"]
-        )
-
-
         self.load_mode(
+            self.active_context["mode"]
+        )
+        self.mode_var.set(#attempt to popualte intial mode selector with text
             self.active_context["mode"]
         )
 
@@ -68,27 +64,16 @@ class TC2GUI:
             self.refresh_npc_view()
 
         elif mode == "city":
-            pass
-            #self.refresh_city_view()
+            self.refresh_city_view()
 
         elif mode == "faction":
             self.refresh_faction_view()
 
     def open_npc(self, npc):
 
-        self.active_context["mode"] = "npc"
         self.active_context["npc"] = npc
         self.active_context["entity"] = npc
-
-        #self.selected_npc = npc
-
-
-
-        self.mode_var.set("npc")
-        self.load_mode("npc")
-        #suspicious duplication.
         
-
         """ Eventually: mode_var should reflect state
         NOT drive state.
         Meaning:
@@ -96,32 +81,38 @@ class TC2GUI:
         is truth
         dropdown mirrors it """
 
-        if npc in self.recent_npcs:#added for later
-            self.recent_npcs.remove(npc)
+        if npc in self.recent_npcs:
+            self.recent_npcs.remove(npc)#and wont this remove them immediately?
 
         self.recent_npcs.appendleft(npc)
 
-        
-        
-        self.refresh_all()
+        self.load_mode("npc")
+
+        if hasattr(self, "recent_npcs_frame"):#depends on this
+            self.refresh_recent_npcs()
 
     def open_faction(self, faction):
-
+        from GUI.inspectors.faction.faction_overview_panel import refresh_faction_list
         print(f"OPEN FACTION {faction}")
-
-        self.active_context["mode"] = "faction"
         self.active_context["faction"] = faction
         self.active_context["entity"] = faction
-
-        # clear incompatible context
         self.active_context["npc"] = None
+        
+        if faction.type == "gang":
+            faction_type = "Gangs"
 
-        self.mode_var.set("faction")
+        elif faction.type == "corporation":
+            faction_type = "Corporations"
+
+        elif faction.type == "state":
+            faction_type = "State"
+
+        else:
+            faction_type = "Gangs"
 
         self.load_mode("faction")
-
-        self.refresh_all()
-
+        self.faction_type_var.set(faction_type)
+        refresh_faction_list(self)
 
     def build_top_bar(self):
 
@@ -179,31 +170,28 @@ class TC2GUI:
     def on_npc_select(self, event):
 
         selection = self.npc_listbox.curselection()
-
         if not selection:
             return
-
+    
         display_name = self.npc_listbox.get(selection[0])
 
         npc = self.npc_lookup.get(display_name)
+
+        if not npc:
+            return
+        
         self.active_context["npc"] = npc
         self.active_context["entity"] = npc
-        self.active_context["mode"] = "npc"
 
-        #self.refresh_npc_view()
-        region = getattr(npc.location)
+        if npc.location:
 
-        npc.observe(
-            location=npc.location,
-            region=region
-        )
+            npc.observe(
+                location=npc.location,
+                region=npc.location.region
+            )
 
-        npc.observe(
-            location=npc.location,
-            region=npc.location.region
-        )
-        self.mode_var.set("npc")
-        self.refresh_all()
+        #self.mode_var.set("npc")
+        self.refresh_npc_view()
 
         self.root.update_idletasks()
 
@@ -212,17 +200,22 @@ class TC2GUI:
         mode = self.mode_var.get()
 
         self.active_context["mode"] = mode
-
+        
         self.load_mode(mode)
+
+        if mode == "npc":#here
+            self.active_context["faction"] = None
+
+        elif mode == "faction":
+            self.active_context["npc"] = None
+        #before this?
         self.refresh_all()
         
     def load_mode(self, mode_name):
         print(f"LOAD MODE CALLED: {mode_name}")
         self.active_context["mode"] = mode_name
-
+        self.mode_var.set(mode_name)
         gui_log(f"Loading mode: {mode_name}")
-        
-        #tmp
 
         print("CURRENT MODE", mode_name)
 
@@ -239,8 +232,11 @@ class TC2GUI:
         elif mode_name == "faction":
             print("LOADING FACTION MODE")
             self.load_faction_mode()
+        self.refresh_all()
 
     def refresh_npc_view(self):
+        print("NPC VIEW REFRESH")
+        print(self.active_context)
 
         npc = self.active_context["npc"]
 
@@ -369,6 +365,27 @@ class TC2GUI:
         self.npc_listbox = tk.Listbox(left_panel)
         self.npc_listbox.pack(fill="y", expand=True)
 
+        ttk.Separator(
+            left_panel,
+            orient="horizontal"
+        ).pack(fill="x", pady=10)
+
+        recent_header = ttk.Label(
+            left_panel,
+            text="Recent NPCs"
+        )
+
+        recent_header.pack(pady=(5, 2))
+
+        self.recent_npcs_frame = ttk.Frame(left_panel)
+
+        self.recent_npcs_frame.pack(
+            fill="x",
+            padx=5,
+            pady=(0, 10)
+        )
+        self.refresh_recent_npcs()#added
+
         # Prefer debug NPCs if available
         if self.game_state.debug_npcs:
 
@@ -400,6 +417,22 @@ class TC2GUI:
             self.on_npc_select
         )
 
+    def refresh_recent_npcs(self):#line 411
+
+        for w in self.recent_npcs_frame.winfo_children():
+            w.destroy()
+
+        for npc in self.recent_npcs:
+
+            btn = ttk.Button(
+                self.recent_npcs_frame,
+                text=f"{npc.__class__.__name__}: {npc.name}",
+                command=lambda n=npc: self.open_npc(n)
+            )
+
+            btn.pack(fill="x", pady=1)
+
+
     def load_city_mode(self):
 
         self.create_city_tab()
@@ -426,10 +459,18 @@ class TC2GUI:
 
         self.main_notebook.add(
             city_tab,
-            text="City"
+            text="City"#Capitalization might come from this
         )
 
         create_city_map_tab(self, city_tab)
+
+    def refresh_city_view(self):
+
+        from GUI.inspectors.city.city_overview_panel import (
+            refresh_city_overview
+        )
+
+        refresh_city_overview(self)
 
     def on_region_select(self, region):
 

@@ -1,8 +1,6 @@
 #GUI.inspectors.npc_overview_panel.py
 
-
 from tkinter import ttk
-
 
 def build_overview_panel(gui, parent):
 
@@ -21,6 +19,7 @@ def build_overview_panel(gui, parent):
         "Debug Role",
         "Location",
         "Destination",
+        "Faction",
         "Top Motivation",
         "Hunger",
         "Fun",
@@ -46,11 +45,10 @@ def build_overview_panel(gui, parent):
         )
         value.pack(side="left")
 
-
-        #wrong
-        #getattr(npc.current_destination, "name", "-")
-
-        gui.overview_labels[field] = value
+        gui.overview_labels[field] = {#this looks suspicious
+            "row": row,
+            "label": value
+        }
 
 
 
@@ -61,31 +59,77 @@ def refresh_overview_panel(gui):
     if not npc:
         return
 
-    motivation_manager = getattr(npc, "motivation_manager", None)
+    print("OVERVIEW PANEL REFRESH")
+    print(npc)
+
+    motivation_manager = getattr(
+        npc,
+        "motivation_manager",
+        None
+    )
 
     top_text = "-"
 
     if motivation_manager:
+
         top_motives = motivation_manager.get_top_motivations(2)
+
         if top_motives:
+
             lines = []
+
             for motive in top_motives:
+
                 lines.append(
                     f"{motive.type} ({int(motive.urgency)})"
                 )
+
             top_text = "\n".join(lines)
 
-    gui.overview_labels["Top Motivation"].config(
+    gui.overview_labels["Top Motivation"]["label"].config(
         text=top_text
     )
 
-    gui.overview_labels["Name"].config(
+    gui.overview_labels["Name"]["label"].config(
         text=npc.name
     )
 
-    gui.overview_labels["Debug Role"].config(
+    gui.overview_labels["Debug Role"]["label"].config(
         text=getattr(npc, "debug_role", "-")
     )
+
+    faction = getattr(npc, "faction", None)
+
+    faction_name = getattr(
+        faction,
+        "name",
+        "-"
+    )
+
+    faction_label = gui.overview_labels["Faction"]["label"]
+
+    faction_label.config(
+        text=faction_name
+    )
+
+    if faction:
+
+        faction_label.config(
+            foreground="cyan",
+            cursor="hand2"
+        )
+
+        faction_label.bind(
+            "<Button-1>",
+            lambda e, f=faction: gui.open_faction(f)
+        )
+
+    else:
+
+        faction_label.config(
+            foreground="white",
+            cursor=""
+        )
 
     location_name = getattr(
         getattr(npc, "location", None),
@@ -93,22 +137,22 @@ def refresh_overview_panel(gui):
         "-"
     )
 
-    gui.overview_labels["Location"].config(
+    gui.overview_labels["Location"]["label"].config(
         text=location_name
     )
 
-    gui.overview_labels["Hunger"].config(
+    gui.overview_labels["Hunger"]["label"].config(
         text=str(getattr(npc, "hunger", "-"))
     )
 
-    gui.overview_labels["Fun"].config(
+    gui.overview_labels["Fun"]["label"].config(
         text=str(getattr(npc, "fun", "-"))
     )
-    #added
-    gui.overview_labels["Effort"].config(
+
+    gui.overview_labels["Effort"]["label"].config(
         text=str(getattr(npc, "effort", "-"))
     )
-    
+
     destination = getattr(
         npc,
         "current_destination",
@@ -121,8 +165,6 @@ def refresh_overview_panel(gui):
         "-"
     )
 
-    gui.overview_labels["Destination"].config(
+    gui.overview_labels["Destination"]["label"].config(
         text=destination_name
     )
-
-    #destination  missing here

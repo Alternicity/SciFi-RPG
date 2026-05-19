@@ -74,9 +74,12 @@ def build_faction_selector(gui,parent):
         padx=10
     )
 
-    gui.faction_type_var.set(
-        "Gangs"
-    )
+    current = gui.faction_type_var.get()
+
+    if not current:
+        current = "Gangs"
+
+    gui.faction_type_var.set(current)
 
     gui.faction_type_var.bind(
         "<<ComboboxSelected>>",

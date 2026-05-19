@@ -308,7 +308,7 @@ def create_factions(all_regions, all_locations):
         laws=["No theft", "Corporate tax"],
         region=downtown_region
     )
-    state.region = downtown_region #I added this spontaneously, while on an epic coffee crash
+    state.region = downtown_region #Older. From when there was only one MunicipalBuilding
     game_state.set_state(state)
     factions.append(state)
     #print(f"[DEBUG] Added faction: {state.name} with region {state.region.name}")

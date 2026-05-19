@@ -1856,7 +1856,7 @@ class Holotheatre(WorkplaceMixin, PerceptibleLocation):
 
 @dataclass
 class MunicipalBuilding(WorkplaceMixin, PerceptibleLocation):
-    name: str = "City Hall"
+    name: str = "City Hall"#default. The five of them do not have unique names yet.
     tags: list[str] = field(default_factory=lambda: ["law", "state"])
     description: str = "A Muni Building"
     items_available: List[str] = field(default_factory=list)

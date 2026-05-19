@@ -25,7 +25,7 @@ from population.population import summarize_civilians
 def run_simulation(all_characters, num_ticks=10):
     from simulate_day import simulate_hours
     from location.locations import Shop
-
+    
     init_log_file()
     try:
     
@@ -35,6 +35,8 @@ def run_simulation(all_characters, num_ticks=10):
         civilians = game_state.civilians 
         all_regions = game_state.all_regions
         summarize_civilians(civilians, all_regions)
+
+        
 
         simulate_hours(all_characters, num_ticks=num_ticks, debug_character=None)
         

@@ -110,7 +110,10 @@ class State(Faction):
         self.resources = resources  # Dictionary of resources (e.g., money, food, etc.)
         self.laws = laws  # List of laws or policies (e.g., "no theft", "tax rates")
         self.type = "state"
-        self.HQ = None 
+        
+        self.HQ = None
+        self.government_buildings = []
+
         self.state_staff = []
         self.members = []
         self.race = STATE_RACE

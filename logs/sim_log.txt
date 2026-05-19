@@ -1,0 +1,349 @@
+[simulation] System: 
+Running simulation for 8 ticks...
+
+[tick] System: [TIME] Hour 1, Day 1
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=1.50
+[think] Gerda Engstrom: add_thought called; content repr: 'I need to work.'
+[focus] Gerda Engstrom: [FOCUS] Attention changed from None → Thought('I need to work.')
+[think] Gerda Engstrom: add_thought called; content repr: 'I need to eat.'
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Thought('I need to work.') → Thought('I need to eat.')
+[think] Gerda Engstrom: add_thought called; content repr: 'I should leave House.'
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Thought('I need to eat.') → Thought('I should leave House.')
+[anchor] Gerda Engstrom: [ANCHOR] Created 'eat' from motivation (eat, urgency=6.0) @ day 1, hour 1
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Thought('I should leave House.') → Anchor eat
+[anchor] Gerda Engstrom: [ANCHOR] From select_current_anchor: Selected anchor: eat
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave House.']
+[percept] Divya Shah: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
+[liberty] Divya Shah: [LIBERTY] Morning settling complete.
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Jovian Phobosian(Civilian)
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=5.50
+[think] Divya Shah: add_thought called; content repr: 'I need to eat.'
+[focus] Divya Shah: [FOCUS] Attention changed from None → Thought('I need to eat.')
+[think] Divya Shah: add_thought called; content repr: 'I need to have fun.'
+[focus] Divya Shah: [FOCUS] Attention changed from Thought('I need to eat.') → Thought('I need to have fun.')
+[think] Divya Shah: add_thought called; content repr: 'I should leave Family House.'
+[focus] Divya Shah: [FOCUS] Attention changed from Thought('I need to have fun.') → Thought('I should leave Family House.')
+[anchor] Divya Shah: [ANCHOR] Created 'eat' from motivation (eat, urgency=8.0) @ day 1, hour 1
+[focus] Divya Shah: [FOCUS] Attention changed from Thought('I should leave Family House.') → Anchor eat
+[anchor] Divya Shah: [ANCHOR] From select_current_anchor: Selected anchor: eat
+[think] Divya Shah: [DEBUG] Divya Shah in Family House
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.', 'I should leave Family House.']
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=2.00
+[anchor] Gerda Engstrom: [ANCHOR] Created 'work' from motivation (work, urgency=8.0) @ day 1, hour 1
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Anchor eat → Anchor work
+[anchor] Gerda Engstrom: [ANCHOR] From select_current_anchor: Selected anchor: work
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave House.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=WorkAnchor, name=work, type=work, priority=8.0, weight=8.0, tags=[], source=work, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=WorkAnchor anchor_name=work anchor_type=work
+[employment] Gerda Engstrom: [EMPLOYMENT] Gerda Engstrom is not at work when they should be, attempting to move to: Cafe(name='Cafe', region=downtown)
+[visit] Gerda Engstrom: [VISIT] Gerda Engstrom role=civilian_waitress from=House(name='House', region=downtown) to=Cafe
+[placement,warning] Gerda Engstrom: [REGION DRIFT] easternhole → downtown
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=True
+[employment] Gerda Engstrom: [WORK] Started shift at Cafe
+[anchor] Gerda Engstrom: [ANCHOR] Work anchor satisfied — clearing
+[visit] Gerda Engstrom: [VISIT] Gerda Engstrom arrived at Cafe
+[visit] Gerda Engstrom: [MOVE] Gerda Engstrom House(name='House', region=downtown) -> Cafe(name='Cafe', region=downtown) | old_chars=0 new_chars=2
+[anchor] Divya Shah: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[visit] Divya Shah: [MOVE] eat → Cafe
+[visit] Divya Shah: [VISIT] Divya Shah role=civilian_liberty from=House(name='Family House', region=downtown) to=Cafe
+[visit] Divya Shah: [VISIT] Divya Shah arrived at Cafe
+[visit] Divya Shah: [MOVE] Divya Shah House(name='Family House', region=downtown) -> Cafe(name='Cafe', region=downtown) | old_chars=1 new_chars=3
+[tick] System: [TIME] Hour 2, Day 1
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=2 on_duty=True is_on_shift=True at_workplace=True
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=2.50
+[think] Gerda Engstrom: add_thought called; content repr: 'I should leave Cafe.'
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Anchor work → Thought('I should leave Cafe.')
+[anchor] Gerda Engstrom: [ANCHOR] Created 'work' from motivation (work, urgency=8.0) @ day 1, hour 2
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Thought('I should leave Cafe.') → Anchor work
+[anchor] Gerda Engstrom: [ANCHOR] From select_current_anchor: Selected anchor: work
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
+[percept] Divya Shah: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Gerda Engstrom(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=6.00
+[think] Divya Shah: [DEBUG] Divya Shah in Cafe
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.']
+[think] Divya Shah: [LIBERTY DEBUG] posture=Posture.STANDING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need']]
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=2 on_duty=True is_on_shift=True at_workplace=True
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=3.00
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=WorkAnchor, name=work, type=work, priority=8.0, weight=8.0, tags=[], source=work, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=WorkAnchor anchor_name=work anchor_type=work
+[employment] Gerda Engstrom: [WORK LOOP] others=4 recent=3
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Anchor work → Civilian(Divya Shah)
+[focus] Divya Shah: [FOCUS] Attention changed from Anchor eat → Civilian(Gerda Engstrom)
+[employment] Gerda Engstrom: [WAITRESS GREET] Hello 
+[employment] Gerda Engstrom: [HOST] Offering table
+[employment] Divya Shah: [DEBUG] Added SIT thought → Table 2
+[think] Divya Shah: add_thought called; content repr: 'I should sit at Table 2'
+[think] Divya Shah: add_thought called; content repr: 'I have been served.'
+[employment] Divya Shah: [DEBUG] Added SERVED thought
+[anchor] Divya Shah: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[focus] Divya Shah: [FOCUS] Attention changed from Civilian(Gerda Engstrom) → Civilian(Léa Bernard)
+[employment] Divya Shah: [DEBUG] Added SIT thought → Table 2
+[think] Divya Shah: add_thought called; content repr: 'I should sit at Table 2'
+[tick] System: [TIME] Hour 3, Day 1
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=3 on_duty=True is_on_shift=True at_workplace=True
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=3.50
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
+[percept] Divya Shah: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Gerda Engstrom(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=6.50
+[think] Divya Shah: add_thought called; content repr: 'I feel hungry. Maybe a burger.'
+[think] Divya Shah: [DEBUG] Divya Shah in Cafe
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.', 'I should sit at Table 2', 'I have been served.', 'I feel hungry. Maybe a burger.']
+[think] Divya Shah: [LIBERTY DEBUG] posture=Posture.STANDING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need'], ['sit', 'dine_in'], ['served'], ['hunger', 'food', 'eat']]
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=3 on_duty=True is_on_shift=True at_workplace=True
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=4.00
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=WorkAnchor, name=work, type=work, priority=8.0, weight=8.0, tags=[], source=work, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=WorkAnchor anchor_name=work anchor_type=work
+[employment] Gerda Engstrom: [WORK LOOP] others=4 recent=3
+[anchor] Divya Shah: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[anchor] Divya Shah: ANCHOR TYPE:
+[insight] Divya Shah: [URGENCY DEBUG] Divya Shah MOT=8.0 THOUGHT=8.0 MAX=8.0[URGENCY] EXCLUDING=None
+[action] Divya Shah: [EXECUTE UTILITYAI] Dispatching sit with params={'table': <objects.furniture.CafeTable object at 0xf727da30>}
+[action] Divya Shah: [ACTION] Divya Shah sits at Table 2 (Chair 2-1) posture now: Posture.SITTING
+[tick] System: [TIME] Hour 4, Day 1
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=4 on_duty=False is_on_shift=False at_workplace=True
+[employment] Gerda Engstrom: [WORK] Left shift at Cafe
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=4.50
+[anchor] Gerda Engstrom: [ANCHOR] Created 'work' from motivation (work, urgency=8.0) @ day 1, hour 4
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Civilian(Divya Shah) → Anchor work
+[anchor] Gerda Engstrom: [ANCHOR] From select_current_anchor: Selected anchor: work
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
+[motive] Divya Shah: [MOTIVE] Updated sleep 1.0 → 5.0 (source=physiology)
+[motive] Divya Shah: [PHYSIO] sleep urgency=5 effort=6.0
+[percept] Divya Shah: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Gerda Engstrom(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=7.00
+[think] Divya Shah: add_thought called; content repr: 'I should leave Cafe.'
+[think] Divya Shah: [DEBUG] Divya Shah in Cafe
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I feel hungry. Maybe a burger.', 'I should leave Cafe.']
+[think] Divya Shah: [LIBERTY DEBUG] posture=Posture.SITTING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need'], ['served'], ['hunger', 'food', 'eat'], ['leave_location', 'movement']]
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=4 on_duty=False is_on_shift=False at_workplace=True
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=5.00
+[anchor] Gerda Engstrom: [ANCHOR] Created 'eat' from motivation (eat, urgency=6.0) @ day 1, hour 4
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Anchor work → Anchor eat
+[anchor] Gerda Engstrom: [ANCHOR] From select_current_anchor: Selected anchor: eat
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=6.0, weight=6.0, tags=[], source=eat, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[movement] Gerda Engstrom: [LEAVE CHECK] leave=2 (biased=2.2) vs max=7.0
+[anchor] Divya Shah: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[movement] Divya Shah: [LEAVE CHECK] leave=4 (biased=4.4) vs max=8.0
+[think] Divya Shah: [THOUGHT] from select_food_from_location fallback choice chosen
+[focus] Divya Shah: [FOCUS] Attention changed from Civilian(Léa Bernard) → Civilian(Gerda Engstrom)
+[buy] Divya Shah: [BUY] seller=Gerda Engstrom item=Sandwich(nutrition=8, price=8, quantity=5)
+[action] Divya Shah: [EXECUTE UTILITYAI] Dispatching buy with params={'item': Sandwich(nutrition=8, price=8, quantity=5)}
+[buy] Divya Shah: [BUY DEBUG] owned_food id=4143374992 owner=Divya Shah
+[action] Divya Shah: [BUY] Purchased Sandwich for 8. Wallet now bank=463, cash=0
+[tick] System: [TIME] Hour 5, Day 1
+[motive] Gerda Engstrom: [MOTIVE] Updated sleep 1.0 → 11.0 (source=physiology)
+[motive] Gerda Engstrom: [PHYSIO] sleep urgency=11 effort=1.0
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=5 on_duty=False is_on_shift=False at_workplace=True
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=5.50
+[think] Gerda Engstrom: add_thought called; content repr: 'I need to sleep.'
+[anchor] Gerda Engstrom: [ANCHOR] Created 'sleep' from motivation (sleep, urgency=11.0) @ day 1, hour 5
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Anchor eat → Anchor sleep
+[anchor] Gerda Engstrom: [ANCHOR] From select_current_anchor: Selected anchor: sleep
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.', 'I need to sleep.']
+[motive] Divya Shah: [MOTIVE] Updated sleep 5.0 → 6.0 (source=physiology)
+[motive] Divya Shah: [PHYSIO] sleep urgency=6 effort=5.0
+[percept] Divya Shah: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Gerda Engstrom(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=7.50
+[think] Divya Shah: add_thought called; content repr: 'I need to sleep.'
+[think] Divya Shah: [DEBUG] Divya Shah in Cafe
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I feel hungry. Maybe a burger.', 'I should leave Cafe.', 'I need to sleep.']
+[think] Divya Shah: [LIBERTY DEBUG] posture=Posture.SITTING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need'], ['served'], ['hunger', 'food', 'eat'], ['leave_location', 'movement'], ['sleep', 'need']]
+[motive] Gerda Engstrom: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
+[motive] Gerda Engstrom: [PHYSIO] sleep urgency=11 effort=1.0
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=5 on_duty=False is_on_shift=False at_workplace=True
+[percept] Gerda Engstrom: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | Divya Shah(Civilian) | Léa Bernard(Civilian) | 8xEmptyTable
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=6.00
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in Cafe
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I should leave Cafe.', 'I need to sleep.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=11.0, weight=11.0, tags=[], source=sleep, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
+[visit] Gerda Engstrom: [VISIT] Gerda Engstrom role=civilian_waitress from=Cafe(name='Cafe', region=downtown) to=House
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=5 on_duty=False is_on_shift=False at_workplace=False
+[visit] Gerda Engstrom: [VISIT] Gerda Engstrom arrived at House
+[visit] Gerda Engstrom: [MOVE] Gerda Engstrom Cafe(name='Cafe', region=downtown) -> House(name='House', region=downtown) | old_chars=3 new_chars=1
+[anchor] Divya Shah: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[eat] Divya Shah: [EAT DECISION] eating Sandwich
+[action] Divya Shah: [EXECUTE UTILITYAI] Dispatching eat with params={'item': Sandwich(nutrition=8, price=8, quantity=1)}
+[eat] Divya Shah: [EATING] eat_auto called for Divya Shah
+[eat] Divya Shah: [EAT DEBUG] owner=Divya Shah npc=Divya Shah
+[motive] Divya Shah: [POST-EAT] Boosting have_fun → 13.0
+[action] Divya Shah: [EAT] Ate Sandwich nutrition=8 hunger now=0
+[effect] Divya Shah: Applying effect: recent_meal
+[effect] Divya Shah: [EFFECT] RecentMealEffect started: Divya Shah effort -2, concentration -1
+[tick] System: [TIME] Hour 6, Day 1
+[motive] Gerda Engstrom: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
+[motive] Gerda Engstrom: [PHYSIO] sleep urgency=11 effort=1.0
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=6 on_duty=False is_on_shift=False at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=6.50
+[think] Gerda Engstrom: add_thought called; content repr: 'I feel hungry. Maybe a burger.'
+[think] Gerda Engstrom: add_thought called; content repr: 'I should leave House.'
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave House.']
+[percept] Divya Shah: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=2
+[effect] Divya Shah: [EFFORT] +1 digestion recovery → 3.0
+[effect] Divya Shah: [DIGESTION] concentration steady → 9
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Elijah Evans(Civilian) | 8xEmptyTable
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=0.50
+[anchor] Divya Shah: [ANCHOR] Created 'have_fun' from motivation (have_fun, urgency=9.0) @ day 1, hour 6
+[focus] Divya Shah: [FOCUS] Attention changed from Civilian(Gerda Engstrom) → Anchor have_fun
+[anchor] Divya Shah: [ANCHOR] From select_current_anchor: Selected anchor: have_fun
+[think] Divya Shah: [DEBUG] Divya Shah in Cafe
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I should leave Cafe.', 'I need to sleep.']
+[think] Divya Shah: [LIBERTY DEBUG] posture=Posture.SITTING anchor=have_fun thoughts=[['eat', 'need'], ['have_fun', 'need'], ['served'], ['leave_location', 'movement'], ['sleep', 'need']]
+[motive] Gerda Engstrom: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
+[motive] Gerda Engstrom: [PHYSIO] sleep urgency=11 effort=1.0
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=6 on_duty=False is_on_shift=False at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=7.00
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave House.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=11.0, weight=11.0, tags=[], source=sleep, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
+[action] Gerda Engstrom: [EXECUTE UTILITYAI] Dispatching sleep with params={}
+[sleep] Gerda Engstrom: [SLEEP] Gerda Engstrom lies down in Bed 1
+[effect] Gerda Engstrom: Applying effect: sleeping
+[effect] Gerda Engstrom: [EFFECT] SleepEffect started: Gerda Engstrom lies down, effort +4
+[anchor] Divya Shah: [ANCHOR DEBUG] class=FunAnchor, name=have_fun, type=leisure, priority=9.0, weight=9.0, tags=['leisure', 'social'], source=have_fun, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=FunAnchor anchor_name=have_fun anchor_type=leisure
+[anchor] Divya Shah: ANCHOR TYPE:
+[insight] Divya Shah: [URGENCY DEBUG] Divya Shah MOT=9.0 THOUGHT=10 MAX=10[URGENCY] EXCLUDING=None
+[fun] Divya Shah: [FUN TARGET] Park=9.9 | YaenSkitz Imports Arena=5 | Library=4 → Park
+[fun] Divya Shah: [FUN TARGET] Park=9.9 | YaenSkitz Imports Arena=5 | Library=4 → Park
+[visit] Divya Shah: [MOVE] have_fun → Park
+[visit] Divya Shah: [VISIT] Divya Shah role=civilian_liberty from=Cafe(name='Cafe', region=downtown) to=Park
+[visit] Divya Shah: [VISIT] Divya Shah arrived at Park
+[visit] Divya Shah: [MOVE] Divya Shah Cafe(name='Cafe', region=downtown) -> Park(name='Park', region=downtown) | old_chars=1 new_chars=4
+[tick] System: [TIME] Hour 7, Day 1
+[motive] Gerda Engstrom: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
+[motive] Gerda Engstrom: [PHYSIO] sleep urgency=7 effort=4.0
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=7 on_duty=False is_on_shift=False at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[effect] Gerda Engstrom: [SLEEP] recovering → effort=6.0
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=7.80
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave House.']
+[motive] Divya Shah: [MOTIVE] Updated sleep 6.0 → 10.0 (source=physiology)
+[motive] Divya Shah: [PHYSIO] sleep urgency=10 effort=2.0
+[fun] Divya Shah: [FUN] +3.9 at Park, fun now=4.9
+[percept] Divya Shah: [OBSERVE] loc=Park(name='Park', region=downtown) chars=4
+[effect] Divya Shah: [EFFECT] RecentMealEffect ended
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Park(Park) | Golden Spiral Tree(GoldenRatioTree) | Park Bench 1(Chair) | Park Bench 2(Chair) | Park Bench 3(Chair) | Park Bench 4(Chair) | Seraphina Kowalski(Civilian) | Zane Kowalski(Civilian) | Christophe Robert(Civilian)
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=1.00
+[think] Divya Shah: add_thought called; content repr: 'I should leave Park.'
+[fun] Divya Shah: [FUN TARGET] YaenSkitz Imports Arena=5 | Library=4 → YaenSkitz Imports Arena
+[anchor] Divya Shah: [ANCHOR] Created 'sleep' from motivation (sleep, urgency=10.0) @ day 1, hour 7
+[focus] Divya Shah: [FOCUS] Attention changed from Anchor have_fun → Anchor sleep
+[anchor] Divya Shah: [ANCHOR] From select_current_anchor: Selected anchor: sleep
+[think] Divya Shah: [DEBUG] Divya Shah in Park
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave Park.']
+[motive] Gerda Engstrom: [MOTIVE] Updated eat 6.0 → 8.3 (source=physiology)
+[motive] Gerda Engstrom: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
+[motive] Gerda Engstrom: [PHYSIO] sleep urgency=6 effort=5.0
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=7 on_duty=False is_on_shift=False at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[effect] Gerda Engstrom: [SLEEP] recovering → effort=7.0
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=8.60
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave House.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=11.0, weight=11.0, tags=[], source=sleep, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
+[action] Gerda Engstrom: [EXECUTE UTILITYAI] Dispatching sleep with params={}
+[sleep] Gerda Engstrom: [SLEEP] Gerda Engstrom lies down in Bed 2
+[effect] Gerda Engstrom: Applying effect: sleeping
+[effect] Gerda Engstrom: [EFFECT] SleepEffect started: Gerda Engstrom lies down, effort +4
+[anchor] Divya Shah: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=10.0, weight=10.0, tags=[], source=sleep, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
+[visit] Divya Shah: [VISIT] Divya Shah role=civilian_liberty from=Park(name='Park', region=downtown) to=Family House
+[visit] Divya Shah: [VISIT] Divya Shah arrived at Family House
+[visit] Divya Shah: [MOVE] Divya Shah Park(name='Park', region=downtown) -> House(name='Family House', region=downtown) | old_chars=3 new_chars=2
+[tick] System: [TIME] Hour 8, Day 1
+[motive] Gerda Engstrom: [MOTIVE] Updated eat 8.3 → 9.100000000000001 (source=physiology)
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=8 on_duty=False is_on_shift=False at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[sleep] Gerda Engstrom: [SLEEP] Suppressed sleep: True
+[effect] Gerda Engstrom: [EFFECT] SleepEffect ended: Gerda Engstrom, effort=13.0
+[effect] Gerda Engstrom: [SLEEP] recovering → effort=15.0
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=9.40
+[anchor] Gerda Engstrom: [ANCHOR] Created 'eat' from motivation (eat, urgency=9.100000000000001) @ day 1, hour 8
+[focus] Gerda Engstrom: [FOCUS] Attention changed from Anchor sleep → Anchor eat
+[anchor] Gerda Engstrom: [ANCHOR] From select_current_anchor: Selected anchor: eat
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave House.']
+[motive] Divya Shah: [MOTIVE] Updated sleep 10.0 → 10.0 (source=physiology)
+[motive] Divya Shah: [PHYSIO] sleep urgency=6 effort=5.0
+[percept] Divya Shah: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
+[percept] Divya Shah: [PERCEPTS] Divya Shah(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Jovian Phobosian(Civilian)
+[think] Divya Shah: [DEBUG] Before generate_hunger_thought Divya Shah hunger=1.50
+[think] Divya Shah: add_thought called; content repr: 'I should leave Family House.'
+[think] Divya Shah: [DEBUG] Divya Shah in Family House
+[think] Divya Shah: [DEBUG] Thoughts: Divya Shah ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave Family House.']
+[motive] Gerda Engstrom: [MOTIVE] Updated eat 9.100000000000001 → 9.900000000000002 (source=physiology)
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=8 on_duty=False is_on_shift=False at_workplace=False
+[percept] Gerda Engstrom: [OBSERVE] loc=House(name='House', region=downtown) chars=1
+[effect] Gerda Engstrom: [SLEEP] recovering → effort=16.0
+[percept] Gerda Engstrom: [PERCEPTS] Gerda Engstrom(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed)
+[think] Gerda Engstrom: [DEBUG] Before generate_hunger_thought Gerda Engstrom hunger=10.20
+[think] Gerda Engstrom: [DEBUG] Gerda Engstrom in House
+[think] Gerda Engstrom: [DEBUG] Thoughts: Gerda Engstrom ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave House.']
+[anchor] Gerda Engstrom: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=9.100000000000001, weight=9.100000000000001, tags=[], source=eat, owner=Gerda Engstrom | suppressed=False
+[anchor] Gerda Engstrom: [ANCHOR, CHOOSE_ACTION] Gerda Engstrom (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[visit] Gerda Engstrom: [MOVE] eat → Cafe
+[visit] Gerda Engstrom: [VISIT] Gerda Engstrom role=civilian_waitress from=House(name='House', region=downtown) to=Cafe
+[employment] Gerda Engstrom: [EMP PRESENCE] hour=8 on_duty=False is_on_shift=False at_workplace=True
+[visit] Gerda Engstrom: [VISIT] Gerda Engstrom arrived at Cafe
+[visit] Gerda Engstrom: [MOVE] Gerda Engstrom House(name='House', region=downtown) -> Cafe(name='Cafe', region=downtown) | old_chars=0 new_chars=2
+[anchor] Divya Shah: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=10.0, weight=10.0, tags=[], source=sleep, owner=Divya Shah | suppressed=False
+[anchor] Divya Shah: [ANCHOR, CHOOSE_ACTION] Divya Shah (civilian_liberty) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
+[action] Divya Shah: [EXECUTE UTILITYAI] Dispatching sleep with params={}
+[sleep] Divya Shah: [SLEEP] Divya Shah lies down in Bed 1
+[effect] Divya Shah: Applying effect: sleeping
+[effect] Divya Shah: [EFFECT] SleepEffect started: Divya Shah lies down, effort +4

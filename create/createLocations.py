@@ -118,8 +118,10 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         attach_default_security(municipal)
         locations.append(municipal)
         region.add_location(municipal)
-
         game_state.municipal_buildings[region.name] = municipal
+
+        """ state = game_state.state
+        state.government_buildings.append(municipal) """
 
     except Exception as e:
         debug_print(None, f"⚠️ Error creating MunicipalBuilding in {region.name}: {e}", "create")

@@ -47,13 +47,14 @@ def build_faction_center(gui,parent):
         culture_tab,
         text="Culture"
     )
+    #it seems odd that these imports are here
     from GUI.inspectors.faction.faction_characters_panel import build_faction_characters_panel
     from GUI.inspectors.faction.faction_hq_panel import build_faction_hq_panel
     from GUI.inspectors.faction.faction_overview_panel import (
         build_faction_overview_panel,
         refresh_faction_overview#not accessesd
     )
-    #I will move these imports to the top when edits complete
+    
 
     build_faction_overview_panel(
         gui,
