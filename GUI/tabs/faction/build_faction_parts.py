@@ -55,7 +55,7 @@ def build_faction_center(gui,parent):
         refresh_faction_overview#not accessesd
     )
     
-
+    #I added this code here, should it have been in Correct build_faction_mode instead?
     build_faction_overview_panel(
         gui,
         overview_tab

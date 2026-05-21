@@ -55,6 +55,14 @@ def create_faction_tab(gui, parent):
         gui,
         left_frame
     )
+    #if I replace the above with:
+    """ build_faction_selector(
+        self,
+        left_panel
+    ) """
+    #self is not defined
+    #left_panel is not defined
+
 
     build_faction_center(
         gui,

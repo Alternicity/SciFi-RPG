@@ -25,10 +25,7 @@ def create_city_map_tab(gui, parent):
     main_frame = tk.Frame(parent)
     main_frame.pack(fill="both", expand=True)
 
-    left_frame = tk.Frame(
-        main_frame,
-        width=250
-    )
+    
 
     center_frame = tk.Frame(
         main_frame
@@ -51,10 +48,7 @@ def create_city_map_tab(gui, parent):
         expand=True
     )
 
-    left_frame.pack(
-        side="left",
-        fill="y"
-    )
+    
 
     center_frame.pack(
         side="left",
@@ -66,17 +60,8 @@ def create_city_map_tab(gui, parent):
         side="right",
         fill="y"
     )
-    left_frame.pack_propagate(False)
+
     right_frame.pack_propagate(False)
-
-    #I am unsure if this goes here:
-    from GUI.inspectors.city.city_overview_panel import build_city_overview
-    build_city_overview(
-        gui,
-        left_frame
-    )
-    refresh_city_overview(gui)
-
 
     build_region_panel(gui, right_frame)
 

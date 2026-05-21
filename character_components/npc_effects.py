@@ -144,6 +144,8 @@ class SleepEffect(TimedEffect):
 
     def on_tick(self, npc):
         # Gradual recovery each tick
+        if self.remaining <= 0:
+            return  # already ended, guard against double-tick
         npc.effort = min(20, npc.effort + 2)
         npc.hunger = min(20, npc.hunger + 0.3)  # slow hunger creep overnight
         debug_print(
@@ -152,8 +154,10 @@ class SleepEffect(TimedEffect):
             category="effect"
         )
 
-    def on_end(self, npc):
 
+    def on_end(self, npc):
+        npc.location_purpose_fulfilled = True
+        npc.posture = Posture.STANDING
         npc.posture = Posture.STANDING
 
         # Final recovery burst
@@ -169,7 +173,6 @@ class SleepEffect(TimedEffect):
         debug_print(npc, f"[SLEEP] Suppressed sleep: {result is not None}", category="sleep")
         # Also briefly suppress have_fun so NPC doesn't immediately run off
         npc.motivation_manager.suppress("have_fun", reason="just_woke", duration=2)
-
 
         # Clear bed occupancy
         bed = getattr(npc, "current_bed", None)
@@ -189,3 +192,5 @@ class SleepEffect(TimedEffect):
             f"[EFFECT] SleepEffect ended: {npc.name}, effort={npc.effort:.1f}",
             category="effect"
         )
+        motives = [(m.type, m.urgency, m.suppressed) for m in npc.motivation_manager.motivations]
+        debug_print(npc, f"[MOTIVES POST-SLEEP] {motives}", category="motive")

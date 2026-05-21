@@ -19,6 +19,10 @@ from faction import Gang
 from faction import Corporation
 from faction import State
 
+""" NEW architecture:
+mode frame
+    -> internal notebook """
+
 class TC2GUI:
     #Replace Listbox with clickable frames
     def __init__(self, root, game_state):
@@ -42,283 +46,47 @@ class TC2GUI:
         self.sim_running = False
 
         self.build_top_bar()
+        
+        #refactor
+        self.mode_container = ttk.Frame(self.root)#parent for all modes.
+        self.mode_container.pack(fill="both", expand=True)
+        
+        self.mode_frames = {}
+
         self.update_loop()
-        
-        self.main_notebook = ttk.Notebook(root)
-        self.main_notebook.pack(fill="both", expand=True)
 
-        self.load_mode(
+        #refactor
+        """ mode switching = switching outer frames
+        notebooks STILL EXIST INSIDE MODES """
+        self.build_npc_mode()
+        self.build_city_mode()
+        self.build_faction_mode()
+
+        self.switch_mode(#note there are other self.switch_mode( entries in this file
             self.active_context["mode"]
         )
-        self.mode_var.set(#attempt to popualte intial mode selector with text
+        #BUILDING ONCE. NOT rebuilding later
+
+        self.mode_var.set(#attempt to populate intial mode selector with text
             self.active_context["mode"]
         )
 
-    def refresh_all(self):
+    #refactor
+    def build_npc_mode(self):
+        #build_xyz_mode() should ONLY build widgets once.
 
-        mode = self.active_context.get("mode")
+        frame = ttk.Frame(self.mode_container)#frame, NOT root, NOT self.main_notebook
 
-        self.refresh_time_display()
+        self.mode_frames["npc"] = frame
 
-        if mode == "npc":
-            self.refresh_npc_view()
-
-        elif mode == "city":
-            self.refresh_city_view()
-
-        elif mode == "faction":
-            self.refresh_faction_view()
-
-    def open_npc(self, npc):
-
-        self.active_context["npc"] = npc
-        self.active_context["entity"] = npc
-        
-        """ Eventually: mode_var should reflect state
-        NOT drive state.
-        Meaning:
-        active_context["mode"]
-        is truth
-        dropdown mirrors it """
-
-        if npc in self.recent_npcs:
-            self.recent_npcs.remove(npc)#and wont this remove them immediately?
-
-        self.recent_npcs.appendleft(npc)
-
-        self.load_mode("npc")
-
-        if hasattr(self, "recent_npcs_frame"):#depends on this
-            self.refresh_recent_npcs()
-
-    def open_faction(self, faction):
-        from GUI.inspectors.faction.faction_overview_panel import refresh_faction_list
-        print(f"OPEN FACTION {faction}")
-        self.active_context["faction"] = faction
-        self.active_context["entity"] = faction
-        self.active_context["npc"] = None
-        
-        if faction.type == "gang":
-            faction_type = "Gangs"
-
-        elif faction.type == "corporation":
-            faction_type = "Corporations"
-
-        elif faction.type == "state":
-            faction_type = "State"
-
-        else:
-            faction_type = "Gangs"
-
-        self.load_mode("faction")
-        self.faction_type_var.set(faction_type)
-        refresh_faction_list(self)
-
-    def build_top_bar(self):
-
-        self.top_bar = ttk.Frame(self.root)
-        self.top_bar.pack(fill="x")
-
-        #Mode Selector
-        ttk.Label(
-            self.top_bar,
-            text="Mode:"
-        ).pack(side="left", padx=(5, 2), pady=5)
-
-        mode_dropdown = ttk.Combobox(#line 137 
-            self.top_bar,
-            textvariable=self.mode_var,
-            values=[
-                "npc",
-                "city",
-                "faction",
-                "debug"
-            ],
-            state="readonly",
-            width=15
-        )
-        mode_dropdown.pack(side="left", padx=(0, 10))
-        mode_dropdown.bind(
-            "<<ComboboxSelected>>",
-            self.on_mode_change
-        )
-
-        #Button
-        self.advance_tick_button = ttk.Button(
-            self.top_bar,
-            text="Advance 1 Tick",
-            command=self.advance_one_tick
-        )
-        self.advance_tick_button.pack(side="left")
-
-        #Day/Time
-        self.time_label = ttk.Label(self.top_bar, text="")
-        self.time_label.pack(side="right", padx=10)
-        self.refresh_time_display()
-        #add various refresh calls here, perhaps call a refresh_all() ? 
-
-    def advance_one_tick(self):
-        from simulate_day import simulate_hours
-
-        simulate_hours(self.game_state.all_characters, num_ticks=1)
-
-        self.refresh_all()
-        self.root.update_idletasks()
-
-
-
-    def on_npc_select(self, event):
-
-        selection = self.npc_listbox.curselection()
-        if not selection:
-            return
-    
-        display_name = self.npc_listbox.get(selection[0])
-
-        npc = self.npc_lookup.get(display_name)
-
-        if not npc:
-            return
-        
-        self.active_context["npc"] = npc
-        self.active_context["entity"] = npc
-
-        if npc.location:
-
-            npc.observe(
-                location=npc.location,
-                region=npc.location.region
-            )
-
-        #self.mode_var.set("npc")
-        self.refresh_npc_view()
-
-        self.root.update_idletasks()
-
-    def on_mode_change(self, event):
-
-        mode = self.mode_var.get()
-
-        self.active_context["mode"] = mode
-        
-        self.load_mode(mode)
-
-        if mode == "npc":#here
-            self.active_context["faction"] = None
-
-        elif mode == "faction":
-            self.active_context["npc"] = None
-        #before this?
-        self.refresh_all()
-        
-    def load_mode(self, mode_name):
-        print(f"LOAD MODE CALLED: {mode_name}")
-        self.active_context["mode"] = mode_name
-        self.mode_var.set(mode_name)
-        gui_log(f"Loading mode: {mode_name}")
-
-        print("CURRENT MODE", mode_name)
-
-        self.clear_tabs()
-
-        if mode_name == "npc":
-            print("LOADING NPC MODE")
-            self.load_npc_mode()
-
-        elif mode_name == "city":
-            print("LOADING CITY MODE")
-            self.load_city_mode()
-
-        elif mode_name == "faction":
-            print("LOADING FACTION MODE")
-            self.load_faction_mode()
-        self.refresh_all()
-
-    def refresh_npc_view(self):
-        print("NPC VIEW REFRESH")
-        print(self.active_context)
-
-        npc = self.active_context["npc"]
-
-        if not npc:
-            return
-        
-        if self.active_context["mode"] != "npc":
-            return
-        if not self.active_context["entity"]:#entity?
-            return
-    
-        self.npc_name_label.config(
-            text=npc.name
-        )
-        print("REFRESH NPC VIEW")
-        print(f"SELECTED NPC", {npc.name})
-        
-
-
-        self.refresh_time_display()#or call from the sim loop
-
-        try:
-            refresh_overview_panel(self)
-        except Exception as e:
-            print(f"Overview refresh failed: {e}")
-
-        try:
-            refresh_thoughts_panel(self)
-        except Exception as e:
-            print(f"Thoughts refresh failed: {e}")
-
-        try:
-            refresh_motivations_panel(self)
-        except Exception as e:
-            print(f"Motivations refresh failed: {e}")
-
-        try:
-            refresh_memories_panel(self)
-        except Exception as e:
-            print(f"Memories refresh failed: {e}")
-
-        try:
-            refresh_percepts_panel(self)
-        except Exception as e:
-            print(f"Percepts refresh failed: {e}")
-
-    def clear_tabs(self):
-
-        for tab_id in self.main_notebook.tabs():
-            self.main_notebook.forget(tab_id)
-
-        # Clear mode-specific references
-
-        self.npc_lookup = {}
-
-        self.overview_labels = {}
-        self.stat_vars = {}
-        self.stat_labels = {}
-        """ Later this can evolve into:
-        self.clear_npc_state()
-        self.clear_city_state()
-        self.clear_faction_state() """
-
-
-    def load_npc_mode(self):
-
-        npc_frame = ttk.Frame(self.main_notebook)
-
-        self.main_notebook.add(
-            npc_frame,
-            text="NPC Observer"
-        )
-        #shall we put an outline here as well?
-        left_panel = ttk.Frame(npc_frame)
+        left_panel = ttk.Frame(frame)
         left_panel.pack(
             side="left",
             fill="y",
             padx=(0, 10)
         )
 
-        right_panel = ttk.Frame(npc_frame)
-
+        right_panel = ttk.Frame(frame)
         right_panel.pack(
             side="right",
             fill="both",
@@ -332,11 +100,14 @@ class TC2GUI:
 
         self.npc_name_label.pack(pady=10)
 
+        
         npc_notebook = ttk.Notebook(right_panel)
         npc_notebook.pack(fill="both", expand=True)
+        self.npc_notebook = npc_notebook
 
         overview_tab = ttk.Frame(npc_notebook)
 
+        #centre panel tabs
         npc_notebook.add(overview_tab, text="Overview")
 
         thoughts_tab = ttk.Frame(npc_notebook)
@@ -384,7 +155,7 @@ class TC2GUI:
             padx=5,
             pady=(0, 10)
         )
-        self.refresh_recent_npcs()#added
+        self.refresh_recent_npcs()
 
         # Prefer debug NPCs if available
         if self.game_state.debug_npcs:
@@ -416,6 +187,353 @@ class TC2GUI:
             "<<ListboxSelect>>",
             self.on_npc_select
         )
+
+    def build_city_mode(self):
+
+        frame = ttk.Frame(self.mode_container)
+
+        self.mode_frames["city"] = frame
+
+        # LEFT PANEL
+        left_panel = ttk.Frame(frame)
+
+        left_panel.pack(
+            side="left",
+            fill="y",
+            padx=(0, 10)
+        )
+
+        # RIGHT/CENTER PANEL
+        right_panel = ttk.Frame(frame)
+
+        right_panel.pack(
+            side="right",
+            fill="both",
+            expand=True
+        )
+
+        # NOTEBOOK
+        city_notebook = ttk.Notebook(right_panel)
+
+        city_notebook.pack(
+            fill="both",
+            expand=True
+        )
+
+        self.city_notebook = city_notebook
+
+        # TABS
+        overview_tab = ttk.Frame(city_notebook)
+        map_tab = ttk.Frame(city_notebook)
+
+        city_notebook.add(
+            overview_tab,
+            text="Overview"
+        )
+
+        city_notebook.add(
+            map_tab,
+            text="Map"
+        )
+
+        # BUILD TAB CONTENT
+        from GUI.inspectors.city.city_overview_panel import (
+            build_city_overview
+        )
+
+        build_city_overview(
+            self,
+            overview_tab
+        )
+
+
+        from GUI.tabs.city.city_map_tab import create_city_map_tab
+
+        create_city_map_tab(
+            self,
+            map_tab
+        )
+
+    def build_faction_mode(self):
+
+        frame = ttk.Frame(self.mode_container)
+
+        self.mode_frames["faction"] = frame
+
+        left_panel = ttk.Frame(frame)
+        left_panel.pack(
+            side="left",
+            fill="y",
+            padx=(0, 10)
+        )
+
+        right_panel = ttk.Frame(frame)
+        right_panel.pack(
+            side="right",
+            fill="both",
+            expand=True
+        )
+
+        from GUI.inspectors.faction.faction_overview_panel import (
+            build_faction_selector
+        )
+
+        from GUI.tabs.faction.build_faction_parts import (
+            build_faction_center
+        )
+
+        build_faction_selector(
+            self,
+            left_panel
+        )
+
+        build_faction_center(
+            self,
+            right_panel
+        )
+
+    def refresh_all(self):
+        #NEVER create widgets inside refresh functions. (refactor)
+        mode = self.active_context.get("mode")
+
+        self.refresh_time_display()
+
+        if mode == "npc":
+            self.refresh_npc_view()
+
+        elif mode == "city":
+            self.refresh_city_view()
+
+        elif mode == "faction":
+            self.refresh_faction_view()
+
+    def open_npc(self, npc):
+
+        self.active_context["npc"] = npc
+        self.active_context["entity"] = npc
+        self.active_context["faction"] = None#added
+        """ Eventually: mode_var should reflect state
+        NOT drive state.
+        Meaning:
+        active_context["mode"]
+        is truth
+        dropdown mirrors it """
+
+        if npc in self.recent_npcs:
+            self.recent_npcs.remove(npc)
+
+        self.recent_npcs.appendleft(npc)
+
+        self.switch_mode("npc")
+
+        if hasattr(self, "recent_npcs_frame"):
+            self.refresh_recent_npcs()
+
+    def open_faction(self, faction):
+        from GUI.inspectors.faction.faction_overview_panel import refresh_faction_list
+        print(f"OPEN FACTION {faction}")
+        self.active_context["faction"] = faction
+        self.active_context["entity"] = faction
+        self.active_context["npc"] = None
+        
+        if faction.type == "gang":
+            faction_type = "Gangs"
+
+        elif faction.type == "corporation":
+            faction_type = "Corporations"
+
+        elif faction.type == "state":
+            faction_type = "State"
+
+        else:
+            faction_type = "Gangs"
+
+        self.switch_mode("faction")
+        self.faction_type_var.set(faction_type)
+        refresh_faction_list(self)
+
+    def build_top_bar(self):
+
+        self.top_bar = ttk.Frame(self.root)
+        self.top_bar.pack(fill="x")
+
+        #Mode Selector
+        ttk.Label(
+            self.top_bar,
+            text="Mode:"
+        ).pack(side="left", padx=(5, 2), pady=5)
+
+        mode_dropdown = ttk.Combobox(#line 137 
+            self.top_bar,
+            textvariable=self.mode_var,
+            values=[
+                "npc",
+                "city",
+                "faction"
+            ],
+            state="readonly",
+            width=15
+        )
+        mode_dropdown.pack(side="left", padx=(0, 10))
+        mode_dropdown.bind(
+            "<<ComboboxSelected>>",
+            self.on_mode_change
+        )
+
+        #Button
+        self.advance_tick_button = ttk.Button(
+            self.top_bar,
+            text="Advance 1 Tick",
+            command=self.advance_one_tick
+        )
+        self.advance_tick_button.pack(side="left")
+
+        #Day/Time
+        self.time_label = ttk.Label(self.top_bar, text="")
+        self.time_label.pack(side="right", padx=10)
+        self.refresh_time_display()
+        #add various refresh calls here, perhaps call a refresh_all() ? 
+
+    def advance_one_tick(self):
+        from simulate_day import simulate_hours
+
+        simulate_hours(self.game_state.all_characters, num_ticks=1)
+
+        self.refresh_all()
+        self.root.update_idletasks()
+
+
+
+    def on_npc_select(self, event):
+
+        selection = self.npc_listbox.curselection()
+        if not selection:
+            return
+    
+        display_name = self.npc_listbox.get(selection[0])
+
+        npc = self.npc_lookup.get(display_name)
+
+        if not npc:
+            return
+        
+        #remove this? Rly?
+        """ self.active_context["npc"] = npc
+        self.active_context["entity"] = npc """
+
+        if npc.location:
+            npc.observe(
+                location=npc.location,
+                region=npc.location.region
+            )
+
+        #In favour of this?
+        self.open_npc(npc)
+
+
+
+        #I also removed this and tested
+        #self.refresh_npc_view()
+
+        #self.root.update_idletasks()
+
+    def on_mode_change(self, event):
+
+        mode = self.mode_var.get()
+
+        if mode == "npc":
+            self.active_context["faction"] = None
+
+        elif mode == "faction":
+            self.active_context["npc"] = None
+
+        self.switch_mode(mode)
+        
+    def switch_mode(self, mode_name):
+        #GUI will NOT destroy widgets anymore
+        self.active_context["mode"] = mode_name
+
+        self.mode_var.set(mode_name)
+
+        # hide all modes
+        for frame in self.mode_frames.values():
+            frame.pack_forget()
+
+        # show active mode
+        active_frame = self.mode_frames[mode_name]
+
+        active_frame.pack(fill="both", expand=True)
+
+        self.refresh_all()
+        #No rebuilding.
+        #No widget destruction ,No notebook recreation, No state reset
+
+    def refresh_npc_view(self):
+        #refresh_xyz_view() should ONLY update existing widgets.
+        print("NPC VIEW REFRESH")
+        print(self.active_context)
+
+        npc = self.active_context["npc"]
+
+        if not npc:
+            return
+        
+        if self.active_context["mode"] != "npc":
+            return
+        """ if not self.active_context["entity"]:
+            return """
+    
+        self.npc_name_label.config(
+            text=npc.name
+        )
+        print("REFRESH NPC VIEW")
+        print(f"SELECTED NPC", {npc.name})
+        
+        #self.refresh_time_display()
+
+        try:
+            refresh_overview_panel(self)
+        except Exception as e:
+            print(f"Overview refresh failed: {e}")
+
+        try:
+            refresh_thoughts_panel(self)
+        except Exception as e:
+            print(f"Thoughts refresh failed: {e}")
+
+        try:
+            refresh_motivations_panel(self)
+        except Exception as e:
+            print(f"Motivations refresh failed: {e}")
+
+        try:
+            refresh_memories_panel(self)
+        except Exception as e:
+            print(f"Memories refresh failed: {e}")
+
+        try:
+            refresh_percepts_panel(self)
+        except Exception as e:
+            print(f"Percepts refresh failed: {e}")
+
+    def clear_tabs(self):
+        pass
+
+        # Clear mode-specific references
+
+        self.npc_lookup = {}
+
+        self.overview_labels = {}
+        self.stat_vars = {}
+        self.stat_labels = {}
+        """ Later this can evolve into:
+        self.clear_npc_state()
+        self.clear_city_state()
+        self.clear_faction_state() """
+
+
+    def load_npc_mode(self):
+        pass
 
     def refresh_recent_npcs(self):#line 411
 
@@ -453,16 +571,6 @@ class TC2GUI:
 
         self.npc_name_label.pack()
 
-    def create_city_tab(self):
-
-        city_tab = ttk.Frame(self.main_notebook)
-
-        self.main_notebook.add(
-            city_tab,
-            text="City"#Capitalization might come from this
-        )
-
-        create_city_map_tab(self, city_tab)
 
     def refresh_city_view(self):
 
@@ -543,19 +651,20 @@ class TC2GUI:
 
         
 
-        tab = ttk.Frame(
+        """ tab = ttk.Frame(
             self.main_notebook
         )
 
         self.main_notebook.add(
             tab,
             text="Faction"
-        )
+        ) """
 
-        create_faction_tab(
+        """ create_faction_tab(
             self,
             tab
-        )
+        ) """
+
     def refresh_faction_view(self):
         from GUI.inspectors.faction.faction_characters_panel import (
             refresh_faction_characters

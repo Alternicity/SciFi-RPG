@@ -90,7 +90,8 @@ def sleep_auto(npc, region=None):
     from dream.dream import consolidate_sleep_memories, maybe_dream
     from objects.furniture import Bed
     from character_components.npc_effects import SleepEffect
-
+    npc.location_purpose = "sleep"
+    npc.location_purpose_fulfilled = False
     loc = npc.location
 
     # Find a free bed

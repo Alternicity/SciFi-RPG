@@ -17,7 +17,7 @@ from debug_utils import debug_print
 from base.character import Character
 from employment.employment import update_employee_presence
 
-def simulate_hours(all_characters, num_ticks=1, debug_character=None):
+def simulate_hours(all_characters, num_ticks=1, debug_character=None):#current tick granularity
     game_state = get_game_state()
     all_regions = game_state.all_regions
     all_locations = game_state.all_locations
@@ -154,11 +154,15 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):
                 
                 # THINK CYCLE
                 if hasattr(npc, 'ai') and npc.ai:
-                    if role(npc) != "background":#GATE
-                        think_loops = getattr(npc, "max_thinks_per_tick", 1)
-                        for _ in range(think_loops):
-                            npc.ai.think(npc.location.region)
-                        npc.ai.promote_thoughts()
+                    if role(npc) != "background":#GATE.Will this still pass, if the npc is not sleeping?
+                        from character_components.npc_effects import SleepEffect
+                        if npc.has_effect_type(SleepEffect):
+                            pass  # sleeping — skip think and action
+                        else:
+                            think_loops = getattr(npc, "max_thinks_per_tick", 1)
+                            for _ in range(think_loops):
+                                npc.ai.think(npc.location.region)
+                            npc.ai.promote_thoughts()
 
         #TC2 snapshot displays
         DISPLAY_BY_DEBUG_ROLE = {
@@ -181,19 +185,23 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):
         for npc in all_characters:
             if hasattr(npc, 'ai') and npc.ai:
                 if role(npc) != "background":
-                    npc.ai.evaluate_thoughts()
-                    region = npc.location.region if hasattr(npc.location, 'region') else None
-                    action = npc.ai.choose_action(region)
+                    if npc.has_effect_type(SleepEffect):
+                        pass  # sleeping — skip think and action
+                    else:
 
-                    if action:
-                        result = npc.ai.execute_action(action, region)#result not accessed, but maybe thats ok
+                        npc.ai.evaluate_thoughts()
+                        region = npc.location.region if hasattr(npc.location, 'region') else None
+                        action = npc.ai.choose_action(region)
 
-                        """ debug_print(
-                            npc,
-                            f"[ACTIONx] {npc.name} finished {summarize_action(action)}, "
-                            f"current_location={npc.location.name}",
-                            category="action"
-                        ) """
+                        if action:
+                            result = npc.ai.execute_action(action, region)#result not accessed, but maybe thats ok
+
+                            """ debug_print(
+                                npc,
+                                f"[ACTIONx] {npc.name} finished {summarize_action(action)}, "
+                                f"current_location={npc.location.name}",
+                                category="action"
+                            ) """
 
         # STEP 3: Post Stuff 
         for npc in all_characters:

@@ -3,7 +3,7 @@
 from tkinter import ttk
 
 def build_overview_panel(gui, parent):
-
+    print("BUILD OVERVIEW PANEL")
     frame = ttk.LabelFrame(parent, text="Overview")
     frame.pack(#added
             fill="both",
@@ -45,7 +45,7 @@ def build_overview_panel(gui, parent):
         )
         value.pack(side="left")
 
-        gui.overview_labels[field] = {#this looks suspicious
+        gui.overview_labels[field] = {
             "row": row,
             "label": value
         }
@@ -93,9 +93,20 @@ def refresh_overview_panel(gui):
     gui.overview_labels["Name"]["label"].config(
         text=npc.name
     )
+    
+    print(
+        "DEBUG ROLE CHECK:",
+        npc.name,
+        getattr(npc, "debug_role", None)
+    )
+    
+    debug_role = getattr(npc, "debug_role", None)
+
+    if not debug_role:
+        debug_role = "-"
 
     gui.overview_labels["Debug Role"]["label"].config(
-        text=getattr(npc, "debug_role", "-")
+        text=debug_role
     )
 
     faction = getattr(npc, "faction", None)

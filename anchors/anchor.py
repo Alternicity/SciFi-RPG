@@ -24,6 +24,10 @@ class Anchor:
     
     weight: float = 1.0  # salience amplification factor
     priority: float = 1.0  # importance to current AI thinking HMMMMM
+    """ keep priority on Anchor as a field (removing it would require touching
+    every anchor instantiation), but stop using it for decision logic. 
+    Anywhere you see anchor.priority in comparison logic, replace with the corresponding motivation's urgency. """
+
     enables: List[str] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)  # used in tag-overlap salience logic
     owner: Optional[Any] = None  # populated with npc object at runtime

@@ -114,11 +114,20 @@ class UtilityAI(BaseAI):
             if isinstance(item, Food)
         ]
 
-        if owned_food and npc.posture == Posture.SITTING:
+        is_at_own_workplace = (
+            npc.employment and 
+            npc.employment.workplace == npc.location and 
+            not npc.employment.is_on_shift
+        )
+
+        if owned_food and (npc.posture == Posture.SITTING or is_at_own_workplace):
             from character_components.npc_effects import RecentMealEffect
             if npc.motivation_manager.is_suppressed("eat") or npc.has_effect_type(RecentMealEffect):
                 debug_print(npc, "[EAT BLOCK] Skipping — suppressed or recent meal", category="eat")
                 return None
+
+            debug_print(npc, f"[EAT DECISION] eating {owned_food[0].name}", category="eat")
+            return {"name": "eat", "params": {"item": owned_food[0]}}
 
             debug_print(
                 npc,
@@ -134,6 +143,12 @@ class UtilityAI(BaseAI):
         # Sleep block
         urgent = npc.motivation_manager.get_highest_priority_motivation()
         if urgent and urgent.type == "sleep":
+            # Don't start sleep again if already sleeping
+            from character_components.npc_effects import SleepEffect
+            if npc.has_effect_type(SleepEffect):
+                return {"name": "idle"}  # already sleeping, let effect run
+
+
             home = getattr(npc, "home", None)
             if home is None:
                 # Homeless — sleep at current location if it has a bed or bench
@@ -387,6 +402,8 @@ class UtilityAI(BaseAI):
 
         # Reuse existing if already aligned
         if npc.current_anchor and npc.current_anchor.name == top.type:
+            npc.current_anchor.priority = top.urgency
+            npc.current_anchor.weight = top.urgency
             return
 
         anchor = create_anchor_from_motivation(npc, top)
@@ -634,8 +651,12 @@ class UtilityAI(BaseAI):
 
         THOUGHT_TAGS_NEVER_ANCHOR = {"leave_location", "movement", "ambience", 
                               "frustration", "error", "slepp", "planning"}
+        MOTIVATION_TAGS_SKIP_PROMOTE = {"eat", "sleep", "work", "have_fun"}
+
         if any(tag in THOUGHT_TAGS_NEVER_ANCHOR for tag in getattr(strongest, "tags", [])):
             return  # these thought types are handled by choose_action directly
+        if any(tag in MOTIVATION_TAGS_SKIP_PROMOTE for tag in getattr(strongest, "tags", [])):
+            return  # let select_current_anchor handle these via motivation system
 
         # --- Anchor Priority Arbitration ---
         current = npc.current_anchor

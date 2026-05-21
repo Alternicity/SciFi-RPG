@@ -133,7 +133,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.partner_presumed_location = None
         self.social_memory = None
         self.faction = faction
-        self.fun = kwargs.get("fun", fun)#under developed, but some building blocks are in place
+        self.fun = kwargs.get("fun", fun)
         self.fun_prefs = None
         self.hunger = kwargs.get("hunger", hunger)
         self.strength = strength

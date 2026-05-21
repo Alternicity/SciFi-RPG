@@ -17,13 +17,13 @@ class FactionHierarchyWidget:
 
     def render(self, faction):
         print("RENDERING HIERARCHY")
-        print(faction)
+        #print(faction)
         # clear old UI
         for w in self.container.winfo_children():
             w.destroy()
 
         for label, group in faction.iter_hierarchy():
-            print(label, group)
+            #print(label, group)
             frame = tk.LabelFrame(
                 self.container,
                 text=label
