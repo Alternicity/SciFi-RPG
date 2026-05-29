@@ -268,3 +268,16 @@ def print_region_fun(region):
 
     for loc in region.locations:
         print(f"{loc.name:20} fun={loc.fun}")
+
+#tmp to debug Mixins
+""" def debug_location_init(location):
+
+    print(
+        f"[INIT DEBUG] "
+        f"{location.name} "
+        f"type={type(location).__name__} "
+        f"employees_there={hasattr(location, 'employees_there')} "
+        f"power_component={hasattr(location, 'power_component')} "
+        f"requires_power={getattr(location, 'requires_power', None)}"
+    ) """
+#verbose in terminal setup

@@ -12,7 +12,7 @@ GANG_BOSS_COUNT = 1
 GANG_CAPTAIN_RANGE = (1, 2)
 GANG_MEMBER_RANGE = (3, 6)
 
-#not yet used
+#not yet used. How many npcs get spawned
 CORP_MANAGER_RANGE = (1, 2)
 CORP_EMPLOYEE_RANGE = (3, 5)
 CORP_SECURITY_RANGE = (1, 2)

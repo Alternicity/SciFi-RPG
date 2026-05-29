@@ -3,10 +3,12 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 from debug_utils import debug_print
 
-class WorkplaceMixin:
+class WorkplaceMixin:#is this now broken, we had a mixin edit earlier
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.allowed_roles = []
+        #super().__init__(*args, **kwargs)
+        #commented out to solved recursion issue 
+
+        self.allowed_roles = []#consider moving tihs shit out of here and into Location, Mixin does not play nice with dataclass
         self.employees_there = []
         self.employees = []
 

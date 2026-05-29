@@ -1,5 +1,5 @@
 #create.createLocations.py
-from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock
+from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock, Powerplant
 from base.location import Location
 from base.character import Character
 from typing import List
@@ -16,6 +16,8 @@ from debug_utils import debug_print
 from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment, seed_cafe_furniture, seed_sports_centre_equipment, seed_park_objects, seed_library_books, seed_library_furniture, seed_residential_furniture
 game_state = get_game_state()
 
+
+from world.power_initialization import setup_normal_power
 def create_locations(region: Region, wealth: str) -> List[Location]:
     """Creates and returns a list of location objects for a region based on its wealth level."""
     locations = []
@@ -27,9 +29,19 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
     for location_class, count in location_types:
         for _ in range(count):
             try:
-                loc = location_class(region=region, name=location_class.__name__)
+                #loc = location_class(region=region, name=location_class.__name__)
+                #old
 
-                attach_default_security(loc)
+                loc = location_class(region=region)
+                
+
+                if isinstance(loc, Powerplant):
+
+                    if not hasattr(game_state, "all_powerplants"):
+                        game_state.all_powerplants = []
+
+                    game_state.all_powerplants.append(loc)
+    
                 locations.append(loc)
             except Exception as e:
                 debug_print(
@@ -43,6 +55,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                     ),
                     category="create"
                 )
+    
 
         # 2. RESIDENTIAL SAFETY PASS
         # Ensures every region has enough homes for civilian placement
@@ -72,7 +85,8 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                 locations.append(block)
             except Exception as e:
                 debug_print(None, f"⚠️ Error creating ApartmentBlock in {region.name}: {e}", "create")
-
+                
+    attach_default_security(loc)
 
     #2.5 Count ApartmentBlocks
     apartment_count = sum(1 for loc in locations if isinstance(loc, ApartmentBlock))

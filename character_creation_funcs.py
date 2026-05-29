@@ -1,8 +1,8 @@
 #character_creation_funcs.py
 import logging
 import random
-from characters import (Boss, Captain, Employee, RiotCop,
-                         CorporateAssasin, Employee, GangMember,
+from characters import (Boss, Captain, RiotCop,
+                         CorporateAssasin, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian, Child, Influencer,
                            Babe, Detective, Accountant, Taxman, Adepta)
 

@@ -1,5 +1,5 @@
 #faction.py
-from characters import Boss, CEO, Captain, Manager, Employee, GangMember
+from characters import Boss, CEO, Captain, Manager, GangMember
 from goals import Goal
 from tasks.tasks import Task
 
@@ -23,6 +23,15 @@ class Corporation(Faction):
         self.employees = []
         self.members = []  # All employees, accountants, security, managers (not CEO)
         self.assassins = []
+
+        #maybe just placeholders
+        self.suppliers = []
+        self.customers = []
+        self.competitors = []
+        self.partners = []
+
+        self.criminal_contacts = []
+        self.state_contacts = []#this is going to need more than simply name entries
 
     def get_leader(self):
         return self.CEO

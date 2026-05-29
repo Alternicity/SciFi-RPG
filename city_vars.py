@@ -46,10 +46,17 @@ class GameState:
         self.civilians = []
         self.families = []
         self.extant_family_names = []
-        self.all_employees =  {}
+
+        #self.all_employees =  {}
+        self.employed_npcs = set()
+
         self.gangs = []
         self.all_street_gangs = []
         self.corporations = []
+        
+        self.all_powerplants = []
+        self.powered_locations = []
+
         self.homes = [] #might need populating
         self.homeless = []
 

@@ -50,19 +50,10 @@ def create_faction_tab(gui, parent):
     left_frame.pack_propagate(False)
     right_frame.pack_propagate(False)
     
-
     build_faction_selector(
         gui,
         left_frame
     )
-    #if I replace the above with:
-    """ build_faction_selector(
-        self,
-        left_panel
-    ) """
-    #self is not defined
-    #left_panel is not defined
-
 
     build_faction_center(
         gui,

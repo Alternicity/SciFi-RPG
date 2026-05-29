@@ -9,8 +9,8 @@ from social.social_utils import get_socially_favoured
 import loader
 import os
 from collections import defaultdict
-from characters import (Boss, Captain, Employee, VIP, RiotCop,
-                         CorporateAssasin, Employee, GangMember,
+from characters import (Boss, Captain, VIP, RiotCop,
+                         CorporateAssasin, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian, GangMember, Child, Influencer,
                            Babe, Detective)
 from objects.food.cutlery_crockery import Cup

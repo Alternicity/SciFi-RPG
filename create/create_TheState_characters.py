@@ -1,7 +1,7 @@
 # create_TheState_characters.py
 
 import random
-from characters import VIP, Manager, Employee, RiotCop, Detective, Taxman
+from characters import VIP, Manager, RiotCop, Detective, Taxman, Civilian
 from create.create_character_names import create_name
 from location.locations import MunicipalBuilding, PoliceStation
 from create.create_game_state import get_game_state
@@ -16,6 +16,7 @@ from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from character_components.observation_component import ObservationComponent
 from augment.augment_character import augment_character
+from world.scenarios.economy.setup_normal_economy import register_employee
 
 def create_TheState_characters(faction):
     from faction import State
@@ -85,7 +86,7 @@ def create_TheState_characters(faction):
     # --- Managers, Employees, Taxmen ---
     for cls, count, motivations, status_label, status_level in [
         (Manager, random.randint(2, 3), MotivationPresets.for_class("Manager"), "Manager", StatusLevel.MID),#2,3
-        (Employee, random.randint(2, 3), MotivationPresets.for_class("Employee"), "Employee", StatusLevel.MID),#2, 3
+        (Civilian, random.randint(2, 3), MotivationPresets.for_class("Employee"), "Employee", StatusLevel.MID),#Fixed from Employee
         (Taxman, random.randint(2, 4), MotivationPresets.for_class("Taxman"), "Taxman", StatusLevel.HIGH)#2,4
     ]:
         for _ in range(count):
@@ -123,6 +124,7 @@ def create_TheState_characters(faction):
             person.curiosity = Curiosity(base_score=person.intelligence // 2)
             person.task_manager = TaskManager(person)
             person.employment = EmployeeProfile()
+            register_employee(person)
             initialize_motivations(person, motivations)
             person.inventory_component = InventoryComponent(character=person)
             person.observation_component = ObservationComponent(owner=person)

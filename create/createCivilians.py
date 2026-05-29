@@ -300,10 +300,10 @@ def choose_role_for_location(location):
     # Fallback
     return None
 
-def assign_workplaces(civilians, workplace_locations):
+def assign_workplaces(civilians, workplace_locations):#older, slowerly deprecate
     """
     Assign a workplace ONLY to civilians who are marked as employees.
-    Normalize inconsistent states: if a workplace is assigned, ensure is_employee=True.
+    Normalize inconsistent states: if a workplace is assigned, ensure EmployeeProfile etc
     """
 
     for civ in civilians:
@@ -325,7 +325,7 @@ def assign_workplaces(civilians, workplace_locations):
         civ.is_employee = True
 
         # 5. Register employee with location.
-        if hasattr(chosen, "employees"):
+        if hasattr(chosen, "employees"):#ATTN update to use employees_there for presence, and 
             chosen.employees.append(civ)
 
         

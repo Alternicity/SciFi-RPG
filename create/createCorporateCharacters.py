@@ -14,7 +14,10 @@ from base.character import Character
 from character_components.inventory_component import InventoryComponent
 from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
+
 from employment.employee import EmployeeProfile
+from world.scenarios.economy.setup_normal_economy import register_employee
+
 from character_components.observation_component import ObservationComponent
 from augment.augment_character import augment_character
 from create.create_game_state import get_game_state
@@ -89,7 +92,7 @@ def create_corporation_characters(faction, factions):
     if family_name not in game_state.extant_family_names:
         game_state.extant_family_names.append(family_name)
 
-    # Managers
+    # Create Managers
     from characters import Manager
     for _ in range(random.randint(2, 3)):
         status = CharacterStatus()
@@ -124,8 +127,8 @@ def create_corporation_characters(faction, factions):
         if family_name not in game_state.extant_family_names:
             game_state.extant_family_names.append(family_name)
 
-    # Employees
-    from characters import Employee
+    # Regular Employees
+    from characters import Civilian#was Employee, now we are using class Civilian
     for _ in range(random.randint(3, 6)):
         status = CharacterStatus()
         status.set_status("public", FactionStatus(StatusLevel.LOW, "Employee"))
@@ -133,7 +136,7 @@ def create_corporation_characters(faction, factions):
         sex = random.choice(Character.VALID_SEXES)
         first_name, family_name, full_name = create_name(race, sex)
 
-        employee = Employee(
+        employee = Civilian(#was Employee
             name=full_name,
             first_name=first_name,
             family_name=family_name,
@@ -147,6 +150,10 @@ def create_corporation_characters(faction, factions):
         )
         faction.add_employee(employee)
         characters.append(employee)
+
+        employee.employment = EmployeeProfile()#Must be configured
+        register_employee(employee)
+
         employee.mind = Mind(owner=employee, capacity=employee.intelligence)
         augment_character(employee)
         employee.curiosity = Curiosity(base_score=employee.intelligence // 2)

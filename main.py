@@ -39,11 +39,20 @@ def setup_game():
     game_state.factions = factions
     game_state.all_characters = all_characters
     #maybe augment_municipal_buildings call should go here?
+
     reassign_shop_names_after_character_creation()
     link_family_shops(game_state)
     augment_municipal_buildings()
     debug_display_all_shops(all_regions)
     
+    #tmp
+    """ from debug_utils import debug_location_init
+    for loc in game_state.all_locations:
+
+        if hasattr(loc, "employees_there") or hasattr(loc, "power_component"):
+            debug_location_init(loc) """
+
+
     print(f"Game setup complete. Total characters: {len(game_state.all_characters)}")
 
     return all_regions, factions, all_characters, all_locations
@@ -53,7 +62,10 @@ def main():
     from world.scenarios.apply_scenarios import apply_scenarios
 
     apply_scenarios(all_characters)
+    from augment.augment_factions import augment_factions
 
+    augment_factions(factions)#the factions i was suspicious of. Is setup_game returning it? 
+    #maybe we should try populating it again from game_state here just to see what happens?
     main_menu(all_locations, all_characters)
     #game()
 

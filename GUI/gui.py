@@ -35,9 +35,11 @@ class TC2GUI:
             "mode": "npc",
             "faction": None,
             "npc": None,
-            "entity": None
+            "entity": None,
+            "region": None,
+            "location": None
         }
-        self.mode_var = tk.StringVar(value=self.active_context["mode"])#line 38
+        self.mode_var = tk.StringVar(value=self.active_context["mode"])
         self.recent_npcs = deque(maxlen=20)
         self.root.title("World/Sim Inspector")
         self.root.geometry("1400x900")
@@ -194,64 +196,13 @@ class TC2GUI:
 
         self.mode_frames["city"] = frame
 
-        # LEFT PANEL
-        left_panel = ttk.Frame(frame)
-
-        left_panel.pack(
-            side="left",
-            fill="y",
-            padx=(0, 10)
+        from GUI.tabs.city.city_map_tab import (
+            create_city_map_tab
         )
-
-        # RIGHT/CENTER PANEL
-        right_panel = ttk.Frame(frame)
-
-        right_panel.pack(
-            side="right",
-            fill="both",
-            expand=True
-        )
-
-        # NOTEBOOK
-        city_notebook = ttk.Notebook(right_panel)
-
-        city_notebook.pack(
-            fill="both",
-            expand=True
-        )
-
-        self.city_notebook = city_notebook
-
-        # TABS
-        overview_tab = ttk.Frame(city_notebook)
-        map_tab = ttk.Frame(city_notebook)
-
-        city_notebook.add(
-            overview_tab,
-            text="Overview"
-        )
-
-        city_notebook.add(
-            map_tab,
-            text="Map"
-        )
-
-        # BUILD TAB CONTENT
-        from GUI.inspectors.city.city_overview_panel import (
-            build_city_overview
-        )
-
-        build_city_overview(
-            self,
-            overview_tab
-        )
-
-
-        from GUI.tabs.city.city_map_tab import create_city_map_tab
 
         create_city_map_tab(
             self,
-            map_tab
+            frame
         )
 
     def build_faction_mode(self):
@@ -311,7 +262,8 @@ class TC2GUI:
 
         self.active_context["npc"] = npc
         self.active_context["entity"] = npc
-        self.active_context["faction"] = None#added
+        self.active_context["faction"] = None
+        self.active_context["location"] = None
         """ Eventually: mode_var should reflect state
         NOT drive state.
         Meaning:
@@ -402,7 +354,20 @@ class TC2GUI:
         self.refresh_all()
         self.root.update_idletasks()
 
+    def reset_city_navigation(self):
+        #used by mode selector: city and the back button in locations view
+        #resets state, calls rebuild_city_map()
+        print("RESET CITY NAVIGATION")
 
+        self.active_context["region"] = None
+        self.active_context["location"] = None
+
+        self.rebuild_city_map()
+
+    def on_city_back(self):
+        self.reset_city_navigation()
+        """ you can completely skip introducing on_city_back() unless later you need:
+        logging, breadcrumbs, stack popping, animations, transition effects, confirmation dialogs """
 
     def on_npc_select(self, event):
 
@@ -450,23 +415,24 @@ class TC2GUI:
         self.switch_mode(mode)
         
     def switch_mode(self, mode_name):
-        #GUI will NOT destroy widgets anymore
-        self.active_context["mode"] = mode_name
 
+        current_mode = self.active_context["mode"]
+
+        # Re-selecting city mode resets navigation
+        if mode_name == "city":
+            self.reset_city_navigation()
+
+        self.active_context["mode"] = mode_name
         self.mode_var.set(mode_name)
 
-        # hide all modes
         for frame in self.mode_frames.values():
             frame.pack_forget()
 
-        # show active mode
         active_frame = self.mode_frames[mode_name]
 
         active_frame.pack(fill="both", expand=True)
 
         self.refresh_all()
-        #No rebuilding.
-        #No widget destruction ,No notebook recreation, No state reset
 
     def refresh_npc_view(self):
         #refresh_xyz_view() should ONLY update existing widgets.
@@ -577,7 +543,7 @@ class TC2GUI:
         from GUI.inspectors.city.city_overview_panel import (
             refresh_city_overview
         )
-
+        print("REFRESH CITY VIEW")
         refresh_city_overview(self)
 
     def on_region_select(self, region):
@@ -610,9 +576,72 @@ class TC2GUI:
 
         self.refresh_region_view()#is this stil necessary as well as the above?
 
+    def open_region(self, region):
+
+        self.active_context["region"] = region
+        self.active_context["location"] = None
+
+        self.show_region_locations(region)
+
     def refresh_region_view(self):
 
         refresh_region_panel(self)
+
+    def show_region_locations(self, region):
+        from GUI.inspectors.city.region_locations_panel import build_region_locations_view
+        for widget in self.city_center_frame.winfo_children():
+            widget.destroy()
+
+        build_region_locations_view(
+            self,
+            self.city_center_frame,
+            region
+        )
+
+    def open_location(self, location):
+
+        self.active_context["location"] = location
+
+        print(f"Open location: {location.name}")
+
+        self.show_location_view(location)
+
+
+    def show_location_view(self, location):
+
+        from GUI.inspectors.city.location_panel import build_location_view
+
+        for widget in self.city_center_frame.winfo_children():
+            widget.destroy()
+
+        build_location_view(
+            self,
+            self.city_center_frame,
+            location
+        )
+
+    def rebuild_city_map(self):
+        #redraws UI only
+        for widget in self.city_center_frame.winfo_children():
+            widget.destroy()
+
+        from GUI.tabs.city.city_map_canvas import build_city_map_canvas
+
+        build_city_map_canvas(
+            self,
+            self.city_center_frame
+        )
+
+    """ def restore_city_map(self):
+        
+        for widget in self.city_center_frame.winfo_children():
+            widget.destroy()
+
+        self.rebuild_city_map() """
+        #rebuild_city_map is not defined
+
+        
+        #OR cleaner: Store the original map frame once and hide/show it instead of rebuilding.
 
     def on_faction_type_change(self,event):
 
@@ -669,7 +698,7 @@ class TC2GUI:
         from GUI.inspectors.faction.faction_characters_panel import (
             refresh_faction_characters
         )
-
+        from GUI.inspectors.faction.faction_economy_panel import refresh_faction_economy_panel
         from GUI.inspectors.faction.faction_overview_panel import refresh_faction_overview
         faction = self.active_context["faction"]
         mode = self.active_context["mode"]
@@ -686,7 +715,7 @@ class TC2GUI:
         refresh_faction_overview(self)
         refresh_faction_characters(self)
         refresh_faction_hq_panel(self)
-
+        refresh_faction_economy_panel(self)#self to match the other calls above, gui was marked not defined here
 
         overview = [
 

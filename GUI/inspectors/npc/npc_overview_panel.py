@@ -126,7 +126,7 @@ def refresh_overview_panel(gui):
     if faction:
 
         faction_label.config(
-            foreground="cyan",
+            foreground="blue",
             cursor="hand2"
         )
 

@@ -1,4 +1,4 @@
-# base/location.py
+# base.location.py
 from base.core_types import LocationBase
 from dataclasses import dataclass, field
 from typing import Callable, Optional, TYPE_CHECKING, List, Any
@@ -11,7 +11,7 @@ If you need characters → pass references as "Character" type hints under TYPE_
 class LocationItems:
     def __init__(self):
         self.objects_present = []
-        self.items_available = []
+        self.items_available = []#for sale
 
 @dataclass
 class Location(LocationBase):
@@ -20,7 +20,7 @@ class Location(LocationBase):
     region: Optional[Any] = None
     items: LocationItems = field(default_factory=LocationItems)
     is_shakedown_target: bool = False
-    owner = None
+    owner: Optional[Any] = None
     sublocations: Optional[List['Location']] = None
     controlling_faction: Optional[Any] = None
     tags: list[str] = field(default_factory=list)
@@ -48,6 +48,10 @@ class Location(LocationBase):
     employees_there: list = field(default_factory=list)
     # Instance-specific categories field
     categories: List[str] = field(default_factory=list) #ALERT
+
+    power_component: Optional[Any] = None
+    """ requires_power: bool = False
+    power_supplier: Optional['Location'] """
 
     def __post_init__(self):
         
@@ -132,6 +136,29 @@ class Location(LocationBase):
         # Remove excluded
         present = [c for c in present if c not in exclude]
         return present
+
+
+    @property
+    def requires_power(self):
+        return (
+            self.power_component.requires_power
+            if self.power_component
+            else False
+        )
+
+    @property
+    def power_supplier(self):
+        return (
+            self.power_component.power_supplier
+            if self.power_component
+            else None
+        )
+
+    @property
+    def is_powered(self):
+        if not self.power_component:
+            return False
+        return self.power_component.has_power
 
     def has_category(self, category):
         return category in self.categories

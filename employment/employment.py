@@ -9,7 +9,7 @@ from create.create_game_state import get_game_state
 from employment.service_jobs.cafe_restaurant_work import CafeRestaurantWorkSession
 current_hour = game_state.hour
 
-def update_employee_presence(npc, hour):
+def update_employee_presence(npc, hour):#we havent used this yet in the economy dev pass
     #This function is idempotent and safe to call every hour
 
     #Don’t create anchors in update_employee_presence

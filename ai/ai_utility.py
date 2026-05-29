@@ -101,20 +101,34 @@ class UtilityAI(BaseAI):
             return {"name": "perform_work"}
 
 
-        if urgent.type == "sleep":
-            if npc.location == getattr(npc, "home", None):
-                return {"name": "sleep"}
-            # else SleepAnchor handles movement via requires_movement()
+        if urgent and urgent.type == "sleep":
+            # Don't start sleep again if already sleeping
+            from character_components.npc_effects import SleepEffect
+            if npc.has_effect_type(SleepEffect):
+                return {"name": "idle"}  # already sleeping, let effect run
+            
+            home = getattr(npc, "home", None)
+            if home is None:
+                from objects.furniture import Bed, Bench
+                has_rest = any(isinstance(o, (Bed, Bench)) for o in npc.location.items.objects_present)
+                if has_rest:
+                    return {"name": "sleep"}
+                return {"name": "idle"}
+            
+            if npc.location != home:
+                return {"name": "visit_location", "params": {"destination": home}}
+            
+            return {"name": "sleep"}
 
-        #2 Eat if already holding food
+        #2 Eat 
         from objects.food.prepared_food import Food
 
         owned_food = [
-            item for item in npc.inventory#seems to relate to specifically the npcs inventory here
+            item for item in npc.inventory
             if isinstance(item, Food)
         ]
 
-        is_at_own_workplace = (
+        is_at_own_workplace = (#But there was also this
             npc.employment and 
             npc.employment.workplace == npc.location and 
             not npc.employment.is_on_shift
@@ -128,17 +142,6 @@ class UtilityAI(BaseAI):
 
             debug_print(npc, f"[EAT DECISION] eating {owned_food[0].name}", category="eat")
             return {"name": "eat", "params": {"item": owned_food[0]}}
-
-            debug_print(
-                npc,
-                f"[EAT DECISION] eating {owned_food[0].name}",
-                category="eat"
-            )
-
-            return {
-                "name": "eat",
-                "params": {"item": owned_food[0]}
-            }
 
         # Sleep block
         urgent = npc.motivation_manager.get_highest_priority_motivation()

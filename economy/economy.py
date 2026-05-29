@@ -10,7 +10,8 @@ from typing import Any, Literal
 
 logging.basicConfig(level=logging.INFO)
 
-#this is one of the first two places i want to incorporate scalar fields
+#this is one of the first two places i want to incorporate scalar fields.
+#Old comment, and true. amnbience fields are already existing and had no simple precursor.
 
 @dataclass
 class Ownership:
@@ -19,6 +20,7 @@ class Ownership:
     share: float = 1.0  # Later: partial ownership
 
 
+#probably deprecated from here down
 class EconomyManager:
     def __init__(self):
         self.power_stations = []
@@ -26,7 +28,7 @@ class EconomyManager:
         self.factories = []
         self.shops = []
 
-    def run_daily_simulation(self):
+    def run_daily_simulation(self):#hmm
         for station in self.power_stations:
             station.distribute_energy()
 

@@ -96,6 +96,44 @@ FARM_MANAGER = EmployeeRole(
     2,
 )
 
+BARTENDER = EmployeeRole(
+    name="bartender",
+    responsibilities=[
+        "serve_drinks",
+        "clean_bar",
+        "socialize",
+    ],
+    role_type="front_of_house",
+)
+
+BOUNCER = EmployeeRole(
+    name="bouncer",
+    responsibilities=[
+        "guard_entrance",
+        "remove_troublemakers",
+    ],
+    role_type="security",
+)
+
+CLUB_MANAGER = EmployeeRole(
+    name="club_manager",
+    responsibilities=[
+        "manage_staff",
+        "manage_inventory",
+    ],
+    role_type="management",
+)
+
+DJ = EmployeeRole(
+    name="dj",
+    responsibilities=[
+        "play_music",
+        "maintain_atmosphere"
+    ],
+    role_type="entertainment",
+)
+
+
 # --- Declarative location → roles mapping ---
 ROLE_RULES = {
     # SHOPS
@@ -130,6 +168,14 @@ ROLE_RULES = {
         (FARMHAND, 3),
         (FARM_SUPERVISOR, 1),
         (FARM_MANAGER, 1),
+    ],
+
+    #Nightclubs
+    "NIGHTCLUB": [
+        (BARTENDER, 2),
+        (BOUNCER, 1),
+        (DJ, 1),
+        (CLUB_MANAGER, 1),
     ],
 }
 

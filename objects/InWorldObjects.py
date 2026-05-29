@@ -40,7 +40,7 @@ class ItemType(Enum):
 # as they are not used to create objects directly. 
 # This ensures clarity and avoids redundancy while adhering to OOP principles.
 
-valid_items = [
+valid_items = [#ATTN
     "CashWad", "Wallet", "HardDrive", "Medkit", 
     "FoodCrate", "Laptop", "MechanicalToolkit", "ElectricalToolkit", 
     "PowerGenerator", "WaterPurifier", "SmartPhone", "CommoditiesBox"

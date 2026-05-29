@@ -122,7 +122,11 @@ def refresh_faction_hq_panel(gui):
 
             f"Open: {hq.is_open}\n"
             f"Powered: {hq.is_powered}\n"
-            f"Energy Cost: {hq.energy_cost}\n\n"
+            f"Requires Power: "
+            f"{getattr(hq.power_component, 'requires_power', False)}\n"
+
+            f"Powered: "
+            f"{getattr(hq.power_component, 'has_power', False)}\n"
 
             f"Security Level: {security.level}\n"
             f"Guards: {len(security.guards)}\n"

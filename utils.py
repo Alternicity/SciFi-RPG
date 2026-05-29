@@ -5,12 +5,28 @@ import json
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-from characters import (Boss, Captain, Employee, VIP, RiotCop,
-                         CorporateAssasin, Employee, GangMember,
+from characters import (Boss, Captain, VIP, RiotCop,
+                         CorporateAssasin, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
 #🟢 ⚪🔴 🔵 🟡 🟠 🟣 ⚫  🟤
 from create.create_game_state import get_game_state  # Ensure we get the latest game state
 from typing import List, Optional, Type, Union
+from employment.employee import EmployeeProfile
+
+
+def employ_npc(npc, workplace, role, *,shift="day", shift_start=1, shift_end=8):
+    npc.is_employee = True
+
+    npc.employment = EmployeeProfile(
+        workplace=workplace,
+        role=role,
+        role_type=role.role_type,
+        shift=shift,
+        shift_start=shift_start,
+        shift_end=shift_end
+    )
+    
+
 
 def get_region_by_name(name, all_regions): #these get functions get the object from a "string"
     """Finds and returns the region object by name."""

@@ -4,7 +4,7 @@ import json
 import logging
 from typing import List, Union
 from location.locations import Shop, CorporateStore, Stash
-from characters import Character, Employee, Civilian, Manager
+from characters import Character, Civilian, Manager
 from location.location_security import Security
 #from character_creation_funcs import player_character_options
 from typing import List, Dict, Union

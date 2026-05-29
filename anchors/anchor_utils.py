@@ -357,10 +357,10 @@ def create_anchor_from_thought(npc, thought: "Thought", name: Optional[str] = No
         if m.type == "anchor_creation"
         and (m.details and str(getattr(thought, "content", "")).strip() in m.details)
     ]
-    if existing_memory:
+    """ if existing_memory:
         for a in npc.anchors:
             if getattr(a, "source", None) is thought or a.name in existing_memory[0].details:
-                return a
+                return a """
             
     if anchor_name == "work":
         from anchors.work_anchor import WorkAnchor

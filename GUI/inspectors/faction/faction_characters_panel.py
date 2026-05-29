@@ -27,7 +27,7 @@ def make_entry(gui, parent, name, npc):
     lbl = tk.Label(
         parent,
         text=name,
-        fg="cyan",
+        fg="blue",
         cursor="hand2"
     )
 

@@ -46,8 +46,9 @@ class VacantLot(PerceptibleLocation):
     fun: int = 0
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+    
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
 
 
     def get_percept_data(self, observer=None):
@@ -98,8 +99,8 @@ class HQ(PerceptibleLocation):
     categories: List[str] = field(default_factory=lambda: ["workplace", "public"])
     is_concrete: bool = True
     secret_entrance: bool = True
-    is_powered: bool = False
-    energy_cost: int = 0
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
 
     security: Security = field(default_factory=lambda: Security(
         level=1,
@@ -133,6 +134,10 @@ class HQ(PerceptibleLocation):
             "has_security": self.has_security(),
             "faction": self.faction.name if self.faction else None
         }
+
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def to_dict(self):
         # Use asdict to convert all dataclass attributes to a dictionary
@@ -190,7 +195,7 @@ class Vendor(PerceptibleLocation):
 
     # No need to define __init__; @dataclass handles it
     def __post_init__(self):
-        pass
+        WorkplaceMixin.__init__(self)
         #super().__post_init__()
         #print(f"DEBUG: CorporateStore name = {self.name}")
 
@@ -235,8 +240,10 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
     robbable: bool = True
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     upkeep: int = 15
 
     #Remove:
@@ -296,6 +303,7 @@ class Shop(Vendor, WorkplaceMixin, PerceptibleLocation):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
     def __post_init__(self):
+        WorkplaceMixin.__init__(self)
         self.inventory.owner = self
         super().__post_init__()
 
@@ -314,8 +322,10 @@ class CorporateStore(WorkplaceMixin, Vendor):
     is_concrete: bool = True
     bankCardCash: int = 0
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     upkeep: int = 15
     security: Security = field(default_factory=lambda: Security(
         level=1,
@@ -344,6 +354,10 @@ class CorporateStore(WorkplaceMixin, Vendor):
             "faction": self.faction.name if self.faction else None,
             "region": self.region.name if self.region else None,
         }
+    
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
@@ -377,8 +391,10 @@ class MechanicalRepairWorkshop(WorkplaceMixin, PerceptibleLocation):
     upkeep: int = 15
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -415,6 +431,10 @@ class MechanicalRepairWorkshop(WorkplaceMixin, PerceptibleLocation):
             
         }
 
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -441,8 +461,10 @@ class ElectricalWorkshop(WorkplaceMixin, PerceptibleLocation):
     # Inherit materials_required from the parent class (RepairWorkshop)
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -478,6 +500,9 @@ class ElectricalWorkshop(WorkplaceMixin, PerceptibleLocation):
             
         }
 
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def to_dict(self):
         return asdict(self)
@@ -508,8 +533,10 @@ class Stash(PerceptibleLocation):
     upkeep: int = 5
     is_concrete: bool = True
     secret_entrance: bool = True
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     categories: List[str] = field(default_factory=lambda: ["gang"])
     security: Security = field(default_factory=lambda: Security(
         level=1,
@@ -544,6 +571,10 @@ class Stash(PerceptibleLocation):
             
         }
 
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -563,73 +594,6 @@ class Stash(PerceptibleLocation):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
 
-@dataclass
-class Factory(WorkplaceMixin, PerceptibleLocation):
-    name: str = "The Old Factory"
-    tags: list[str] = field(default_factory=lambda: ["corporate", "factory"])
-
-    description: str = "A Factory"
-    goods_produced: List[str] = field(default_factory=list)  # An empty list, meaning no goods produced initially
-    materials_available: List[str] = field(default_factory=list)  # An empty list, meaning no materials available initially
-
-    items_available: List[Any] = field(default_factory=list)
-    inventory: Inventory = field(default_factory=Inventory)
-
-    categories: List[str] = field(default_factory=lambda: ["workplace"])
-    upkeep: int = 60
-    is_concrete: bool = True
-    secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
-    security: Security = field(default_factory=lambda: Security(
-        level=1,
-        guards=[],
-        difficulty_to_break_in=1,
-        surveillance=False,
-        alarm_system=False
-    ))
-
-    def get_percept_data(self, observer=None):
-        return {
-            "name": self.name,
-            "type": self.__class__.__name__,
-        "origin": "FIXME",
-        "tags": "FIXME",
-        "salience": "FIXME",
-        "urgency": "FIXME",
-        "source": "FIXME",
-        "security": "FIXME",
-        "is_open": "FIXME",
-        "has_security": "FIXME",
-            "description": f"a {self.__class__.__name__}", # Placeholder, should be overridden
-            "region": self.region.name if self.region else None,
-            "robbable": True,
-            "origin": self,
-            "urgency": 1,
-            "tags": ["location", "tools"],
-            "menu_options": [],
-            "source": None,
-            "security": self.security_level,
-            "is_open": self.is_open,
-            "has_security": self.has_security(),
-        }
-    
-
-    def to_dict(self):
-        return asdict(self)
-
-    def produce_goods(self):
-        print(f"Factory at {self.name} is producing goods.")
-        # Logic for processing materials into goods
-        for material in self.materials_available:
-            # Example: produce goods based on materials
-            produced_good = f"Produced {material} good"
-            self.goods_produced.append(produced_good)
-            print(produced_good)
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
-
 
 @dataclass
 class Nightclub(WorkplaceMixin, PerceptibleLocation):
@@ -643,8 +607,10 @@ class Nightclub(WorkplaceMixin, PerceptibleLocation):
     upkeep: int = 30
     is_concrete: bool = True
     secret_entrance: bool = True
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -677,6 +643,10 @@ class Nightclub(WorkplaceMixin, PerceptibleLocation):
             "is_open": self.is_open,
             "has_security": self.has_security(),
         }
+
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def to_dict(self):
         return asdict(self)
@@ -712,8 +682,10 @@ class Mine(WorkplaceMixin, PerceptibleLocation):
     is_concrete: bool = True
     upkeep: int = 40
     secret_entrance: bool = True
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -747,6 +719,10 @@ class Mine(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security(),
         }
 
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -756,7 +732,7 @@ class Mine(WorkplaceMixin, PerceptibleLocation):
 
 @dataclass
 class Powerplant(WorkplaceMixin, PerceptibleLocation):
-    name: str = "Le PowerPlant 1"
+    name: str = "Le Powerplant 1"
     tags: list[str] = field(default_factory=lambda: ["power", "grim"])
     description: str = "A Powerplant"
     energy_output: int = 1000
@@ -770,8 +746,10 @@ class Powerplant(WorkplaceMixin, PerceptibleLocation):
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = -1
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -804,6 +782,10 @@ class Powerplant(WorkplaceMixin, PerceptibleLocation):
             "is_open": self.is_open,
             "has_security": self.has_security(),
         }
+
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def to_dict(self):
         return asdict(self)
@@ -861,8 +843,10 @@ class Airport(WorkplaceMixin, PerceptibleLocation):
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = 0
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -895,6 +879,10 @@ class Airport(WorkplaceMixin, PerceptibleLocation):
             "is_open": self.is_open,
             "has_security": self.has_security()
         }
+
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def to_dict(self):
         return asdict(self)
@@ -985,8 +973,10 @@ class Port(WorkplaceMixin, PerceptibleLocation):
     is_concrete: bool = True
     secret_entrance: bool = True
     fun: int = 0
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1020,6 +1010,10 @@ class Port(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security()
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -1094,7 +1088,7 @@ class Port(WorkplaceMixin, PerceptibleLocation):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
 
-@dataclass
+@dataclass#line 1120
 class Factory(WorkplaceMixin, PerceptibleLocation):
     name: str = "Default Factory Name"
     tags: list[str] = field(default_factory=lambda: ["commercial", "manufacture", "grim"])
@@ -1113,8 +1107,10 @@ class Factory(WorkplaceMixin, PerceptibleLocation):
     is_concrete: bool = True
     secret_entrance: bool = False
     fun: int = -1
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1149,6 +1145,10 @@ class Factory(WorkplaceMixin, PerceptibleLocation):
             
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -1197,6 +1197,7 @@ class Cafe(CommercialLocation, WorkplaceMixin, PerceptibleLocation):
         # Add more logic if you want to further interact with the customer based on the cafe's attributes.
 
     def __post_init__(self):
+        WorkplaceMixin.__init__(self)
         super().__post_init__()
 
     def __repr__(self):
@@ -1223,8 +1224,10 @@ class Restaurant(WorkplaceMixin, PerceptibleLocation):
     ambience_level: int = 7
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1247,6 +1250,11 @@ class Restaurant(WorkplaceMixin, PerceptibleLocation):
             "security": self.security.level,
             "is_open": self.is_open,
         }
+
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
@@ -1265,8 +1273,10 @@ class Park(WorkplaceMixin, PerceptibleLocation):
 
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1300,6 +1310,9 @@ class Park(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security()
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def to_dict(self):
         return asdict(self)
@@ -1393,8 +1406,10 @@ class Museum(WorkplaceMixin, PerceptibleLocation):
     fun: int = 3
     is_concrete: bool = True
     secret_entrance: bool = True
-    is_powered: bool = True
-    energy_cost: int = 100
+
+    """ is_powered: bool = True
+    energy_cost: int = 100 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1428,6 +1443,10 @@ class Museum(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security()
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -1450,8 +1469,10 @@ class Library(WorkplaceMixin, PerceptibleLocation):
     fun: int = 3
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = True
-    energy_cost: int = 50
+
+    """ is_powered: bool = True
+    energy_cost: int = 50 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1486,6 +1507,10 @@ class Library(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security(),
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
     
@@ -1507,8 +1532,10 @@ class ResearchLab(WorkplaceMixin, PerceptibleLocation):
     categories: List[str] = field(default_factory=lambda: ["science", "tech", "workplace", "record"])
     is_concrete: bool = True
     secret_entrance: bool = True
-    is_powered: bool = False
-    energy_cost: int = 50
+
+    """ is_powered: bool = False
+    energy_cost: int = 50 """
+
     security: Security = field(default_factory=lambda: Security(
         level=3,
         guards=[],
@@ -1542,6 +1569,9 @@ class ResearchLab(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security()
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
 
     def to_dict(self):
         return asdict(self)
@@ -1573,8 +1603,10 @@ class Warehouse(WorkplaceMixin ,PerceptibleLocation):
     fun: int = 0
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 10
+
+    """ is_powered: bool = False
+    energy_cost: int = 10 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1609,6 +1641,10 @@ class Warehouse(WorkplaceMixin ,PerceptibleLocation):
             "has_security": self.has_security()
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -1631,8 +1667,10 @@ class ApartmentBlock(WorkplaceMixin, PerceptibleLocation):
     fun: int = 0
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 30
+
+    """ is_powered: bool = False
+    energy_cost: int = 30 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1659,6 +1697,10 @@ class ApartmentBlock(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security() if hasattr(self, "has_security") else False,
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -1686,8 +1728,10 @@ class House(WorkplaceMixin, PerceptibleLocation):
     fun: int = 1
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 5
+
+    """ is_powered: bool = False
+    energy_cost: int = 5 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1725,6 +1769,10 @@ class House(WorkplaceMixin, PerceptibleLocation):
 
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
@@ -1748,8 +1796,10 @@ class SportsCentre(WorkplaceMixin, PerceptibleLocation):
     fun: int = 3
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1783,6 +1833,10 @@ class SportsCentre(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security()
         }
 
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -1807,8 +1861,10 @@ class Holotheatre(WorkplaceMixin, PerceptibleLocation):
     fun: int = 1
     is_concrete: bool = True
     secret_entrance: bool = False
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1843,6 +1899,10 @@ class Holotheatre(WorkplaceMixin, PerceptibleLocation):
             "has_security": self.has_security()
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         return asdict(self)
 
@@ -1869,8 +1929,10 @@ class MunicipalBuilding(WorkplaceMixin, PerceptibleLocation):
     categories: List[str] = field(default_factory=lambda: ["workplace", "state"])
     is_concrete: bool = True
     secret_entrance: bool = True
-    is_powered: bool = True
-    energy_cost: int = 100
+
+    """ is_powered: bool = True
+    energy_cost: int = 100 """
+
     security: Security = field(default_factory=lambda: Security(
         level=2,
         guards=[],
@@ -1906,6 +1968,10 @@ class MunicipalBuilding(WorkplaceMixin, PerceptibleLocation):
             
         }
     
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def to_dict(self):
         # Use asdict to convert all dataclass attributes to a dictionary
         return asdict(self)
@@ -1930,8 +1996,10 @@ class PoliceStation(WorkplaceMixin, PerceptibleLocation):
     
     is_concrete: bool = True
     secret_entrance: bool = True
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     security: Security = field(default_factory=lambda: Security(
         level=1,
         guards=[],
@@ -1982,6 +2050,10 @@ class PoliceStation(WorkplaceMixin, PerceptibleLocation):
         pass
     #also has a CopBar
 
+    def __post_init__(self):
+
+        WorkplaceMixin.__init__(self)
+
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
 
@@ -2001,8 +2073,10 @@ class Farm(WorkplaceMixin, PerceptibleLocation):
 
     upkeep: int = 40
     is_concrete: bool = True
-    is_powered: bool = False
-    energy_cost: int = 0
+
+    """ is_powered: bool = False
+    energy_cost: int = 0 """
+
     secret_entrance: bool = False
 
     security: Security = field(default_factory=lambda: Security(
@@ -2025,7 +2099,7 @@ class Farm(WorkplaceMixin, PerceptibleLocation):
             "urgency": 1,
             "robbable": True,
             "security": self.security.level,
-            "is_open": True,  # you may later add farm “open hours”
+            "is_open": True,
             "has_security": self.security.level > 0,
         }
 
@@ -2048,6 +2122,7 @@ class Farm(WorkplaceMixin, PerceptibleLocation):
         print(f"Farm at {self.name} produced goods: {produced}")
 
     def __post_init__(self):
+        WorkplaceMixin.__init__(self)
         self.inventory.owner = self
         super().__post_init__()
 

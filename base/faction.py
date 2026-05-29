@@ -1,4 +1,4 @@
-# base/faction.py
+# base.faction.py
 from base.core_types import FactionBase
 from debug_utils import debug_print
 
@@ -16,6 +16,9 @@ class Faction(FactionBase):
         self.is_vengeful = False
         self.violence_disposition = violence_disposition
         self.enemies = {}  # Key: Faction name or object, Value: hostility level 1-10
+        self.owned_locations = []
+        self.active_workers = []
+        self.available_workers = []
 
     def get_leader(self):
         return None

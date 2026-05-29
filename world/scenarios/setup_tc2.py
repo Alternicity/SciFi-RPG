@@ -15,9 +15,10 @@ from objects.food.cutlery_crockery import Cup
 from location.locations import Cafe
 from objects.furniture import CafeTable, CafeChair
 from character_components.npc_effects import MorningSettlingEffect
+from world.scenarios.economy.setup_normal_economy import register_employee
 
 
-def setup_tc2_world(all_characters):#line 20
+def setup_tc2_world(all_characters):
     civilians = [c for c in all_characters if isinstance(c, Civilian)]
     debug_civilian_worker = pick_civilian(civilians)
     debug_civilian_liberty = pick_civilian(
@@ -187,7 +188,7 @@ def setup_tc2_worker(worker, region, *, role):#civilian_manager, and civilian_wa
         shift_start=1,
         shift_end=4
     )
-
+    register_employee(worker)
     # Register as employee (NOT arrival)
     if hasattr(cafe, "employees"):
         cafe.employees.append(worker)

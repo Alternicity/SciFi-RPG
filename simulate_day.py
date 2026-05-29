@@ -16,6 +16,7 @@ from ambience.ambience_and_psy_utils import compute_location_ambience
 from debug_utils import debug_print
 from base.character import Character
 from employment.employment import update_employee_presence
+from economy.infrastructure import update_infrastructure
 
 def simulate_hours(all_characters, num_ticks=1, debug_character=None):#current tick granularity
     game_state = get_game_state()
@@ -25,6 +26,7 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):#current t
 
     for _ in range(num_ticks):
         game_state.advance_hour()
+        update_infrastructure()
         debug_print(None, f"[TIME] Hour {game_state.hour}, Day {game_state.day}", category="tick")
         #debug_print(None, summarize_npc_turns(all_characters), category="tick")
 

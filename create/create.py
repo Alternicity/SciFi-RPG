@@ -7,8 +7,8 @@ from loader import get_corp_names_filepath, load_corp_names
 from base.character import  Character
 from base.location import Location
 from location.locations import Shop, CorporateStore, Stash, Region, VacantLot, HQ, MunicipalBuilding
-from characters import (Boss, Captain, Employee, VIP, RiotCop,
-                         CorporateAssasin, Employee, GangMember,
+from characters import (Boss, Captain, VIP, RiotCop,
+                         CorporateAssasin, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian, Child, Influencer,
                            Babe, Detective)
 from faction import Corporation, Gang, State
@@ -101,12 +101,12 @@ def create_regions():
                 game_state.public_places = []
 
             # Populate global + regional indexes
-            for loc in region.locations:#I added region here
+            for loc in region.locations:
 
                 game_state.all_locations.append(loc)
 
                 if hasattr(loc, "is_shop") and loc.is_shop:
-                    game_state.all_shops.append(loc)
+                    game_state.all_shops.append(loc)#this
 
                 if getattr(loc, "is_public_facing", False):
                     region.public_places.append(loc)
@@ -114,19 +114,10 @@ def create_regions():
             
             # Set region ref on each location
             for loc in location_list:
-                loc.region = region#does this automatically update the loction entries in game_state?
+                loc.region = region
 
             # Add into global flat list
             all_locations.extend(location_list)
-
-            # 🔍 INSERT DIAGNOSTICS HERE
-            #debug_print("system", f"\n[DEBUG] Region {region.name} locations (identity check):", category = "create")
-            #muted for brevity
-
-            for loc in location_list:
-                pass
-                #verbose
-                #debug_print("system", f"  id={id(loc)}  name={loc.name}  region={loc.region.name}", category = "create")
 
         except Exception as e:
             debug_print(
@@ -232,11 +223,16 @@ def create_corp_factions(num_corps, all_regions):
 
     corporations = []
     
+    
+    used_first_parts = set()
+
     CORP_NAMES_FILE = get_corp_names_filepath()
-    if os.path.exists(CORP_NAMES_FILE):
-        first_parts, second_parts = load_corp_names(CORP_NAMES_FILE)
+
+
+    if os.path.exists(CORP_NAMES_FILE):#this wil ned to be kept
+        first_parts, second_parts = load_corp_names(CORP_NAMES_FILE)#this wil need to go
     else:
-        first_parts, second_parts = ["Default"], ["Corporation"]
+        first_parts, second_parts = ["Default"], ["Corporation"]#this will need to stay in some form - second parts
 
     hannival_region = random.choice(all_regions)
     hannival_corp = Corporation(name="Hannival", violence_disposition="2")
@@ -258,9 +254,26 @@ def create_corp_factions(num_corps, all_regions):
     else:
         print(f"[Warning] GameState has no attribute '{attr_name}'")
 
-
+    used_first_parts = set()
     for _ in range(num_corps):
-        corp_name = f"{random.choice(first_parts).replace(',', '')} {random.choice(second_parts).replace(',', '')}"
+        available_first_parts = [
+            p for p in first_parts
+            if p not in used_first_parts
+        ]
+
+        if not available_first_parts:
+            available_first_parts = first_parts
+
+        first = random.choice(available_first_parts)
+
+        used_first_parts.add(first)
+
+        second = random.choice(second_parts)
+
+        corp_name = f"{first} {second}".replace(",", "")
+
+
+
         assigned_region = random.choice(all_regions)
 
         corporation = Corporation(name=corp_name, violence_disposition="2")
@@ -364,7 +377,7 @@ def assign_hq(faction, region):
     from create.create_game_state import get_game_state
     game_state = get_game_state()
 
-    #Not all gang factions successfully get an HQ
+    #Not all gang factions successfully get an HQ, this is expected and desirable
     
 
     if faction.HQ is not None:  # ✅ Prevent multiple HQ assignments
@@ -392,6 +405,7 @@ def assign_hq(faction, region):
     if available_hqs: 
         hq = random.choice(available_hqs)
         hq.faction = faction
+        hq.controlling_faction = faction
         hq.name = f"{faction.name} HQ"
         faction.HQ = hq
 

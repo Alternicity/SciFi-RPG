@@ -18,11 +18,11 @@ class EmployeeProfile:
 
     #was just role 
     role_type: Literal[
-            "front_of_house",
+            "front_of_house",#so far cafe cetric
             "back_of_house",
             "management",
             "labor"
-        ] = "front_of_house"#is this not a default? So far, waitress/front_of_house is the only one used
+        ] = "front_of_house"# this might be default So far, waitress/front_of_house is the only one used
 
     # Runtime state (ephemeral, not serialized)
     is_on_shift: bool = False

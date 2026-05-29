@@ -7,13 +7,19 @@ from dataclasses import dataclass
 
 @dataclass
 class EconomicProfile:
-    workplace: "Location" = None
-    role: "EmployeeRole" = None
+    """ workplace: "Location" = None
+    role: "EmployeeRole" = None """
 
-    # Future fields (earnings, consumption, debt, spending patterns)
-    income_per_day: int = 0
+    employer = None
+    daily_income: int = 0
+    savings: int = 0
+
     spending_rate: float = 1.0
-    partner: "Character" = None   # For household wealth analysis
 
-    def is_employed(self):
-        return self.workplace is not None
+    partner = None
+
+    debt: int = 0
+
+    socioeconomic_class: str = "working"
+
+    

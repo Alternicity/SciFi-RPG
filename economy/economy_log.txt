@@ -1,0 +1,4176 @@
+[SEED] Factory Sunbeam Functions Factory (northville) ore=50
+[SEED] Factory Symantic gmBh Factory (northville) ore=50
+[SEED] Factory Xen Functions Factory (southville) ore=50
+[SEED] Factory Quarkz Functions Factory (southville) ore=50
+[SEED] Factory Hannival Factory (easternhole) ore=50
+[SEED] Factory ImperaFold Kryptzen Factory (easternhole) ore=50
+[SEED] Factory Proper Fields Factory (easternhole) ore=50
+[SEED] Factory Quarkz Functions Factory (westborough) ore=50
+[SEED] Factory Proper Fields Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Pika Imports Powerplant (northville) generating=True
+[POWERPLANT] southville:Pika Imports Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Xen Functions Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Xofila Kryptzen Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Hannival Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Pika Imports Powerplant (northville)
+  Workers: 2
+POWERPLANT: Pika Imports Powerplant (southville)
+  Workers: 2
+POWERPLANT: Xen Functions Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Xofila Kryptzen Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Hannival Powerplant (downtown)
+  Workers: 2
+FACTORY: Sunbeam Functions Factory (northville)
+  Supplier: Pika Imports Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic gmBh Factory (northville)
+  Supplier: Pika Imports Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Xen Functions Factory (southville)
+  Supplier: Pika Imports Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quarkz Functions Factory (southville)
+  Supplier: Pika Imports Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (easternhole)
+  Supplier: Xen Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: ImperaFold Kryptzen Factory (easternhole)
+  Supplier: Xen Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Proper Fields Factory (easternhole)
+  Supplier: Xen Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quarkz Functions Factory (westborough)
+  Supplier: Xofila Kryptzen Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Proper Fields Factory (downtown)
+  Supplier: Hannival Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Ryan's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pika Imports Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Old Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pika Imports Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Pika Imports Powerplant (northville)
+  Type: Powerplant
+  Owner: Pika Imports
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Sunbeam Functions Factory (northville)
+  Type: Factory
+  Owner: Sunbeam Functions
+  Powered: True
+  Supplier: Pika Imports Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Symantic gmBh Factory (northville)
+  Type: Factory
+  Owner: Symantic gmBh
+  Powered: True
+  Supplier: Pika Imports Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Aetheris's Southern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pika Imports Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:The Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pika Imports Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Pika Imports Powerplant (southville)
+  Type: Powerplant
+  Owner: Pika Imports
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Xen Functions Factory (southville)
+  Type: Factory
+  Owner: Xen Functions
+  Powered: True
+  Supplier: Pika Imports Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Quarkz Functions Factory (southville)
+  Type: Factory
+  Owner: Quarkz Functions
+  Powered: True
+  Supplier: Pika Imports Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hannival Factory (easternhole)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Xen Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:ImperaFold Kryptzen Factory (easternhole)
+  Type: Factory
+  Owner: ImperaFold Kryptzen
+  Powered: True
+  Supplier: Xen Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Proper Fields Factory (easternhole)
+  Type: Factory
+  Owner: Proper Fields
+  Powered: True
+  Supplier: Xen Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Chiba's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Xen Functions Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Xen Functions Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Xen Functions
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Old Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Xen Functions Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Carvalho's Western Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Xofila Kryptzen Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Quarkz Functions Factory (westborough)
+  Type: Factory
+  Owner: Quarkz Functions
+  Powered: True
+  Supplier: Xofila Kryptzen Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Xofila Kryptzen Powerplant (westborough)
+  Type: Powerplant
+  Owner: Xofila Kryptzen
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Little Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Xofila Kryptzen Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Schulz's Central Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Proper Fields Factory (downtown)
+  Type: Factory
+  Owner: Proper Fields
+  Powered: True
+  Supplier: Hannival Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Hannival Powerplant (downtown)
+  Type: Powerplant
+  Owner: Hannival
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Little Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Nifferons Cong Factory (northville) ore=50
+[SEED] Factory ImperaFold Designs Factory (northville) ore=50
+[SEED] Factory Pika Holdings Factory (southville) ore=50
+[SEED] Factory ImperaFold Designs Factory (southville) ore=50
+[SEED] Factory Pika Holdings Factory (easternhole) ore=50
+[SEED] Factory Pika Holdings Factory (easternhole) 2 ore=50
+[SEED] Factory Hypi Factor Factory (easternhole) ore=50
+[SEED] Factory Nifferons Cong Factory (westborough) ore=50
+[SEED] Factory Nifferons Cong Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Sunbeam Nier Powerplant (northville) generating=True
+[POWERPLANT] southville:Hypi Factor Powerplant (southville) generating=True
+[POWERPLANT] easternhole:LigaSao Functions Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Nifferons Cong Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Podnac Imports Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Sunbeam Nier Powerplant (northville)
+  Workers: 2
+POWERPLANT: Hypi Factor Powerplant (southville)
+  Workers: 2
+POWERPLANT: LigaSao Functions Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Nifferons Cong Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Podnac Imports Powerplant (downtown)
+  Workers: 2
+FACTORY: Nifferons Cong Factory (northville)
+  Supplier: Sunbeam Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: ImperaFold Designs Factory (northville)
+  Supplier: Sunbeam Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pika Holdings Factory (southville)
+  Supplier: Hypi Factor Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: ImperaFold Designs Factory (southville)
+  Supplier: Hypi Factor Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pika Holdings Factory (easternhole)
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pika Holdings Factory (easternhole) 2
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hypi Factor Factory (easternhole)
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Nifferons Cong Factory (westborough)
+  Supplier: Nifferons Cong Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Nifferons Cong Factory (downtown)
+  Supplier: Podnac Imports Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Aetheris's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:The Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Sunbeam Nier Powerplant (northville)
+  Type: Powerplant
+  Owner: Sunbeam Nier
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Nifferons Cong Factory (northville)
+  Type: Factory
+  Owner: Nifferons Cong
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:ImperaFold Designs Factory (northville)
+  Type: Factory
+  Owner: ImperaFold Designs
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Laurent's Dusty Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hypi Factor Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:New Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hypi Factor Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Hypi Factor Powerplant (southville)
+  Type: Powerplant
+  Owner: Hypi Factor
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Pika Holdings Factory (southville)
+  Type: Factory
+  Owner: Pika Holdings
+  Powered: True
+  Supplier: Hypi Factor Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:ImperaFold Designs Factory (southville)
+  Type: Factory
+  Owner: ImperaFold Designs
+  Powered: True
+  Supplier: Hypi Factor Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pika Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Pika Holdings
+  Powered: True
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pika Holdings Factory (easternhole) 2
+  Type: Factory
+  Owner: Pika Holdings
+  Powered: True
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hypi Factor Factory (easternhole)
+  Type: Factory
+  Owner: Hypi Factor
+  Powered: True
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Martins's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:LigaSao Functions Powerplant (easternhole)
+  Type: Powerplant
+  Owner: LigaSao Functions
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Old Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: LigaSao Functions Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Schneider's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Cong Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Nifferons Cong Factory (westborough)
+  Type: Factory
+  Owner: Nifferons Cong
+  Powered: True
+  Supplier: Nifferons Cong Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Nifferons Cong Powerplant (westborough)
+  Type: Powerplant
+  Owner: Nifferons Cong
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Little Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Cong Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Joshi's Metro Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Podnac Imports Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Nifferons Cong Factory (downtown)
+  Type: Factory
+  Owner: Nifferons Cong
+  Powered: True
+  Supplier: Podnac Imports Powerplant (downtown)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] downtown:Podnac Imports Powerplant (downtown)
+  Type: Powerplant
+  Owner: Podnac Imports
+  Generating: True
+  Consumers: 28
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Old Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Podnac Imports Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Xofila Nier Factory (northville) ore=50
+[SEED] Factory Wenscroft Kryptzen Factory (northville) ore=50
+[SEED] Factory Wenscroft Kryptzen Factory (southville) ore=50
+[SEED] Factory Pika Holdings Factory (southville) ore=50
+[SEED] Factory Openziela Imports Factory (easternhole) ore=50
+[SEED] Factory Pyraxi Cong Factory (easternhole) ore=50
+[SEED] Factory Sunbeam Designs Factory (easternhole) ore=50
+[SEED] Factory Pyraxi Cong Factory (westborough) ore=50
+[SEED] Factory Wenscroft Kryptzen Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Hannival Powerplant (northville) generating=True
+[POWERPLANT] southville:SilverFruit Mind Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Xofila Nier Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Pika Holdings Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Hannival Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Hannival Powerplant (northville)
+  Workers: 2
+POWERPLANT: SilverFruit Mind Powerplant (southville)
+  Workers: 2
+POWERPLANT: Xofila Nier Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Pika Holdings Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Hannival Powerplant (downtown)
+  Workers: 2
+FACTORY: Xofila Nier Factory (northville)
+  Supplier: Hannival Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Wenscroft Kryptzen Factory (northville)
+  Supplier: Hannival Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Wenscroft Kryptzen Factory (southville)
+  Supplier: SilverFruit Mind Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pika Holdings Factory (southville)
+  Supplier: SilverFruit Mind Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Openziela Imports Factory (easternhole)
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Cong Factory (easternhole)
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Sunbeam Designs Factory (easternhole)
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Cong Factory (westborough)
+  Supplier: Pika Holdings Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Wenscroft Kryptzen Factory (downtown)
+  Supplier: Hannival Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Guo's Breezy Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Old Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Hannival Powerplant (northville)
+  Type: Powerplant
+  Owner: Hannival
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Xofila Nier Factory (northville)
+  Type: Factory
+  Owner: Xofila Nier
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Wenscroft Kryptzen Factory (northville)
+  Type: Factory
+  Owner: Wenscroft Kryptzen
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Ahmed's Dusty Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: SilverFruit Mind Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Little Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: SilverFruit Mind Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:SilverFruit Mind Powerplant (southville)
+  Type: Powerplant
+  Owner: SilverFruit Mind
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Wenscroft Kryptzen Factory (southville)
+  Type: Factory
+  Owner: Wenscroft Kryptzen
+  Powered: True
+  Supplier: SilverFruit Mind Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Pika Holdings Factory (southville)
+  Type: Factory
+  Owner: Pika Holdings
+  Powered: True
+  Supplier: SilverFruit Mind Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Openziela Imports Factory (easternhole)
+  Type: Factory
+  Owner: Openziela Imports
+  Powered: True
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pyraxi Cong Factory (easternhole)
+  Type: Factory
+  Owner: Pyraxi Cong
+  Powered: True
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Sunbeam Designs Factory (easternhole)
+  Type: Factory
+  Owner: Sunbeam Designs
+  Powered: True
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Kobayashi's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Xofila Nier Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Xofila Nier
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Little Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Xofila Nier Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Silva's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pika Holdings Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Pyraxi Cong Factory (westborough)
+  Type: Factory
+  Owner: Pyraxi Cong
+  Powered: True
+  Supplier: Pika Holdings Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Pika Holdings Powerplant (westborough)
+  Type: Powerplant
+  Owner: Pika Holdings
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:New Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pika Holdings Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Lynch's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Wenscroft Kryptzen Factory (downtown)
+  Type: Factory
+  Owner: Wenscroft Kryptzen
+  Powered: True
+  Supplier: Hannival Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Hannival Powerplant (downtown)
+  Type: Powerplant
+  Owner: Hannival
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Little Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Pika Factor Factory (northville) ore=50
+[SEED] Factory Tenebrousi Functions Factory (northville) ore=50
+[SEED] Factory Symantic Nier Factory (southville) ore=50
+[SEED] Factory Symantic Nier Factory (southville) 2 ore=50
+[SEED] Factory HiFractions Imports Factory (easternhole) ore=50
+[SEED] Factory Tenebrousi Functions Factory (easternhole) ore=50
+[SEED] Factory Smetz Imports Factory (easternhole) ore=50
+[SEED] Factory HiFractions Imports Factory (westborough) ore=50
+[SEED] Factory Nifferons Factor Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Saber Mind Powerplant (northville) generating=True
+[POWERPLANT] southville:Nifferons Factor Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Nifferons Factor Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Hypi Imports Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Openziela Nier Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Saber Mind Powerplant (northville)
+  Workers: 2
+POWERPLANT: Nifferons Factor Powerplant (southville)
+  Workers: 2
+POWERPLANT: Nifferons Factor Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Hypi Imports Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Openziela Nier Powerplant (downtown)
+  Workers: 2
+FACTORY: Pika Factor Factory (northville)
+  Supplier: Saber Mind Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Tenebrousi Functions Factory (northville)
+  Supplier: Saber Mind Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Nier Factory (southville)
+  Supplier: Nifferons Factor Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Nier Factory (southville) 2
+  Supplier: Nifferons Factor Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: HiFractions Imports Factory (easternhole)
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Tenebrousi Functions Factory (easternhole)
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Smetz Imports Factory (easternhole)
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: HiFractions Imports Factory (westborough)
+  Supplier: Hypi Imports Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Nifferons Factor Factory (downtown)
+  Supplier: Openziela Nier Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Moore's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Saber Mind Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:New Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Saber Mind Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Saber Mind Powerplant (northville)
+  Type: Powerplant
+  Owner: Saber Mind
+  Generating: True
+  Consumers: 31
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Pika Factor Factory (northville)
+  Type: Factory
+  Owner: Pika Factor
+  Powered: True
+  Supplier: Saber Mind Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Tenebrousi Functions Factory (northville)
+  Type: Factory
+  Owner: Tenebrousi Functions
+  Powered: True
+  Supplier: Saber Mind Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Moreau's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:New Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Nifferons Factor Powerplant (southville)
+  Type: Powerplant
+  Owner: Nifferons Factor
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Symantic Nier Factory (southville)
+  Type: Factory
+  Owner: Symantic Nier
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Symantic Nier Factory (southville) 2
+  Type: Factory
+  Owner: Symantic Nier
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (southville)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] easternhole:HiFractions Imports Factory (easternhole)
+  Type: Factory
+  Owner: HiFractions Imports
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Tenebrousi Functions Factory (easternhole)
+  Type: Factory
+  Owner: Tenebrousi Functions
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Smetz Imports Factory (easternhole)
+  Type: Factory
+  Owner: Smetz Imports
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Nakamura's Hollow Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Nifferons Factor Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Nifferons Factor
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Old Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Factor Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Kshatriya's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hypi Imports Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:HiFractions Imports Factory (westborough)
+  Type: Factory
+  Owner: HiFractions Imports
+  Powered: True
+  Supplier: Hypi Imports Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Hypi Imports Powerplant (westborough)
+  Type: Powerplant
+  Owner: Hypi Imports
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Little Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hypi Imports Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Farahani's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Openziela Nier Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Nifferons Factor Factory (downtown)
+  Type: Factory
+  Owner: Nifferons Factor
+  Powered: True
+  Supplier: Openziela Nier Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Openziela Nier Powerplant (downtown)
+  Type: Powerplant
+  Owner: Openziela Nier
+  Generating: True
+  Consumers: 28
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Old Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Openziela Nier Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Nifferons Designs Factory (northville) ore=50
+[SEED] Factory YaenSkitz Imports Factory (northville) ore=50
+[SEED] Factory Quovor Factor Factory (southville) ore=50
+[SEED] Factory SilverFruit Kryptzen Factory (southville) ore=50
+[SEED] Factory Xenobii Factor Factory (easternhole) ore=50
+[SEED] Factory Separate Cong Factory (easternhole) ore=50
+[SEED] Factory Nifferons Designs Factory (easternhole) ore=50
+[SEED] Factory Tenebrousi Mind Factory (westborough) ore=50
+[SEED] Factory GeoXanitca Functions Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Hannival Powerplant (northville) generating=True
+[POWERPLANT] southville:SilverFruit Kryptzen Powerplant (southville) generating=True
+[POWERPLANT] easternhole:YaenSkitz Imports Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Quovor Factor Powerplant (westborough) generating=True
+[POWERPLANT] downtown:GeoXanitca Functions Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Hannival Powerplant (northville)
+  Workers: 2
+POWERPLANT: SilverFruit Kryptzen Powerplant (southville)
+  Workers: 2
+POWERPLANT: YaenSkitz Imports Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Quovor Factor Powerplant (westborough)
+  Workers: 2
+POWERPLANT: GeoXanitca Functions Powerplant (downtown)
+  Workers: 2
+FACTORY: Nifferons Designs Factory (northville)
+  Supplier: Hannival Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: YaenSkitz Imports Factory (northville)
+  Supplier: Hannival Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quovor Factor Factory (southville)
+  Supplier: SilverFruit Kryptzen Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: SilverFruit Kryptzen Factory (southville)
+  Supplier: SilverFruit Kryptzen Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Xenobii Factor Factory (easternhole)
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Separate Cong Factory (easternhole)
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Nifferons Designs Factory (easternhole)
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Tenebrousi Mind Factory (westborough)
+  Supplier: Quovor Factor Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: GeoXanitca Functions Factory (downtown)
+  Supplier: GeoXanitca Functions Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Lynch's Breezy Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:New Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Hannival Powerplant (northville)
+  Type: Powerplant
+  Owner: Hannival
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Nifferons Designs Factory (northville)
+  Type: Factory
+  Owner: Nifferons Designs
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:YaenSkitz Imports Factory (northville)
+  Type: Factory
+  Owner: YaenSkitz Imports
+  Powered: True
+  Supplier: Hannival Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Almeida's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: SilverFruit Kryptzen Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:The Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: SilverFruit Kryptzen Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:SilverFruit Kryptzen Powerplant (southville)
+  Type: Powerplant
+  Owner: SilverFruit Kryptzen
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Quovor Factor Factory (southville)
+  Type: Factory
+  Owner: Quovor Factor
+  Powered: True
+  Supplier: SilverFruit Kryptzen Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:SilverFruit Kryptzen Factory (southville)
+  Type: Factory
+  Owner: SilverFruit Kryptzen
+  Powered: True
+  Supplier: SilverFruit Kryptzen Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Xenobii Factor Factory (easternhole)
+  Type: Factory
+  Owner: Xenobii Factor
+  Powered: True
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Separate Cong Factory (easternhole)
+  Type: Factory
+  Owner: Separate Cong
+  Powered: True
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Nifferons Designs Factory (easternhole)
+  Type: Factory
+  Owner: Nifferons Designs
+  Powered: True
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Walker's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:YaenSkitz Imports Powerplant (easternhole)
+  Type: Powerplant
+  Owner: YaenSkitz Imports
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:New Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Imports Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Rao's Western Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quovor Factor Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Tenebrousi Mind Factory (westborough)
+  Type: Factory
+  Owner: Tenebrousi Mind
+  Powered: True
+  Supplier: Quovor Factor Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Quovor Factor Powerplant (westborough)
+  Type: Powerplant
+  Owner: Quovor Factor
+  Generating: True
+  Consumers: 28
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Old Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quovor Factor Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Kazemi's Central Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: GeoXanitca Functions Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:GeoXanitca Functions Factory (downtown)
+  Type: Factory
+  Owner: GeoXanitca Functions
+  Powered: True
+  Supplier: GeoXanitca Functions Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:GeoXanitca Functions Powerplant (downtown)
+  Type: Powerplant
+  Owner: GeoXanitca Functions
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Old Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: GeoXanitca Functions Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Hannival Factory (northville) ore=50
+[SEED] Factory Symantic Fields Factory (northville) ore=50
+[SEED] Factory Yapesh Fields Factory (southville) ore=50
+[SEED] Factory Symantic Fields Factory (southville) ore=50
+[SEED] Factory HiFractions Holdings Factory (easternhole) ore=50
+[SEED] Factory Hypi Holdings Factory (easternhole) ore=50
+[SEED] Factory HiFractions Holdings Factory (easternhole) 2 ore=50
+[SEED] Factory Symantic Fields Factory (westborough) ore=50
+[SEED] Factory Rex Cong Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:HiFractions Holdings Powerplant (northville) generating=True
+[POWERPLANT] southville:Hypi Holdings Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Proper Imports Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Quarkz Functions Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Hypi Holdings Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: HiFractions Holdings Powerplant (northville)
+  Workers: 2
+POWERPLANT: Hypi Holdings Powerplant (southville)
+  Workers: 2
+POWERPLANT: Proper Imports Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Quarkz Functions Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Hypi Holdings Powerplant (downtown)
+  Workers: 2
+FACTORY: Hannival Factory (northville)
+  Supplier: HiFractions Holdings Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Fields Factory (northville)
+  Supplier: HiFractions Holdings Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Yapesh Fields Factory (southville)
+  Supplier: Hypi Holdings Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Fields Factory (southville)
+  Supplier: Hypi Holdings Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: HiFractions Holdings Factory (easternhole)
+  Supplier: Proper Imports Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hypi Holdings Factory (easternhole)
+  Supplier: Proper Imports Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: HiFractions Holdings Factory (easternhole) 2
+  Supplier: Proper Imports Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Fields Factory (westborough)
+  Supplier: Quarkz Functions Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Rex Cong Factory (downtown)
+  Supplier: Hypi Holdings Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Desai's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: HiFractions Holdings Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:New Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: HiFractions Holdings Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:HiFractions Holdings Powerplant (northville)
+  Type: Powerplant
+  Owner: HiFractions Holdings
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Hannival Factory (northville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: HiFractions Holdings Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Symantic Fields Factory (northville)
+  Type: Factory
+  Owner: Symantic Fields
+  Powered: True
+  Supplier: HiFractions Holdings Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Cohen's Southern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hypi Holdings Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:The Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hypi Holdings Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Hypi Holdings Powerplant (southville)
+  Type: Powerplant
+  Owner: Hypi Holdings
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Yapesh Fields Factory (southville)
+  Type: Factory
+  Owner: Yapesh Fields
+  Powered: True
+  Supplier: Hypi Holdings Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Symantic Fields Factory (southville)
+  Type: Factory
+  Owner: Symantic Fields
+  Powered: True
+  Supplier: Hypi Holdings Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:HiFractions Holdings Factory (easternhole)
+  Type: Factory
+  Owner: HiFractions Holdings
+  Powered: True
+  Supplier: Proper Imports Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hypi Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Hypi Holdings
+  Powered: True
+  Supplier: Proper Imports Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:HiFractions Holdings Factory (easternhole) 2
+  Type: Factory
+  Owner: HiFractions Holdings
+  Powered: True
+  Supplier: Proper Imports Powerplant (easternhole)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] easternhole:DeLuca's Eastern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Proper Imports Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Proper Imports Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Proper Imports
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:New Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Proper Imports Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Bauer's Western Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Functions Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Symantic Fields Factory (westborough)
+  Type: Factory
+  Owner: Symantic Fields
+  Powered: True
+  Supplier: Quarkz Functions Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Quarkz Functions Powerplant (westborough)
+  Type: Powerplant
+  Owner: Quarkz Functions
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:New Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Functions Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Griffin's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hypi Holdings Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Rex Cong Factory (downtown)
+  Type: Factory
+  Owner: Rex Cong
+  Powered: True
+  Supplier: Hypi Holdings Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Hypi Holdings Powerplant (downtown)
+  Type: Powerplant
+  Owner: Hypi Holdings
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:New Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hypi Holdings Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Trendzi Kryptzen Factory (northville) ore=50
+[SEED] Factory Hannival Factory (northville) ore=50
+[SEED] Factory Hannival Factory (southville) ore=50
+[SEED] Factory Quarkz Cong Factory (southville) ore=50
+[SEED] Factory Hannival Factory (easternhole) ore=50
+[SEED] Factory Quovor Designs Factory (easternhole) ore=50
+[SEED] Factory Symantic Holdings Factory (easternhole) ore=50
+[SEED] Factory Quarkz Cong Factory (westborough) ore=50
+[SEED] Factory Trendzi Kryptzen Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Skyflex Factor Powerplant (northville) generating=True
+[POWERPLANT] southville:HiFractions Factor Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Trendzi Kryptzen Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Saber Cong Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Quarkz Cong Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Skyflex Factor Powerplant (northville)
+  Workers: 2
+POWERPLANT: HiFractions Factor Powerplant (southville)
+  Workers: 2
+POWERPLANT: Trendzi Kryptzen Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Saber Cong Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Quarkz Cong Powerplant (downtown)
+  Workers: 2
+FACTORY: Trendzi Kryptzen Factory (northville)
+  Supplier: Skyflex Factor Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (northville)
+  Supplier: Skyflex Factor Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (southville)
+  Supplier: HiFractions Factor Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quarkz Cong Factory (southville)
+  Supplier: HiFractions Factor Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (easternhole)
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quovor Designs Factory (easternhole)
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Holdings Factory (easternhole)
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quarkz Cong Factory (westborough)
+  Supplier: Saber Cong Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Trendzi Kryptzen Factory (downtown)
+  Supplier: Quarkz Cong Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Bernard's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Skyflex Factor Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Old Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Skyflex Factor Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Skyflex Factor Powerplant (northville)
+  Type: Powerplant
+  Owner: Skyflex Factor
+  Generating: True
+  Consumers: 31
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Trendzi Kryptzen Factory (northville)
+  Type: Factory
+  Owner: Trendzi Kryptzen
+  Powered: True
+  Supplier: Skyflex Factor Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Hannival Factory (northville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Skyflex Factor Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Oliveira's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: HiFractions Factor Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Old Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: HiFractions Factor Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:HiFractions Factor Powerplant (southville)
+  Type: Powerplant
+  Owner: HiFractions Factor
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Hannival Factory (southville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: HiFractions Factor Powerplant (southville)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] southville:Quarkz Cong Factory (southville)
+  Type: Factory
+  Owner: Quarkz Cong
+  Powered: True
+  Supplier: HiFractions Factor Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hannival Factory (easternhole)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Employees: 0
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Quovor Designs Factory (easternhole)
+  Type: Factory
+  Owner: Quovor Designs
+  Powered: True
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Symantic Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Symantic Holdings
+  Powered: True
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Murphy's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Trendzi Kryptzen Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Trendzi Kryptzen
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:New Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Trendzi Kryptzen Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Williams's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Saber Cong Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Quarkz Cong Factory (westborough)
+  Type: Factory
+  Owner: Quarkz Cong
+  Powered: True
+  Supplier: Saber Cong Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Saber Cong Powerplant (westborough)
+  Type: Powerplant
+  Owner: Saber Cong
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Old Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Saber Cong Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Johansson's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Trendzi Kryptzen Factory (downtown)
+  Type: Factory
+  Owner: Trendzi Kryptzen
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Quarkz Cong Powerplant (downtown)
+  Type: Powerplant
+  Owner: Quarkz Cong
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:The Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Podnac Fields Factory (northville) ore=50
+[SEED] Factory Xen Designs Factory (northville) ore=50
+[SEED] Factory Hannival Factory (southville) ore=50
+[SEED] Factory Trendzi Fields Factory (southville) ore=50
+[SEED] Factory Polemic Nier Factory (easternhole) ore=50
+[SEED] Factory Pika Fields Factory (easternhole) ore=50
+[SEED] Factory Polemic Nier Factory (easternhole) 2 ore=50
+[SEED] Factory Dorann gmBh Factory (westborough) ore=50
+[SEED] Factory Xen Designs Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Trendzi Fields Powerplant (northville) generating=True
+[POWERPLANT] southville:Polemic Nier Powerplant (southville) generating=True
+[POWERPLANT] easternhole:HiFractions Cong Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Rex Functions Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Xen Designs Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Trendzi Fields Powerplant (northville)
+  Workers: 2
+POWERPLANT: Polemic Nier Powerplant (southville)
+  Workers: 2
+POWERPLANT: HiFractions Cong Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Rex Functions Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Xen Designs Powerplant (downtown)
+  Workers: 2
+FACTORY: Podnac Fields Factory (northville)
+  Supplier: Trendzi Fields Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Xen Designs Factory (northville)
+  Supplier: Trendzi Fields Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (southville)
+  Supplier: Polemic Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Trendzi Fields Factory (southville)
+  Supplier: Polemic Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Polemic Nier Factory (easternhole)
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pika Fields Factory (easternhole)
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Polemic Nier Factory (easternhole) 2
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Dorann gmBh Factory (westborough)
+  Supplier: Rex Functions Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Xen Designs Factory (downtown)
+  Supplier: Xen Designs Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Ashvini's Breezy Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Trendzi Fields Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Old Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Trendzi Fields Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Trendzi Fields Powerplant (northville)
+  Type: Powerplant
+  Owner: Trendzi Fields
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Podnac Fields Factory (northville)
+  Type: Factory
+  Owner: Podnac Fields
+  Powered: True
+  Supplier: Trendzi Fields Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Xen Designs Factory (northville)
+  Type: Factory
+  Owner: Xen Designs
+  Powered: True
+  Supplier: Trendzi Fields Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Galaxor's Dusty Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Polemic Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:The Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Polemic Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Polemic Nier Powerplant (southville)
+  Type: Powerplant
+  Owner: Polemic Nier
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Hannival Factory (southville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Polemic Nier Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Trendzi Fields Factory (southville)
+  Type: Factory
+  Owner: Trendzi Fields
+  Powered: True
+  Supplier: Polemic Nier Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Polemic Nier Factory (easternhole)
+  Type: Factory
+  Owner: Polemic Nier
+  Powered: True
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pika Fields Factory (easternhole)
+  Type: Factory
+  Owner: Pika Fields
+  Powered: True
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Polemic Nier Factory (easternhole) 2
+  Type: Factory
+  Owner: Polemic Nier
+  Powered: True
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Zhao's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:HiFractions Cong Powerplant (easternhole)
+  Type: Powerplant
+  Owner: HiFractions Cong
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:New Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: HiFractions Cong Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Robert's Borough Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Rex Functions Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Dorann gmBh Factory (westborough)
+  Type: Factory
+  Owner: Dorann gmBh
+  Powered: True
+  Supplier: Rex Functions Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Rex Functions Powerplant (westborough)
+  Type: Powerplant
+  Owner: Rex Functions
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:The Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Rex Functions Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Kobayashi's Metro Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Xen Designs Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Xen Designs Factory (downtown)
+  Type: Factory
+  Owner: Xen Designs
+  Powered: True
+  Supplier: Xen Designs Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Xen Designs Powerplant (downtown)
+  Type: Powerplant
+  Owner: Xen Designs
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Old Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Xen Designs Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Smetz Functions Factory (northville) ore=50
+[SEED] Factory Pyraxi Cong Factory (northville) ore=50
+[SEED] Factory Separate Imports Factory (southville) ore=50
+[SEED] Factory GeoXanitca Cong Factory (southville) ore=50
+[SEED] Factory GeoXanitca Cong Factory (easternhole) ore=50
+[SEED] Factory Hannival Factory (easternhole) ore=50
+[SEED] Factory Xofila Nier Factory (easternhole) ore=50
+[SEED] Factory Dorann Mind Factory (westborough) ore=50
+[SEED] Factory Saber Fields Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:GeoXanitca Cong Powerplant (northville) generating=True
+[POWERPLANT] southville:Hannival Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Wenscroft Holdings Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Saber Fields Powerplant (westborough) generating=True
+[POWERPLANT] downtown:GeoXanitca Cong Powerplant (downtown) generating=False
+=== ECONOMY SUMMARY ===
+POWERPLANT: GeoXanitca Cong Powerplant (northville)
+  Workers: 2
+POWERPLANT: Hannival Powerplant (southville)
+  Workers: 2
+POWERPLANT: Wenscroft Holdings Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Saber Fields Powerplant (westborough)
+  Workers: 2
+POWERPLANT: GeoXanitca Cong Powerplant (downtown)
+  Workers: 1
+FACTORY: Smetz Functions Factory (northville)
+  Supplier: GeoXanitca Cong Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Cong Factory (northville)
+  Supplier: GeoXanitca Cong Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Separate Imports Factory (southville)
+  Supplier: Hannival Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: GeoXanitca Cong Factory (southville)
+  Supplier: Hannival Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: GeoXanitca Cong Factory (easternhole)
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (easternhole)
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Xofila Nier Factory (easternhole)
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Dorann Mind Factory (westborough)
+  Supplier: Saber Fields Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Saber Fields Factory (downtown)
+  Supplier: GeoXanitca Cong Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Barbieri's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: GeoXanitca Cong Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:New Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: GeoXanitca Cong Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:GeoXanitca Cong Powerplant (northville)
+  Type: Powerplant
+  Owner: GeoXanitca Cong
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Smetz Functions Factory (northville)
+  Type: Factory
+  Owner: Smetz Functions
+  Powered: True
+  Supplier: GeoXanitca Cong Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Pyraxi Cong Factory (northville)
+  Type: Factory
+  Owner: Pyraxi Cong
+  Powered: True
+  Supplier: GeoXanitca Cong Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Yajnavalkya's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:The Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Hannival Powerplant (southville)
+  Type: Powerplant
+  Owner: Hannival
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Separate Imports Factory (southville)
+  Type: Factory
+  Owner: Separate Imports
+  Powered: True
+  Supplier: Hannival Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:GeoXanitca Cong Factory (southville)
+  Type: Factory
+  Owner: GeoXanitca Cong
+  Powered: True
+  Supplier: Hannival Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:GeoXanitca Cong Factory (easternhole)
+  Type: Factory
+  Owner: GeoXanitca Cong
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hannival Factory (easternhole)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Xofila Nier Factory (easternhole)
+  Type: Factory
+  Owner: Xofila Nier
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Giordano's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Wenscroft Holdings Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Wenscroft Holdings
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:New Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Ghafouri's Borough Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Saber Fields Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Dorann Mind Factory (westborough)
+  Type: Factory
+  Owner: Dorann Mind
+  Powered: True
+  Supplier: Saber Fields Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Saber Fields Powerplant (westborough)
+  Type: Powerplant
+  Owner: Saber Fields
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:New Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Saber Fields Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Reddax's Central Guns
+  Type: Shop
+  Owner: None
+  Powered: False
+  Supplier: GeoXanitca Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Saber Fields Factory (downtown)
+  Type: Factory
+  Owner: Saber Fields
+  Powered: False
+  Supplier: GeoXanitca Cong Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:GeoXanitca Cong Powerplant (downtown)
+  Type: Powerplant
+  Owner: GeoXanitca Cong
+  Generating: False
+  Consumers: 29
+  Employees: 1
+  Resources: {}
+[LOCATION] downtown:Little Cup
+  Type: Cafe
+  Owner: None
+  Powered: False
+  Supplier: GeoXanitca Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Nifferons Cong Factory (northville) ore=50
+[SEED] Factory YaenSkitz Cong Factory (northville) ore=50
+[SEED] Factory Saber Functions Factory (southville) ore=50
+[SEED] Factory Nifferons Cong Factory (southville) ore=50
+[SEED] Factory Hannival Factory (easternhole) ore=50
+[SEED] Factory Dorann Fields Factory (easternhole) ore=50
+[SEED] Factory Quarkz Holdings Factory (easternhole) ore=50
+[SEED] Factory YaenSkitz Cong Factory (westborough) ore=50
+[SEED] Factory Dorann Fields Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:SilverFruit Nier Powerplant (northville) generating=True
+[POWERPLANT] southville:Hybrid Kryptzen Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Quarkz Holdings Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Hannival Powerplant (westborough) generating=True
+[POWERPLANT] downtown:YaenSkitz Cong Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: SilverFruit Nier Powerplant (northville)
+  Workers: 2
+POWERPLANT: Hybrid Kryptzen Powerplant (southville)
+  Workers: 2
+POWERPLANT: Quarkz Holdings Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Hannival Powerplant (westborough)
+  Workers: 2
+POWERPLANT: YaenSkitz Cong Powerplant (downtown)
+  Workers: 2
+FACTORY: Nifferons Cong Factory (northville)
+  Supplier: SilverFruit Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: YaenSkitz Cong Factory (northville)
+  Supplier: SilverFruit Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Saber Functions Factory (southville)
+  Supplier: Hybrid Kryptzen Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Nifferons Cong Factory (southville)
+  Supplier: Hybrid Kryptzen Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (easternhole)
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Dorann Fields Factory (easternhole)
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quarkz Holdings Factory (easternhole)
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: YaenSkitz Cong Factory (westborough)
+  Supplier: Hannival Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Dorann Fields Factory (downtown)
+  Supplier: YaenSkitz Cong Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Schulz's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: SilverFruit Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:The Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: SilverFruit Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:SilverFruit Nier Powerplant (northville)
+  Type: Powerplant
+  Owner: SilverFruit Nier
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Nifferons Cong Factory (northville)
+  Type: Factory
+  Owner: Nifferons Cong
+  Powered: True
+  Supplier: SilverFruit Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:YaenSkitz Cong Factory (northville)
+  Type: Factory
+  Owner: YaenSkitz Cong
+  Powered: True
+  Supplier: SilverFruit Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Doyle's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hybrid Kryptzen Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Little Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hybrid Kryptzen Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Hybrid Kryptzen Powerplant (southville)
+  Type: Powerplant
+  Owner: Hybrid Kryptzen
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Saber Functions Factory (southville)
+  Type: Factory
+  Owner: Saber Functions
+  Powered: True
+  Supplier: Hybrid Kryptzen Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Nifferons Cong Factory (southville)
+  Type: Factory
+  Owner: Nifferons Cong
+  Powered: True
+  Supplier: Hybrid Kryptzen Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hannival Factory (easternhole)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Dorann Fields Factory (easternhole)
+  Type: Factory
+  Owner: Dorann Fields
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Quarkz Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Quarkz Holdings
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Taheri's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Quarkz Holdings Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Quarkz Holdings
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Little Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Jansen's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:YaenSkitz Cong Factory (westborough)
+  Type: Factory
+  Owner: YaenSkitz Cong
+  Powered: True
+  Supplier: Hannival Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Hannival Powerplant (westborough)
+  Type: Powerplant
+  Owner: Hannival
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:New Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Xu's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Dorann Fields Factory (downtown)
+  Type: Factory
+  Owner: Dorann Fields
+  Powered: True
+  Supplier: YaenSkitz Cong Powerplant (downtown)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] downtown:YaenSkitz Cong Powerplant (downtown)
+  Type: Powerplant
+  Owner: YaenSkitz Cong
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Old Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Hannival Factory (northville) ore=50
+[SEED] Factory Saber Fields Factory (northville) ore=50
+[SEED] Factory Saber Fields Factory (southville) ore=50
+[SEED] Factory Saber Fields Factory (southville) 2 ore=50
+[SEED] Factory Separate Functions Factory (easternhole) ore=50
+[SEED] Factory Proper Imports Factory (easternhole) ore=50
+[SEED] Factory Wenscroft Holdings Factory (easternhole) ore=50
+[SEED] Factory Final Imports Factory (westborough) ore=50
+[SEED] Factory Hannival Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Final Imports Powerplant (northville) generating=True
+[POWERPLANT] southville:Pika Nier Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Wenscroft Holdings Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Pika Nier Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Quarkz Fields Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Final Imports Powerplant (northville)
+  Workers: 2
+POWERPLANT: Pika Nier Powerplant (southville)
+  Workers: 2
+POWERPLANT: Wenscroft Holdings Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Pika Nier Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Quarkz Fields Powerplant (downtown)
+  Workers: 2
+FACTORY: Hannival Factory (northville)
+  Supplier: Final Imports Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Saber Fields Factory (northville)
+  Supplier: Final Imports Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Saber Fields Factory (southville)
+  Supplier: Pika Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Saber Fields Factory (southville) 2
+  Supplier: Pika Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Separate Functions Factory (easternhole)
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Proper Imports Factory (easternhole)
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Wenscroft Holdings Factory (easternhole)
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Final Imports Factory (westborough)
+  Supplier: Pika Nier Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (downtown)
+  Supplier: Quarkz Fields Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Chandra's Northern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Final Imports Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:The Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Final Imports Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Final Imports Powerplant (northville)
+  Type: Powerplant
+  Owner: Final Imports
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Hannival Factory (northville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Final Imports Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Saber Fields Factory (northville)
+  Type: Factory
+  Owner: Saber Fields
+  Powered: True
+  Supplier: Final Imports Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Alves's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pika Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:The Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pika Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Pika Nier Powerplant (southville)
+  Type: Powerplant
+  Owner: Pika Nier
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Saber Fields Factory (southville)
+  Type: Factory
+  Owner: Saber Fields
+  Powered: True
+  Supplier: Pika Nier Powerplant (southville)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] southville:Saber Fields Factory (southville) 2
+  Type: Factory
+  Owner: Saber Fields
+  Powered: True
+  Supplier: Pika Nier Powerplant (southville)
+  Employees: 0
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Separate Functions Factory (easternhole)
+  Type: Factory
+  Owner: Separate Functions
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Proper Imports Factory (easternhole)
+  Type: Factory
+  Owner: Proper Imports
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Wenscroft Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Wenscroft Holdings
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Exorion's Eastern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Wenscroft Holdings Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Wenscroft Holdings
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Old Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Wenscroft Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Ahmed's Borough Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pika Nier Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Final Imports Factory (westborough)
+  Type: Factory
+  Owner: Final Imports
+  Powered: True
+  Supplier: Pika Nier Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Pika Nier Powerplant (westborough)
+  Type: Powerplant
+  Owner: Pika Nier
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Old Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pika Nier Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Rizzo's Metro Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Fields Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Hannival Factory (downtown)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Quarkz Fields Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Quarkz Fields Powerplant (downtown)
+  Type: Powerplant
+  Owner: Quarkz Fields
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:New Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Fields Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory LigaSao Factor Factory (northville) ore=50
+[SEED] Factory Hannival Factory (northville) ore=50
+[SEED] Factory Hypi Nier Factory (southville) ore=50
+[SEED] Factory Hannival Factory (southville) ore=50
+[SEED] Factory Pyraxi Nier Factory (easternhole) ore=50
+[SEED] Factory Hannival Factory (easternhole) ore=50
+[SEED] Factory Pyraxi Nier Factory (easternhole) 2 ore=50
+[SEED] Factory Hannival Factory (westborough) ore=50
+[SEED] Factory Skyflex gmBh Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Hypi Nier Powerplant (northville) generating=True
+[POWERPLANT] southville:Hypi Nier Powerplant (southville) generating=False
+[POWERPLANT] easternhole:Rex Functions Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:LigaSao Factor Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Rex Functions Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Hypi Nier Powerplant (northville)
+  Workers: 2
+POWERPLANT: Hypi Nier Powerplant (southville)
+  Workers: 1
+POWERPLANT: Rex Functions Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: LigaSao Factor Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Rex Functions Powerplant (downtown)
+  Workers: 2
+FACTORY: LigaSao Factor Factory (northville)
+  Supplier: Hypi Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (northville)
+  Supplier: Hypi Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hypi Nier Factory (southville)
+  Supplier: Hypi Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (southville)
+  Supplier: Hypi Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Nier Factory (easternhole)
+  Supplier: Rex Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (easternhole)
+  Supplier: Rex Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Nier Factory (easternhole) 2
+  Supplier: Rex Functions Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (westborough)
+  Supplier: LigaSao Factor Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Skyflex gmBh Factory (downtown)
+  Supplier: Rex Functions Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Fischer's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hypi Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:New Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hypi Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Hypi Nier Powerplant (northville)
+  Type: Powerplant
+  Owner: Hypi Nier
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:LigaSao Factor Factory (northville)
+  Type: Factory
+  Owner: LigaSao Factor
+  Powered: True
+  Supplier: Hypi Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Hannival Factory (northville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Hypi Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Fernandes's Guns
+  Type: Shop
+  Owner: None
+  Powered: False
+  Supplier: Hypi Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Little Table
+  Type: Cafe
+  Owner: None
+  Powered: False
+  Supplier: Hypi Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Hypi Nier Powerplant (southville)
+  Type: Powerplant
+  Owner: Hypi Nier
+  Generating: False
+  Consumers: 29
+  Employees: 1
+  Resources: {}
+[LOCATION] southville:Hypi Nier Factory (southville)
+  Type: Factory
+  Owner: Hypi Nier
+  Powered: False
+  Supplier: Hypi Nier Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Hannival Factory (southville)
+  Type: Factory
+  Owner: Hannival
+  Powered: False
+  Supplier: Hypi Nier Powerplant (southville)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pyraxi Nier Factory (easternhole)
+  Type: Factory
+  Owner: Pyraxi Nier
+  Powered: True
+  Supplier: Rex Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hannival Factory (easternhole)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Rex Functions Powerplant (easternhole)
+  Employees: 0
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pyraxi Nier Factory (easternhole) 2
+  Type: Factory
+  Owner: Pyraxi Nier
+  Powered: True
+  Supplier: Rex Functions Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Nakamura's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Rex Functions Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Rex Functions Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Rex Functions
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Old Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Rex Functions Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Meyer's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: LigaSao Factor Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Hannival Factory (westborough)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: LigaSao Factor Powerplant (westborough)
+  Employees: 0
+  Resources: {'ore': 50}
+[LOCATION] westborough:LigaSao Factor Powerplant (westborough)
+  Type: Powerplant
+  Owner: LigaSao Factor
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:New Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: LigaSao Factor Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Lewis's Metro Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Rex Functions Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Skyflex gmBh Factory (downtown)
+  Type: Factory
+  Owner: Skyflex gmBh
+  Powered: True
+  Supplier: Rex Functions Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Rex Functions Powerplant (downtown)
+  Type: Powerplant
+  Owner: Rex Functions
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Old Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Rex Functions Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Hypi Kryptzen Factory (northville) ore=50
+[SEED] Factory Hannival Factory (northville) ore=50
+[SEED] Factory Pika Mind Factory (southville) ore=50
+[SEED] Factory Hypi Kryptzen Factory (southville) ore=50
+[SEED] Factory Tenebrousi Nier Factory (easternhole) ore=50
+[SEED] Factory Trendzi Holdings Factory (easternhole) ore=50
+[SEED] Factory Quovor Holdings Factory (easternhole) ore=50
+[SEED] Factory Tenebrousi Nier Factory (westborough) ore=50
+[SEED] Factory Pyraxi Nier Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Trendzi Holdings Powerplant (northville) generating=True
+[POWERPLANT] southville:LigaSao gmBh Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Tenebrousi Nier Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Pika Mind Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Pyraxi Nier Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Trendzi Holdings Powerplant (northville)
+  Workers: 2
+POWERPLANT: LigaSao gmBh Powerplant (southville)
+  Workers: 2
+POWERPLANT: Tenebrousi Nier Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Pika Mind Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Pyraxi Nier Powerplant (downtown)
+  Workers: 2
+FACTORY: Hypi Kryptzen Factory (northville)
+  Supplier: Trendzi Holdings Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (northville)
+  Supplier: Trendzi Holdings Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pika Mind Factory (southville)
+  Supplier: LigaSao gmBh Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hypi Kryptzen Factory (southville)
+  Supplier: LigaSao gmBh Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Tenebrousi Nier Factory (easternhole)
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Trendzi Holdings Factory (easternhole)
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quovor Holdings Factory (easternhole)
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Tenebrousi Nier Factory (westborough)
+  Supplier: Pika Mind Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Nier Factory (downtown)
+  Supplier: Pyraxi Nier Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Oliveira's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Trendzi Holdings Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Old Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Trendzi Holdings Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Trendzi Holdings Powerplant (northville)
+  Type: Powerplant
+  Owner: Trendzi Holdings
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Hypi Kryptzen Factory (northville)
+  Type: Factory
+  Owner: Hypi Kryptzen
+  Powered: True
+  Supplier: Trendzi Holdings Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Hannival Factory (northville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Trendzi Holdings Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Yang's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: LigaSao gmBh Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Old Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: LigaSao gmBh Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:LigaSao gmBh Powerplant (southville)
+  Type: Powerplant
+  Owner: LigaSao gmBh
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Pika Mind Factory (southville)
+  Type: Factory
+  Owner: Pika Mind
+  Powered: True
+  Supplier: LigaSao gmBh Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Hypi Kryptzen Factory (southville)
+  Type: Factory
+  Owner: Hypi Kryptzen
+  Powered: True
+  Supplier: LigaSao gmBh Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Tenebrousi Nier Factory (easternhole)
+  Type: Factory
+  Owner: Tenebrousi Nier
+  Powered: True
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Trendzi Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Trendzi Holdings
+  Powered: True
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Quovor Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Quovor Holdings
+  Powered: True
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hashimoto's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Tenebrousi Nier Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Tenebrousi Nier
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Old Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Tenebrousi Nier Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Barbieri's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pika Mind Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Tenebrousi Nier Factory (westborough)
+  Type: Factory
+  Owner: Tenebrousi Nier
+  Powered: True
+  Supplier: Pika Mind Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Pika Mind Powerplant (westborough)
+  Type: Powerplant
+  Owner: Pika Mind
+  Generating: True
+  Consumers: 31
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Little Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pika Mind Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Byrne's Metro Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pyraxi Nier Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Pyraxi Nier Factory (downtown)
+  Type: Factory
+  Owner: Pyraxi Nier
+  Powered: True
+  Supplier: Pyraxi Nier Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Pyraxi Nier Powerplant (downtown)
+  Type: Powerplant
+  Owner: Pyraxi Nier
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Old Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pyraxi Nier Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Tenebrousi gmBh Factory (northville) ore=50
+[SEED] Factory Hannival Factory (northville) ore=50
+[SEED] Factory ImperaFold Nier Factory (southville) ore=50
+[SEED] Factory Smetz Nier Factory (southville) ore=50
+[SEED] Factory Quarkz Holdings Factory (easternhole) ore=50
+[SEED] Factory Hannival Factory (easternhole) ore=50
+[SEED] Factory YaenSkitz Nier Factory (easternhole) ore=50
+[SEED] Factory Symantic Kryptzen Factory (westborough) ore=50
+[SEED] Factory Xenobii Holdings Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:YaenSkitz Nier Powerplant (northville) generating=True
+[POWERPLANT] southville:ImperaFold Nier Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Yapesh Holdings Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Quarkz Holdings Powerplant (westborough) generating=True
+[POWERPLANT] downtown:YaenSkitz Nier Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: YaenSkitz Nier Powerplant (northville)
+  Workers: 2
+POWERPLANT: ImperaFold Nier Powerplant (southville)
+  Workers: 2
+POWERPLANT: Yapesh Holdings Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Quarkz Holdings Powerplant (westborough)
+  Workers: 2
+POWERPLANT: YaenSkitz Nier Powerplant (downtown)
+  Workers: 2
+FACTORY: Tenebrousi gmBh Factory (northville)
+  Supplier: YaenSkitz Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (northville)
+  Supplier: YaenSkitz Nier Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: ImperaFold Nier Factory (southville)
+  Supplier: ImperaFold Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Smetz Nier Factory (southville)
+  Supplier: ImperaFold Nier Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quarkz Holdings Factory (easternhole)
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (easternhole)
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: YaenSkitz Nier Factory (easternhole)
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Kryptzen Factory (westborough)
+  Supplier: Quarkz Holdings Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Xenobii Holdings Factory (downtown)
+  Supplier: YaenSkitz Nier Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Bertrand's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Little Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Nier Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:YaenSkitz Nier Powerplant (northville)
+  Type: Powerplant
+  Owner: YaenSkitz Nier
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Tenebrousi gmBh Factory (northville)
+  Type: Factory
+  Owner: Tenebrousi gmBh
+  Powered: True
+  Supplier: YaenSkitz Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Hannival Factory (northville)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: YaenSkitz Nier Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Shah's Dusty Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: ImperaFold Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:New Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: ImperaFold Nier Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:ImperaFold Nier Powerplant (southville)
+  Type: Powerplant
+  Owner: ImperaFold Nier
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:ImperaFold Nier Factory (southville)
+  Type: Factory
+  Owner: ImperaFold Nier
+  Powered: True
+  Supplier: ImperaFold Nier Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Smetz Nier Factory (southville)
+  Type: Factory
+  Owner: Smetz Nier
+  Powered: True
+  Supplier: ImperaFold Nier Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Quarkz Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Quarkz Holdings
+  Powered: True
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hannival Factory (easternhole)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:YaenSkitz Nier Factory (easternhole)
+  Type: Factory
+  Owner: YaenSkitz Nier
+  Powered: True
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Rathore's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Yapesh Holdings Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Yapesh Holdings
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:The Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Yapesh Holdings Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Sousa's Borough Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Symantic Kryptzen Factory (westborough)
+  Type: Factory
+  Owner: Symantic Kryptzen
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Quarkz Holdings Powerplant (westborough)
+  Type: Powerplant
+  Owner: Quarkz Holdings
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:New Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Holdings Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Wilson's Central Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Nier Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Xenobii Holdings Factory (downtown)
+  Type: Factory
+  Owner: Xenobii Holdings
+  Powered: True
+  Supplier: YaenSkitz Nier Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:YaenSkitz Nier Powerplant (downtown)
+  Type: Powerplant
+  Owner: YaenSkitz Nier
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:The Cup
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: YaenSkitz Nier Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory GeoXanitca Cong Factory (northville) ore=50
+[SEED] Factory Podnac Kryptzen Factory (northville) ore=50
+[SEED] Factory GeoXanitca Cong Factory (southville) ore=50
+[SEED] Factory Wenscroft Designs Factory (southville) ore=50
+[SEED] Factory Hannival Factory (easternhole) ore=50
+[SEED] Factory Pyraxi Factor Factory (easternhole) ore=50
+[SEED] Factory Skyflex Cong Factory (easternhole) ore=50
+[SEED] Factory Nifferons Designs Factory (westborough) ore=50
+[SEED] Factory Xen Cong Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Saber Factor Powerplant (northville) generating=True
+[POWERPLANT] southville:Openziela gmBh Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Sunbeam Nier Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Pyraxi Factor Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Wenscroft Designs Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Saber Factor Powerplant (northville)
+  Workers: 2
+POWERPLANT: Openziela gmBh Powerplant (southville)
+  Workers: 2
+POWERPLANT: Sunbeam Nier Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Pyraxi Factor Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Wenscroft Designs Powerplant (downtown)
+  Workers: 2
+FACTORY: GeoXanitca Cong Factory (northville)
+  Supplier: Saber Factor Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Podnac Kryptzen Factory (northville)
+  Supplier: Saber Factor Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: GeoXanitca Cong Factory (southville)
+  Supplier: Openziela gmBh Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Wenscroft Designs Factory (southville)
+  Supplier: Openziela gmBh Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hannival Factory (easternhole)
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Factor Factory (easternhole)
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Skyflex Cong Factory (easternhole)
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Nifferons Designs Factory (westborough)
+  Supplier: Pyraxi Factor Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Xen Cong Factory (downtown)
+  Supplier: Wenscroft Designs Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Liu's Breezy Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Saber Factor Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Little Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Saber Factor Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Saber Factor Powerplant (northville)
+  Type: Powerplant
+  Owner: Saber Factor
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:GeoXanitca Cong Factory (northville)
+  Type: Factory
+  Owner: GeoXanitca Cong
+  Powered: True
+  Supplier: Saber Factor Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Podnac Kryptzen Factory (northville)
+  Type: Factory
+  Owner: Podnac Kryptzen
+  Powered: True
+  Supplier: Saber Factor Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Zhang's Southern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Openziela gmBh Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Little Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Openziela gmBh Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Openziela gmBh Powerplant (southville)
+  Type: Powerplant
+  Owner: Openziela gmBh
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:GeoXanitca Cong Factory (southville)
+  Type: Factory
+  Owner: GeoXanitca Cong
+  Powered: True
+  Supplier: Openziela gmBh Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Wenscroft Designs Factory (southville)
+  Type: Factory
+  Owner: Wenscroft Designs
+  Powered: True
+  Supplier: Openziela gmBh Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hannival Factory (easternhole)
+  Type: Factory
+  Owner: Hannival
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pyraxi Factor Factory (easternhole)
+  Type: Factory
+  Owner: Pyraxi Factor
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Skyflex Cong Factory (easternhole)
+  Type: Factory
+  Owner: Skyflex Cong
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Klein's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Sunbeam Nier Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Sunbeam Nier
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:The Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Sunbeam Nier Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Richter's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pyraxi Factor Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Nifferons Designs Factory (westborough)
+  Type: Factory
+  Owner: Nifferons Designs
+  Powered: True
+  Supplier: Pyraxi Factor Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Pyraxi Factor Powerplant (westborough)
+  Type: Powerplant
+  Owner: Pyraxi Factor
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Little Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pyraxi Factor Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Greco's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Wenscroft Designs Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Xen Cong Factory (downtown)
+  Type: Factory
+  Owner: Xen Cong
+  Powered: True
+  Supplier: Wenscroft Designs Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Wenscroft Designs Powerplant (downtown)
+  Type: Powerplant
+  Owner: Wenscroft Designs
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:New Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Wenscroft Designs Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory LigaSao Nier Factory (northville) ore=50
+[SEED] Factory Separate Cong Factory (northville) ore=50
+[SEED] Factory LigaSao Nier Factory (southville) ore=50
+[SEED] Factory Separate Cong Factory (southville) ore=50
+[SEED] Factory Hybrid Functions Factory (easternhole) ore=50
+[SEED] Factory Podnac gmBh Factory (easternhole) ore=50
+[SEED] Factory Smetz Fields Factory (easternhole) ore=50
+[SEED] Factory Dorann Kryptzen Factory (westborough) ore=50
+[SEED] Factory Dorann Kryptzen Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Sunbeam Factor Powerplant (northville) generating=True
+[POWERPLANT] southville:Podnac gmBh Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Smetz Fields Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Smetz Fields Powerplant (westborough) generating=False
+[POWERPLANT] downtown:Xofila Cong Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Sunbeam Factor Powerplant (northville)
+  Workers: 2
+POWERPLANT: Podnac gmBh Powerplant (southville)
+  Workers: 2
+POWERPLANT: Smetz Fields Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Smetz Fields Powerplant (westborough)
+  Workers: 1
+POWERPLANT: Xofila Cong Powerplant (downtown)
+  Workers: 2
+FACTORY: LigaSao Nier Factory (northville)
+  Supplier: Sunbeam Factor Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Separate Cong Factory (northville)
+  Supplier: Sunbeam Factor Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: LigaSao Nier Factory (southville)
+  Supplier: Podnac gmBh Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Separate Cong Factory (southville)
+  Supplier: Podnac gmBh Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hybrid Functions Factory (easternhole)
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Podnac gmBh Factory (easternhole)
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Smetz Fields Factory (easternhole)
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Dorann Kryptzen Factory (westborough)
+  Supplier: Smetz Fields Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Dorann Kryptzen Factory (downtown)
+  Supplier: Xofila Cong Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Reddy's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Sunbeam Factor Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Old Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Sunbeam Factor Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Sunbeam Factor Powerplant (northville)
+  Type: Powerplant
+  Owner: Sunbeam Factor
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:LigaSao Nier Factory (northville)
+  Type: Factory
+  Owner: LigaSao Nier
+  Powered: True
+  Supplier: Sunbeam Factor Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Separate Cong Factory (northville)
+  Type: Factory
+  Owner: Separate Cong
+  Powered: True
+  Supplier: Sunbeam Factor Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Aki's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Podnac gmBh Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Old Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Podnac gmBh Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Podnac gmBh Powerplant (southville)
+  Type: Powerplant
+  Owner: Podnac gmBh
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:LigaSao Nier Factory (southville)
+  Type: Factory
+  Owner: LigaSao Nier
+  Powered: True
+  Supplier: Podnac gmBh Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Separate Cong Factory (southville)
+  Type: Factory
+  Owner: Separate Cong
+  Powered: True
+  Supplier: Podnac gmBh Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hybrid Functions Factory (easternhole)
+  Type: Factory
+  Owner: Hybrid Functions
+  Powered: True
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Podnac gmBh Factory (easternhole)
+  Type: Factory
+  Owner: Podnac gmBh
+  Powered: True
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Smetz Fields Factory (easternhole)
+  Type: Factory
+  Owner: Smetz Fields
+  Powered: True
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Lewis's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Smetz Fields Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Smetz Fields
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:New Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Smetz Fields Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Schneider's Borough Guns
+  Type: Shop
+  Owner: None
+  Powered: False
+  Supplier: Smetz Fields Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Dorann Kryptzen Factory (westborough)
+  Type: Factory
+  Owner: Dorann Kryptzen
+  Powered: False
+  Supplier: Smetz Fields Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Smetz Fields Powerplant (westborough)
+  Type: Powerplant
+  Owner: Smetz Fields
+  Generating: False
+  Consumers: 27
+  Employees: 1
+  Resources: {}
+[LOCATION] westborough:The Table
+  Type: Cafe
+  Owner: None
+  Powered: False
+  Supplier: Smetz Fields Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Sato's Metro Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Xofila Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Dorann Kryptzen Factory (downtown)
+  Type: Factory
+  Owner: Dorann Kryptzen
+  Powered: True
+  Supplier: Xofila Cong Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Xofila Cong Powerplant (downtown)
+  Type: Powerplant
+  Owner: Xofila Cong
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Little Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Xofila Cong Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory GeoXanitca Factor Factory (northville) ore=50
+[SEED] Factory GeoXanitca Factor Factory (northville) 2 ore=50
+[SEED] Factory Jybta Holdings Factory (southville) ore=50
+[SEED] Factory Pyraxi Designs Factory (southville) ore=50
+[SEED] Factory Pyraxi Designs Factory (easternhole) ore=50
+[SEED] Factory GeoXanitca Factor Factory (easternhole) ore=50
+[SEED] Factory Quovor Mind Factory (easternhole) ore=50
+[SEED] Factory HiFractions Kryptzen Factory (westborough) ore=50
+[SEED] Factory Skyflex Functions Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:Jybta Holdings Powerplant (northville) generating=True
+[POWERPLANT] southville:Nifferons Mind Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Hannival Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Quovor Mind Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Polemic Factor Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: Jybta Holdings Powerplant (northville)
+  Workers: 2
+POWERPLANT: Nifferons Mind Powerplant (southville)
+  Workers: 2
+POWERPLANT: Hannival Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Quovor Mind Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Polemic Factor Powerplant (downtown)
+  Workers: 2
+FACTORY: GeoXanitca Factor Factory (northville)
+  Supplier: Jybta Holdings Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: GeoXanitca Factor Factory (northville) 2
+  Supplier: Jybta Holdings Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Jybta Holdings Factory (southville)
+  Supplier: Nifferons Mind Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Designs Factory (southville)
+  Supplier: Nifferons Mind Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Pyraxi Designs Factory (easternhole)
+  Supplier: Hannival Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: GeoXanitca Factor Factory (easternhole)
+  Supplier: Hannival Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quovor Mind Factory (easternhole)
+  Supplier: Hannival Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: HiFractions Kryptzen Factory (westborough)
+  Supplier: Quovor Mind Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Skyflex Functions Factory (downtown)
+  Supplier: Polemic Factor Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Gomes's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Jybta Holdings Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Little Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Jybta Holdings Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Jybta Holdings Powerplant (northville)
+  Type: Powerplant
+  Owner: Jybta Holdings
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:GeoXanitca Factor Factory (northville)
+  Type: Factory
+  Owner: GeoXanitca Factor
+  Powered: True
+  Supplier: Jybta Holdings Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:GeoXanitca Factor Factory (northville) 2
+  Type: Factory
+  Owner: GeoXanitca Factor
+  Powered: True
+  Supplier: Jybta Holdings Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Wang's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Mind Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Little Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Nifferons Mind Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Nifferons Mind Powerplant (southville)
+  Type: Powerplant
+  Owner: Nifferons Mind
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Jybta Holdings Factory (southville)
+  Type: Factory
+  Owner: Jybta Holdings
+  Powered: True
+  Supplier: Nifferons Mind Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Pyraxi Designs Factory (southville)
+  Type: Factory
+  Owner: Pyraxi Designs
+  Powered: True
+  Supplier: Nifferons Mind Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Pyraxi Designs Factory (easternhole)
+  Type: Factory
+  Owner: Pyraxi Designs
+  Powered: True
+  Supplier: Hannival Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:GeoXanitca Factor Factory (easternhole)
+  Type: Factory
+  Owner: GeoXanitca Factor
+  Powered: True
+  Supplier: Hannival Powerplant (easternhole)
+  Employees: 0
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Quovor Mind Factory (easternhole)
+  Type: Factory
+  Owner: Quovor Mind
+  Powered: True
+  Supplier: Hannival Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Domen's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Hannival Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Hannival
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:Little Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Hannival Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Moreau's Western Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quovor Mind Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:HiFractions Kryptzen Factory (westborough)
+  Type: Factory
+  Owner: HiFractions Kryptzen
+  Powered: True
+  Supplier: Quovor Mind Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Quovor Mind Powerplant (westborough)
+  Type: Powerplant
+  Owner: Quovor Mind
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Old Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quovor Mind Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Reddax's Metro Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Polemic Factor Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Skyflex Functions Factory (downtown)
+  Type: Factory
+  Owner: Skyflex Functions
+  Powered: True
+  Supplier: Polemic Factor Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Polemic Factor Powerplant (downtown)
+  Type: Powerplant
+  Owner: Polemic Factor
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:Little Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Polemic Factor Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[SEED] Factory Separate Holdings Factory (northville) ore=50
+[SEED] Factory Quarkz Cong Factory (northville) ore=50
+[SEED] Factory Symantic Holdings Factory (southville) ore=50
+[SEED] Factory Hypi Mind Factory (southville) ore=50
+[SEED] Factory Separate Holdings Factory (easternhole) ore=50
+[SEED] Factory Symantic Holdings Factory (easternhole) ore=50
+[SEED] Factory Hypi Mind Factory (easternhole) ore=50
+[SEED] Factory Symantic Holdings Factory (westborough) ore=50
+[SEED] Factory GeoXanitca Designs Factory (downtown) ore=50
+[POWER INIT] Setting up power components
+[POWERPLANT] northville:GeoXanitca Designs Powerplant (northville) generating=True
+[POWERPLANT] southville:Pyraxi Kryptzen Powerplant (southville) generating=True
+[POWERPLANT] easternhole:Quarkz Cong Powerplant (easternhole) generating=True
+[POWERPLANT] westborough:Dorann gmBh Powerplant (westborough) generating=True
+[POWERPLANT] downtown:Symantic Holdings Powerplant (downtown) generating=True
+=== ECONOMY SUMMARY ===
+POWERPLANT: GeoXanitca Designs Powerplant (northville)
+  Workers: 2
+POWERPLANT: Pyraxi Kryptzen Powerplant (southville)
+  Workers: 2
+POWERPLANT: Quarkz Cong Powerplant (easternhole)
+  Workers: 2
+POWERPLANT: Dorann gmBh Powerplant (westborough)
+  Workers: 2
+POWERPLANT: Symantic Holdings Powerplant (downtown)
+  Workers: 2
+FACTORY: Separate Holdings Factory (northville)
+  Supplier: GeoXanitca Designs Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Quarkz Cong Factory (northville)
+  Supplier: GeoXanitca Designs Powerplant (northville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Holdings Factory (southville)
+  Supplier: Pyraxi Kryptzen Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hypi Mind Factory (southville)
+  Supplier: Pyraxi Kryptzen Powerplant (southville)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Separate Holdings Factory (easternhole)
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Holdings Factory (easternhole)
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Hypi Mind Factory (easternhole)
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: Symantic Holdings Factory (westborough)
+  Supplier: Dorann gmBh Powerplant (westborough)
+  Requires Power: True
+  Resources: {'ore': 50}
+FACTORY: GeoXanitca Designs Factory (downtown)
+  Supplier: Symantic Holdings Powerplant (downtown)
+  Requires Power: True
+  Resources: {'ore': 50}
+
+=== ECONOMY SNAPSHOT ===
+[LOCATION] northville:Fischer's Northern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: GeoXanitca Designs Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:Little Grounds
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: GeoXanitca Designs Powerplant (northville)
+  Employees: 0
+  Resources: {}
+[LOCATION] northville:GeoXanitca Designs Powerplant (northville)
+  Type: Powerplant
+  Owner: GeoXanitca Designs
+  Generating: True
+  Consumers: 31
+  Employees: 2
+  Resources: {}
+[LOCATION] northville:Separate Holdings Factory (northville)
+  Type: Factory
+  Owner: Separate Holdings
+  Powered: True
+  Supplier: GeoXanitca Designs Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] northville:Quarkz Cong Factory (northville)
+  Type: Factory
+  Owner: Quarkz Cong
+  Powered: True
+  Supplier: GeoXanitca Designs Powerplant (northville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Kennedy's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Pyraxi Kryptzen Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Old Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Pyraxi Kryptzen Powerplant (southville)
+  Employees: 0
+  Resources: {}
+[LOCATION] southville:Pyraxi Kryptzen Powerplant (southville)
+  Type: Powerplant
+  Owner: Pyraxi Kryptzen
+  Generating: True
+  Consumers: 29
+  Employees: 2
+  Resources: {}
+[LOCATION] southville:Symantic Holdings Factory (southville)
+  Type: Factory
+  Owner: Symantic Holdings
+  Powered: True
+  Supplier: Pyraxi Kryptzen Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] southville:Hypi Mind Factory (southville)
+  Type: Factory
+  Owner: Hypi Mind
+  Powered: True
+  Supplier: Pyraxi Kryptzen Powerplant (southville)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Separate Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Separate Holdings
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Employees: 1
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Symantic Holdings Factory (easternhole)
+  Type: Factory
+  Owner: Symantic Holdings
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Hypi Mind Factory (easternhole)
+  Type: Factory
+  Owner: Hypi Mind
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] easternhole:Nasiri's Eastern Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] easternhole:Quarkz Cong Powerplant (easternhole)
+  Type: Powerplant
+  Owner: Quarkz Cong
+  Generating: True
+  Consumers: 30
+  Employees: 2
+  Resources: {}
+[LOCATION] easternhole:The Table
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Quarkz Cong Powerplant (easternhole)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Aki's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Dorann gmBh Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] westborough:Symantic Holdings Factory (westborough)
+  Type: Factory
+  Owner: Symantic Holdings
+  Powered: True
+  Supplier: Dorann gmBh Powerplant (westborough)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] westborough:Dorann gmBh Powerplant (westborough)
+  Type: Powerplant
+  Owner: Dorann gmBh
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] westborough:Old Corner
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Dorann gmBh Powerplant (westborough)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:Ghafouri's Guns
+  Type: Shop
+  Owner: None
+  Powered: True
+  Supplier: Symantic Holdings Powerplant (downtown)
+  Employees: 0
+  Resources: {}
+[LOCATION] downtown:GeoXanitca Designs Factory (downtown)
+  Type: Factory
+  Owner: GeoXanitca Designs
+  Powered: True
+  Supplier: Symantic Holdings Powerplant (downtown)
+  Employees: 2
+  Resources: {'ore': 50}
+[LOCATION] downtown:Symantic Holdings Powerplant (downtown)
+  Type: Powerplant
+  Owner: Symantic Holdings
+  Generating: True
+  Consumers: 27
+  Employees: 2
+  Resources: {}
+[LOCATION] downtown:New Common
+  Type: Cafe
+  Owner: None
+  Powered: True
+  Supplier: Symantic Holdings Powerplant (downtown)
+  Employees: 0
+  Resources: {}

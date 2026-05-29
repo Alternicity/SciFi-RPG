@@ -1,497 +1,59 @@
 [simulation] System: 
-Running simulation for 12 ticks...
+Running simulation for 1 ticks...
 
 [tick] System: [TIME] Hour 1, Day 1
-[employment] Radha Vahista: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=1.50
-[think] Radha Vahista: add_thought called; content repr: 'I need to work.'
-[focus] Radha Vahista: [FOCUS] Attention changed from None → Thought('I need to work.')
-[think] Radha Vahista: add_thought called; content repr: 'I need to eat.'
-[focus] Radha Vahista: [FOCUS] Attention changed from Thought('I need to work.') → Thought('I need to eat.')
-[think] Radha Vahista: add_thought called; content repr: 'I should leave Family House.'
-[focus] Radha Vahista: [FOCUS] Attention changed from Thought('I need to eat.') → Thought('I should leave Family House.')
-[anchor] Radha Vahista: [ANCHOR] Created 'eat' from motivation (eat, urgency=6.0) @ day 1, hour 1
-[focus] Radha Vahista: [FOCUS] Attention changed from Thought('I should leave Family House.') → Anchor eat
-[anchor] Radha Vahista: [ANCHOR] From select_current_anchor: Selected anchor: eat
-[memory] Radha Vahista: [MEMORY] food_sources=[]
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Family House.']
-[percept] Enzo Rossi: [OBSERVE] loc=House(name='House', region=downtown) chars=2
-[liberty] Enzo Rossi: [LIBERTY] Morning settling complete.
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed) | Vorak Exorion(Civilian)
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=5.50
-[think] Enzo Rossi: add_thought called; content repr: 'I need to eat.'
-[focus] Enzo Rossi: [FOCUS] Attention changed from None → Thought('I need to eat.')
-[think] Enzo Rossi: add_thought called; content repr: 'I need to have fun.'
-[focus] Enzo Rossi: [FOCUS] Attention changed from Thought('I need to eat.') → Thought('I need to have fun.')
-[think] Enzo Rossi: add_thought called; content repr: 'I should leave House.'
-[focus] Enzo Rossi: [FOCUS] Attention changed from Thought('I need to have fun.') → Thought('I should leave House.')
-[anchor] Enzo Rossi: [ANCHOR] Created 'eat' from motivation (eat, urgency=8.0) @ day 1, hour 1
-[focus] Enzo Rossi: [FOCUS] Attention changed from Thought('I should leave House.') → Anchor eat
-[anchor] Enzo Rossi: [ANCHOR] From select_current_anchor: Selected anchor: eat
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in House
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I should leave House.']
-[employment] Radha Vahista: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=2.00
-[anchor] Radha Vahista: [ANCHOR] Created 'work' from motivation (work, urgency=8.0) @ day 1, hour 1
-[focus] Radha Vahista: [FOCUS] Attention changed from Anchor eat → Anchor work
-[anchor] Radha Vahista: [ANCHOR] From select_current_anchor: Selected anchor: work
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Family House.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[visit] Enzo Rossi: [MOVE] eat → Cafe
-[visit] Enzo Rossi: [VISIT] Enzo Rossi role=civilian_liberty from=House(name='House', region=downtown) to=Cafe
-[visit] Enzo Rossi: [VISIT] Enzo Rossi arrived at Cafe
-[visit] Enzo Rossi: [MOVE] Enzo Rossi House(name='House', region=downtown) -> Cafe(name='Cafe', region=downtown) | old_chars=1 new_chars=3
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=WorkAnchor, name=work, type=work, priority=8.0, weight=8.0, tags=[], source=work, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=WorkAnchor anchor_name=work anchor_type=work
-[employment] Radha Vahista: [EMPLOYMENT] Radha Vahista is not at work when they should be, attempting to move to: Cafe(name='Cafe', region=downtown)
-[visit] Radha Vahista: [VISIT] Radha Vahista role=civilian_waitress from=House(name='Family House', region=downtown) to=Cafe
-[placement,warning] Radha Vahista: [REGION DRIFT] southville → downtown
-[employment] Radha Vahista: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=True
-[employment] Radha Vahista: [WORK] Started shift at Cafe
-[anchor] Radha Vahista: [ANCHOR] Work anchor satisfied — clearing
-[visit] Radha Vahista: [VISIT] Radha Vahista arrived at Cafe
-[visit] Radha Vahista: [MOVE] Radha Vahista House(name='Family House', region=downtown) -> Cafe(name='Cafe', region=downtown) | old_chars=1 new_chars=4
-[tick] System: [TIME] Hour 2, Day 1
-[employment] Radha Vahista: [EMP PRESENCE] hour=2 on_duty=True is_on_shift=True at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=2.50
-[think] Radha Vahista: add_thought called; content repr: 'I should leave Cafe.'
-[focus] Radha Vahista: [FOCUS] Attention changed from Anchor work → Thought('I should leave Cafe.')
-[anchor] Radha Vahista: [ANCHOR] Created 'work' from motivation (work, urgency=8.0) @ day 1, hour 2
-[focus] Radha Vahista: [FOCUS] Attention changed from Thought('I should leave Cafe.') → Anchor work
-[anchor] Radha Vahista: [ANCHOR] From select_current_anchor: Selected anchor: work
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
-[percept] Enzo Rossi: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Radha Vahista(Civilian) | 8xEmptyTable
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=6.00
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in Cafe
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.']
-[think] Enzo Rossi: [LIBERTY DEBUG] posture=Posture.STANDING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need']]
-[employment] Radha Vahista: [EMP PRESENCE] hour=2 on_duty=True is_on_shift=True at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=3.00
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
-[focus] Enzo Rossi: [FOCUS] Attention changed from Anchor eat → Civilian(Tanvi Reddy)
-[employment] Enzo Rossi: [DEBUG] Added SIT thought → Table 2
-[think] Enzo Rossi: add_thought called; content repr: 'I should sit at Table 2'
-[think] Enzo Rossi: add_thought called; content repr: 'I have been served.'
-[employment] Enzo Rossi: [DEBUG] Added SERVED thought
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=WorkAnchor, name=work, type=work, priority=8.0, weight=8.0, tags=[], source=work, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=WorkAnchor anchor_name=work anchor_type=work
-[employment] Radha Vahista: [WORK LOOP] others=4 recent=3
-[focus] Radha Vahista: [FOCUS] Attention changed from Anchor work → Civilian(Enzo Rossi)
-[focus] Enzo Rossi: [FOCUS] Attention changed from Civilian(Tanvi Reddy) → Civilian(Radha Vahista)
-[employment] Radha Vahista: [WAITRESS GREET] Hello 
-[employment] Radha Vahista: [HOST] Offering table
-[employment] Enzo Rossi: [DEBUG] Added SIT thought → Table 2
-[think] Enzo Rossi: add_thought called; content repr: 'I should sit at Table 2'
-[tick] System: [TIME] Hour 3, Day 1
-[employment] Radha Vahista: [EMP PRESENCE] hour=3 on_duty=True is_on_shift=True at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=3.50
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
-[percept] Enzo Rossi: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Radha Vahista(Civilian) | 8xEmptyTable
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=6.50
-[think] Enzo Rossi: add_thought called; content repr: 'I feel hungry. Maybe a burger.'
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in Cafe
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I should sit at Table 2', 'I have been served.', 'I feel hungry. Maybe a burger.']
-[think] Enzo Rossi: [LIBERTY DEBUG] posture=Posture.STANDING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need'], ['sit', 'dine_in'], ['served'], ['hunger', 'food', 'eat']]
-[employment] Radha Vahista: [EMP PRESENCE] hour=3 on_duty=True is_on_shift=True at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=4.00
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[anchor] Enzo Rossi: ANCHOR TYPE:
-[insight] Enzo Rossi: [URGENCY DEBUG] Enzo Rossi MOT=8.0 THOUGHT=8.0 MAX=8.0[URGENCY] EXCLUDING=None
-[action] Enzo Rossi: [EXECUTE UTILITYAI] Dispatching sit with params={'table': <objects.furniture.CafeTable object at 0xf6ed3b70>}
-[action] Enzo Rossi: [ACTION] Enzo Rossi sits at Table 2 (Chair 2-1) posture now: Posture.SITTING
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=WorkAnchor, name=work, type=work, priority=8.0, weight=8.0, tags=[], source=work, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=WorkAnchor anchor_name=work anchor_type=work
-[employment] Radha Vahista: [WORK LOOP] others=4 recent=3
-[tick] System: [TIME] Hour 4, Day 1
-[employment] Radha Vahista: [EMP PRESENCE] hour=4 on_duty=False is_on_shift=False at_workplace=True
-[employment] Radha Vahista: [WORK] Left shift at Cafe
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=4.50
-[anchor] Radha Vahista: [ANCHOR] Created 'work' from motivation (work, urgency=8.0) @ day 1, hour 4
-[focus] Radha Vahista: [FOCUS] Attention changed from Civilian(Enzo Rossi) → Anchor work
-[anchor] Radha Vahista: [ANCHOR] From select_current_anchor: Selected anchor: work
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
-[motive] Enzo Rossi: [MOTIVE] Updated sleep 1.0 → 5.0 (source=physiology)
-[motive] Enzo Rossi: [PHYSIO] sleep urgency=5 effort=6.0
-[percept] Enzo Rossi: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Radha Vahista(Civilian) | 8xEmptyTable
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=7.00
-[think] Enzo Rossi: add_thought called; content repr: 'I should leave Cafe.'
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in Cafe
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I feel hungry. Maybe a burger.', 'I should leave Cafe.']
-[think] Enzo Rossi: [LIBERTY DEBUG] posture=Posture.SITTING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need'], ['served'], ['hunger', 'food', 'eat'], ['leave_location', 'movement']]
-[employment] Radha Vahista: [EMP PRESENCE] hour=4 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=5.00
-[anchor] Radha Vahista: [ANCHOR] Created 'eat' from motivation (eat, urgency=6.0) @ day 1, hour 4
-[focus] Radha Vahista: [FOCUS] Attention changed from Anchor work → Anchor eat
-[anchor] Radha Vahista: [ANCHOR] From select_current_anchor: Selected anchor: eat
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[movement] Enzo Rossi: [LEAVE CHECK] leave=4 (biased=4.4) vs max=8.0
-[think] Enzo Rossi: [THOUGHT] from select_food_from_location fallback choice chosen
-[buy] Enzo Rossi: [BUY] seller=Radha Vahista item=Sandwich(nutrition=8, price=8, quantity=5)
-[action] Enzo Rossi: [EXECUTE UTILITYAI] Dispatching buy with params={'item': Sandwich(nutrition=8, price=8, quantity=5)}
-[buy] Enzo Rossi: [BUY DEBUG] owned_food id=4140268112 owner=Enzo Rossi
-[action] Enzo Rossi: [BUY] Purchased Sandwich for 8. Wallet now bank=328, cash=0
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=6.0, weight=6.0, tags=[], source=eat, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[movement] Radha Vahista: [LEAVE CHECK] leave=4 (biased=4.4) vs max=8.0
-[tick] System: [TIME] Hour 5, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated sleep 1.0 → 11.0 (source=physiology)
-[motive] Radha Vahista: [PHYSIO] sleep urgency=11 effort=1.0
-[employment] Radha Vahista: [EMP PRESENCE] hour=5 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=5.50
-[think] Radha Vahista: add_thought called; content repr: 'I need to sleep.'
-[anchor] Radha Vahista: [ANCHOR] Created 'sleep' from motivation (sleep, urgency=11.0) @ day 1, hour 5
-[focus] Radha Vahista: [FOCUS] Attention changed from Anchor eat → Anchor sleep
-[anchor] Radha Vahista: [ANCHOR] From select_current_anchor: Selected anchor: sleep
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.', 'I need to sleep.']
-[motive] Enzo Rossi: [MOTIVE] Updated sleep 5.0 → 6.0 (source=physiology)
-[motive] Enzo Rossi: [PHYSIO] sleep urgency=6 effort=5.0
-[percept] Enzo Rossi: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Radha Vahista(Civilian) | 8xEmptyTable
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=7.50
-[think] Enzo Rossi: add_thought called; content repr: 'I need to sleep.'
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in Cafe
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I feel hungry. Maybe a burger.', 'I should leave Cafe.', 'I need to sleep.']
-[think] Enzo Rossi: [LIBERTY DEBUG] posture=Posture.SITTING anchor=eat thoughts=[['eat', 'need'], ['have_fun', 'need'], ['served'], ['hunger', 'food', 'eat'], ['leave_location', 'movement'], ['sleep', 'need']]
-[motive] Radha Vahista: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
-[motive] Radha Vahista: [PHYSIO] sleep urgency=11 effort=1.0
-[employment] Radha Vahista: [EMP PRESENCE] hour=5 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=4
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | Enzo Rossi(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=6.00
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I should leave Cafe.', 'I need to sleep.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[eat] Enzo Rossi: [EAT DECISION] eating Sandwich
-[action] Enzo Rossi: [EXECUTE UTILITYAI] Dispatching eat with params={'item': Sandwich(nutrition=8, price=8, quantity=1)}
-[eat] Enzo Rossi: [EATING] eat_auto called for Enzo Rossi
-[eat] Enzo Rossi: [EAT DEBUG] owner=Enzo Rossi npc=Enzo Rossi
-[motive] Enzo Rossi: [POST-EAT] Boosting have_fun → 13.0
-[action] Enzo Rossi: [EAT] Ate Sandwich nutrition=8 hunger now=0
-[effect] Enzo Rossi: Applying effect: recent_meal
-[effect] Enzo Rossi: [EFFECT] RecentMealEffect started: Enzo Rossi effort -2, concentration -1
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=11.0, weight=11.0, tags=[], source=sleep, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
-[visit] Radha Vahista: [VISIT] Radha Vahista role=civilian_waitress from=Cafe(name='Cafe', region=downtown) to=Family House
-[employment] Radha Vahista: [EMP PRESENCE] hour=5 on_duty=False is_on_shift=False at_workplace=False
-[visit] Radha Vahista: [VISIT] Radha Vahista arrived at Family House
-[visit] Radha Vahista: [MOVE] Radha Vahista Cafe(name='Cafe', region=downtown) -> House(name='Family House', region=downtown) | old_chars=2 new_chars=2
-[tick] System: [TIME] Hour 6, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
-[motive] Radha Vahista: [PHYSIO] sleep urgency=11 effort=1.0
-[employment] Radha Vahista: [EMP PRESENCE] hour=6 on_duty=False is_on_shift=False at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=6.50
-[think] Radha Vahista: add_thought called; content repr: 'I feel hungry. Maybe a burger.'
-[think] Radha Vahista: add_thought called; content repr: 'I should leave Family House.'
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave Family House.']
-[percept] Enzo Rossi: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=2
-[effect] Enzo Rossi: [EFFORT] +1 digestion recovery → 3.0
-[effect] Enzo Rossi: [DIGESTION] concentration steady → 9
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | 8xEmptyTable
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=0.50
-[anchor] Enzo Rossi: [ANCHOR] Created 'have_fun' from motivation (have_fun, urgency=9.0) @ day 1, hour 6
-[focus] Enzo Rossi: [FOCUS] Attention changed from Civilian(Radha Vahista) → Anchor have_fun
-[anchor] Enzo Rossi: [ANCHOR] From select_current_anchor: Selected anchor: have_fun
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in Cafe
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I should leave Cafe.', 'I need to sleep.']
-[think] Enzo Rossi: [LIBERTY DEBUG] posture=Posture.SITTING anchor=have_fun thoughts=[['eat', 'need'], ['have_fun', 'need'], ['served'], ['leave_location', 'movement'], ['sleep', 'need']]
-[motive] Radha Vahista: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
-[motive] Radha Vahista: [PHYSIO] sleep urgency=11 effort=1.0
-[employment] Radha Vahista: [EMP PRESENCE] hour=6 on_duty=False is_on_shift=False at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=7.00
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave Family House.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=FunAnchor, name=have_fun, type=leisure, priority=9.0, weight=9.0, tags=['leisure', 'social'], source=have_fun, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=FunAnchor anchor_name=have_fun anchor_type=leisure
-[anchor] Enzo Rossi: ANCHOR TYPE:
-[insight] Enzo Rossi: [URGENCY DEBUG] Enzo Rossi MOT=9.0 THOUGHT=10 MAX=10[URGENCY] EXCLUDING=None
-[fun] Enzo Rossi: [FUN TARGET] Library=7 | Park=6.9 | Hannival Arena=5 → Library
-[fun] Enzo Rossi: [FUN TARGET] Library=7 | Park=6.9 | Hannival Arena=5 → Library
-[visit] Enzo Rossi: [MOVE] have_fun → Library
-[visit] Enzo Rossi: [VISIT] Enzo Rossi role=civilian_liberty from=Cafe(name='Cafe', region=downtown) to=Library
-[visit] Enzo Rossi: [VISIT] Enzo Rossi arrived at Library
-[visit] Enzo Rossi: [MOVE] Enzo Rossi Cafe(name='Cafe', region=downtown) -> Library(name='Library', region=downtown) | old_chars=1 new_chars=1
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=11.0, weight=11.0, tags=[], source=sleep, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
-[action] Radha Vahista: [EXECUTE UTILITYAI] Dispatching sleep with params={}
-[sleep] Radha Vahista: [SLEEP] Radha Vahista lies down in Bed 1
-[effect] Radha Vahista: Applying effect: sleeping
-[effect] Radha Vahista: [EFFECT] SleepEffect started: Radha Vahista lies down, effort +4
-[tick] System: [TIME] Hour 7, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
-[motive] Radha Vahista: [PHYSIO] sleep urgency=7 effort=4.0
-[employment] Radha Vahista: [EMP PRESENCE] hour=7 on_duty=False is_on_shift=False at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[effect] Radha Vahista: [SLEEP] recovering → effort=6.0
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=7.80
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave Family House.']
-[motive] Enzo Rossi: [MOTIVE] Updated sleep 6.0 → 10.0 (source=physiology)
-[motive] Enzo Rossi: [PHYSIO] sleep urgency=10 effort=2.0
-[percept] Enzo Rossi: [OBSERVE] loc=Library(name='Library', region=downtown) chars=1
-[effect] Enzo Rossi: [EFFECT] RecentMealEffect ended
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | Library(Library) | The First Landing: A Colony History(Book) | Unexplained Structures of the Eastern Reaches(Book) | The Resonance Codex(Book) | Civic Life in the Colony(Book) | Reading Table 1(Table) | Reading Chair 1-1(Chair) | Reading Chair 1-2(Chair) | Reading Table 2(Table) | Reading Chair 2-1(Chair) | Reading Chair 2-2(Chair) | Reading Table 3(Table) | Reading Chair 3-1(Chair) | Reading Chair 3-2(Chair) | Reading Table 4(Table) | Reading Chair 4-1(Chair) | Reading Chair 4-2(Chair)
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=1.00
-[think] Enzo Rossi: add_thought called; content repr: 'I should leave Library.'
-[fun] Enzo Rossi: [FUN TARGET] Park=6.9 | Hannival Arena=5 → Park
-[anchor] Enzo Rossi: [ANCHOR] Created 'sleep' from motivation (sleep, urgency=10.0) @ day 1, hour 7
-[focus] Enzo Rossi: [FOCUS] Attention changed from Anchor have_fun → Anchor sleep
-[anchor] Enzo Rossi: [ANCHOR] From select_current_anchor: Selected anchor: sleep
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in Library
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave Library.']
-[motive] Radha Vahista: [MOTIVE] Updated eat 6.0 → 8.3 (source=physiology)
-[motive] Radha Vahista: [MOTIVE] Updated sleep 11.0 → 11.0 (source=physiology)
-[motive] Radha Vahista: [PHYSIO] sleep urgency=6 effort=5.0
-[employment] Radha Vahista: [EMP PRESENCE] hour=7 on_duty=False is_on_shift=False at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[effect] Radha Vahista: [SLEEP] recovering → effort=7.0
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=8.60
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave Family House.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=10.0, weight=10.0, tags=[], source=sleep, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
-[visit] Enzo Rossi: [VISIT] Enzo Rossi role=civilian_liberty from=Library(name='Library', region=downtown) to=House
-[visit] Enzo Rossi: [VISIT] Enzo Rossi arrived at House
-[visit] Enzo Rossi: [MOVE] Enzo Rossi Library(name='Library', region=downtown) -> House(name='House', region=downtown) | old_chars=0 new_chars=2
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=11.0, weight=11.0, tags=[], source=sleep, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
-[action] Radha Vahista: [EXECUTE UTILITYAI] Dispatching sleep with params={}
-[sleep] Radha Vahista: [SLEEP] Radha Vahista lies down in Bed 2
-[effect] Radha Vahista: Applying effect: sleeping
-[effect] Radha Vahista: [EFFECT] SleepEffect started: Radha Vahista lies down, effort +4
-[tick] System: [TIME] Hour 8, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated eat 8.3 → 9.100000000000001 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=8 on_duty=False is_on_shift=False at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[sleep] Radha Vahista: [SLEEP] Suppressed sleep: True
-[effect] Radha Vahista: [EFFECT] SleepEffect ended: Radha Vahista, effort=13.0
-[effect] Radha Vahista: [SLEEP] recovering → effort=15.0
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=9.40
-[anchor] Radha Vahista: [ANCHOR] Created 'eat' from motivation (eat, urgency=9.100000000000001) @ day 1, hour 8
-[focus] Radha Vahista: [FOCUS] Attention changed from Anchor sleep → Anchor eat
-[anchor] Radha Vahista: [ANCHOR] From select_current_anchor: Selected anchor: eat
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave Family House.']
-[motive] Enzo Rossi: [MOTIVE] Updated sleep 10.0 → 10.0 (source=physiology)
-[motive] Enzo Rossi: [PHYSIO] sleep urgency=6 effort=5.0
-[percept] Enzo Rossi: [OBSERVE] loc=House(name='House', region=downtown) chars=2
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed) | Vorak Exorion(Civilian)
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=1.50
-[think] Enzo Rossi: add_thought called; content repr: 'I should leave House.'
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in House
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave House.']
-[motive] Radha Vahista: [MOTIVE] Updated eat 9.100000000000001 → 9.900000000000002 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=8 on_duty=False is_on_shift=False at_workplace=False
-[percept] Radha Vahista: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
-[effect] Radha Vahista: [SLEEP] recovering → effort=16.0
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Azar Karimi(Civilian)
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=10.20
-[think] Radha Vahista: [DEBUG] Radha Vahista in Family House
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I should leave Family House.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=10.0, weight=10.0, tags=[], source=sleep, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
-[action] Enzo Rossi: [EXECUTE UTILITYAI] Dispatching sleep with params={}
-[sleep] Enzo Rossi: [SLEEP] Enzo Rossi lies down in Bed 1
-[effect] Enzo Rossi: Applying effect: sleeping
-[effect] Enzo Rossi: [EFFECT] SleepEffect started: Enzo Rossi lies down, effort +4
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=9.100000000000001, weight=9.100000000000001, tags=[], source=eat, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[visit] Radha Vahista: [MOVE] eat → Cafe
-[visit] Radha Vahista: [VISIT] Radha Vahista role=civilian_waitress from=House(name='Family House', region=downtown) to=Cafe
-[employment] Radha Vahista: [EMP PRESENCE] hour=8 on_duty=False is_on_shift=False at_workplace=True
-[visit] Radha Vahista: [VISIT] Radha Vahista arrived at Cafe
-[visit] Radha Vahista: [MOVE] Radha Vahista House(name='Family House', region=downtown) -> Cafe(name='Cafe', region=downtown) | old_chars=1 new_chars=3
-[tick] System: [TIME] Hour 9, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated eat 9.900000000000002 → 10.700000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=9 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[sleep] Radha Vahista: [SLEEP] Suppressed sleep: True
-[effect] Radha Vahista: [EFFECT] SleepEffect ended: Radha Vahista, effort=18.0
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=10.70
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.']
-[percept] Enzo Rossi: [OBSERVE] loc=House(name='House', region=downtown) chars=2
-[effect] Enzo Rossi: [SLEEP] recovering → effort=10.0
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed) | Vorak Exorion(Civilian)
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=2.30
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in House
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave House.']
-[motive] Radha Vahista: [MOTIVE] Updated eat 10.700000000000003 → 11.200000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=9 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=11.20
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=10.0, weight=10.0, tags=[], source=sleep, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
-[action] Enzo Rossi: [EXECUTE UTILITYAI] Dispatching sleep with params={}
-[sleep] Enzo Rossi: [SLEEP] Enzo Rossi lies down in Bed 2
-[effect] Enzo Rossi: Applying effect: sleeping
-[effect] Enzo Rossi: [EFFECT] SleepEffect started: Enzo Rossi lies down, effort +4
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=9.100000000000001, weight=9.100000000000001, tags=[], source=eat, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[think] Radha Vahista: [THOUGHT] from select_food_from_location fallback choice chosen
-[focus] Radha Vahista: [FOCUS] Attention changed from Anchor eat → Civilian(Radha Vahista)
-[think] Radha Vahista: add_thought called; content repr: 'I know how this place works.'
-[buy] Radha Vahista: [BUY] seller=Radha Vahista item=Sandwich(nutrition=8, price=8, quantity=3)
-[action] Radha Vahista: [EXECUTE UTILITYAI] Dispatching buy with params={'item': Sandwich(nutrition=8, price=8, quantity=3)}
-[buy] Radha Vahista: [BUY DEBUG] owned_food id=4139904944 owner=Radha Vahista
-[action] Radha Vahista: [BUY] Purchased Sandwich for 8. Wallet now bank=362, cash=0
-[tick] System: [TIME] Hour 10, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated eat 11.200000000000003 → 11.700000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=10 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=11.70
-[think] Radha Vahista: add_thought called; content repr: 'I should leave Cafe.'
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I know how this place works.', 'I should leave Cafe.']
-[percept] Enzo Rossi: [OBSERVE] loc=House(name='House', region=downtown) chars=2
-[effect] Enzo Rossi: [SLEEP] recovering → effort=15.0
-[effect] Enzo Rossi: [SLEEP] recovering → effort=17.0
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed) | Vorak Exorion(Civilian)
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=3.40
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in House
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave House.']
-[motive] Radha Vahista: [MOTIVE] Updated eat 11.700000000000003 → 12.200000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=10 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=12.20
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I know how this place works.', 'I should leave Cafe.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=SleepAnchor, name=sleep, type=motivation, priority=10.0, weight=10.0, tags=[], source=sleep, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=SleepAnchor anchor_name=sleep anchor_type=motivation
-[action] Enzo Rossi: [EXECUTE UTILITYAI] Dispatching sleep with params={}
-[sleep] Enzo Rossi: [SLEEP] Enzo Rossi sleeps without a bed
-[effect] Enzo Rossi: Applying effect: sleeping
-[effect] Enzo Rossi: [EFFECT] SleepEffect started: Enzo Rossi lies down, effort +4
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=9.100000000000001, weight=9.100000000000001, tags=[], source=eat, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[movement] Radha Vahista: [LEAVE CHECK] leave=4 (biased=4.4) vs max=12.200000000000003
-[think] Radha Vahista: [THOUGHT] from select_food_from_location fallback choice chosen
-[buy] Radha Vahista: [BUY] seller=Radha Vahista item=Sandwich(nutrition=8, price=8, quantity=1)
-[action] Radha Vahista: [EXECUTE UTILITYAI] Dispatching buy with params={'item': Sandwich(nutrition=8, price=8, quantity=1)}
-[buy] Radha Vahista: [BUY DEBUG] owned_food id=4139115440 owner=Radha Vahista
-[action] Radha Vahista: [BUY] Purchased Sandwich for 8. Wallet now bank=354, cash=0
-[tick] System: [TIME] Hour 11, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated eat 12.200000000000003 → 12.700000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=11 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=12.70
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I know how this place works.', 'I should leave Cafe.']
-[percept] Enzo Rossi: [OBSERVE] loc=House(name='House', region=downtown) chars=2
-[sleep] Enzo Rossi: [SLEEP] Suppressed sleep: True
-[effect] Enzo Rossi: [EFFECT] SleepEffect ended: Enzo Rossi, effort=20.0
-[effect] Enzo Rossi: [SLEEP] recovering → effort=20.0
-[effect] Enzo Rossi: [SLEEP] recovering → effort=20.0
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed) | Vorak Exorion(Civilian)
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=4.50
-[think] Enzo Rossi: add_thought called; content repr: 'I need to earn money.'
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in House
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave House.', 'I need to earn money.']
-[anchor] Enzo Rossi: [ANCHOR] Thought 'I need to eat.' anchored as Anchor
-[anchor] Enzo Rossi: [ANCHOR-PROMOTE] 'eat' promoted without enabler relationship. 
-[focus] Enzo Rossi: [FOCUS] Attention changed from Anchor sleep → Thought('I need to eat.') (anchored)
-[think] Enzo Rossi: Promoted thought 'I need to eat.' → anchor 'eat' (urgency +0)
-[motive] Radha Vahista: [MOTIVE] Updated eat 12.700000000000003 → 13.200000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=11 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=13.20
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I know how this place works.', 'I should leave Cafe.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] class=Anchor, name=eat, type=thought, priority=6.0, weight=0, tags=['eat', 'need'], source=None, owner=Enzo Rossi | suppressed=False
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=Anchor anchor_name=eat anchor_type=thought
-[movement] Enzo Rossi: [LEAVE CHECK] leave=1 (biased=1.1) vs max=6.0
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=9.100000000000001, weight=9.100000000000001, tags=[], source=eat, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[movement] Radha Vahista: [LEAVE CHECK] leave=6 (biased=6.6) vs max=13.200000000000003
-[think] Radha Vahista: [THOUGHT] from select_food_from_location fallback choice chosen
-[buy] Radha Vahista: [BUY] seller=Radha Vahista item=Burger(nutrition=12, price=10, quantity=2)
-[action] Radha Vahista: [EXECUTE UTILITYAI] Dispatching buy with params={'item': Burger(nutrition=12, price=10, quantity=2)}
-[buy] Radha Vahista: [BUY DEBUG] owned_food id=4139996464 owner=Radha Vahista
-[action] Radha Vahista: [BUY] Purchased Burger for 10. Wallet now bank=344, cash=0
-[tick] System: [TIME] Hour 12, Day 1
-[motive] Radha Vahista: [MOTIVE] Updated eat 13.200000000000003 → 13.700000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=12 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=13.70
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I know how this place works.', 'I should leave Cafe.']
-[percept] Enzo Rossi: [OBSERVE] loc=House(name='House', region=downtown) chars=2
-[sleep] Enzo Rossi: [SLEEP] Suppressed sleep: True
-[effect] Enzo Rossi: [EFFECT] SleepEffect ended: Enzo Rossi, effort=20.0
-[effect] Enzo Rossi: [SLEEP] recovering → effort=20.0
-[percept] Enzo Rossi: [PERCEPTS] Enzo Rossi(Civilian) | House(House) | Bed 1(Bed) | Bed 2(Bed) | Vorak Exorion(Civilian)
-[think] Enzo Rossi: [DEBUG] Before generate_hunger_thought Enzo Rossi hunger=5.30
-[anchor] Enzo Rossi: [ANCHOR] eat has no target_location to resolve
-[think] Enzo Rossi: add_thought called; content repr: "I want to eat, but I don't know how."
-[think] Enzo Rossi: [DEBUG] Enzo Rossi in House
-[think] Enzo Rossi: [DEBUG] Thoughts: Enzo Rossi ['I need to eat.', 'I need to have fun.', 'I have been served.', 'I need to sleep.', 'I should leave House.', 'I need to earn money.', "I want to eat, but I don't know how."]
-[motive] Radha Vahista: [MOTIVE] Updated eat 13.700000000000003 → 14.200000000000003 (source=physiology)
-[employment] Radha Vahista: [EMP PRESENCE] hour=12 on_duty=False is_on_shift=False at_workplace=True
-[percept] Radha Vahista: [OBSERVE] loc=Cafe(name='Cafe', region=downtown) chars=3
-[percept] Radha Vahista: [PERCEPTS] Radha Vahista(Civilian) | Cafe(Cafe) | Cafe Counter(CafeCounter) | Ceramic Pot(Pot) | Cafe Register(CashRegister) | Cup(Cup) | Noemi Silva(Civilian) | Tanvi Reddy(Civilian) | 8xEmptyTable
-[think] Radha Vahista: [DEBUG] Before generate_hunger_thought Radha Vahista hunger=14.20
-[think] Radha Vahista: [DEBUG] Radha Vahista in Cafe
-[think] Radha Vahista: [DEBUG] Thoughts: Radha Vahista ['I need to work.', 'I need to eat.', 'I need to sleep.', 'I feel hungry. Maybe a burger.', 'I know how this place works.', 'I should leave Cafe.']
-[anchor] Enzo Rossi: [ANCHOR DEBUG] Anchor=None | suppressed=None
-[anchor] Enzo Rossi: [ANCHOR, CHOOSE_ACTION] Enzo Rossi (civilian_liberty) anchor_class=None anchor_name=None anchor_type=None
-[action] Enzo Rossi: [EXECUTE UTILITYAI] Dispatching idle with params={}
-[anchor] Radha Vahista: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=9.100000000000001, weight=9.100000000000001, tags=[], source=eat, owner=Radha Vahista | suppressed=False
-[anchor] Radha Vahista: [ANCHOR, CHOOSE_ACTION] Radha Vahista (civilian_waitress) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
-[movement] Radha Vahista: [LEAVE CHECK] leave=7 (biased=7.7) vs max=14.200000000000003
-[think] Radha Vahista: [THOUGHT] from select_food_from_location fallback choice chosen
-[buy] Radha Vahista: [BUY BLOCK] No item found for None
-[action] Radha Vahista: [EXECUTE UTILITYAI] Dispatching idle with params={}
+[employment] Noemi Patel: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=False
+[percept] Noemi Patel: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
+[percept] Noemi Patel: [PERCEPTS] Noemi Patel(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Stefan Schmidt(Civilian)
+[think] Noemi Patel: [DEBUG] Before generate_hunger_thought Noemi Patel hunger=1.50
+[think] Noemi Patel: add_thought called; content repr: 'I need to work.'
+[focus] Noemi Patel: [FOCUS] Attention changed from None → Thought('I need to work.')
+[think] Noemi Patel: add_thought called; content repr: 'I need to eat.'
+[focus] Noemi Patel: [FOCUS] Attention changed from Thought('I need to work.') → Thought('I need to eat.')
+[think] Noemi Patel: add_thought called; content repr: 'I should leave Family House.'
+[focus] Noemi Patel: [FOCUS] Attention changed from Thought('I need to eat.') → Thought('I should leave Family House.')
+[anchor] Noemi Patel: [ANCHOR] Created 'eat' from motivation (eat, urgency=6.0) @ day 1, hour 1
+[focus] Noemi Patel: [FOCUS] Attention changed from Thought('I should leave Family House.') → Anchor eat
+[anchor] Noemi Patel: [ANCHOR] From select_current_anchor: Selected anchor: eat
+[think] Noemi Patel: [DEBUG] Noemi Patel in Family House
+[think] Noemi Patel: [DEBUG] Thoughts: Noemi Patel ['I need to work.', 'I need to eat.', 'I should leave Family House.']
+[percept] Xalric Deimian: [OBSERVE] loc=ApartmentBlock(name='Mass Housing', region=downtown) chars=2
+[liberty] Xalric Deimian: [LIBERTY] Morning settling complete.
+[percept] Xalric Deimian: [PERCEPTS] Xalric Deimian(Civilian) | Mass Housing(ApartmentBlock) | Bed 1(Bed) | Bed 2(Bed) | Bed 3(Bed) | Bed 4(Bed) | Ingrid Karlsson(Civilian)
+[think] Xalric Deimian: [DEBUG] Before generate_hunger_thought Xalric Deimian hunger=5.50
+[think] Xalric Deimian: add_thought called; content repr: 'I need to eat.'
+[focus] Xalric Deimian: [FOCUS] Attention changed from None → Thought('I need to eat.')
+[think] Xalric Deimian: add_thought called; content repr: 'I need to have fun.'
+[focus] Xalric Deimian: [FOCUS] Attention changed from Thought('I need to eat.') → Thought('I need to have fun.')
+[think] Xalric Deimian: add_thought called; content repr: 'I should leave Mass Housing.'
+[focus] Xalric Deimian: [FOCUS] Attention changed from Thought('I need to have fun.') → Thought('I should leave Mass Housing.')
+[anchor] Xalric Deimian: [ANCHOR] Created 'eat' from motivation (eat, urgency=8.0) @ day 1, hour 1
+[focus] Xalric Deimian: [FOCUS] Attention changed from Thought('I should leave Mass Housing.') → Anchor eat
+[anchor] Xalric Deimian: [ANCHOR] From select_current_anchor: Selected anchor: eat
+[think] Xalric Deimian: [DEBUG] Xalric Deimian in Mass Housing
+[think] Xalric Deimian: [DEBUG] Thoughts: Xalric Deimian ['I need to eat.', 'I need to have fun.', 'I should leave Mass Housing.']
+[employment] Noemi Patel: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=False
+[percept] Noemi Patel: [OBSERVE] loc=House(name='Family House', region=downtown) chars=2
+[percept] Noemi Patel: [PERCEPTS] Noemi Patel(Civilian) | Family House(House) | Bed 1(Bed) | Bed 2(Bed) | Stefan Schmidt(Civilian)
+[think] Noemi Patel: [DEBUG] Before generate_hunger_thought Noemi Patel hunger=2.00
+[anchor] Noemi Patel: [ANCHOR] Created 'work' from motivation (work, urgency=8.0) @ day 1, hour 1
+[focus] Noemi Patel: [FOCUS] Attention changed from Anchor eat → Anchor work
+[anchor] Noemi Patel: [ANCHOR] From select_current_anchor: Selected anchor: work
+[think] Noemi Patel: [DEBUG] Noemi Patel in Family House
+[think] Noemi Patel: [DEBUG] Thoughts: Noemi Patel ['I need to work.', 'I need to eat.', 'I should leave Family House.']
+[anchor] Xalric Deimian: [ANCHOR DEBUG] class=EatAnchor, name=eat, type=motivation, priority=8.0, weight=8.0, tags=[], source=eat, owner=Xalric Deimian | suppressed=False
+[anchor] Xalric Deimian: [ANCHOR, CHOOSE_ACTION] Xalric Deimian (civilian_liberty) anchor_class=EatAnchor anchor_name=eat anchor_type=motivation
+[visit] Xalric Deimian: [MOVE] eat → Generic Restaurant
+[visit] Xalric Deimian: [VISIT] Xalric Deimian role=civilian_liberty from=ApartmentBlock(name='Mass Housing', region=downtown) to=Generic Restaurant
+[visit] Xalric Deimian: [VISIT] Xalric Deimian arrived at Generic Restaurant
+[visit] Xalric Deimian: [MOVE] Xalric Deimian ApartmentBlock(name='Mass Housing', region=downtown) -> Restaurant(name='Generic Restaurant', region=downtown) | old_chars=1 new_chars=1
+[anchor] Noemi Patel: [ANCHOR DEBUG] class=WorkAnchor, name=work, type=work, priority=8.0, weight=8.0, tags=[], source=work, owner=Noemi Patel | suppressed=False
+[anchor] Noemi Patel: [ANCHOR, CHOOSE_ACTION] Noemi Patel (civilian_waitress) anchor_class=WorkAnchor anchor_name=work anchor_type=work
+[employment] Noemi Patel: [EMPLOYMENT] Noemi Patel is not at work when they should be, attempting to move to: Cafe(name='Little Table', region=downtown)
+[visit] Noemi Patel: [VISIT] Noemi Patel role=civilian_waitress from=House(name='Family House', region=downtown) to=Little Table
+[placement,warning] Noemi Patel: [REGION DRIFT] westborough → downtown
+[employment] Noemi Patel: [EMP PRESENCE] hour=1 on_duty=True is_on_shift=True at_workplace=True
+[employment] Noemi Patel: [WORK] Started shift at Little Table
+[anchor] Noemi Patel: [ANCHOR] Work anchor satisfied — clearing
+[visit] Noemi Patel: [VISIT] Noemi Patel arrived at Little Table
+[visit] Noemi Patel: [MOVE] Noemi Patel House(name='Family House', region=downtown) -> Cafe(name='Little Table', region=downtown) | old_chars=1 new_chars=2

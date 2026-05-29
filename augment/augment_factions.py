@@ -1,6 +1,9 @@
 #augment_augment_factions.py
-#Post-processing passes are cleaner than crammin create files.
+from augment.augment_corporations import augment_corporations
 
 def augment_factions(factions):
-    pass
+    #
+    # print("[DEBUG] augment_factions called")
+    augment_corporations()
+
 

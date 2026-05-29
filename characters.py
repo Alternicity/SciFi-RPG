@@ -322,8 +322,8 @@ class Subordinate(Character):
         self.loyalty = loyalty
         
 
-class Employee(Subordinate):
-    """Represents a corporate or organizational worker."""
+""" class Employee(Subordinate):
+
     is_concrete = True
     default_motivations = [("earn_money", 5)]
 
@@ -389,7 +389,7 @@ class Employee(Subordinate):
         parts = [self.region, self.location]
         if hasattr(self, "sublocation"):
             parts.append(self.sublocation)
-        return ", ".join(str(p) for p in parts)
+        return ", ".join(str(p) for p in parts) """
 
     
 class CorporateSecurity(Subordinate):

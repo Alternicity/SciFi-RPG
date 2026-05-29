@@ -1,7 +1,9 @@
 #GUI.tabs.faction.build_faction_parts.py
 import tkinter
 from tkinter import ttk
-
+from GUI.inspectors.faction.faction_economy_panel import (
+    build_faction_economy_panel
+)
 def build_faction_center(gui,parent):
 
     gui.faction_notebook = ttk.Notebook(parent)
@@ -14,7 +16,9 @@ def build_faction_center(gui,parent):
     overview_tab = ttk.Frame(gui.faction_notebook)
     characters_tab = ttk.Frame(gui.faction_notebook)
     hq_tab = ttk.Frame(gui.faction_notebook)
-    connections_tab = ttk.Frame(gui.faction_notebook)
+
+    economy_tab = ttk.Frame(gui.faction_notebook)#this is where we paused gui dev beofre and began the economy pass
+    
     goals_tab = ttk.Frame(gui.faction_notebook)
     culture_tab = ttk.Frame(gui.faction_notebook)
 
@@ -34,8 +38,8 @@ def build_faction_center(gui,parent):
     )
 
     gui.faction_notebook.add(
-        connections_tab,
-        text="Connections"
+        economy_tab,
+        text="economy"
     )
 
     gui.faction_notebook.add(
@@ -70,7 +74,10 @@ def build_faction_center(gui,parent):
         gui,
         hq_tab
     )
-
+    build_faction_economy_panel(
+        gui,
+        economy_tab
+    )
 
 def build_faction_details(gui,parent):
 

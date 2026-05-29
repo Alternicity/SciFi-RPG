@@ -158,7 +158,6 @@ class SleepEffect(TimedEffect):
     def on_end(self, npc):
         npc.location_purpose_fulfilled = True
         npc.posture = Posture.STANDING
-        npc.posture = Posture.STANDING
 
         # Final recovery burst
         npc.effort = min(20, npc.effort + 3)

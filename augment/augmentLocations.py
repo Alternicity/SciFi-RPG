@@ -6,7 +6,7 @@ from debug_utils import debug_print
 game_state = get_game_state()
 from base.location import CommercialLocation
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
-from location.locations import Cafe, Restaurant, Library, Park, LunaSanctum, SportsCentre
+from location.locations import Cafe, Restaurant, Library, Park, LunaSanctum, SportsCentre, Factory, Powerplant, Nightclub
 from objects.food.prepared_food import Sandwich, Burger
 from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
@@ -157,6 +157,85 @@ def seed_library_books(all_locations):
         for book in LIBRARY_COLLECTION:
             loc.items.objects_present.append(book)
 
+def rename_powerplants():
+
+    game_state = get_game_state()
+
+    for loc in game_state.all_locations:
+
+        if not isinstance(loc, Powerplant):
+            continue
+
+        region_name = (
+            loc.region.name.capitalize()
+            if loc.region else "Unknown"
+        )
+
+        if loc.owner:
+             loc.name = f"{loc.owner.name} Powerplant ({loc.region.name})"
+
+def rename_factories():
+
+    game_state = get_game_state()
+
+    used_names = set()
+
+    for loc in game_state.all_locations:
+
+        if not isinstance(loc, Factory):
+            continue
+
+        region_name = (
+            loc.region.name.capitalize()
+            if loc.region else "Unknown"
+        )
+
+        if loc.owner:
+            base_name = (f"{loc.owner.name} Factory ({loc.region.name})")
+
+        else:
+
+            base_name = (
+                f"{region_name} Factory"
+            )
+
+        name = base_name
+        counter = 2
+
+        while name in used_names:
+            name = f"{base_name} {counter}"
+            counter += 1
+
+        loc.name = name
+        used_names.add(name)
+
+def rename_nightclubs():
+    from data.Names.nightclub_names import NIGHTCLUB_NAMES
+    game_state = get_game_state()
+
+    used_names = set()
+
+    clubs = [
+        loc for loc in game_state.all_locations
+        if isinstance(loc, Nightclub)
+    ]
+
+    random.shuffle(NIGHTCLUB_NAMES)
+
+    for i, club in enumerate(clubs):
+
+        if i < len(NIGHTCLUB_NAMES):
+            name = NIGHTCLUB_NAMES[i]
+        else:
+            name = f"Nightclub {i+1}"
+
+        while name in used_names:
+            name += " X"
+
+        club.name = name
+
+        used_names.add(name)
+
 def reassign_shop_names_after_character_creation():
     game_state = get_game_state()
     all_shops = game_state.all_shops
@@ -257,7 +336,15 @@ def seed_ambience_objects(all_locations):
 from objects.furniture import CafeTable, CafeChair
 from location.locations import Cafe
 
+def seed_nightclub_furniture(all_locations):
+    for loc in all_locations:
+        if not isinstance(loc, Nightclub):
+            continue
+            #see some  LargeTable, Sofa, Barstool, CafeChair objects, ClubBar, PoolTable
+            #if club has tag "classy" then also some plants in vases
+            #if it has tag: pool, add PoolTable
 
+#reference for above
 def seed_cafe_furniture(all_locations):
     for loc in all_locations:
         if not isinstance(loc, Cafe):
@@ -353,3 +440,12 @@ def seed_residential_furniture(all_locations):
             bed.location = loc
             bed.region = loc.region
             loc.items.objects_present.append(bed)
+
+def seed_residential_food(all_locations):
+    from location.locations import House, ApartmentBlock
+    from objects.food.prepared_food import Sandwich, Burger
+    #Lets put 2x Sandwich and 2 x Burger in each fridge
+    #ApartmentBlock will be an edge case, as sublocations are not yet developed
+    #So apartments dont exist
+
+    
