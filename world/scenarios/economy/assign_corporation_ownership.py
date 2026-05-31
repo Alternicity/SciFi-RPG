@@ -25,9 +25,12 @@ def assign_corporation_ownership():
 
         corp = random.choice(corporations)
 
-        location.owner = corp
+        from economy.economy_helpers import assign_location_owner
 
-        corp.owned_locations.append(location)
+        assign_location_owner(
+            location,
+            corp
+        )
         #notes Corporations have an HQ, with a region, this might be useful here
         #Parks, Libraries, MunicipalBuilding, can be excluded from corporate ownership
         #ApartmentBlock, Farm and House locations - 50% of them can be corporate owned

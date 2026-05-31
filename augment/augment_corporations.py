@@ -28,16 +28,34 @@ def augment_corporations():
     ]
 
     random.shuffle(corporations)
+    from economy.economy_helpers import assign_location_owner
+    """ for corp, plant in zip(corporations, powerplants):
 
-    for corp, plant in zip(corporations, powerplants):
-
-        plant.owner = corp
-        corp.owned_locations.append(plant)
+        assign_location_owner(
+            plant,
+            corp
+        )
 
     for corp, factory in zip(corporations, factories):
 
-        factory.owner = corp
-        corp.owned_locations.append(factory)
+        assign_location_owner(
+            factory,
+            corp
+        ) """
+
+    """     print(
+            "[AUGMENT CORP]",
+            plant.name,
+            "->",
+            corp.name
+        )
+
+        print(
+            "[AUGMENT CORP]",
+            factory.name,
+            "->",
+            corp.name
+        ) """
 
 def assign_power_workers(corp):
     assigned = set()

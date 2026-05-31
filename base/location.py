@@ -20,7 +20,10 @@ class Location(LocationBase):
     region: Optional[Any] = None
     items: LocationItems = field(default_factory=LocationItems)
     is_shakedown_target: bool = False
-    owner: Optional[Any] = None
+    
+    owner: Optional[Any] = None      # compatibility
+    ownership: Optional[Any] = None  # future ECS component
+    
     sublocations: Optional[List['Location']] = None
     controlling_faction: Optional[Any] = None
     tags: list[str] = field(default_factory=list)

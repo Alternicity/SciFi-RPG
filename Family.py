@@ -291,12 +291,11 @@ def link_family_shops(game_state):
     #often 0 or 1, 5 would be logical as 5 shops currently exist
 
 def assign_business_ownership(game_state):
+    from economy.economy_helpers import assign_location_owner
     for loc in game_state.all_locations:
         if hasattr(loc, "owner") and loc.owner:
-            loc.ownership = Ownership(
-                owner_type="family",
-                owner_ref=loc.owner
-            )
+            assign_location_owner(loc, loc.owner)
+            
 
 def assign_initial_location_from_family(npc):
     if getattr(npc, "placement_locked", False):

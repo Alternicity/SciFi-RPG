@@ -1,10 +1,7 @@
 #GUI.navigation.breadcrumbs.py
-import tkinter as tk
-from tkinter import ttk
 
 import tkinter as tk
 from tkinter import ttk
-
 
 def build_city_breadcrumbs(gui, parent):
 

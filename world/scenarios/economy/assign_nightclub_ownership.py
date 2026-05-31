@@ -24,14 +24,11 @@ def assign_nightclub_ownership():
             owner = random.choice(corps)
 
         elif roll < 0.7:
-            owner = random.choice(gangs)
+            owner = random.choice(gangs)#this wil need to be a given gangs GangBoss
 
         else:
             owner = random.choice(game_state.all_characters)#Except class Child or SpecialChild
         from economy.economy_helpers import assign_location_owner
         assign_location_owner(club, owner)
 
-        if hasattr(owner, "owned_locations"):
-
-            if club not in owner.owned_locations:
-                owner.owned_locations.append(club)
+        

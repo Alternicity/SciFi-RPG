@@ -237,7 +237,27 @@ def find_all_locations_by_type(locations, target_type):
 
     return matches
 
+def determine_owner_type(owner):
+    from Family import Family
+    from faction import Corporation, Gang, State
+    from base.character import Character
+    
+    if isinstance(owner, Family):
+        return "family"
 
+    if isinstance(owner, Corporation):
+        return "corporation"
+
+    if isinstance(owner, Gang):
+        return "gang"
+
+    if isinstance(owner, State):
+        return "state"
+
+    if isinstance(owner, Character):
+        return "individual"
+
+    return "unknown"
 
                 
 #For displaying or logging wallet values:

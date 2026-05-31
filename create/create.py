@@ -376,7 +376,7 @@ def create_HQ(region, faction_type="gang"):
 def assign_hq(faction, region):
     from create.create_game_state import get_game_state
     game_state = get_game_state()
-
+    from economy.economy_helpers import assign_location_owner
     #Not all gang factions successfully get an HQ, this is expected and desirable
     
 
@@ -406,6 +406,11 @@ def assign_hq(faction, region):
         hq = random.choice(available_hqs)
         hq.faction = faction
         hq.controlling_faction = faction
+
+        assign_location_owner(
+            hq,
+            faction
+        )
         hq.name = f"{faction.name} HQ"
         faction.HQ = hq
 

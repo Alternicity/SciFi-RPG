@@ -66,17 +66,26 @@ def assign_location_names(all_locations):
 
 def assign_location_ownership(all_locations, all_corporations):
     """Assign corporations to commercial locations that lack owners."""
+    from economy.economy_queries.location_queries import get_location_owner
+    from economy.economy_helpers import assign_location_owner
+    
     sports_centres = [loc for loc in all_locations if isinstance(loc, SportsCentre)]
     
     if not all_corporations:
         return
     
     for loc in sports_centres:
-        if getattr(loc, "owner", None) is None:
+        if get_location_owner(loc) is None:
             corp = random.choice(all_corporations)
-            loc.owner = corp
+            #loc.owner = corp
+            assign_location_owner(
+                loc,
+                corp
+            )
+
             # Name derives from owner
             loc.name = f"{corp.name} Arena"
+            
 
 
 def seed_park_objects(all_locations):

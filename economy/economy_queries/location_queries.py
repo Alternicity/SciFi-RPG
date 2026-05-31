@@ -1,7 +1,13 @@
 #economy.economy_queries.location_queries.py
-
 from location.locations import Powerplant
 
+
+def get_location_owner(location):
+
+    if getattr(location, "ownership", None):
+        return location.ownership.owner_ref
+
+    return getattr(location, "owner", None)
 
 def get_location_economy_data(location):
     #might need updating if an owner can be an npc
@@ -18,11 +24,12 @@ def get_location_economy_data(location):
 
     is_generator = isinstance(location, Powerplant)
 
+    owner = get_location_owner(location)#to avoid linting I had to put this line here, is tihs right?
     data = {
 
         "owner": (
-            location.owner.name
-            if getattr(location, "owner", None)
+            owner.name
+            if owner
             else None
         ),
 

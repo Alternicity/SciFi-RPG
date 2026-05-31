@@ -1,9 +1,11 @@
-#economy.economy_helper.py
+#economy.economy_helpers.py
 from location.locations import Factory, Powerplant, Nightclub
 from faction import Corporation, Gang
 from characters import Civilian
+from economy.economy import Ownership
 import random
 from create.create_game_state import get_game_state
+from utils import determine_owner_type
 from employment.roles import (BARTENDER, BOUNCER, DJ, CLUB_MANAGER)
 from utils import employ_npc
 from economy.workforce.staffing import staff_from_civilians, staff_from_corporation_pool, staff_from_gang_and_civilians
@@ -106,12 +108,18 @@ def seed_nightclub_workers():
                 club
             )
 
+
+
 def assign_location_owner(location, owner):
-    #needs to be incorporated everywhere  retroactively, sigh.
+    #Never construct Ownership outside this helper again
     location.owner = owner
 
-    if not hasattr(owner, "owned_locations"):
-        owner.owned_locations = []
+    location.ownership = Ownership(
+        owner_type=determine_owner_type(owner),
+        owner_ref=owner
+    )
 
-    if location not in owner.owned_locations:
-        owner.owned_locations.append(location)
+    if hasattr(owner, "owned_locations"):
+
+        if location not in owner.owned_locations:
+            owner.owned_locations.append(location)

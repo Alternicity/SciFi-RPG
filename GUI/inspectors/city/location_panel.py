@@ -10,7 +10,7 @@ from economy.economy_queries.location_queries import (
 from GUI.navigation.breadcrumbs import build_city_breadcrumbs
 
 def build_location_view(gui, parent, location):
-
+    from economy.economy_queries.location_queries import get_location_owner
     build_city_breadcrumbs(gui, parent)
 
     title = ttk.Label(
@@ -23,13 +23,28 @@ def build_location_view(gui, parent, location):
 
     econ = get_location_economy_data(location)
 
-    controlling_text = ""
+    controlling_text = ""#controlling_text not accessed
 
-    if isinstance(location.owner, Faction):
+    owner = get_location_owner(location)
 
-        controlling_text = (
+
+    #tmp debug block
+    owner = get_location_owner(location)
+
+    print(
+        "[LOCATION DEBUG]",
+        location.name,
+        "owner=",
+        getattr(owner, "name", None)
+    )
+
+
+
+    if isinstance(owner, Faction):
+
+        controlling_text = (#controlling_text not accessed
             f"Controlling Faction: "
-            f"{location.owner.name}\n"
+            f"{owner.name}"
         )
 
     if econ["is_generator"]:
@@ -52,15 +67,17 @@ def build_location_view(gui, parent, location):
     Owner: {econ['owner']}
     Resources: {econ['resources']}
     """
-
+    
+    owner = get_location_owner(location)
     lines = [
-        f"Owner: {getattr(location.owner, 'name', None)}"
+        f"Owner: {getattr(owner, 'name', None)}"
     ]
 
-    if isinstance(location.owner, Faction):
+    owner = get_location_owner(location)
+    if isinstance(owner, Faction):
 
         lines.append(
-            f"Controlling Faction: {location.owner.name}"
+            f"Controlling Faction: {owner.name}"
         )
 
     lines.extend([
