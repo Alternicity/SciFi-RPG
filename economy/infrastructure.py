@@ -23,17 +23,18 @@ def update_power_grid():
             len(plant.employees_there) >= 2
         )
 
-        print(
+        #verbose
+        """ print(
             "AFTER:",
             plant.name,
             plant.power_component.is_generating
-        )
+        ) """
 
-        economy_log(
+        """ economy_log(
             f"[POWERPLANT] "
             f"{plant.region.name}:{plant.name} "
             f"generating={plant.power_component.is_generating}"
-        )
+        ) """
 
     for location in game_state.all_locations:
 

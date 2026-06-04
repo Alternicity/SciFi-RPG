@@ -51,9 +51,6 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):#current t
                 if npc.is_player:
                     continue
                 
-                    #I thought here would be too late
-
-
                 # OBSERVE
                 npc.observe(region=region, location=npc.location)
 
@@ -156,7 +153,7 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):#current t
                 
                 # THINK CYCLE
                 if hasattr(npc, 'ai') and npc.ai:
-                    if role(npc) != "background":#GATE.Will this still pass, if the npc is not sleeping?
+                    if role(npc) != "background":
                         from character_components.npc_effects import SleepEffect
                         if npc.has_effect_type(SleepEffect):
                             pass  # sleeping — skip think and action
@@ -262,7 +259,21 @@ def begin_npc_turn(npc):
 
     #npc.motivation_manager.sync_physiological_motivations()
     tick = get_game_state().hour
-    npc.motivation_manager.sync_motivations(tick)
+    
+    #npc.motivation_manager.sync_motivations(tick)
+    #pre temp block
+
+    if npc.motivation_manager:
+        npc.motivation_manager.sync_motivations(tick)
+    else:
+        print(
+            f"MISSING MOTIVATION MANAGER: "
+            f"{npc.name} ({npc.__class__.__name__})"
+        )
+
+
+
+
     npc.time_in_location += 1#might be unused
     npc.mind.decay_thoughts()
     _tick_fun(npc)

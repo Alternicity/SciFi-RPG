@@ -3,6 +3,7 @@ from base.core_types import LocationBase
 from dataclasses import dataclass, field
 from typing import Callable, Optional, TYPE_CHECKING, List, Any
 import uuid
+from perception.perceptibility import PerceptibleMixin
 
 #from location.location_security import Security
 """ MUST NOT import Character.
@@ -23,8 +24,13 @@ class Location(LocationBase):
     
     owner: Optional[Any] = None      # compatibility
     ownership: Optional[Any] = None  # future ECS component
-    
-    sublocations: Optional[List['Location']] = None
+
+    parent_location: Optional['Location'] = None
+
+    sublocations: List['Location'] = field(default_factory=list)
+    perceptible_from_parent: bool = False
+
+
     controlling_faction: Optional[Any] = None
     tags: list[str] = field(default_factory=list)
     menu_options: List[str] = field(default_factory=list)
@@ -184,3 +190,18 @@ class Location(LocationBase):
 class CommercialLocation:
     """Marker mixin: location conducts transactions"""
     register_initial_cash = 300
+
+class Sublocation(Location, PerceptibleMixin):
+
+    #tmp
+    accessible_roles: list[str] = field(default_factory=list)
+    
+    def get_percept_data(self, observer=None):
+        return {
+            "name": self.name,
+            "description": self.name,
+            "type": "Sublocation",
+            "origin": self,
+            "accessible": getattr(self, "accessible", True),
+            "parent": getattr(self.parent_location, "name", None),
+        }

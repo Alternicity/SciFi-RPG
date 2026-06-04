@@ -39,9 +39,9 @@ def initialize_motivations(character, passed_motivations=None):
             elif isinstance(m, Motivation):
                 character.motivation_manager.add(m)
 
-    # 2 — Load preset motivations
-    preset_list = MotivationPresets.for_class(character.__class__.__name__)
+    # 2 — Load preset motivations DEPRECATED
+    """ preset_list = MotivationPresets.for_class(character.__class__.__name__)
     for preset in preset_list:
-        character.motivation_manager.add(preset)
+        character.motivation_manager.add(preset) """
 
     return character.motivation_manager

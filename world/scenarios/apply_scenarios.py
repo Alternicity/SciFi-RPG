@@ -8,5 +8,6 @@ def apply_scenarios(all_characters):
 
     setup_tc1_world(all_characters)
     setup_tc2_world(all_characters)
+    
     setup_normal_stuff(all_characters)
     setup_normal_economy(all_characters)

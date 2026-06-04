@@ -265,7 +265,7 @@ class MotivationManager:
         
         if self.owner.debug_role in ("civilian_liberty", "civilian_worker", "civilian_waitress"):
             assert any(m.type == "have_fun" for m in self.motivations), \
-                "have_fun vanished!"
+                "have_fun vanished!"#old debugging hack
 
         """ types = [m.type for m in self.motivations]#But the above assert already fired, so here there are no have_fun motivations?
 
@@ -283,22 +283,23 @@ class MotivationManager:
     def _debug_check(self, stage):
         types = [m.type for m in self.motivations]
 
-        if "have_fun" not in types:
-            print(f"[MISSING have_fun] at {stage}")
-            print([
-                (id(m), m.type, m.urgency, m.persistent)
-                for m in self.motivations
-            ])
+        for motive in CORE_MOTIVES:
+            if motive not in types:
+                print(f"[MISSING CORE_MOTIVES] at {stage}")
+                print([
+                    (id(m), m.type, m.urgency, m.persistent)
+                    for m in self.motivations
+                ])
 
-        dupes = [t for t in set(types) if types.count(t) > 1]
+            dupes = [t for t in set(types) if types.count(t) > 1]
 
-        if dupes:
-            print(f"[DUPLICATES DETECTED at {stage}] {dupes}")
-            print([
-                (id(m), m.type, m.urgency, m.persistent)
-                for m in self.motivations
-                if m.type in dupes
-            ])
+            if dupes:
+                print(f"[DUPLICATES DETECTED at {stage}] {dupes}")
+                print([
+                    (id(m), m.type, m.urgency, m.persistent)
+                    for m in self.motivations
+                    if m.type in dupes
+                ])
 
 
     # 🔹 PHYSIOLOGY

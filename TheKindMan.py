@@ -51,7 +51,7 @@ class Alter(Character):
         # Call parent constructor
         super().__init__(
             name=name, race=race, sex=sex, faction=faction, region=region,
-            location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations or self.default_motivations, **kwargs # Pass remaining keyword arguments safely
+            location=location, status=status, wallet=wallet, loyalties=default_loyalties, motivations=motivations, **kwargs # Pass remaining keyword arguments safely
         )
         self.directives = []  # List of high-level directives
         self.inventory = kwargs.get("inventory", Inventory(owner=self))

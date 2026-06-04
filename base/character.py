@@ -172,7 +172,8 @@ class Character(PerceptibleMixin, CharacterBase):
             raise RuntimeError(
                 f"{self.__class__.__name__} has no ObservationComponent but observe() was called."
             )
-        return self.observation_component.observe(*args, **kwargs)
+
+        return self.observation_component.observe(*args, **kwargs)#4th call
 
     @property
     def home(self):#primary residence

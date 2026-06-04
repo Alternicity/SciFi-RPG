@@ -16,6 +16,11 @@ def setup_normal_economy(all_characters):
     from economy.economy_queries.economy_snapshot import economy_snapshot_tick_1
     from economy.infrastructure import update_infrastructure
     from world.scenarios.economy.assign_nightclub_ownership import assign_nightclub_ownership
+    from augment.augmentLocations import seed_nightclub_furniture
+
+    #tmp
+    from tmp_debug_print import debug_print_nightclubs
+
     assign_power_infrastructure()
 
     assign_corporation_ownership()
@@ -37,6 +42,11 @@ def setup_normal_economy(all_characters):
         assign_corporate_workers(corp)
 
     all_regions = game_state.all_regions
+    all_locations = game_state.all_locations
+    seed_nightclub_furniture(all_locations)
+
+    #tmp
+    debug_print_nightclubs(all_locations)
 
     setup_normal_power(all_regions)
     update_infrastructure()#added

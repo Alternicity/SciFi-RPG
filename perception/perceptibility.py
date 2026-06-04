@@ -106,7 +106,7 @@ def gather_perceptible_objects(obj, seen=None):
         seen = set()
 
     found = []
-    if isinstance(obj, PerceptibleMixin):#this should be catching npcs correct?
+    if isinstance(obj, PerceptibleMixin):
         oid = id(obj)
         if oid in seen:
             return []

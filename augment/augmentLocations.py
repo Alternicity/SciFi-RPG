@@ -1,6 +1,7 @@
 #augment.augmentLocations.py
 
 import random
+from random import randint
 from create.create_game_state import get_game_state
 from debug_utils import debug_print
 game_state = get_game_state()
@@ -12,6 +13,8 @@ from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
 from objects.trees_and_plants import GoldenRatioTree, Plant, Tree, OakTree, DustPalm, EchoWillow
 from objects.trees_and_plants import BonsaiTree
+from base.location import Location, Sublocation
+
 DEFAULT_SPECIALIZATION = "general"
 
 SUPPORTED_SPECIALIZATIONS = [
@@ -346,12 +349,121 @@ from objects.furniture import CafeTable, CafeChair
 from location.locations import Cafe
 
 def seed_nightclub_furniture(all_locations):
+    from objects.sports_objects import PoolBall, PoolCue, PoolTable
+
+    #tmp
+    from perception.perceptibility import PerceptibleMixin
+
+
     for loc in all_locations:
         if not isinstance(loc, Nightclub):
             continue
             #see some  LargeTable, Sofa, Barstool, CafeChair objects, ClubBar, PoolTable
             #if club has tag "classy" then also some plants in vases
             #if it has tag: pool, add PoolTable
+
+        
+
+        tables = []
+
+        for t in range(8):
+            table = CafeTable(name=f"Table {t+1}")
+            table.location = loc
+            table.region = loc.region
+
+            loc.items.objects_present.append(table)
+            tables.append(table)
+
+            # Add 8 chairs per table. Later incorporate sofas on one side instead
+            for c in range(8):
+                chair = CafeChair(name=f"Chair {t+1}-{c+1}")
+                chair.location = loc
+                chair.region = loc.region
+                chair.table = table
+                table.chairs.append(chair)#Club tables will have 8 places, 4 chairs along one side, and 2 small, or one
+                #long sofa on the other side
+                loc.items.objects_present.append(chair)
+
+        loc.tables = tables
+
+
+        if loc.has_tag("pool"):
+            pool_table = PoolTable()
+            pool_table.location = loc
+            pool_table.region = loc.region
+
+            loc.items.objects_present.append(pool_table)
+
+        dancefloor = Sublocation(
+            name="Dancefloor",
+            perceptible_from_parent=True
+        )
+
+        dancefloor.parent_location = loc
+        dancefloor.region = loc.region
+        dancefloor.accessible_roles = []
+        loc.sublocations.append(dancefloor)
+        
+
+        dj_booth = Sublocation(
+            name="DJ Booth",
+            perceptible_from_parent=True
+        )
+
+        dj_booth.parent_location = loc
+        dj_booth.region = loc.region
+        dj_booth.accessible_roles = ["DJ"]
+        loc.sublocations.append(dj_booth)
+
+        vip_lounge = Sublocation(
+            name="VIP Lounge",
+            perceptible_from_parent=True
+        )
+        vip_lounge.parent_location = loc
+        vip_lounge.region = loc.region
+        vip_lounge.accessible_roles = ["VIP", "Babe"]
+        loc.sublocations.append(vip_lounge)
+
+        if loc.has_tag("classy"):#tag doesnt exist yet
+                add_classy_plants(vip_lounge)
+
+        entry_booth = Sublocation(
+            name="Entry Booth",
+            perceptible_from_parent=True
+        )
+        entry_booth.parent_location = loc
+        entry_booth.region = loc.region
+        entry_booth.accessible_roles = ["Staff"]
+        loc.sublocations.append(entry_booth)
+
+        #tmp
+        if isinstance(loc, Nightclub):
+            for sub in loc.sublocations:
+                print(
+                    sub.name,
+                    isinstance(sub, PerceptibleMixin),
+                    getattr(sub, "is_perceptible", None)
+                )
+
+def add_classy_plants(loc):
+    count = random.randint(2, 5)
+
+    for _ in range(count):
+        pot = Pot()
+        tree = GoldenRatioTree()
+        pot.add(tree)
+        pot.location = loc
+        pot.region = loc.region
+        loc.items.objects_present.append(pot)#not added to vip area
+        #But nor can any npc enter a sublocation yet.
+
+
+
+
+
+
+
+
 
 #reference for above
 def seed_cafe_furniture(all_locations):

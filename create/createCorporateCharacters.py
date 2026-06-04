@@ -6,7 +6,7 @@ import random
 
 #from location.locations import HQ
 from create.create_character_names import create_name
-from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
+from motivation.motivation import MotivationManager
 from motivation.motivation_presets import MotivationPresets
 from motivation.motivation_init import initialize_motivations
 from status import CharacterStatus, FactionStatus, StatusLevel
@@ -76,7 +76,7 @@ def create_corporation_characters(faction, factions):
     )
     faction.add_CEO(ceo)
     characters.append(ceo)
-
+    faction.region.characters_there.append(ceo)
     ceo.mind = Mind(owner=ceo, capacity=ceo.intelligence)
     augment_character(ceo)
     ceo.curiosity = Curiosity(base_score=ceo.intelligence // 2)
@@ -115,6 +115,7 @@ def create_corporation_characters(faction, factions):
         )
         faction.add_manager(manager)
         characters.append(manager)
+        faction.region.characters_there.append(manager)
         manager.mind = Mind(owner=manager, capacity=manager.intelligence)
         augment_character(manager)
         manager.curiosity = Curiosity(base_score=manager.intelligence // 2)
@@ -150,6 +151,7 @@ def create_corporation_characters(faction, factions):
         )
         faction.add_employee(employee)
         characters.append(employee)
+        faction.region.characters_there.append(employee)
 
         employee.employment = EmployeeProfile()#Must be configured
         register_employee(employee)
@@ -189,6 +191,7 @@ def create_corporation_characters(faction, factions):
         )
         faction.add_security(guard)
         characters.append(guard)
+        faction.region.characters_there.append(guard)
         guard.mind = Mind(owner=guard, capacity=guard.intelligence)
         augment_character(guard)
         guard.curiosity = Curiosity(base_score=guard.intelligence // 2)
@@ -225,6 +228,7 @@ def create_corporation_characters(faction, factions):
         )
         faction.add_accountant(accountant)
         characters.append(accountant)
+        faction.region.characters_there.append(accountant)
         accountant.mind = Mind(owner=accountant, capacity=accountant.intelligence)
         augment_character(accountant)
         accountant.curiosity = Curiosity(base_score=accountant.intelligence // 2)
@@ -259,6 +263,7 @@ def create_corporation_characters(faction, factions):
             status=status
         )
         characters.append(assassin)
+        faction.region.characters_there.append(assassin)
         faction.add_assassin(assassin)
         assassin.mind = Mind(owner=assassin, capacity=assassin.intelligence)
         augment_character(assassin)

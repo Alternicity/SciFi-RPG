@@ -685,8 +685,8 @@ class GangMemberAI(UtilityAI):
 
 
         if npc.just_arrived:
-            npc.observe(location=npc.location, region=npc.region)#does this need to be here?
-        #neither of these prints are in the current output
+            npc.observe(location=npc.location, region=npc.region)
+        
             try:
                 self.generate_thoughts_from_percepts()#Is this actually working well?
                 debug_print(

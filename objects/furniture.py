@@ -447,3 +447,17 @@ class Fridge(Furniture):
         return (f"{self.name} ({self.size.value}) - Door: {door_status}, "
                 f"Power: {power_status}, Temp: {self.current_temperature}°C, "
                 f"Cleanliness: {self.cleanliness}%")
+
+class DJBooth(Furniture):
+    is_concrete = True
+
+    def __init__(self):
+        super().__init__(
+            name="DJ Booth",
+            size=Size.LARGE,
+            toughness=Toughness.DURABLE
+        )
+
+    @property
+    def tags(self):
+        return ["music", "entertainment", "nightclub"]

@@ -225,17 +225,17 @@ def seed_tc2_presets(waitress, manager):
     rel.trust = 2
 
 def place_tc2_passive_npc(npc, region):
-
-    cafe = next((loc for loc in region.locations if isinstance(loc, Cafe)), None)
-    if not cafe:
+    from location.locations import Nightclub
+    nightclub = next((loc for loc in region.locations if isinstance(loc, Nightclub)), None)
+    if not nightclub:
         raise RuntimeError("No Cafe found in region for passive NPC placement.")
 
     # Assign region + location
     npc.region = region
-    npc.location = cafe#a fragile way to get the cafe in the downtown/TC2 region
+    npc.location = nightclub
     npc.seated_at = None
     
-    cafe.characters_there.append(npc)
+    nightclub.characters_there.append(npc)
 
     # Lock down behaviour
     npc.debug_role = "civilian_passive"
@@ -243,7 +243,7 @@ def place_tc2_passive_npc(npc, region):
 
     # Find a table
     table = next(
-        (o for o in cafe.items.objects_present
+        (o for o in nightclub.items.objects_present
         if isinstance(o, CafeTable) and not o.occupants),
         None
     )
@@ -259,9 +259,9 @@ def place_tc2_passive_npc(npc, region):
 
     # Put cup on table if seated
     if table:
-        cafe.items.objects_present.append(cup)
+        nightclub.items.objects_present.append(cup)
     else:
-        cafe.items.objects_present.append(cup)
+        nightclub.items.objects_present.append(cup)
 
     return npc
 

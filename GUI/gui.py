@@ -22,7 +22,6 @@ from faction import State
 """ NEW architecture:
 mode frame
     -> internal notebook """
-
 class TC2GUI:
     #Replace Listbox with clickable frames
     def __init__(self, root, game_state):
@@ -260,16 +259,17 @@ class TC2GUI:
 
     def open_npc(self, npc):
 
+        if npc.location:
+            npc.observe(
+                location=npc.location,
+                region=npc.location.region
+            )
+
         self.active_context["npc"] = npc
         self.active_context["entity"] = npc
         self.active_context["faction"] = None
         self.active_context["location"] = None
-        """ Eventually: mode_var should reflect state
-        NOT drive state.
-        Meaning:
-        active_context["mode"]
-        is truth
-        dropdown mirrors it """
+
 
         if npc in self.recent_npcs:
             self.recent_npcs.remove(npc)
@@ -277,6 +277,8 @@ class TC2GUI:
         self.recent_npcs.appendleft(npc)
 
         self.switch_mode("npc")
+
+        self.refresh_npc_view()   # TEST
 
         if hasattr(self, "recent_npcs_frame"):
             self.refresh_recent_npcs()
@@ -371,6 +373,7 @@ class TC2GUI:
 
     def on_npc_select(self, event):
 
+        #the rest of this function is now greyed out, structurally unreachable
         selection = self.npc_listbox.curselection()
         if not selection:
             return
@@ -381,26 +384,8 @@ class TC2GUI:
 
         if not npc:
             return
-        
-        #remove this? Rly?
-        """ self.active_context["npc"] = npc
-        self.active_context["entity"] = npc """
 
-        if npc.location:
-            npc.observe(
-                location=npc.location,
-                region=npc.location.region
-            )
-
-        #In favour of this?
         self.open_npc(npc)
-
-
-
-        #I also removed this and tested
-        #self.refresh_npc_view()
-
-        #self.root.update_idletasks()
 
     def on_mode_change(self, event):
 
@@ -446,8 +431,7 @@ class TC2GUI:
         
         if self.active_context["mode"] != "npc":
             return
-        """ if not self.active_context["entity"]:
-            return """
+
     
         self.npc_name_label.config(
             text=npc.name

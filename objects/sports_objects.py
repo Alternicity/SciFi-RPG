@@ -1,4 +1,4 @@
-# objects/sports_objects.py
+# objects.sports_objects.py
 
 from objects.InWorldObjects import ObjectInWorld, Toughness, Size, ItemType
 from objects.furniture import Furniture, Table

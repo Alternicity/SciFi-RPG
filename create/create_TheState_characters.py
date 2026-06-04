@@ -5,7 +5,7 @@ from characters import VIP, Manager, RiotCop, Detective, Taxman, Civilian
 from create.create_character_names import create_name
 from location.locations import MunicipalBuilding, PoliceStation
 from create.create_game_state import get_game_state
-from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
+from motivation.motivation import MotivationManager
 from motivation.motivation_presets import MotivationPresets
 from motivation.motivation_init import initialize_motivations
 from status import StatusLevel, CharacterStatus, FactionStatus
@@ -68,7 +68,18 @@ def create_TheState_characters(faction):
         faction.members.append(vip)
         game_state.add_state_staff(vip)
         state_staff.append(vip)
+        faction.region.characters_there.append(vip)
         vip.mind = Mind(owner=vip, capacity=vip.intelligence)
+
+
+        passed_motivations = [
+            ("gain_high", 6),
+            ("have_fun", 3),
+            ("influence", 3),
+            ("virtue_signal", 1)
+        ]
+        initialize_motivations(vip, passed_motivations)
+        
         augment_character(vip)
         vip.curiosity = Curiosity(base_score=vip.intelligence // 2)
         vip.task_manager = TaskManager(vip)
@@ -84,11 +95,26 @@ def create_TheState_characters(faction):
             game_state.extant_family_names.append(family_name)
 
     # --- Managers, Employees, Taxmen ---
-    for cls, count, motivations, status_label, status_level in [
-        (Manager, random.randint(2, 3), MotivationPresets.for_class("Manager"), "Manager", StatusLevel.MID),#2,3
-        (Civilian, random.randint(2, 3), MotivationPresets.for_class("Employee"), "Employee", StatusLevel.MID),#Fixed from Employee
-        (Taxman, random.randint(2, 4), MotivationPresets.for_class("Taxman"), "Taxman", StatusLevel.HIGH)#2,4
+    for cls, count, status_label, status_level, starting_motivations in [
+        (Manager, random.randint(2, 3), "Manager", StatusLevel.MID, [#is a status_label required here?
+                ("earn_money", 5),
+                ("gain_mid", 4),
+                ("virtue_signal", 2),
+            ]),
+
+        (Civilian, random.randint(2, 3), "Employee", StatusLevel.MID, [
+                ("earn_money", 4),
+                ("gain_mid", 4),
+            ]),
+
+        (Taxman, random.randint(2, 4), "Taxman", StatusLevel.HIGH, [
+                ("earn_money", 3),
+                ("virtue_signal", 2),
+                ("influence", 2),
+                ("find_safety", 3),
+            ])
     ]:
+
         for _ in range(count):
             #set race here
             from config import STATE_RACE
@@ -118,14 +144,17 @@ def create_TheState_characters(faction):
 
             state_staff.append(person)
             faction.members.append(person)
-
+            faction.region.characters_there.append(person)
             person.mind = Mind(owner=person, capacity=person.intelligence)
             augment_character(person)
             person.curiosity = Curiosity(base_score=person.intelligence // 2)
             person.task_manager = TaskManager(person)
             person.employment = EmployeeProfile()
             register_employee(person)
-            initialize_motivations(person, motivations)
+            
+            
+            initialize_motivations(person, passed_motivations=starting_motivations)
+
             person.inventory_component = InventoryComponent(character=person)
             person.observation_component = ObservationComponent(owner=person)
             family_name = person.family_name
@@ -137,9 +166,34 @@ def create_TheState_characters(faction):
     copshop = police_stations[0] if police_stations else faction.region.locations[0]
 
     # --- Riot Cops & Detectives ---
-    for cls, count, motivations, status_label, status_level in [
-        (RiotCop, random.randint(2, 3), MotivationPresets.for_class("RiotCop"), "RiotCop", StatusLevel.LOW),#3,5
-        (Detective, random.randint(1, 2), MotivationPresets.for_class("Detective"), "Detective", StatusLevel.MID)#2, 3
+    for cls, count, status_label, status_level, starting_motivations in [
+        (
+            RiotCop,
+            random.randint(2,3),
+            "RiotCop",
+            StatusLevel.LOW,
+            [
+                ("patrol", 4),
+                ("gain_mid", 4),
+                ("virtue_signal", 2),
+                ("find_safety", 3),
+            ]
+        ),
+
+        (
+            Detective,
+            random.randint(1,2),
+            "Detective",
+            StatusLevel.MID,
+            [
+                ("patrol", 4),
+                ("investigate_crime", 5),
+                ("decrease_hostilities", 3),
+                ("snitch", 2),
+                ("find_safety", 4),
+            ]
+        ),
+
     ]:
         for _ in range(count):
             #race here is still faction.race
@@ -157,19 +211,20 @@ def create_TheState_characters(faction):
                 faction=faction,
                 region=faction.region,
                 location=copshop,
-                
                 status=status
             )
+            initialize_motivations(cop, passed_motivations=starting_motivations)
+
             faction.state_staff.append(cop)
             game_state.add_state_staff(cop)
             state_staff.append(cop)
+            faction.region.characters_there.append(cop)
             cop.mind = Mind(owner=cop, capacity=cop.intelligence)
             augment_character(cop)
             cop.curiosity = Curiosity(base_score=cop.intelligence // 2)
             cop.task_manager = TaskManager(cop)
             cop.employment = EmployeeProfile()
-
-            initialize_motivations(cop, motivations)
+            cop.observation_component = ObservationComponent(owner=cop)
 
             cop.inventory_component = InventoryComponent(cop)
             family_name = cop.family_name

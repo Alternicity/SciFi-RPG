@@ -73,8 +73,20 @@ def refresh_percepts_panel(gui):
     
     buckets = collect_display_buckets(npc)
 
+    #tmp
+    print(
+        "NORMAL ROWS:",
+        len(buckets["normal_rows"])
+    )
 
     for origin, data, v in buckets["normal_rows"]:
+
+        #tmp
+        print(
+            "ROW:",
+            type(origin).__name__,
+            getattr(origin, "name", None)
+        )
 
         desc = (
             data.get("description")
@@ -92,13 +104,36 @@ def refresh_percepts_panel(gui):
             observer=npc
         )
 
+        access_text = ""
+
+        if hasattr(origin, "accessible_roles"):
+
+            if not origin.accessible_roles:
+                access_text = "Accessible"
+
+            elif getattr(npc, "role", None) in origin.accessible_roles:
+                access_text = "Accessible"
+
+            else:
+                access_text = "Restricted"
+
         info = build_info_column(
             origin,
-            npc,
+            npc,#does role go in here?
             v,
             getattr(npc, "current_anchor", None)
         )
+        if access_text:
+            info = f"{info} | {access_text}"
 
+        #tmp
+        print(
+            "INSERTING:",
+            desc,
+            type_,
+            appearance,
+            info
+        )
 
         tree.insert(
             "",

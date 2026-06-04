@@ -1,6 +1,8 @@
 #create.createLocations.py
-from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock, Powerplant
+from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock, Powerplant, Nightclub
 from base.location import Location
+from perception.perceptibility import PerceptibleMixin
+
 from base.character import Character
 from typing import List
 from create.create_game_state import get_game_state
@@ -33,6 +35,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                 #old
 
                 loc = location_class(region=region)
+                
                 
 
                 if isinstance(loc, Powerplant):

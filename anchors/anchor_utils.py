@@ -470,7 +470,7 @@ def refresh_salience_for_anchor(npc, anchor=None):
     anchor = anchor or getattr(npc, "current_anchor", None)
     if not anchor:
         return
-    npc.observe(location=npc.location, region=npc.region)
+    npc.observe(location=npc.location, region=npc.region)#3rd observe call, less relevant right onw I think
     percepts = npc.get_percepts()
     return update_saliences_for_anchor(anchor, npc, percepts)
 

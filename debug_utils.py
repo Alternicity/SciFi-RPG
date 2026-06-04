@@ -116,7 +116,7 @@ ROLE_FILTERS = {
     "civilian_worker": False,#Manager. Edited to False
     "civilian_liberty": True,
     "civilian_waitress": True,
-    "civilian_passive": False,# added
+    "civilian_passive": False,
 }
 
 """ Why move ROLE_FILTERS into config (per test case)?

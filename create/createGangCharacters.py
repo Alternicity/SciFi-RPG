@@ -3,7 +3,7 @@ import random
 from characters import Boss, Captain, GangMember
 from create.create_character_names import create_name
 from objects.InWorldObjects import Wallet
-from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
+from motivation.motivation import MotivationManager
 from motivation.motivation_presets import MotivationPresets
 from motivation.motivation_init import initialize_motivations
 
@@ -140,8 +140,6 @@ def create_gang_characters(faction, all_regions):
             faction=faction,
             region=faction.region,
             location=None,
-            
-
             status=status
         )
         
@@ -240,7 +238,7 @@ def create_gang_characters(faction, all_regions):
     
     for char in characters:
         if hasattr(char, "memory"):
-            char.mind.memory.add_entry(MemoryEntry(#should this use add_episodcic or semantic?
+            char.mind.memory.add_entry(MemoryEntry(#should this use add_episodic or semantic?
                 subject="Shop",
                 object_="ranged_weapon",
                 details="Shops usually have weapons",

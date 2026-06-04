@@ -92,7 +92,7 @@ class GameState:
         # TEMPORARY alias for legacy code
         return self.hour
 
-    def advance_hour(self):#Do not keep this alias forever, migrate from tick to hour
+    def advance_hour(self):
         self.hour = (self.hour + 1) % 24
         if self.hour == 0:
             self.day += 1

@@ -1,5 +1,5 @@
 #motivation.motivation_presets.py
-#I am not sure if some of this code is now legacy code and unused
+#Looks like legacy code and unused
 from motivation.motivation import Motivation
 
 #not actually a preset, but it serves the same registry purpose.

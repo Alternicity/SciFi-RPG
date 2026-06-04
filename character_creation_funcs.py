@@ -11,7 +11,7 @@ from utils import get_faction_by_name, get_location_by_name, get_region_by_name
 from create.createGangCharacters import create_gang_characters
 from create.createCorporateCharacters import create_corporation_characters
 from create.create_TheState_characters import create_TheState_characters
-from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
+from motivation.motivation import MotivationManager
 from motivation.motivation_presets import MotivationPresets
 from motivation.motivation_init import initialize_motivations
 from status import FactionStatus, StatusLevel, CharacterStatus
@@ -309,6 +309,7 @@ def instantiate_character(char_data, all_regions, factions):
     status=status
 )
     character.mind = Mind(owner=character, capacity=character.intelligence)
+    faction.region.characters_there.append(character)
     augment_character(character)
     character.curiosity = Curiosity(base_score=character.intelligence // 2)
     character.task_manager = TaskManager(character)

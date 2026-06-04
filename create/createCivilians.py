@@ -9,7 +9,8 @@ from location.locations import Shop, Region, Park, Cafe
 from location.location_types import WORKPLACES, PUBLIC_PLACES, RESIDENTIAL
 from characters import Civilian, SpecialChild, Adepta
 from objects.InWorldObjects import Wallet
-from motivation.motivation import MotivationManager, VALID_MOTIVATIONS
+from motivation.motivation import MotivationManager
+
 from motivation.motivation_presets import MotivationPresets #not accessed here
 from motivation.motivation_init import initialize_motivations
 from status import CharacterStatus, FactionStatus, StatusLevel
@@ -86,6 +87,8 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
 
             """ civilian.home = home
             civilian.residences = [home] """
+
+            civilian.region = region_for_home
 
             civilian.personality = create_personality(civilian)
             civilian.fun_prefs = create_fun_prefs(civilian)
@@ -229,7 +232,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
     region=park_location.region,
     location=park_location
 
-    motivations=MotivationPresets.for_class("SpecialChild"), 
+    
 
     Ava = Adepta(
         name="Ava",

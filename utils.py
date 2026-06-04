@@ -146,7 +146,7 @@ def dev_mode():
 def get_region_for_location(location, all_regions):
     for region in all_regions:
         if location.region == region.name or location.region == region:
-            #print(f"✅ get_region_for_location: Found match - {region.name} for location {location.name}")
+            
             return region
     print(f"🟣🟢 No matching region found for location: {location.name} with region = {location.region}")
     return None

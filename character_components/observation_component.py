@@ -213,13 +213,18 @@ class ObservationComponent:
 
         #print(f"{self.owner.name} observing... from ObservationComponent def observe")
 
+        #tmp
+        print(
+            f"OBSERVE CALLED: {self.owner.name}"
+        )
+
         assert hasattr(self, "_percepts") and isinstance(self._percepts, dict)
         """ guards the whole function
         Not tied to self-percept logic
         Will catch corruption earlier """
 
         self.last_observed_hour = current_hour
-        self._percepts.clear()
+        self._percepts.clear()#what? Porbably to clear stale percepts LATER in program flow
 
         observer = self.owner
 
@@ -259,17 +264,6 @@ class ObservationComponent:
                 
                 self.add_percept_from(obj, source="gather_perceptible_objects")
 
-                
-
-                """ percept = obj.get_percept_data(observer=self.owner)
-                if not percept:
-                    continue
-
-                self._percepts[obj.id] = {
-                    "data": percept,
-                    "origin": obj,
-                    "source": "gather_perceptible_objects"
-                } """
                 self.percepts_updated = True
 
         assert isinstance(self._percepts, dict), "Percepts store corrupted"
@@ -277,13 +271,6 @@ class ObservationComponent:
         gs = get_game_state()
         debug_allowed = gs is not None and gs.should_display_npc(self.owner)
 
-        #everything after this block is gated
-        """ if debug_allowed:
-            debug_print(
-            self.owner,
-            f"[SELF PERCEPT] tags={self._percepts['self']['data']['tags']} urgency={self._percepts['self']['data'].get('urgency')}",
-            category="percept"
-            ) """
 
         # --- determine current location if not passed ---
         if location is None:
@@ -307,7 +294,15 @@ class ObservationComponent:
                 category="percept"
             )
 
+            for sub in getattr(location, "sublocations", []):
 
+                if not getattr(sub, "perceptible_from_parent", False):
+                    continue
+
+                self.add_percept_from(
+                    sub,
+                    source="sublocation"
+                )
             # --- perceive other characters in the same location ---
             for char in getattr(location, "characters_there", []):
                 if char is self.owner:
