@@ -1,10 +1,10 @@
-# base.location.py
+#base.location.py
 from base.core_types import LocationBase
 from dataclasses import dataclass, field
 from typing import Callable, Optional, TYPE_CHECKING, List, Any
 import uuid
 from perception.perceptibility import PerceptibleMixin
-
+from location.location_security import can_access_sublocation
 #from location.location_security import Security
 """ MUST NOT import Character.
 If you need characters → pass references as "Character" type hints under TYPE_CHECKING """
@@ -19,6 +19,7 @@ class Location(LocationBase):
     name: str = "Unnamed Location"
     id: str = field(default_factory=lambda: str(uuid.uuid4()), init=False)
     region: Optional[Any] = None
+    wealth_tier: str = "Normal"
     items: LocationItems = field(default_factory=LocationItems)
     is_shakedown_target: bool = False
     
@@ -192,16 +193,32 @@ class CommercialLocation:
     register_initial_cash = 300
 
 class Sublocation(Location, PerceptibleMixin):
-
+    
     #tmp
     accessible_roles: list[str] = field(default_factory=list)
     
+    #can other npcs perceive the interior of a given sublocation?
+    #visible_roles: list[str] = field(default_factory=list)
+    #deprecated
+    
+
     def get_percept_data(self, observer=None):
+        accessible = True
+        visible = True
+        if observer:
+
+            accessible = can_access_sublocation(
+                observer,
+                self
+            )
+
         return {
             "name": self.name,
             "description": self.name,
             "type": "Sublocation",
             "origin": self,
             "accessible": getattr(self, "accessible", True),
+            "visible": visible,
+            "accessible": accessible,
             "parent": getattr(self.parent_location, "name", None),
         }

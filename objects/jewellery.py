@@ -1,14 +1,16 @@
 #objects.jewellery.py
 
 from objects.InWorldObjects import ObjectInWorld
+from objects.InWorldObjects import Toughness, Size, ItemType
+
 
 class Necklace(ObjectInWorld):
     def __init__(self):
         super().__init__(
             name="Necklace",
-            toughness=1,
-            item_type="jewellery",
-            size="small",
+            toughness=Toughness.NORMAL,
+            item_type=ItemType.JEWELLERY,
+            size=Size.POCKET_SIZED,
             blackmarket_value=50,
             price=120,
             legality=True,

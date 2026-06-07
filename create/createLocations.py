@@ -35,7 +35,7 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                 #old
 
                 loc = location_class(region=region)
-                
+                loc.wealth_tier = wealth
                 
 
                 if isinstance(loc, Powerplant):

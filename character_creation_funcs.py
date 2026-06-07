@@ -28,6 +28,9 @@ from augment.augment_character import augment_character
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from weapons import Knife
+from create.create_babes import create_babes
+BABES_PER_REGION = 2
+
 game_state = get_game_state()
 
 def create_faction_characters(faction, all_regions, factions=None):
@@ -74,6 +77,10 @@ def create_all_characters(factions, all_locations, all_regions):
 
     factionless = next(f for f in factions if f.name == "Factionless")
     civilians = create_civilian_population(all_locations, all_regions, factionless)
+    
+    babes_per_region = BABES_PER_REGION#hmm babes_per_region is not accessed
+    babes = create_babes(all_regions, factionless, BABES_PER_REGION)
+    all_characters.extend(babes)
     
     all_characters.extend(civilians)
 

@@ -51,6 +51,11 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
         rel.current_type = "partner"
         rel.trust = 5
 
+    #verbose
+    """ print("NPC:", npc)
+    print("Partner:", npc.partner)
+    print("Partner type:", type(npc.partner)) """
+
     # Faction placeholder
     if getattr(npc, "faction", None):
         # NOTE: actual linking deferred until faction members exist

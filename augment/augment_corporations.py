@@ -5,7 +5,7 @@ import random
 from world.scenarios.economy.economy_logging import economy_log
 from location.locations import Powerplant, Factory
 from faction import Corporation
-
+from economy.economy_helpers import is_economy_eligible
 def augment_corporations():
 
     print(f"[DEBUG] corporations: {len(game_state.corporations)}")
@@ -67,6 +67,16 @@ def assign_power_workers(corp):
 
     for plant in powerplants:
 
+        # TEMP DEBUG
+        for w in corp.available_workers:#this
+
+            if getattr(w, "is_scenario_npc", False):
+                print(
+                    "[SCENARIO NPC IN WORKER POOL]",
+                    w.name,
+                    w.debug_role
+                )
+
         for _ in range(2):
 
             available = [
@@ -97,7 +107,10 @@ def assign_power_workers(corp):
             if worker not in plant.employees_there:
                 plant.employees_there.append(worker)
 
-            if worker not in corp.employees:
+            if (
+                worker not in corp.employees
+                and is_economy_eligible(worker)
+            ):
                 corp.employees.append(worker)
 
             """ economy_log(
@@ -114,6 +127,16 @@ def assign_factory_workers(corp):
 
     for plant in factories:
 
+        # TEMP DEBUG
+        for w in corp.available_workers:#this
+
+            if getattr(w, "is_scenario_npc", False):
+                print(
+                    "[SCENARIO NPC IN WORKER POOL]",
+                    w.name,
+                    w.debug_role
+                )
+
         for _ in range(2):
 
             available = [
@@ -143,7 +166,11 @@ def assign_factory_workers(corp):
 
             if worker not in plant.employees_there:
                 plant.employees_there.append(worker)
-            if worker not in corp.employees:
+
+            if (
+                worker not in corp.employees
+                and is_economy_eligible(worker)
+            ):
                 corp.employees.append(worker)
 
             """ economy_log(

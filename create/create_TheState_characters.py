@@ -66,6 +66,7 @@ def create_TheState_characters(faction):
                 )
         faction.state_staff.append(vip)
         faction.members.append(vip)
+        game_state.all_VIPs.append(vip)
         game_state.add_state_staff(vip)
         state_staff.append(vip)
         faction.region.characters_there.append(vip)

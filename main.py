@@ -45,14 +45,6 @@ def setup_game():
     augment_municipal_buildings()
     debug_display_all_shops(all_regions)
     
-    #tmp
-    """ from debug_utils import debug_location_init
-    for loc in game_state.all_locations:
-
-        if hasattr(loc, "employees_there") or hasattr(loc, "power_component"):
-            debug_location_init(loc) """
-
-
     print(f"Game setup complete. Total characters: {len(game_state.all_characters)}")
 
     return all_regions, factions, all_characters, all_locations
@@ -67,7 +59,7 @@ def main():
     augment_factions(factions)#the factions i was suspicious of. Is setup_game returning it? 
     #maybe we should try populating it again from game_state here just to see what happens?
     main_menu(all_locations, all_characters)
-    #game()
+
 
 def get_all_regions():
     global all_regions

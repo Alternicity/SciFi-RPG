@@ -16,8 +16,12 @@ def build_overview_panel(gui, parent):
 
     fields = [
         "Name",
+        "Class",
         "Debug Role",
+        "Family",
+        "Partner",
         "Location",
+        "Sublocation",
         "Destination",
         "Faction",
         "Top Motivation",
@@ -86,6 +90,35 @@ def refresh_overview_panel(gui):
 
             top_text = "\n".join(lines)
 
+    gui.overview_labels["Class"]["label"].config(
+        text=npc.__class__.__name__
+    )
+
+    family = getattr(npc, "family", None)
+
+    family_name = getattr(
+        family,
+        "family_name",
+        "-"
+    )
+
+    gui.overview_labels["Family"]["label"].config(
+        text=family_name
+    )
+
+    partner = getattr(npc, "partner", None)
+
+    partner_name = getattr(
+        partner,
+        "name",
+        "-"
+    )
+
+    gui.overview_labels["Partner"]["label"].config(
+        text=partner_name
+    )
+
+
     gui.overview_labels["Top Motivation"]["label"].config(
         text=top_text
     )
@@ -148,9 +181,20 @@ def refresh_overview_panel(gui):
         "-"
     )
 
+    sublocation_name = getattr(
+        getattr(npc, "sublocation", None),
+        "name",
+        "-"
+    )
+
     gui.overview_labels["Location"]["label"].config(
         text=location_name
     )
+
+    gui.overview_labels["Sublocation"]["label"].config(
+        text=sublocation_name
+    )
+
 
     gui.overview_labels["Hunger"]["label"].config(
         text=str(getattr(npc, "hunger", "-"))

@@ -9,9 +9,9 @@ def debug_print_nightclubs(all_locations):
         if not isinstance(loc, Nightclub):
             continue
 
-        print()
+        """ print()
         print("=" * 60)
-        print("CLUB:", loc.name)
+        print("CLUB:", loc.name) """
 
         """ print("Objects in club:")
         for obj in loc.items.objects_present:

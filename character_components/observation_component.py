@@ -224,7 +224,7 @@ class ObservationComponent:
         Will catch corruption earlier """
 
         self.last_observed_hour = current_hour
-        self._percepts.clear()#what? Porbably to clear stale percepts LATER in program flow
+        self._percepts.clear()#what? Probably to clear stale percepts LATER in program flow
 
         observer = self.owner
 
@@ -234,7 +234,7 @@ class ObservationComponent:
 
         # --- show before/after counts for easier debugging ---
         try:
-            before_count = len(self.percepts)#before_count not accessed
+            before_count = len(self.percepts)
         except Exception:
             before_count = 0
 
@@ -244,8 +244,6 @@ class ObservationComponent:
 
         # --- perceive self (always included) ---
         self_percept = self.owner.get_percept_data(observer=self.owner)
-
-        
 
         #canonical insertion point for internal state → percept → thought
 
@@ -296,8 +294,15 @@ class ObservationComponent:
 
             for sub in getattr(location, "sublocations", []):
 
-                if not getattr(sub, "perceptible_from_parent", False):
+                if not can_perceive_sublocation(#added
+                    self.owner,
+                    sub
+                ):
                     continue
+
+                #the above deprecates this, correct?
+                """ if not getattr(sub, "perceptible_from_parent", False):
+                    continue """
 
                 self.add_percept_from(
                     sub,
@@ -305,9 +310,17 @@ class ObservationComponent:
                 )
             # --- perceive other characters in the same location ---
             for char in getattr(location, "characters_there", []):
-                if char is self.owner:
-                    continue# prevent duplicate self percepts?
-                self.add_percept_from(char, source="characters_there")
+
+                if not can_perceive_entity(
+                    self.owner,
+                    char
+                ):
+                    continue
+
+                self.add_percept_from(
+                    char,
+                    source="characters_there"
+                )
 
         # --- perceive additional objects if any (location-provided list preferred) ---
         if nearby_objects:
@@ -330,53 +343,73 @@ class ObservationComponent:
         # --- mark update complete ---
         self.percepts_updated = True
         final_count = len(self._percepts)
-        #debug_print(self.owner, f"[OBSERVE COMPLETE] {self.owner.name} perceived {final_count} entities at {location.name} (tick={game_state.tick})", category="percept")
-
-    """ def observe_objects(self, nearby_objects=None, location=None, include_inventory_check=False):
         
-        Gathers percepts from nearby Perceptible objects and optionally from the location's inventory.
-        Updates self._percepts.
-        
-        from debug_utils import debug_print
-        debug_print(self, f"[OBSERVE] Before clearing percepts, from observe_objects() object count={len(self.percepts)}", "percept")
+#utility functions
+def can_perceive_entity(observer, target):
 
-        self._percepts.clear()
-        new_percepts = {}
+    print(
+        "[ENTITY CHECK]",
+        observer.name,
+        "->",
+        target.name,
+        "obs_sub=",
+        getattr(
+            getattr(observer, "sublocation", None),
+            "name",
+            None
+        ),
+        "target_sub=",
+        getattr(
+            getattr(target, "sublocation", None),
+            "name",
+            None
+        )
+    )
+    if observer is target:
+        return False
 
-        # Auto-fetch nearby objects if not provided
-        if hasattr(location, "list_perceptibles"):
-            nearby_objects = location.list_perceptibles()
-        else:
-            nearby_objects = get_nearby_objects(self, location=self.location)#get_nearby_objects is marked not defined
+    observer_sublocation = getattr(
+        observer,
+        "sublocation",
+        None
+    )
 
+    target_sublocation = getattr(
+        target,
+        "sublocation",
+        None
+    )
 
-        # Perceive items from the location's inventory (if enabled)
-        if include_inventory_check and location and hasattr(location, "inventory"):
-            for item in location.inventory.items.values():
-                if isinstance(item, PerceptibleMixin): #is this correct? isinstance rather than som has-a check?
-                    percept = item.get_percept_data(observer=self)
-                    if percept:
-                        new_percepts[item.id] = {
-                            "data": percept,
-                            "origin": item
-                        }
+    # Neither entity is in a sublocation
+    if target_sublocation is None:
+        return True
 
-        # Perceive nearby loose objects (including employees, characters, containers, etc.)
-        for obj in nearby_objects:
-            if isinstance(obj, PerceptibleMixin):
-                percept = obj.get_percept_data(observer=self)
-                if percept:
-                    new_percepts[obj.id] = {
-                        "data": percept,
-                        "origin": obj
-                    }
-                else:
-                    print(f"[BUG] {obj.name} ({type(obj).__name__}) returned None from get_percept_data.")
+    # Same sublocation
+    if observer_sublocation is target_sublocation:
+        return True
 
-        if not any("shop" in p["data"]["tags"] for p in self._percepts.values()):
-            print(f"[DEBUG] {self.name}: No shop percepts detected in {self.location.name}")
+    # Visible from parent location
+    if getattr(
+        target_sublocation,
+        "perceptible_from_parent",
+        False
+    ):
+        return True
 
+    return False
 
-        self._percepts.update(new_percepts)
-        self.percepts_updated = True
-        debug_print(self, f"[OBSERVE] Final percept count from observe_objects ={len(self.percepts)} at {location.name}", "percept") """
+def can_perceive_sublocation(observer, sublocation):
+
+    # currently inside it
+    if observer.sublocation is sublocation:
+        return True
+
+    # visible from parent area
+    if getattr(
+        sublocation,
+        "perceptible_from_parent",
+        False
+    ):
+        return True
+
+    return False

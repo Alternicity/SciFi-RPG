@@ -56,7 +56,7 @@ def is_employed(npc):
         and npc.employment.workplace is not None
     )
 
-# economy/economy_helpers.py
+# economy.economy_helpers.py
 
 def seed_corporation_workers():
 
@@ -68,9 +68,11 @@ def seed_corporation_workers():
 
         for worker in corp.employees:
 
+            if not is_economy_eligible(worker):
+                continue
+
             if (
-                not hasattr(worker, "employment")
-                or worker.employment is None
+                worker.employment is None
                 or worker.employment.workplace is None
             ):
                 corp.available_workers.append(worker)
@@ -123,3 +125,22 @@ def assign_location_owner(location, owner):
 
         if location not in owner.owned_locations:
             owner.owned_locations.append(location)
+
+def get_available_workers(workers):
+
+    return [
+        w for w in workers
+        if is_economy_eligible(w)
+    ]
+
+def is_economy_eligible(worker):
+
+    return (
+        worker is not None
+        and getattr(worker, "is_employee", False)
+
+        and not getattr(worker, "is_scenario_npc", False)
+    )
+    #possible expansions:
+    """ and not getattr(worker, "is_prisoner", False)
+    and not getattr(worker, "is_retired", False) """

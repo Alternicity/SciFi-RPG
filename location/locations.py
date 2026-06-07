@@ -608,10 +608,12 @@ class Nightclub(WorkplaceMixin, PerceptibleLocation):
     is_concrete: bool = True
     secret_entrance: bool = True
 
+    is_tc2_nightclub: bool = False
+
     """ is_powered: bool = False
     energy_cost: int = 0 """
 
-    security: Security = field(default_factory=lambda: Security(
+    security: Security = field(default_factory=lambda: Security(#probably deprected in favour of an ecs component
         level=1,
         guards=[],
         difficulty_to_break_in=1,

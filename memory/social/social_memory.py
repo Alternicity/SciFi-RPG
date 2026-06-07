@@ -12,14 +12,27 @@ class SocialMemory:
         self.relations = {}  # key: other.id → SocialRelation
 
     def get_relation(self, other):
-        rel = self.relations.get(other.id)
+
+        if other is None:
+            return None
+
+        if not hasattr(other, "id"):
+            print(
+                f"WARNING: get_relation() received invalid subject: {other}"
+            )
+            return None
+
+        rel = self.relations.get(id(other))
+
         if not rel:
             rel = SocialRelation(subject=other)
-            self.relations[other.id] = rel
+            self.relations[id(other)] = rel
+
         return rel
 
     def had_recent_interaction(self, other, *, hour, day, window_hours=2, window_days=0):
         rel = self.relations.get(other.id)
+        
         if not rel or rel.last_interaction_hour is None:
             return False
 

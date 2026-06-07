@@ -1190,12 +1190,12 @@ class Babe(Civilian):
         self.health = 120 + toughness
         # List to store items in the character's inventory
         self.position = position
-        self.partner = Character
+        self.partner = partner
 
-        self.base_preferred_actions = {
+        """ self.base_preferred_actions = {
             self.flirt: "powerful man",
             self.bitch_shield: "low_status_man"
-        }
+        } """
 
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__

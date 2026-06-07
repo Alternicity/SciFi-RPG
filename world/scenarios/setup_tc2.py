@@ -25,6 +25,9 @@ def setup_tc2_world(all_characters):
         civilians,
         exclude={debug_civilian_worker}
     )
+
+    
+
     debug_civilian_waitress = pick_civilian(
         civilians,
         sex="female",
@@ -40,10 +43,23 @@ def setup_tc2_world(all_characters):
     )
     if debug_civilian_worker:
         debug_civilian_worker.debug_role = "civilian_worker"
+        debug_civilian_worker.is_scenario_npc = True
+
     if debug_civilian_liberty:
         debug_civilian_liberty.debug_role = "civilian_liberty"
+        debug_civilian_liberty.is_scenario_npc = True
+
     if debug_civilian_waitress:
         debug_civilian_waitress.debug_role = "civilian_waitress"
+        debug_civilian_waitress.is_scenario_npc = True
+
+    #tmp
+    print(
+        "[TC2 LIBERTY, from setup_tc2_world]",
+        debug_civilian_liberty.name,
+        debug_civilian_liberty.is_employee,
+        debug_civilian_liberty.is_scenario_npc
+    )
 
     debug_civilian_passive = pick_civilian(
             civilians,
@@ -52,6 +68,8 @@ def setup_tc2_world(all_characters):
     if debug_civilian_passive:
         game_state.debug_npcs["civilian_passive"] = debug_civilian_passive
         debug_civilian_passive.debug_role = "civilian_passive"
+        debug_civilian_passive.is_scenario_npc = True
+
         from character_think_utils import build_colony_doubt_thought
         debug_civilian_passive.mind.thoughts.append(
             build_colony_doubt_thought(debug_civilian_passive)
@@ -111,8 +129,21 @@ def setup_tc2_world(all_characters):
 
     if debug_civilian_liberty:
         debug_civilian_liberty.is_employee = False
+
+        #tmp
+        print(debug_civilian_liberty)
+        print(debug_civilian_liberty.employment)
+        print(type(debug_civilian_liberty.employment))
+        print(debug_civilian_liberty.__class__.__name__)
+
+
+        if debug_civilian_liberty.employment is None:
+            debug_civilian_liberty.employment = EmployeeProfile()
+
         debug_civilian_liberty.employment.workplace = None
         debug_civilian_liberty.employment.role = None
+
+
         debug_civilian_liberty.motivation_manager.update_motivations("eat", urgency=8)
         debug_civilian_liberty.motivation_manager.update_motivations("find_partner", urgency=3)#but npc might automatically already have one
         debug_civilian_liberty.motivation_manager.update_motivations("have_fun", urgency=5)
@@ -226,9 +257,20 @@ def seed_tc2_presets(waitress, manager):
 
 def place_tc2_passive_npc(npc, region):
     from location.locations import Nightclub
-    nightclub = next((loc for loc in region.locations if isinstance(loc, Nightclub)), None)
+    
+    region = random.choice(game_state.all_regions)
+
+    nightclubs = [
+        loc for loc in region.locations
+        if isinstance(loc, Nightclub)
+    ]
+
+    nightclub = random.choice(nightclubs)
+    nightclub.is_tc2_nightclub = True
+    print(f"[TC2] Selected nightclub: {nightclub.name}")
+    
     if not nightclub:
-        raise RuntimeError("No Cafe found in region for passive NPC placement.")
+        raise RuntimeError("No Nightclub found in region for passive NPC placement.")
 
     # Assign region + location
     npc.region = region
@@ -239,7 +281,7 @@ def place_tc2_passive_npc(npc, region):
 
     # Lock down behaviour
     npc.debug_role = "civilian_passive"
-    npc.placement_locked = True
+    npc.placement_locked = True#starting to look deprecated
 
     # Find a table
     table = next(

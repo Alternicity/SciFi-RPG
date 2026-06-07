@@ -172,6 +172,7 @@ def seed_library_books(all_locations):
 def rename_powerplants():
 
     game_state = get_game_state()
+    
 
     for loc in game_state.all_locations:
 
@@ -189,6 +190,7 @@ def rename_powerplants():
 def rename_factories():
 
     game_state = get_game_state()
+    
 
     used_names = set()
 
@@ -348,6 +350,23 @@ def seed_ambience_objects(all_locations):
 from objects.furniture import CafeTable, CafeChair
 from location.locations import Cafe
 
+
+def augment_nightclubs():
+    pass
+    """ get game_state.all_locations
+        find the nightclubs
+            for each nightclub get its loc.wealth_tier
+                if rich:
+                        nightclub.tags.append("classy")
+                        nightclub.tags.append("exclusive")
+                if poor:
+                        nightclub.tags.append("grimy")
+                
+                if loc.owner is a gang
+                    get gang race, call Frenchify() or Japanify() which add tags
+                    get gang.violence_disposition
+                    nightclub.tags.append("danger vibe") """
+
 def seed_nightclub_furniture(all_locations):
     from objects.sports_objects import PoolBall, PoolCue, PoolTable
 
@@ -417,11 +436,12 @@ def seed_nightclub_furniture(all_locations):
 
         vip_lounge = Sublocation(
             name="VIP Lounge",
-            perceptible_from_parent=True
+            perceptible_from_parent=False
         )
         vip_lounge.parent_location = loc
         vip_lounge.region = loc.region
-        vip_lounge.accessible_roles = ["VIP", "Babe"]
+        vip_lounge.visible_roles = ["VIP", "Babe"]#added, but this should not be role based. A vip outside the lounge would also not be able to see into it.
+        vip_lounge.accessible_roles = ["VIP", "Babe"]#need to ensure the test npcs have this, and gui accurately shows their ability to access
         loc.sublocations.append(vip_lounge)
 
         if loc.has_tag("classy"):#tag doesnt exist yet
@@ -437,13 +457,13 @@ def seed_nightclub_furniture(all_locations):
         loc.sublocations.append(entry_booth)
 
         #tmp
-        if isinstance(loc, Nightclub):
+        """ if isinstance(loc, Nightclub):
             for sub in loc.sublocations:
                 print(
                     sub.name,
                     isinstance(sub, PerceptibleMixin),
                     getattr(sub, "is_perceptible", None)
-                )
+                ) """
 
 def add_classy_plants(loc):
     count = random.randint(2, 5)

@@ -69,7 +69,10 @@ class GameState:
         self.corp_hqs = []
         self.player_character = None
         self.orphans = []
-        
+
+        self.all_babes = []
+        self.all_VIPs = []#needs populating
+
         self.downtown_gangs = []
         self.northville_gangs = []
         self.easternhole_gangs = []

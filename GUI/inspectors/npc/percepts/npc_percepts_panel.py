@@ -1,11 +1,15 @@
 #GUI.inspectors.percepts.npc_percepts_panel.py
-
+from location.location_security import can_access_sublocation
 import tkinter as tk
 from tkinter import ttk
 from GUI.inspectors.npc.percepts.percept_columns import (
     PERCEPT_COLUMNS,
     COLUMN_HEADINGS,
     COLUMN_WIDTHS
+)
+from character_components.observation_component import can_perceive_sublocation
+from GUI.inspectors.percepts.percept_grouping import (
+    build_percept_sections
 )
 
 def build_percepts_panel(gui, parent):
@@ -66,6 +70,20 @@ def refresh_percepts_panel(gui):
         extract_appearance_summary
     )
     
+    sections = build_percept_sections(npc)#here
+
+    regular_rows = sections["regular"]
+    sublocation_rows = sections["sublocations"]
+
+    print(
+        "SUBLOCATION COUNT:",
+        len(sublocation_rows)
+    )
+
+    print(
+        "SUBLOCATION ROWS:",
+        sublocation_rows
+    )
 
     #Treeviews must be manually cleared.
     for item in tree.get_children():
@@ -79,8 +97,9 @@ def refresh_percepts_panel(gui):
         len(buckets["normal_rows"])
     )
 
-    for origin, data, v in buckets["normal_rows"]:
-
+    for origin, data, v in regular_rows:
+        access_text = ""
+        
         #tmp
         print(
             "ROW:",
@@ -94,9 +113,7 @@ def refresh_percepts_panel(gui):
             or "UNKNOWN"
         )
 
-        type_ = data.get("type", "—")#type can drift
-        #type_ = origin.__class__.__name__
-        #this line for class 
+        type_ = data.get("type", "—")
 
 
         appearance = extract_appearance_summary(
@@ -105,26 +122,62 @@ def refresh_percepts_panel(gui):
         )
 
         access_text = ""
+        visibility_text = ""
 
         if hasattr(origin, "accessible_roles"):
 
-            if not origin.accessible_roles:
-                access_text = "Accessible"
+            print(
+                "[SUBLOCATION PERCEPT]",
+                npc.name,
+                origin.name,
+                can_perceive_sublocation(
+                    npc,
+                    origin
+                ),
+                can_access_sublocation(
+                    npc,
+                    origin
+                )
+            )
+            
+            access_text = (
+                "Accessible"
+                if can_access_sublocation(
+                    npc,
+                    origin
+                )
+                else "Restricted"
+            )
 
-            elif getattr(npc, "role", None) in origin.accessible_roles:
-                access_text = "Accessible"
+            visibility_text = (
+                "Visible"
+                if can_perceive_sublocation(
+                    npc,
+                    origin
+                )
+                else "Private"
+            )
 
-            else:
-                access_text = "Restricted"
+        parts = []
 
-        info = build_info_column(
-            origin,
-            npc,#does role go in here?
-            v,
-            getattr(npc, "current_anchor", None)
-        )
+        if visibility_text:
+            parts.append(visibility_text)
+
         if access_text:
-            info = f"{info} | {access_text}"
+            parts.append(access_text)
+
+        if hasattr(origin, "accessible_roles"):
+
+            info = " | ".join(parts)
+
+        else:
+
+            info = build_info_column(
+                origin,
+                npc,
+                v,
+                getattr(npc, "current_anchor", None)
+            )
 
         #tmp
         print(
@@ -146,6 +199,9 @@ def refresh_percepts_panel(gui):
             )
         )
     
+    
+
+    #the original table handling code
     for table in buckets["occupied_tables"]:
 
         seated = table.get_occupants(npc.location)
@@ -182,12 +238,66 @@ def refresh_percepts_panel(gui):
             )
         )
 
+    #Sublocations
+    if sublocation_rows:
 
+        tree.insert(
+            "",
+            "end",
+            values=(
+                "──────── SUBLOCATIONS ────────",
+                "",
+                "",
+                ""
+            )
+        )
 
-        """ collect_display_buckets
-        extract_appearance_summary
-        build_info_column
+    for origin, data, v in sublocation_rows:
+        print("RENDERING SUBLOCATION:", origin)
+        
+        data = v.get("data", {})
 
-        are NOT terminal-only.
+        desc = (
+            data.get("description")
+            or data.get("type")
+            or "UNKNOWN"
+        )
 
-        They are actually reusable presentation utilities."""
+        type_ = data.get("type", "—")
+
+        parts = []
+
+        if can_perceive_sublocation(
+            npc,
+            origin
+        ):
+            parts.append("Visible")
+        else:
+            parts.append("Private")
+
+        if can_access_sublocation(
+            npc,
+            origin
+        ):
+            parts.append("Accessible")
+        else:
+            parts.append("Restricted")
+
+        info = " | ".join(parts)
+
+        print(
+            "INSERTING SUBLOCATION:",
+            origin.name,
+            info
+        )
+
+        tree.insert(
+            "",
+            "end",
+            values=(
+                desc,
+                type_,
+                "",
+                info
+            )
+        )

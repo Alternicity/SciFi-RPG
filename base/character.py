@@ -9,6 +9,8 @@ class Character(PerceptibleMixin, CharacterBase):
     
     VALID_SEXES = ("male", "female")  # Class-level constant
     VALID_RACES = ("Terran", "Martian", "Italian", "Portuguese", "Irish", "French", "Chinese", "German", "BlackAmerican", "Indian", "IndoAryan", "IranianPersian", "Japanese", "WhiteAryanNordic")
+    
+    _next_id = 1
 
     is_concrete = False
     def __init__(
@@ -18,6 +20,7 @@ class Character(PerceptibleMixin, CharacterBase):
         sex,
         region,
         location,
+        sublocation=None,
         is_player=False,
         ai=None,
 
@@ -49,8 +52,13 @@ class Character(PerceptibleMixin, CharacterBase):
 
         super().__init__()
 
+        self.id = Character._next_id#put this after the super() call?
+        Character._next_id += 1
+
         self.region = region
         self.location = location
+        self.sublocation = None
+
         self.placement_locked = False #TC npc variable
         self.current_destination = location
         self.previous_location = None#we also have this
@@ -66,7 +74,8 @@ class Character(PerceptibleMixin, CharacterBase):
         self.first_name = None
         self.family_name = None
         self.family = None # Will hold a Family component later
-        self.debug_role = None   # "primary" | "secondary" | "civilian_test" | etc.
+        self.debug_role = None
+        self.is_scenario_npc = False
         self.is_player = False
         self.is_test_npc = False  # Deprecated
         self.effort = 10 #1-20 scale, 1 is very tired, 20 is high energy both mental and physical
@@ -148,6 +157,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.health = 100 + toughness
         self.wallet = None
         self.inventory_component = None
+        self.access_component = None#add an ecs component after instantiation
         #I predict this will break all npc.inventory type calls
         # Initialize loyalties as a dictionary
         self.loyalties = kwargs.get("loyalties", {})  # Default to empty dictionary if not provided

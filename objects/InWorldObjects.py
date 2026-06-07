@@ -31,8 +31,8 @@ class ItemType(Enum):
     CONTAINER = "Container"
     FOOD = "Food"
     DRINK = "Drink"
-    PLANT ="Plant"
-
+    PLANT = "Plant"
+    JEWELLERY = "Jewellery"
 
 # NOTE: The `item_type` attribute is only defined in concrete classes 
 # that directly instantiate objects (e.g., Pistol, Knife). 
@@ -47,7 +47,7 @@ valid_items = [#ATTN
 ] 
 
 # Base class for all objects in the world
-class ObjectInWorld(PerceptibleMixin):#Ultimate base class
+class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base class
     is_concrete = False  # Abstract base
 
     placement_quality: str = "neutral"  # options: "perfect", "neutral", "poor"
@@ -79,7 +79,8 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate base class
         self.quantity = quantity
         self.bloodstained = None  # Can be a character reference or ID string
         self.is_stolen =False
-
+        self._tags = []
+        
     @property
     def tags(self):
         return []
@@ -89,6 +90,10 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate base class
     
     def has_tags(self, required_tags: list[str]) -> bool:
         return all(tag in self.tags for tag in required_tags)
+
+    @tags.setter
+    def tags(self, value):
+        self._tags = value
 
     def clone(self):
         """Return a new item with identical data but preserved class type."""

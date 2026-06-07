@@ -28,6 +28,9 @@ from augment.augment_character import augment_character
 from create.create_fun_prefs import create_fun_prefs
 from create.create_personality import create_personality
 
+
+
+
 def create_civilian_population(all_locations, all_regions, factionless, num_civilians=None):
     """Generate civilians and assign them logical locations."""
     from create.create_character_names import create_name
