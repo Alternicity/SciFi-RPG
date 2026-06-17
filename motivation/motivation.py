@@ -113,6 +113,16 @@ class MotivationManager:
         #   }
         # }
 
+    def get_targeted_motivations(self, target):
+
+        results = []
+
+        for motive in self.motivations:
+
+            if motive.target is target:
+                results.append(motive)
+
+        return results
 
     def set_urgency(self, type, value):
         """

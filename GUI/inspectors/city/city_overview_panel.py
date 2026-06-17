@@ -5,7 +5,7 @@ def build_city_overview(gui,parent):
 
     frame = ttk.LabelFrame(
         parent,
-        text="City Overview"#Or this
+        text="City Overview"
     )
 
     frame.pack(

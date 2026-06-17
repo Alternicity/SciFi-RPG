@@ -457,7 +457,7 @@ class CorporateAssasin(CorporateSecurity):
     """ default_motivations = [
         ("steal_object", 3),
         ("steal_money", 3),
-        ("gain_high", 5),
+        ("gain_status", 5),
         ("find_safety", 4),
         ("escape_danger", 6)
     ] """

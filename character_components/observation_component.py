@@ -210,14 +210,7 @@ class ObservationComponent:
         import inspect
         game_state = get_game_state()
         current_hour = game_state.hour#this was already here, and seems correct
-
-        #print(f"{self.owner.name} observing... from ObservationComponent def observe")
-
-        #tmp
-        print(
-            f"OBSERVE CALLED: {self.owner.name}"
-        )
-
+        
         assert hasattr(self, "_percepts") and isinstance(self._percepts, dict)
         """ guards the whole function
         Not tied to self-percept logic
@@ -294,7 +287,7 @@ class ObservationComponent:
 
             for sub in getattr(location, "sublocations", []):
 
-                if not can_perceive_sublocation(#added
+                if not can_perceive_sublocation(
                     self.owner,
                     sub
                 ):
@@ -304,7 +297,7 @@ class ObservationComponent:
                 """ if not getattr(sub, "perceptible_from_parent", False):
                     continue """
 
-                self.add_percept_from(
+                self.add_percept_from(#here
                     sub,
                     source="sublocation"
                 )
@@ -347,7 +340,8 @@ class ObservationComponent:
 #utility functions
 def can_perceive_entity(observer, target):
 
-    print(
+    #verbose
+    """ print(
         "[ENTITY CHECK]",
         observer.name,
         "->",
@@ -364,7 +358,7 @@ def can_perceive_entity(observer, target):
             "name",
             None
         )
-    )
+    ) """
     if observer is target:
         return False
 

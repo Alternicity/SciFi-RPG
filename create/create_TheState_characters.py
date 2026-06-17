@@ -74,7 +74,7 @@ def create_TheState_characters(faction):
 
 
         passed_motivations = [
-            ("gain_high", 6),
+            ("gain_status", 3),
             ("have_fun", 3),
             ("influence", 3),
             ("virtue_signal", 1)

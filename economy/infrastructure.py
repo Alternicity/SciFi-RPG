@@ -13,11 +13,12 @@ def update_power_grid():
 
     for plant in game_state.all_powerplants:
 
-        print(
+        #useful
+        """ print(
             plant.name,
             len(plant.employees_there),
             plant.power_component.is_generating
-        )
+        ) """
 
         plant.power_component.is_generating = (
             len(plant.employees_there) >= 2

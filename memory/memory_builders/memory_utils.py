@@ -10,7 +10,7 @@ def best_food_location(npc):
     region = (
         getattr(npc.location, "region", None)
         or npc.region
-    )#here, like this?
+    )
 
     food_kb = food_kbs[0]  # later: choose by salience / region
 
@@ -27,8 +27,10 @@ def best_food_location(npc):
         score = 0
 
         if "prepared_food" in tags:
-            score += 5
-        if "cafe" in tags or "restaurant" in tags:
+            score += 3
+        if "cafe" in tags:
+            score += 6  # was 3, now higher than restaurant
+        if "restaurant" in tags:
             score += 3
         if "groceries" in tags or "shop" in tags:
             score += 1

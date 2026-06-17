@@ -6,10 +6,13 @@ class TimedEffect:
     def __init__(self, name, duration):
         self.name = name
         self.remaining = duration
-
+        
     def on_start(self, npc): pass
     def on_tick(self, npc): pass
     def on_end(self, npc): pass
+
+    def visible_symptoms(self):
+        return []
 
 class RecentMealEffect(TimedEffect):
     def __init__(self):
@@ -193,3 +196,11 @@ class SleepEffect(TimedEffect):
         )
         motives = [(m.type, m.urgency, m.suppressed) for m in npc.motivation_manager.motivations]
         debug_print(npc, f"[MOTIVES POST-SLEEP] {motives}", category="motive")
+
+    class DrunkEffect(TimedEffect):
+
+        def visible_symptoms(self):
+            return [
+                "smells of alcohol",
+                "unsteady posture"
+            ]

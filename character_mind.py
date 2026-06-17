@@ -112,9 +112,6 @@ class Mind:
             return None
         return max(self.thoughts, key=lambda t: t.urgency)
 
-
-
-
     def deduplicate_thoughts(self, npc):#eventually ditch the npc
         seen = {}
         unique_thoughts = []
@@ -137,7 +134,6 @@ class Mind:
 
         for t in removed:
             debug_print(self.owner, f"[MIND] Removed thought: {t.content}", "think")
-
 
     #Rebuild the list, excluding anything with this tag
     def remove_thoughts_with_tag(self, tag):
@@ -213,7 +209,6 @@ class Mind:
                 return thought
         return None
 
-
     def find_thought_by_tag(self, tag: str):
         """
         Returns the first thought containing a given tag.
@@ -229,7 +224,6 @@ class Mind:
             if random.random() < self.concentration / 10:
                 self.attention_focus = self.default_focus
                 print(f"[FOCUS] {self.owner.name} is regaining attention focus on: {self.default_focus}")
-
 
     def get_episodic(self):
         return self.memory.episodic

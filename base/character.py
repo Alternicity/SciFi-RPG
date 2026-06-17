@@ -70,6 +70,10 @@ class Character(PerceptibleMixin, CharacterBase):
         self.location_purpose = None  # set when arriving: "eat", "work", "have_fun"
         self.location_purpose_fulfilled = False
         self.last_greeted_at = None
+
+        self.social_group = None
+        self.current_interaction_target = None#not used in cafe/service interaction (yet)
+
         self.name = name
         self.first_name = None
         self.family_name = None
@@ -114,7 +118,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.race = race
         self.sex = sex
         self.clothing = None
-        self.notable_features = []
+        self.notable_features = []#"tattoos", "scarred face" etc
         self.bloodstained = None  # Will hold a reference to a Character or a string of name/ID. ie whose blood?
         self.is_visibly_wounded = False
         self.overall_impression = None
@@ -167,6 +171,22 @@ class Character(PerceptibleMixin, CharacterBase):
             self.current_location = self.faction.HQ  # Ensure faction members start in HQ
         
         self.observation_component = None
+
+
+    def get_observable_traits(npc):#ATTN
+
+        traits = []
+
+        traits.extend(
+            npc.appearance["notable_features"]
+        )
+
+        for effect in npc.effects:
+            traits.extend(
+                effect.visible_symptoms()
+            )
+
+        return traits
 
     def role_at(self, location):
         if self.employment and self.employment.workplace is location:

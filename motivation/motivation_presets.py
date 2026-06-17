@@ -113,13 +113,13 @@ class MotivationPresets:
         ],
 
         "Boss": [
-            Motivation(type="gain_high", urgency=5),
+            Motivation(type="gain_status", urgency=5),
             Motivation(type="recruit_members", urgency=3),
             Motivation(type="increase_criminal_status", urgency=4)
         ],
 
         "Captain": [
-            Motivation(type="gain_high", urgency=4),
+            Motivation(type="gain_status", urgency=4),
             Motivation(type="execute_orders", urgency=3)
         ],
 

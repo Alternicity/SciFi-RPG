@@ -46,6 +46,6 @@ def inject_initial_food_preferences(npc):
 #eventually call this from all character instantiation blocks
 def inject_initial_social_memory(npc):
     if npc.mind.memory.semantic["social"]:
-        return  # already exists
+        return
 
     npc.mind.memory.semantic["social"] = SocialMemory(owner=npc)

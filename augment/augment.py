@@ -8,7 +8,7 @@
 #locations
 #weapons
 
-from augment.augment_character import 
+from augment.augment_character import augment_character
 
 def apply_augment(character, augment_name):
     if augment_name == "civilian_liberty_start":

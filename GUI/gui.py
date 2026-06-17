@@ -2,6 +2,11 @@
 import tkinter as tk
 from tkinter import ttk
 from collections import deque
+from base.location import Sublocation
+from base.character import Character
+from GUI.inspectors.entity.npc_inspector import build_npc_inspector
+from GUI.inspectors.npc.sublocation_inspector import build_sublocation_inspector
+
 from GUI.helpers.gui_logging import gui_log
 from GUI.inspectors.npc.npc_overview_panel import build_overview_panel, refresh_overview_panel
 from GUI.inspectors.npc.memories.npc_memories_panel import build_memories_panel, refresh_memories_panel
@@ -13,7 +18,6 @@ from GUI.inspectors.faction.faction_hq_panel import refresh_faction_hq_panel
 from GUI.inspectors.city.city_region_panel import (
     refresh_region_panel,
 )
-from GUI.tabs.city.city_map_tab import create_city_map_tab
 
 from faction import Gang
 from faction import Corporation
@@ -30,14 +34,30 @@ class TC2GUI:
         self.game_state = game_state
 
         # --- single source of truth for UI state ---
-        self.active_context = {
-            "mode": "npc",
+        self.active_context = {#Observer context
+            "mode": "npc",#im not sure if this is legit, ir used, it could be a legacy
             "faction": None,
             "npc": None,
             "entity": None,
             "region": None,
-            "location": None
+            "location": None,
+            "sublocation": None
         }
+        
+        #Current target of attention
+        self.inspected_target = None
+
+        self.current_page = None#line 51
+
+        """active_context
+            Who or what am I following?
+
+        inspected_target
+            What is highlighted in right sidebar?
+
+        current_page
+            What is occupying the main panel? """
+
         self.mode_var = tk.StringVar(value=self.active_context["mode"])
         self.recent_npcs = deque(maxlen=20)
         self.root.title("World/Sim Inspector")
@@ -66,7 +86,7 @@ class TC2GUI:
         self.switch_mode(#note there are other self.switch_mode( entries in this file
             self.active_context["mode"]
         )
-        #BUILDING ONCE. NOT rebuilding later
+
 
         self.mode_var.set(#attempt to populate intial mode selector with text
             self.active_context["mode"]
@@ -74,35 +94,76 @@ class TC2GUI:
 
     #refactor
     def build_npc_mode(self):
-        #build_xyz_mode() should ONLY build widgets once.
+        """
+        Build NPC mode widgets once.
 
-        frame = ttk.Frame(self.mode_container)#frame, NOT root, NOT self.main_notebook
+        Widgets created here persist for the lifetime of the GUI.
 
-        self.mode_frames["npc"] = frame
+        Refresh functions update these widgets but never recreate them.
+        Page navigation should hide/show containers rather than destroy
+        notebook infrastructure.
+        """
+
+        frame = ttk.Frame(self.mode_container)
 
         left_panel = ttk.Frame(frame)
+        self.npc_main_panel = ttk.Frame(frame)
+
+        self.npc_inspector_panel = ttk.Frame(
+            frame,
+            width=250
+        )
+
         left_panel.pack(
             side="left",
             fill="y",
             padx=(0, 10)
         )
-
-        right_panel = ttk.Frame(frame)
-        right_panel.pack(
-            side="right",
+        
+        self.npc_main_panel.pack(
+            side="left",
             fill="both",
             expand=True
         )
 
+        self.npc_page_container = ttk.Frame(
+            self.npc_main_panel
+        )
+
+        self.npc_page_container.pack(
+            fill="both",
+            expand=True
+        )
+
+        self.detail_page_container = ttk.Frame(
+            self.npc_main_panel
+        )#Notice: Do NOT pack it yet. Initially only the notebook page is visible.
+
+        self.mode_frames["npc"] = frame
+
+        self.npc_inspector_panel.pack(
+            side="right",
+            fill="y"
+        )
+        
+        ttk.Label(
+            self.npc_inspector_panel,
+            text="Inspector"
+        ).pack(
+            padx=10,
+            pady=10
+        )
+
         self.npc_name_label = ttk.Label(
-            right_panel,
-            text="No NPC Selected"
+            self.npc_page_container,
         )
 
         self.npc_name_label.pack(pady=10)
-
         
-        npc_notebook = ttk.Notebook(right_panel)
+        npc_notebook = ttk.Notebook(
+            self.npc_page_container
+        )
+
         npc_notebook.pack(fill="both", expand=True)
         self.npc_notebook = npc_notebook
 
@@ -131,8 +192,6 @@ class TC2GUI:
 
         self.stat_vars = {}
         self.stat_labels = {}
-
-        #self.npc_name_label.pack(pady=10)
 
         self.npc_listbox = tk.Listbox(left_panel)
         self.npc_listbox.pack(fill="y", expand=True)
@@ -189,6 +248,10 @@ class TC2GUI:
             self.on_npc_select
         )
 
+        print(self.npc_name_label.winfo_parent())
+        print(self.npc_notebook.winfo_parent())
+        #print(self.page_container)
+
     def build_city_mode(self):
 
         frame = ttk.Frame(self.mode_container)
@@ -205,21 +268,47 @@ class TC2GUI:
         )
 
     def build_faction_mode(self):
+        """ left | center | inspector
+        which mirrors NPC mode. """
 
         frame = ttk.Frame(self.mode_container)
 
         self.mode_frames["faction"] = frame
 
+        
+
         left_panel = ttk.Frame(frame)
+
+        center_panel = ttk.Frame(frame)
+
+        self.faction_inspector_panel = ttk.Frame(
+            frame,
+            width=250
+        )
+
         left_panel.pack(
             side="left",
             fill="y",
             padx=(0, 10)
         )
 
-        right_panel = ttk.Frame(frame)
-        right_panel.pack(
+        
+
+        self.faction_inspector_panel.pack(
             side="right",
+            fill="y"
+        )
+
+        ttk.Label(
+            self.faction_inspector_panel,
+            text="Inspector"
+        ).pack(
+            padx=10,
+            pady=10
+        )
+
+        center_panel.pack(
+            side="left",
             fill="both",
             expand=True
         )
@@ -239,7 +328,7 @@ class TC2GUI:
 
         build_faction_center(
             self,
-            right_panel
+            center_panel
         )
 
     def refresh_all(self):
@@ -258,6 +347,8 @@ class TC2GUI:
             self.refresh_faction_view()
 
     def open_npc(self, npc):
+        self.current_page = "npc"
+        self.show_npc_page()#recent approach, ensures returning to an NPC restores the notebook page
 
         if npc.location:
             npc.observe(
@@ -317,7 +408,7 @@ class TC2GUI:
             text="Mode:"
         ).pack(side="left", padx=(5, 2), pady=5)
 
-        mode_dropdown = ttk.Combobox(#line 137 
+        mode_dropdown = ttk.Combobox(
             self.top_bar,
             textvariable=self.mode_var,
             values=[
@@ -372,8 +463,13 @@ class TC2GUI:
         logging, breadcrumbs, stack popping, animations, transition effects, confirmation dialogs """
 
     def on_npc_select(self, event):
+        
+        #tmp
+        print("NPC SELECT CLICK")
+        print(self.active_context)
 
-        #the rest of this function is now greyed out, structurally unreachable
+
+        
         selection = self.npc_listbox.curselection()
         if not selection:
             return
@@ -400,7 +496,7 @@ class TC2GUI:
         self.switch_mode(mode)
         
     def switch_mode(self, mode_name):
-
+        self.clear_inspector()
         current_mode = self.active_context["mode"]
 
         # Re-selecting city mode resets navigation
@@ -420,19 +516,32 @@ class TC2GUI:
         self.refresh_all()
 
     def refresh_npc_view(self):
-        #refresh_xyz_view() should ONLY update existing widgets.
-        print("NPC VIEW REFRESH")
+        """
+        Update existing NPC widgets.
+
+        This function assumes the NPC notebook and its tabs already exist.
+        It must never create or destroy widgets.
+        """
+        print("REFRESH NPC VIEW")
+        print("current_page =", self.current_page)
+
+        #suspect verbose print
         print(self.active_context)
 
         npc = self.active_context["npc"]
 
         if not npc:
             return
+
+        if self.current_page != "npc":
+            return
         
         if self.active_context["mode"] != "npc":
             return
 
-    
+        print("npc_name_label =", self.npc_name_label)
+        print("exists =", self.npc_name_label.winfo_exists())
+
         self.npc_name_label.config(
             text=npc.name
         )
@@ -558,7 +667,7 @@ class TC2GUI:
 
         refresh_region_panel(self)
 
-        self.refresh_region_view()#is this stil necessary as well as the above?
+        self.refresh_region_view()
 
     def open_region(self, region):
 
@@ -591,6 +700,14 @@ class TC2GUI:
         self.show_location_view(location)
 
 
+    def open_sublocation(self, sublocation):
+
+        self.active_context["sublocation"] = sublocation
+
+        print(f"Open sublocation: {sublocation.name}")
+        
+        self.show_sublocation_view(sublocation)
+
     def show_location_view(self, location):
 
         from GUI.inspectors.city.location_panel import build_location_view
@@ -615,17 +732,6 @@ class TC2GUI:
             self,
             self.city_center_frame
         )
-
-    """ def restore_city_map(self):
-        
-        for widget in self.city_center_frame.winfo_children():
-            widget.destroy()
-
-        self.rebuild_city_map() """
-        #rebuild_city_map is not defined
-
-        
-        #OR cleaner: Store the original map frame once and hide/show it instead of rebuilding.
 
     def on_faction_type_change(self,event):
 
@@ -796,7 +902,141 @@ class TC2GUI:
 
         self.root.after(250, self.update_loop)
         
+    def show_sublocation_center_view(self, sublocation):
+        self.current_page = "sublocation"
+        
+        from GUI.helpers.gui_helpers import clear_frame
+        from GUI.inspectors.npc.sublocation_inspector import (
+            build_sublocation_inspector
+        )
 
+        self.clear_main_panel()
+        
+        self.show_detail_page()
+
+        build_sublocation_inspector(
+            self,
+            self.detail_page_container,
+            sublocation
+        )
+
+        self.clear_inspector()
+    
+    def show_sublocation_view(self, sublocation):
+
+        from GUI.inspectors.npc.sublocation_inspector import (
+            build_sublocation_inspector
+        )
+
+        self.clear_main_panel()
+        self.show_detail_page()
+
+        build_sublocation_inspector(
+            self,
+            self.detail_page_container,#updated
+            sublocation
+        )
+        #but there was no self.
+        #show_detail_page()
+        #here. Should there be?
+
+    def refresh_inspector(self):
+        
+        parent = self.get_inspector_parent()
+
+        target = self.inspected_target
+        print("INSPECTOR TARGET:", target)
+        
+        if target is None:
+            return
+
+        if isinstance(target, Sublocation):
+
+            build_sublocation_inspector(
+                self,
+                parent,
+                target
+            )
+        elif isinstance(target, Character):
+            build_npc_inspector(
+                self,
+                parent,
+                target
+            )
+
+        print("INSPECTOR PANEL =", self.npc_inspector_panel)
+        print("MODE =", self.active_context["mode"])
+        
+    def clear_main_panel(self):
+        from GUI.helpers.gui_helpers import clear_frame
+        """ We are no longer clearing notebook widgets.
+        Only temporary pages. """
+        clear_frame(self.detail_page_container)
+
+    def show_npc_page(self):
+        #latest approach,official page switcher
+        self.detail_page_container.pack_forget()
+
+        self.npc_page_container.pack(
+            fill="both",
+            expand=True
+        )
+
+    def show_detail_page(self):
+        #latest approach, official page switcher
+        self.npc_page_container.pack_forget()
+
+        self.detail_page_container.pack(
+            fill="both",
+            expand=True
+        )
+
+    def show_npc_entity_view(self, observer, target):
+        #not switching observer, viewing another npc, from slected npcs perspective
+        from GUI.inspectors.entity.npc_entity_page import build_npc_entity_page
+        from GUI.helpers.gui_helpers import clear_frame
+        self.current_page = "entity"
+        self.clear_inspector()
+        self.clear_main_panel()
+        #clear_frame(self.npc_main_panel)
+
+        print("SHOW NPC ENTITY VIEW")#the commetn already existed
+        print("observer =", observer.name)
+        print("target =", target.name)
+
+        self.show_detail_page()#new approach
+        build_npc_entity_page(
+            self,
+            self.detail_page_container,#is this right?
+            observer,
+            target
+        )
+
+        if observer is target:
+            self.open_npc(observer)
+            return
+    
+    def inspect(self, thing):
+        self.inspected_target = thing
+        self.refresh_inspector()
+
+    def clear_inspector(self):
+        from GUI.helpers.gui_helpers import clear_frame
+        self.inspected_target = None
+
+        clear_frame(
+            self.get_inspector_parent()
+        )
+
+    def get_inspector_parent(self):
+
+        #maybe
+        mode = self.active_context["mode"]
+
+        if self.active_context["mode"] == "faction":
+            return self.faction_inspector_panel
+
+        return self.npc_inspector_panel
 
 #utility function
 

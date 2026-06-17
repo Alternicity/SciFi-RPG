@@ -8,7 +8,7 @@ class WorkplaceMixin:#is this now broken, we had a mixin edit earlier
         #super().__init__(*args, **kwargs)
         #commented out to solved recursion issue 
 
-        self.allowed_roles = []#consider moving tihs shit out of here and into Location, Mixin does not play nice with dataclass
+        self.allowed_roles = []#consider moving this shit out of here and into Location, Mixin does not play nice with dataclass
         self.employees_there = []
         self.employees = []
 

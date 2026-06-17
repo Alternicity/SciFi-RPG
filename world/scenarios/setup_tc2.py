@@ -54,12 +54,12 @@ def setup_tc2_world(all_characters):
         debug_civilian_waitress.is_scenario_npc = True
 
     #tmp
-    print(
+    """ print(
         "[TC2 LIBERTY, from setup_tc2_world]",
         debug_civilian_liberty.name,
         debug_civilian_liberty.is_employee,
         debug_civilian_liberty.is_scenario_npc
-    )
+    ) """
 
     debug_civilian_passive = pick_civilian(
             civilians,
@@ -131,7 +131,7 @@ def setup_tc2_world(all_characters):
         debug_civilian_liberty.is_employee = False
 
         #tmp
-        print(debug_civilian_liberty)
+        #print(debug_civilian_liberty)
         print(debug_civilian_liberty.employment)
         print(type(debug_civilian_liberty.employment))
         print(debug_civilian_liberty.__class__.__name__)
@@ -267,7 +267,7 @@ def place_tc2_passive_npc(npc, region):
 
     nightclub = random.choice(nightclubs)
     nightclub.is_tc2_nightclub = True
-    print(f"[TC2] Selected nightclub: {nightclub.name}")
+    #print(f"[TC2] Selected nightclub: {nightclub.name}")
     
     if not nightclub:
         raise RuntimeError("No Nightclub found in region for passive NPC placement.")

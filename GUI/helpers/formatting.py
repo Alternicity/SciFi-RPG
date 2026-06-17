@@ -1,8 +1,5 @@
 #GUI.helpers.formatting.py
 
-
-
-
 def format_stat_block(stats):
     pass
 

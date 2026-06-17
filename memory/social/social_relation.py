@@ -5,8 +5,9 @@ from dataclasses import dataclass, field
 @dataclass
 class SocialRelation:
     subject: "Character"  # who this relation is about
-
+    
     # Interaction history
+    memories: list[str] = field(default_factory=list)
     interaction_count: int = 0
     positive_count: int = 0
     negative_count: int = 0
@@ -16,7 +17,7 @@ class SocialRelation:
     last_interaction_day: int | None = None
 
     # Classification
-    current_type: str = "acquaintance"#coworker
+    current_type: str = "acquaintance"#coworker, stranger
     past_types: list[str] = field(default_factory=list)
 
     # Affective scalars
@@ -24,6 +25,11 @@ class SocialRelation:
     pity: int = 0
     trust: int = 0
     fear: int = 0
+    familiarity: int = 0#should emerge from: number of interactions, number of memories, recency of contact, duration known
+    affection: int = 0
+    attraction: int = 0
+    respect: int = 0
+    interest: int = 0
     #Valence = positive vs negative emotional impact
     
     # Network awareness (lightweight, optional)

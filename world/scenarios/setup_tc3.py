@@ -7,6 +7,8 @@ from objects.InWorldObjects import SmartPhone
 from location.locations import Nightclub
 import random
 from world.placement import place_character, place_character_in_sublocation
+from social.social_utils import seed_social_relations
+from social.social_groups import SocialGroup
 game_state = get_game_state()
 
 def setup_tc3_world(all_characters):
@@ -37,11 +39,11 @@ def setup_tc3_world(all_characters):
     debug_civilian_vip = random.choice(vip_candidates) if vip_candidates else None
 
     #tmp
-    print(
+    """ print(
         "[TC3] VIP selected:",
         debug_civilian_vip,
         debug_civilian_vip.__class__.__name__
-    )
+    ) """
 
     babe_candidates = [
         b for b in game_state.all_babes
@@ -77,10 +79,6 @@ def setup_tc3_world(all_characters):
         None
     )
 
-    print(f"[TC3] Found nightclub: {nightclub}")
-    print(f"[TC3] Sublocations: {[s.name for s in nightclub.sublocations]}")
-    print(f"[TC3] VIP lounge found: {vip_lounge}")
-
     if debug_civilian_vip and vip_lounge:
         place_character_in_sublocation(
             debug_civilian_vip,
@@ -94,15 +92,109 @@ def setup_tc3_world(all_characters):
             nightclub,
             vip_lounge
         )
-
-    print(
-        debug_civilian_babe.name,
-        debug_civilian_babe.location,
-        debug_civilian_babe.sublocation
+    
+    vip_social = (
+        debug_civilian_vip
+        .mind.memory.semantic["social"]
     )
 
-    print(
-        debug_civilian_vip.name,
-        debug_civilian_vip.location,
-        debug_civilian_vip.sublocation
+    rel = vip_social.get_relation(
+        debug_civilian_babe
     )
+
+    rel.current_type = "acquaintance"
+
+    rel.familiarity = 8
+    rel.attraction = 15
+    rel.interest = 12
+    rel.trust = 6
+    seed_social_relations(debug_civilian_vip)
+
+    babe_social = (
+        debug_civilian_babe
+        .mind.memory.semantic["social"]
+    )
+
+    rel = babe_social.get_relation(
+        debug_civilian_vip
+    )
+
+    rel.current_type = "acquaintance"
+
+    rel.familiarity = 8
+    rel.attraction = 4
+    rel.interest = 6
+    rel.trust = 5
+    seed_social_relations(debug_civilian_babe)
+
+    vip_group = SocialGroup()
+
+    vip_group.members.append(debug_civilian_vip)
+    vip_group.members.append(debug_civilian_babe)
+
+    debug_civilian_vip.current_social_group = vip_group
+    debug_civilian_babe.current_social_group = vip_group
+
+    debug_civilian_vip.current_interaction_target = debug_civilian_babe
+    debug_civilian_babe.current_interaction_target = debug_civilian_vip
+    
+    vip = debug_civilian_vip
+    babe = debug_civilian_babe
+
+    #motivations
+    vip.motivation_manager.update_motivations(
+        "seek_attention",
+        urgency=2,
+        target=babe
+    )
+
+    vip.motivation_manager.update_motivations(
+        "offer_validation",
+        urgency=5,
+        target=babe
+    )
+
+    vip.motivation_manager.update_motivations(#but does he already have one?
+        "find_partner",
+        urgency=6,
+        target=babe
+    )
+
+    babe.motivation_manager.update_motivations(
+        "seek_attention",
+        urgency=8,
+        target=vip
+    )
+
+    babe.motivation_manager.update_motivations(
+        "have_fun",
+        urgency=5,
+        target=vip
+    )
+
+    babe.motivation_manager.update_motivations(
+        "find_partner",
+        urgency=6,
+        target=vip
+    )
+
+    first_meeting = random.choice(
+        [True, False]
+    )
+
+    if not first_meeting:
+
+        rel.memories.append(
+            "Met her at the VIP Lounge last week."
+        )
+
+        rel.memories.append(
+            "Enjoyed talking with her."
+        )
+
+        rel.interaction_count = 3
+
+    else:
+
+        rel.interaction_count = 0
+        rel.familiarity = 0

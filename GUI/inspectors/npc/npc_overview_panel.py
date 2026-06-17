@@ -12,12 +12,16 @@ def build_overview_panel(gui, parent):
             pady=10
         )
     
+
+
     gui.overview_labels = {}
 
     fields = [
         "Name",
         "Class",
+        "Status",
         "Debug Role",
+        "Interacting with",
         "Family",
         "Partner",
         "Location",
@@ -66,6 +70,38 @@ def refresh_overview_panel(gui):
     print("OVERVIEW PANEL REFRESH")
     print(npc)
 
+    status = None
+
+    if npc.status:#added using npc
+        status = npc.status.get_status(
+            npc.primary_status_domain
+        )
+
+    interaction_text = "Nobody"
+
+    group = getattr(npc, "social_group", None)
+
+    if group:
+
+        others = [
+            member.name
+            for member in group.members
+            if member is not npc
+        ]
+
+        if others:
+            interaction_text = ", ".join(others)
+            
+            #tmp
+            print("SETTING NAME")
+
+    #tmp
+    print(gui.overview_labels.keys())
+    
+    gui.overview_labels["Interacting with"]["label"].config(
+        text=interaction_text
+    )
+
     motivation_manager = getattr(
         npc,
         "motivation_manager",
@@ -112,6 +148,10 @@ def refresh_overview_panel(gui):
         partner,
         "name",
         "-"
+    )
+
+    gui.overview_labels["Status"]["label"].config(
+        text=str(status)
     )
 
     gui.overview_labels["Partner"]["label"].config(
@@ -223,3 +263,5 @@ def refresh_overview_panel(gui):
     gui.overview_labels["Destination"]["label"].config(
         text=destination_name
     )
+
+    

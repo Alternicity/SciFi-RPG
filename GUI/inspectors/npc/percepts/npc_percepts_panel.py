@@ -14,48 +14,61 @@ from GUI.inspectors.percepts.percept_grouping import (
 
 def build_percepts_panel(gui, parent):
 
-    frame = ttk.LabelFrame(
-        parent,
-        text="Percepts"
-    )
+    frame = ttk.LabelFrame(parent, text="Percepts")
+    frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-    frame.pack(
-        fill="both",
-        expand=True,
-        padx=10,
-        pady=10
-    )
+    tree = ttk.Treeview(frame, columns=PERCEPT_COLUMNS, show="headings")
 
-    tree = ttk.Treeview(
-        frame,
-        columns=PERCEPT_COLUMNS,
-        show="headings"
-    )
 
-    for column in PERCEPT_COLUMNS:
-
+    for col in PERCEPT_COLUMNS:
         tree.heading(
-            column,
-            text=COLUMN_HEADINGS[column]
+            col,
+            text=COLUMN_HEADINGS.get(col, col)
         )
 
         tree.column(
-            column,
-            width=COLUMN_WIDTHS[column],
-            anchor="w"
+            col,
+            width=COLUMN_WIDTHS.get(col, 100)
         )
 
-    tree.pack(
-        fill="both",
-        expand=True
-    )
-
     gui.percepts_tree = tree
+    tree._sublocation_map = {}
 
+    tree.pack(fill="both", expand=True)
+
+    def on_tree_click(event):
+        iid = tree.identify_row(event.y)
+        if not iid:
+            return
+
+        sublocation = tree._sublocation_map.get(iid)
+        if sublocation:
+            gui.inspect(sublocation)#updated
+
+
+    
+    def on_double_click(event):
+
+        iid = tree.identify_row(event.y)
+
+        if not iid:
+            return
+
+        sublocation = tree._sublocation_map.get(iid)
+
+        if sublocation:
+            gui.show_sublocation_center_view(
+                sublocation
+            )
+    tree.bind("<Button-1>", on_tree_click)
+    tree.bind("<Double-1>", on_double_click)
 
 def refresh_percepts_panel(gui):
-    #print("refresh_percepts_panel called")
-    npc = gui.active_context["npc"]
+    
+    #tmp
+    print("REFRESH PERCEPTS PANEL")
+
+    npc = gui.active_context["npc"]#current active_context is npc
     
     if not npc:
         return
@@ -70,20 +83,10 @@ def refresh_percepts_panel(gui):
         extract_appearance_summary
     )
     
-    sections = build_percept_sections(npc)#here
+    sections = build_percept_sections(npc)
 
     regular_rows = sections["regular"]
     sublocation_rows = sections["sublocations"]
-
-    print(
-        "SUBLOCATION COUNT:",
-        len(sublocation_rows)
-    )
-
-    print(
-        "SUBLOCATION ROWS:",
-        sublocation_rows
-    )
 
     #Treeviews must be manually cleared.
     for item in tree.get_children():
@@ -91,21 +94,8 @@ def refresh_percepts_panel(gui):
     
     buckets = collect_display_buckets(npc)
 
-    #tmp
-    print(
-        "NORMAL ROWS:",
-        len(buckets["normal_rows"])
-    )
-
     for origin, data, v in regular_rows:
         access_text = ""
-        
-        #tmp
-        print(
-            "ROW:",
-            type(origin).__name__,
-            getattr(origin, "name", None)
-        )
 
         desc = (
             data.get("description")
@@ -114,7 +104,6 @@ def refresh_percepts_panel(gui):
         )
 
         type_ = data.get("type", "—")
-
 
         appearance = extract_appearance_summary(
             origin,
@@ -125,20 +114,6 @@ def refresh_percepts_panel(gui):
         visibility_text = ""
 
         if hasattr(origin, "accessible_roles"):
-
-            print(
-                "[SUBLOCATION PERCEPT]",
-                npc.name,
-                origin.name,
-                can_perceive_sublocation(
-                    npc,
-                    origin
-                ),
-                can_access_sublocation(
-                    npc,
-                    origin
-                )
-            )
             
             access_text = (
                 "Accessible"
@@ -151,7 +126,7 @@ def refresh_percepts_panel(gui):
 
             visibility_text = (
                 "Visible"
-                if can_perceive_sublocation(
+                if can_perceive_sublocation(#line 154
                     npc,
                     origin
                 )
@@ -179,15 +154,6 @@ def refresh_percepts_panel(gui):
                 getattr(npc, "current_anchor", None)
             )
 
-        #tmp
-        print(
-            "INSERTING:",
-            desc,
-            type_,
-            appearance,
-            info
-        )
-
         tree.insert(
             "",
             "end",
@@ -199,8 +165,6 @@ def refresh_percepts_panel(gui):
             )
         )
     
-    
-
     #the original table handling code
     for table in buckets["occupied_tables"]:
 
@@ -239,9 +203,11 @@ def refresh_percepts_panel(gui):
         )
 
     #Sublocations
+
+    # Sublocations
     if sublocation_rows:
 
-        tree.insert(
+        divider_iid = tree.insert(
             "",
             "end",
             values=(
@@ -252,9 +218,12 @@ def refresh_percepts_panel(gui):
             )
         )
 
+        tree._sublocation_map[divider_iid] = None
+
+
     for origin, data, v in sublocation_rows:
         print("RENDERING SUBLOCATION:", origin)
-        
+
         data = v.get("data", {})
 
         desc = (
@@ -265,39 +234,20 @@ def refresh_percepts_panel(gui):
 
         type_ = data.get("type", "—")
 
-        parts = []
+        visible = data.get("visible", True)
+        accessible = data.get("accessible", True)
 
-        if can_perceive_sublocation(
-            npc,
-            origin
-        ):
-            parts.append("Visible")
-        else:
-            parts.append("Private")
-
-        if can_access_sublocation(
-            npc,
-            origin
-        ):
-            parts.append("Accessible")
-        else:
-            parts.append("Restricted")
+        parts = [
+            "Visible" if visible else "Private",
+            "Accessible" if accessible else "Restricted"
+        ]
 
         info = " | ".join(parts)
 
-        print(
-            "INSERTING SUBLOCATION:",
-            origin.name,
-            info
-        )
-
-        tree.insert(
+        iid = tree.insert(
             "",
             "end",
-            values=(
-                desc,
-                type_,
-                "",
-                info
-            )
+            values=(desc, type_, "", info)
         )
+
+        tree._sublocation_map[iid] = origin

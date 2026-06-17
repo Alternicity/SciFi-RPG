@@ -9,6 +9,9 @@ from location.location_security import can_access_sublocation
 """ MUST NOT import Character.
 If you need characters → pass references as "Character" type hints under TYPE_CHECKING """
 
+from character_components.observation_component import can_perceive_sublocation
+
+
 class LocationItems:
     def __init__(self):
         self.objects_present = []
@@ -140,8 +143,8 @@ class Location(LocationBase):
         present = []
         if hasattr(self, "characters_there"):
             present += self.characters_there
-        if isinstance(self, WorkplaceMixin):
-            present += self.employees_there
+        """ if isinstance(self, WorkplaceMixin):
+            present += self.employees_there """
 
         # Remove excluded
         present = [c for c in present if c not in exclude]
@@ -194,23 +197,15 @@ class CommercialLocation:
 
 class Sublocation(Location, PerceptibleMixin):
     
-    #tmp
     accessible_roles: list[str] = field(default_factory=list)
     
-    #can other npcs perceive the interior of a given sublocation?
-    #visible_roles: list[str] = field(default_factory=list)
-    #deprecated
-    
-
     def get_percept_data(self, observer=None):
         accessible = True
         visible = True
         if observer:
 
-            accessible = can_access_sublocation(
-                observer,
-                self
-            )
+            accessible = can_access_sublocation(observer, self)
+            visible = can_perceive_sublocation(observer, self)#in spite of the import above, can_perceive_sublocation is marked as not defined.
 
         return {
             "name": self.name,

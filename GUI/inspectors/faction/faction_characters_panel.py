@@ -11,9 +11,6 @@ def build_faction_characters_panel(gui,parent):
         FactionHierarchyWidget(gui, parent)
     )
 
-def jump_to_npc(self, npc):
-    pass
-
 def refresh_faction_characters(gui):
 
     faction = gui.active_context["faction"]
@@ -35,8 +32,16 @@ def make_entry(gui, parent, name, npc):
 
     lbl.bind(
         "<Button-1>",
-        lambda e, n=npc: gui.open_npc(n)
+        lambda e, n=npc: (
+            print("FACTION NPC INSPECT", n.name),
+            gui.inspect(n)
+        )
     )
 
+    lbl.bind(
+        "<Double-Button-1>",
+        lambda e, n=npc: gui.open_npc(n)
+    )
+    
     return lbl
 

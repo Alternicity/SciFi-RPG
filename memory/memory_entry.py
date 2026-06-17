@@ -34,7 +34,7 @@ class MemoryEntry:
     initial_memory_type: str = "episodic"#implies that once npcs are doin a lot more, episodic memories will precede some semantic ones. We learn by doing.
     #later, when promoting use
     # deepcopy(memory_entry).initial_memory_type = "semantic"
-    #npc.mind.memory.semantic["procedures"].append(memory_entry) 
+    #npc.mind.memory.semantic["procedures"].append(memory_entry)
     #DEEPCOPY IS UNRELIABLE
 
     target: Optional[Union[str, Any]] = None #possible over engineering, possible conceptual overlap with object_
@@ -178,7 +178,7 @@ class RegionKnowledge:
                 self.friendly_factions.add(entry.subject)
             elif "hostile" in entry.tags:
                 self.hostile_factions.add(entry.subject)
-            elif "relationship" in entry.tags:
+            elif "relationship" in entry.tags:#Likely deprecated
                 self.character_relationships.setdefault(entry.subject, []).append(entry.object_)
 
     def summary(self) -> str:

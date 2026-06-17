@@ -185,8 +185,8 @@ def rename_powerplants():
         )
 
         if loc.owner:
-             loc.name = f"{loc.owner.name} Powerplant ({loc.region.name})"
-
+            loc.name = f"{loc.owner.name} Powerplant ({loc.region.name})"
+        
 def rename_factories():
 
     game_state = get_game_state()
@@ -442,6 +442,8 @@ def seed_nightclub_furniture(all_locations):
         vip_lounge.region = loc.region
         vip_lounge.visible_roles = ["VIP", "Babe"]#added, but this should not be role based. A vip outside the lounge would also not be able to see into it.
         vip_lounge.accessible_roles = ["VIP", "Babe"]#need to ensure the test npcs have this, and gui accurately shows their ability to access
+        
+        #here
         loc.sublocations.append(vip_lounge)
 
         if loc.has_tag("classy"):#tag doesnt exist yet

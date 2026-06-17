@@ -45,7 +45,7 @@ def setup_game():
     augment_municipal_buildings()
     debug_display_all_shops(all_regions)
     
-    print(f"Game setup complete. Total characters: {len(game_state.all_characters)}")
+    #print(f"Game setup complete. Total characters: {len(game_state.all_characters)}")
 
     return all_regions, factions, all_characters, all_locations
 
@@ -56,8 +56,8 @@ def main():
     apply_scenarios(all_characters)
     from augment.augment_factions import augment_factions
 
-    augment_factions(factions)#the factions i was suspicious of. Is setup_game returning it? 
-    #maybe we should try populating it again from game_state here just to see what happens?
+    augment_factions(factions)
+    
     main_menu(all_locations, all_characters)
 
 

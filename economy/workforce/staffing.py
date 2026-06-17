@@ -58,8 +58,9 @@ def staff_from_corporation_pool(club, owner):
         (CLUB_MANAGER, 1),
     ]
 
-    print ("from staff_from_corporation_pool")
-    print(owner.name, len(owner.available_workers))
+    #useful
+    #print ("from staff_from_corporation_pool")
+    #print(owner.name, len(owner.available_workers))
 
     candidates = [
         npc for npc in owner.available_workers

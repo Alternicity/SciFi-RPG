@@ -51,11 +51,6 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
         rel.current_type = "partner"
         rel.trust = 5
 
-    #verbose
-    """ print("NPC:", npc)
-    print("Partner:", npc.partner)
-    print("Partner type:", type(npc.partner)) """
-
     # Faction placeholder
     if getattr(npc, "faction", None):
         # NOTE: actual linking deferred until faction members exist
@@ -86,6 +81,16 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
 """ def finalize_social_seeding(all_characters):
     link_coworkers(all_characters)
     link_faction_members(all_characters) """
+
+def finalize_social_seeding(all_characters):
+
+    link_partners(all_characters)
+
+    link_coworkers(all_characters)
+
+    link_faction_members(all_characters)
+
+    create_initial_memories(all_characters)
 
 def capture_social_snapshot(char, location):
     social = char.mind.memory.semantic.get("social")#established social ties belong in npc semantic memory
@@ -140,3 +145,61 @@ def social_scan(npc):
         create motivations
         create anchors
         interpret intent """
+
+def calculate_familiarity(rel):#unused so far
+
+    score = 0
+
+    score += rel.interaction_count#maybe this
+
+    score += len(rel.memories)#likely this
+
+    return min(score, 20)
+
+from status import StatusLevel
+
+def calculate_respect(target):
+
+    if not target:
+        return 0
+
+    if not target.status:
+        return 0
+
+    status_level = target.status.get_status(
+        target.primary_status_domain
+    )
+
+    if status_level is None:
+        return 0
+
+    return min(status_level * 5, 20)
+
+def get_status_display(target):
+
+    if not target.status:
+        return ("None", "None")
+
+    domain = target.primary_status_domain
+
+    status_level = target.status.get_status(domain)
+
+    if status_level is None:
+        return (domain, "None")
+
+    return (
+        domain,
+        status_level.name
+    )
+
+def calculate_attraction(target):
+
+    charisma = getattr(
+        target,
+        "charisma",
+        10
+    )
+
+    return min(charisma, 20)
+
+    
