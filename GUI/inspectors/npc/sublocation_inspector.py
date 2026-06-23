@@ -3,6 +3,11 @@ import tkinter as tk
 from tkinter import ttk
 from GUI.widgets.sublocation_widget import build_sublocation_view_model
 
+
+from perception.sublocation_percepts import get_sublocation_percepts
+
+
+
 def build_sublocation_inspector(gui, parent, sublocation):
     # clear frame
     for child in parent.winfo_children():
@@ -59,10 +64,69 @@ def build_sublocation_inspector(gui, parent, sublocation):
             )
         )
 
+    ttk.Label(
+        parent,
+        text="Objects"
+    ).pack(anchor="w", padx=10, pady=(10, 0))
+
+
+    percepts = get_sublocation_percepts(
+        sublocation
+    )
+
+    if not percepts:
+
+        ttk.Label(
+            parent,
+            text="None"
+        ).pack(anchor="w", padx=20)
+
+    else:
+
+        for text in percepts:
+
+            ttk.Label(
+                parent,
+                text=f"- {text}"
+            ).pack(anchor="w", padx=20)
+
+    ttk.Label(
+        parent,
+        text="Ambience"
+    ).pack(anchor="w", padx=10, pady=(10, 0))
+
+    ambience = getattr(
+        sublocation,
+        "ambience",
+        None
+    )
+
+    if ambience and ambience.vibes:
+
+        for vibe, power in ambience.vibes.items():
+
+            ttk.Label(
+                parent,
+                text=f"{vibe}: {power:.2f}"
+            ).pack(anchor="w", padx=20)
+
+    else:
+
+        ttk.Label(
+            parent,
+            text="None"
+        ).pack(anchor="w", padx=20)
+
+
+
     print("SUBLOCATION TYPE:", type(sublocation))
     print("HAS characters_there:", hasattr(sublocation, "characters_there"))
     print("HAS list_characters:", hasattr(sublocation, "list_characters"))
-    
+    print("OBJECTS:", sublocation.objects_present)
+
+    if hasattr(sublocation, "ambience"):
+        print("AMBIENCE:", sublocation.ambience.vibes)
+        
     print(f"from build_sublocation_inspector {type(sublocation)}")
     #print(f"from build_sublocation_inspector {dir(sublocation)}")
     #verbose

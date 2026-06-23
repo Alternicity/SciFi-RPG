@@ -7,6 +7,7 @@ from create.create_game_state import get_game_state
 game_state = get_game_state()
 from character_components.economic_profile import EconomicProfile
 from employment.employment_helpers import is_employed
+
 def assign_staff_to_club(
     club,
     candidates,
@@ -85,8 +86,8 @@ def staff_from_corporation_pool(club, owner):
 
 def staff_from_gang_and_civilians(club, owner):
 
-    civilian_candidates = [...]
-    gang_candidates = [...]
+    civilian_candidates = []
+    gang_candidates = []
 
     service_staffing = [
         (BARTENDER, 2),
@@ -98,9 +99,15 @@ def staff_from_gang_and_civilians(club, owner):
         (BOUNCER, 1),
     ]
 
+    gs = get_game_state()
+    
+    # Exclude scenario/debug NPCs from general staffing
+    protected_npcs = set(gs.debug_npcs.values())
+
     civilian_candidates = [
-        npc for npc in game_state.civilians
+        npc for npc in gs.civilians
         if not is_employed(npc)
+        and npc not in protected_npcs
     ]
 
     gang_candidates = [

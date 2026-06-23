@@ -602,8 +602,8 @@ class Vase(ObjectInWorld, Container):
             quantity=quantity,
         )
         Container.__init__(self)
-
-        self.material = material
+        #In npc percepts tab needs better description
+        self.material = "china"
         self.placement_quality = placement_quality
         self.base_ambience = {
             "peace": 0.2,
@@ -622,15 +622,22 @@ class Vase(ObjectInWorld, Container):
 
     def get_percept_data(self, observer=None):
         base = super().get_percept_data(observer)
-        base.update({
-            "description": f"{self.material.title()} Vase with {len(self.inventory)} item(s)",
-            "tags": ["decor", "vessel", "peaceful", "container"],
-            "contents": [item.name for item in self.inventory]
-        })
+        visible = self.visible_contents(observer)
+
+        if len(visible) == 1:
+            item = visible[0]
+            base["description"] = f"{item.name} in a {self.material} vase"
+            base["primary"] = item
+            base["secondary"] = self
+        else:
+            base["description"] = f"{self.material.title()} Pot"
+        base["tags"] = ["decor", "elegant", "peaceful"]
+        base["symbolism"] = self.symbolism
+        
         return base
 
     def __repr__(self):
-        return f"<{self.name}: holds {len(self.inventory)} items>"
+        return f"<{self.name}: holds {len(self.contents)} items>"
 
 class Pot(ObjectInWorld, Container):
     is_concrete = True
@@ -661,7 +668,14 @@ class Pot(ObjectInWorld, Container):
             self.symbolism.append("rustic")
 
     def get_percept_data(self, observer=None):
-        base = super().get_percept_data(observer)#line 647
+
+        #tmp
+        print(
+            "POT GET_PERCEPT_DATA",
+            self.name
+        )
+        
+        base = super().get_percept_data(observer)
         visible = self.visible_contents(observer)
 
         if len(visible) == 1:
@@ -674,6 +688,12 @@ class Pot(ObjectInWorld, Container):
 
         base["tags"] = ["container", "natural", "earthy"]
         base["symbolism"] = self.symbolism
+
+        #tmp
+        print(
+            "POT DESCRIPTION:",
+            base["description"]
+        )
 
         return base
 

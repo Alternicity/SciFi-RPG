@@ -46,11 +46,3 @@ def build_sublocation_page(gui, parent, observer, sublocation):
             overview_tab,
             text=f"{vibe}: {strength:.1f}"
         ).pack(anchor="w")
-
-        
-    """ Eventually, tabs:
-    Overview
-    Percepts
-    Thoughts
-    Memories
-    Psy """

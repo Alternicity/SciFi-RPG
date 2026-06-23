@@ -202,6 +202,8 @@ class Sublocation(Location, PerceptibleMixin):
     def get_percept_data(self, observer=None):
         accessible = True
         visible = True
+        can_see_parent_location = False
+
         if observer:
 
             accessible = can_access_sublocation(observer, self)

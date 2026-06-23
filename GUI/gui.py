@@ -348,7 +348,7 @@ class TC2GUI:
 
     def open_npc(self, npc):
         self.current_page = "npc"
-        self.show_npc_page()#recent approach, ensures returning to an NPC restores the notebook page
+        self.show_npc_page()#ensures returning to an NPC restores the notebook page
 
         if npc.location:
             npc.observe(

@@ -29,7 +29,7 @@ def best_food_location(npc):
         if "prepared_food" in tags:
             score += 3
         if "cafe" in tags:
-            score += 6  # was 3, now higher than restaurant
+            score += 9  # was 3, now higher than restaurant
         if "restaurant" in tags:
             score += 3
         if "groceries" in tags or "shop" in tags:

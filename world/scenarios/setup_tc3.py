@@ -9,6 +9,8 @@ import random
 from world.placement import place_character, place_character_in_sublocation
 from social.social_utils import seed_social_relations
 from social.social_groups import SocialGroup
+from augment.augmentLocations import add_classy_plants
+from augment.augmentLocations import add_table_decorations
 game_state = get_game_state()
 
 def setup_tc3_world(all_characters):
@@ -21,14 +23,13 @@ def setup_tc3_world(all_characters):
         ),
         None
     )
-    
-
-
-    civilians = [#is this block now deprecated? civilians is not accessed now
+    add_table_decorations(nightclub)
+    #is this block now deprecated? civilians is not accessed now
+    """ civilians = [
         c for c in all_characters
         if isinstance(c, Civilian)
         and not getattr(c, "is_scenario_npc", False)
-    ]
+    ] """
 
 
     vip_candidates = [
@@ -77,6 +78,24 @@ def setup_tc3_world(all_characters):
             if subloc.name == "VIP Lounge"
         ),
         None
+    )
+
+    #tmp, once a nightclub might be tagged classy
+    if vip_lounge:
+        add_classy_plants(vip_lounge)#note also added in seed_nightclub_furniture
+
+    print(
+    "VIP LOUNGE OBJECTS:",
+    [
+        type(obj).__name__
+        for obj in vip_lounge.objects_present
+    ]
+)
+    print(
+        vip_lounge.objects_present
+    )
+    print(
+        len(vip_lounge.objects_present)
     )
 
     if debug_civilian_vip and vip_lounge:

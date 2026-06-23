@@ -29,9 +29,8 @@ def get_region_factories(region):
         if isinstance(loc, Factory)
     ]
 
-
 def pick_available_civilian(all_characters, exclude=None):
-
+    #Does this giard against employing test npcs?
     exclude = exclude or set()
 
     civilians = [
@@ -77,7 +76,7 @@ def seed_corporation_workers():
             ):
                 corp.available_workers.append(worker)
 
-def seed_nightclub_workers():
+def seed_nightclub_workers():#hmm see also staffing.py
 
     game_state = get_game_state()
 

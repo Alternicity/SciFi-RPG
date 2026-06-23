@@ -26,8 +26,6 @@ def setup_tc2_world(all_characters):
         exclude={debug_civilian_worker}
     )
 
-    
-
     debug_civilian_waitress = pick_civilian(
         civilians,
         sex="female",
@@ -174,7 +172,7 @@ def setup_tc2_world(all_characters):
             npc.region = npc.location.region
 
 
-def get_tc2_cafe(region):
+def get_tc2_cafe(region):#not used for civilian_liberty setup
     cafe = next(
         (loc for loc in region.locations if loc.__class__.__name__ == "Cafe"),
         None

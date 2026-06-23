@@ -14,7 +14,7 @@ def build_percept_sections(npc):
         if origin is None:
             continue
 
-        if isinstance(origin, CafeChair):
+        if isinstance(origin, CafeChair):#very specific block, Chairs and Tables, candidate for eventual removal surely?
             continue
 
         if isinstance(origin, CafeTable):
@@ -48,4 +48,5 @@ def build_percept_sections(npc):
     return {
         "regular": regular_rows,
         "sublocations": sublocation_rows,
+        "parent_location": parent_rows,#parent_rows not defined
     }

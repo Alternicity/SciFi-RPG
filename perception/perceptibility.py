@@ -113,6 +113,12 @@ def gather_perceptible_objects(obj, seen=None):
         seen.add(oid)
         found.append(obj)
 
+        """ print(
+            "GATHER:",
+            type(obj).__name__,
+            getattr(obj, "name", None)
+        ) """
+
     if hasattr(obj, "inventory"):
         for item in obj.inventory.items.values():
             found.extend(gather_perceptible_objects(item, seen))
@@ -153,15 +159,19 @@ def extract_appearance_summary(obj, observer=None):
             visible = obj.visible_contents(observer)
 
             if len(visible) == 1:
-                item = visible[0]
 
-                # If item provides its own percept description, use it
-                if hasattr(item, "get_percept_data"):
-                    item_data = item.get_percept_data(observer=observer)#line 160
-                    return item_data.get("description", item.__class__.__name__)
+                if hasattr(obj, "get_percept_data"):
 
-                # Fallback
-                return item.__class__.__name__
+                    obj_data = obj.get_percept_data(
+                        observer=observer
+                    )
+
+                    return obj_data.get(
+                        "description",
+                        obj.__class__.__name__
+                    )
+
+                return obj.__class__.__name__
 
             elif len(visible) > 1:
                 return f"{len(visible)} items"

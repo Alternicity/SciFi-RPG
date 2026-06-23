@@ -32,6 +32,15 @@ def build_percepts_panel(gui, parent):
         )
 
     gui.percepts_tree = tree
+
+    #Just this so far
+    parent = tree.insert(
+        "",
+        "end",
+        text="Parent Location"
+    )
+
+
     tree._sublocation_map = {}
 
     tree.pack(fill="both", expand=True)
@@ -43,7 +52,7 @@ def build_percepts_panel(gui, parent):
 
         sublocation = tree._sublocation_map.get(iid)
         if sublocation:
-            gui.inspect(sublocation)#updated
+            gui.inspect(sublocation)
 
 
     

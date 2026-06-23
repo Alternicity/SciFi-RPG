@@ -82,16 +82,16 @@ def build_npc_entity_page(gui, parent, observer, target):
             text="No social relation found."
         ).pack(anchor="w", padx=10)
 
-    status_text = "None"
+    from status import (
+        get_primary_status_display
+    )
 
-    if target.status:
-
-        status = target.status.get_status(
-            target.primary_status_domain
+    status_text = (
+        get_primary_status_display(
+            target
         )
-
-        if status is not None:
-            status_text = status.name
+    )
+        
 
     ttk.Label(
         overview_tab,

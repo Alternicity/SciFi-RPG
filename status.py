@@ -57,10 +57,51 @@ class CorporationStatus(FactionStatus):
     def __str__(self):
             return self.name.capitalize()
 
+def get_primary_status(character):
+
+    if not character:
+        return None
+
+    if not character.status:
+        return None
+
+    return character.status.get_status(
+        character.primary_status_domain
+    )
 
 def get_primary_status_display(character):
-    status_obj = character.status.get_status(character.primary_status_domain)
-    if status_obj:
-        base = f"{status_obj.title} ({status_obj.level.name})"
-        return color_text(base, RED) if status_obj.level == StatusLevel.HIGH else base
-    return "Unknown"
+
+    status_obj = get_primary_status(
+        character
+    )
+
+    if not status_obj:
+        return "Unknown"
+
+    return (
+        f"{status_obj.title} "
+        f"({status_obj.level.name})"
+    )
+
+def get_primary_status_level(character):
+
+    status_obj = get_primary_status(
+        character
+    )
+
+    if not status_obj:
+        return None
+
+    return status_obj.level
+
+def get_primary_status_title(character):
+
+    status_obj = get_primary_status(
+        character
+    )
+
+    if not status_obj:
+        return "Unknown"
+
+    return status_obj.title
+

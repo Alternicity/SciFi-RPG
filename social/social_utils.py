@@ -146,34 +146,20 @@ def social_scan(npc):
         create anchors
         interpret intent """
 
-def calculate_familiarity(rel):#unused so far
 
-    score = 0
-
-    score += rel.interaction_count#maybe this
-
-    score += len(rel.memories)#likely this
-
-    return min(score, 20)
 
 from status import StatusLevel
 
 def calculate_respect(target):
-
-    if not target:
-        return 0
-
-    if not target.status:
-        return 0
-
-    status_level = target.status.get_status(
-        target.primary_status_domain
+    from status import get_primary_status_level
+    level = get_primary_status_level(
+        target
     )
 
-    if status_level is None:
+    if level is None:
         return 0
 
-    return min(status_level * 5, 20)
+    return min(level * 5, 20)
 
 def get_status_display(target):
 
@@ -202,4 +188,6 @@ def calculate_attraction(target):
 
     return min(charisma, 20)
 
-    
+def calculate_familiarity(rel):
+    #Once memories exist, then revisit.
+    return rel.familiarity

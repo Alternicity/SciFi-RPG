@@ -1,6 +1,7 @@
 #character_components.observation_component.py
 from worldQueries import get_nearby_objects
 from perception.perceptibility import PerceptibleMixin, gather_perceptible_objects
+
 class ObservationComponent:
     def __init__(self, owner):
         self.owner = owner
@@ -148,7 +149,6 @@ class ObservationComponent:
             "origin": obj,
             "source": source
         }
-        
 
         self.percepts_updated = True
 
@@ -340,25 +340,6 @@ class ObservationComponent:
 #utility functions
 def can_perceive_entity(observer, target):
 
-    #verbose
-    """ print(
-        "[ENTITY CHECK]",
-        observer.name,
-        "->",
-        target.name,
-        "obs_sub=",
-        getattr(
-            getattr(observer, "sublocation", None),
-            "name",
-            None
-        ),
-        "target_sub=",
-        getattr(
-            getattr(target, "sublocation", None),
-            "name",
-            None
-        )
-    ) """
     if observer is target:
         return False
 

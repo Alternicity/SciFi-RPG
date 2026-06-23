@@ -439,6 +439,7 @@ def seed_nightclub_furniture(all_locations):
             perceptible_from_parent=False
         )
         vip_lounge.parent_location = loc
+        vip_lounge.can_see_parent_location = True
         vip_lounge.region = loc.region
         vip_lounge.visible_roles = ["VIP", "Babe"]#added, but this should not be role based. A vip outside the lounge would also not be able to see into it.
         vip_lounge.accessible_roles = ["VIP", "Babe"]#need to ensure the test npcs have this, and gui accurately shows their ability to access
@@ -467,8 +468,33 @@ def seed_nightclub_furniture(all_locations):
                     getattr(sub, "is_perceptible", None)
                 ) """
 
+def add_table_decorations(loc):
+    from objects.InWorldObjects import Vase
+    from objects.trees_and_plants import SingleRose
+
+    if not getattr(loc, "tables", None):
+        return
+
+    table = random.choice(loc.tables)
+
+    vase = Vase()
+    rose = SingleRose()
+
+    vase.add(rose)
+
+    vase.location = loc
+    vase.region = loc.region
+
+    loc.items.objects_present.append(vase)
+
+    print(
+        "Added vase decoration:",
+        vase,
+        rose
+    )
+
 def add_classy_plants(loc):
-    count = random.randint(2, 5)
+    count = random.randint(2, 5)#we wont need this, this time
 
     for _ in range(count):
         pot = Pot()
@@ -476,16 +502,7 @@ def add_classy_plants(loc):
         pot.add(tree)
         pot.location = loc
         pot.region = loc.region
-        loc.items.objects_present.append(pot)#not added to vip area
-        #But nor can any npc enter a sublocation yet.
-
-
-
-
-
-
-
-
+        loc.items.objects_present.append(pot)
 
 #reference for above
 def seed_cafe_furniture(all_locations):
