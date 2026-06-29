@@ -599,7 +599,7 @@ class Stash(PerceptibleLocation):
 class Nightclub(WorkplaceMixin, PerceptibleLocation):
     name: str = "Music and Slappers"
     tags: list[str] = field(default_factory=lambda: ["fun", "social"])
-    description: str = "Some Club"
+    description: str = "Nightclub"
     fun: int = 1
     items_available: List[Any] = field(default_factory=list)
     inventory: Inventory = field(default_factory=Inventory)

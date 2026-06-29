@@ -579,14 +579,27 @@ def format_origin(origin):#not called
 def build_info_column(origin_obj, npc, v, anchor):
     info = "—"
 
-    # -------------------------
     # Characters
-    # -------------------------
 
-    if isinstance(origin_obj, Civilian):
+    if isinstance(origin_obj, Character):
+        if origin_obj is npc:
+            info = "Me"
 
-        if getattr(origin_obj, "workplace", None) == npc.location:
+        #elif getattr(npc, "current_interaction_target", None) is origin_obj:
+            #info = "Talking To"
+
+        elif (#I predict this wont show up in info
+            getattr(npc, "current_social_group", None)
+            and
+            getattr(origin_obj, "current_social_group", None)
+            is npc.current_social_group
+        ):
+            info = "Group Member"
+
+
+        elif getattr(origin_obj, "workplace", None) == npc.location:
             info = "Employee"
+
         else:
             info = "Civilian"
 

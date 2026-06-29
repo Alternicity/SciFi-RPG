@@ -18,8 +18,7 @@ def setup_normal_economy(all_characters):
     from world.scenarios.economy.assign_nightclub_ownership import assign_nightclub_ownership
     from augment.augmentLocations import seed_nightclub_furniture, augment_nightclubs
 
-    #tmp
-    from tmp_debug_print import debug_print_nightclubs
+
 
     assign_power_infrastructure()
 
@@ -47,9 +46,7 @@ def setup_normal_economy(all_characters):
     augment_nightclubs()#Ths could actually call seed_nightclub_sublocations, seed_nightclub_furniture
     seed_nightclub_furniture(all_locations)
 
-    #tmp
-    #debug_print_nightclubs(all_locations)
-    #verbose
+
 
     setup_normal_power(all_regions)
     update_infrastructure()#added

@@ -72,6 +72,8 @@ class GameState:
 
         self.all_babes = []
         self.all_VIPs = []#needs populating
+        self.all_assassins = []
+        self.all_gang_bosses = []
 
         self.downtown_gangs = []
         self.northville_gangs = []

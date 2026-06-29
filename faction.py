@@ -22,7 +22,7 @@ class Corporation(Faction):
         self.security = []
         self.employees = []
         self.members = []  # All employees, accountants, security, managers (not CEO)
-        self.assassins = []
+        self.assassins = []#might not be populated
 
         #maybe just placeholders
         self.suppliers = []

@@ -265,6 +265,9 @@ def create_corporation_characters(faction, factions):
         characters.append(assassin)
         faction.region.characters_there.append(assassin)
         faction.add_assassin(assassin)
+
+        game_state.all_assassins.append(assassin)
+
         assassin.mind = Mind(owner=assassin, capacity=assassin.intelligence)
         augment_character(assassin)
         assassin.curiosity = Curiosity(base_score=assassin.intelligence // 2)

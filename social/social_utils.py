@@ -3,6 +3,7 @@
 from create.create_game_state import get_game_state
 game_state = get_game_state
 from debug_utils import debug_print
+from focus_utils import set_attention_focus
 from memory.social.social_memory import SocialMemory
 def get_socially_favoured(self):
     if self.partner:
@@ -82,20 +83,21 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
     link_coworkers(all_characters)
     link_faction_members(all_characters) """
 
-def finalize_social_seeding(all_characters):
+def finalize_social_seeding(all_characters):#not yet called
 
-    link_partners(all_characters)
+    link_partners(all_characters)#see existing family code
 
+    #These three functions dont yet exist:
     link_coworkers(all_characters)
 
     link_faction_members(all_characters)
 
     create_initial_memories(all_characters)
 
-def capture_social_snapshot(char, location):
+def capture_social_snapshot(char, location):#not yet called
     social = char.mind.memory.semantic.get("social")#established social ties belong in npc semantic memory
     assert isinstance(social, SocialMemory), f"{char.name} has invalid social memory"
-    # npc marked not defined. Does char refer to the active npc, or the other one? The subject or the object?
+    #Does char refer to the active npc, or the other one? The subject or the object?
     
     if not social:
         return None
@@ -191,3 +193,84 @@ def calculate_attraction(target):
 def calculate_familiarity(rel):
     #Once memories exist, then revisit.
     return rel.familiarity
+
+
+def create_social_group(*members, label=None, interaction_targets=True,):#positional arguments are all NPCs
+    from social.social_groups import SocialGroup
+
+    group = SocialGroup()
+
+    if label is not None:
+        group.label = label
+
+    group.members = list(members)
+
+    for npc in members:
+        npc.current_social_group = group
+
+    if interaction_targets and len(members) == 2:
+        members[0].current_interaction_target = members[1]
+        members[1].current_interaction_target = members[0]
+
+    return group
+
+#create_social_group Dont let one call the other 
+def link_relationship(
+    npc_a,
+    npc_b,
+    *,
+    relation_type="acquaintance",
+    familiarity=0,
+    trust=0,
+    respect=0,
+    affection=0,
+    attraction=0,
+    interest=0,
+    fear=0,
+    envy=0,
+    pity=0,
+):
+    values = {
+        "current_type": relation_type,
+        "familiarity": familiarity,
+        "trust": trust,
+        "respect": respect,
+        "affection": affection,
+        "attraction": attraction,
+        "interest": interest,
+        "fear": fear,
+        "envy": envy,
+        "pity": pity,
+    }
+
+    for owner, subject in ((npc_a, npc_b), (npc_b, npc_a)):
+        social = owner.mind.memory.semantic["social"]
+        rel = social.get_relation(subject)
+
+        for field, value in values.items():
+            setattr(rel, field, value)
+
+        seed_social_relations(owner)
+
+
+
+
+    
+class Interaction:
+    def __init__(self, a, b, context=None):
+        self.a = a
+        self.b = b
+        self.context = context
+        self.first_encounter = not a.knows(b)
+        self.opinion_delta = {}
+
+    def begin(self):
+        set_attention_focus(self.a, self.b)
+        set_attention_focus(self.b, self.a)
+
+        self.form_first_impression()
+
+class ServiceInteraction(Interaction):
+    def apply_norms(self):
+    #politeness, service hierarchy
+        pass

@@ -14,8 +14,8 @@ COLUMN_HEADINGS = {
 }
 
 COLUMN_WIDTHS = {
-    "percept": 180,
-    "class": 140,
-    "description": 420,
+    "percept": 320,
+    "class": 100,
+    "description": 320,
     "info": 260
 }

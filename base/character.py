@@ -71,8 +71,9 @@ class Character(PerceptibleMixin, CharacterBase):
         self.location_purpose_fulfilled = False
         self.last_greeted_at = None
 
-        self.social_group = None
+        self.current_social_group = None
         self.current_interaction_target = None#not used in cafe/service interaction (yet)
+        self.current_conversation = None
 
         self.name = name
         self.first_name = None

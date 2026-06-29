@@ -1,11 +1,19 @@
 #GUI.helpers.formatting.py
 
-def format_stat_block(stats):
-    pass
+def is_highlighted_percept(origin, npc):
 
-def format_motivation_text(motive):
-    pass
+    if origin is npc:
+        print("HIGHLIGHT: ME", origin.name)
+        #return True
+        return "self"
 
-def format_status_text(status):
-    pass
-#seemingly unused, possibly legacy code to be deprecated?
+    if origin is getattr(npc, "sublocation", None):
+        print("HIGHLIGHT: CURRENT ROOM", origin.name)#not showing up, see SUBLOCATION TAG print
+        return "location"
+
+    if getattr(npc, "current_interaction_target", None) is origin:
+        print("HIGHLIGHT: TALKING TO", origin.name)
+        return "interaction"
+
+    #return False
+    return None

@@ -3,7 +3,7 @@ from objects.InWorldObjects import ObjectInWorld, Toughness, ItemType, Size
 from typing import Optional
 from base.character import Character
 from debug_utils import debug_print
-from social.social_utils import social_scan
+#from social.social_utils import social_scan
 
 class Furniture(ObjectInWorld):
     #Add ambience?

@@ -23,11 +23,14 @@ from employment.employee import EmployeeProfile
 from config import ENABLE_FACTION_CHARACTERS
 
 #marked for deletion apparently
-""" from create.create_game_state import get_game_state
-game_state = get_game_state() """
+from create.create_game_state import get_game_state
+game_state = get_game_state()
 
 #no ai import here
 def create_gang_characters(faction, all_regions):
+
+    from create.create_game_state import get_game_state
+    game_state = get_game_state()
 
     if faction.type != "gang":
         raise ValueError(f"Faction {faction.name} is not a gang.")
@@ -83,6 +86,9 @@ def create_gang_characters(faction, all_regions):
         characters.append(boss)
         faction.region.characters_there.append(boss)
         boss.mind = Mind(owner=boss, capacity=boss.intelligence)
+
+        game_state.all_gang_bosses.append(boss)
+
         augment_character(boss)
         boss.curiosity = Curiosity(base_score=boss.intelligence // 2)
         boss.task_manager = TaskManager(boss)

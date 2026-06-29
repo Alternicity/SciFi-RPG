@@ -9,7 +9,7 @@ from base.location import CommercialLocation
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
 from location.locations import Cafe, Restaurant, Library, Park, LunaSanctum, SportsCentre, Factory, Powerplant, Nightclub
 from objects.food.prepared_food import Sandwich, Burger
-from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair
+from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair, Sofa
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
 from objects.trees_and_plants import GoldenRatioTree, Plant, Tree, OakTree, DustPalm, EchoWillow
 from objects.trees_and_plants import BonsaiTree
@@ -494,7 +494,7 @@ def add_table_decorations(loc):
     )
 
 def add_classy_plants(loc):
-    count = random.randint(2, 5)#we wont need this, this time
+    count = random.randint(2, 5)
 
     for _ in range(count):
         pot = Pot()
@@ -503,6 +503,16 @@ def add_classy_plants(loc):
         pot.location = loc
         pot.region = loc.region
         loc.items.objects_present.append(pot)
+
+
+def add_classy_furniture(loc):#currently only vip lounge
+    count = random.randint(2, 5)
+
+    for _ in range(count):
+        sofa = Sofa()
+        sofa.location = loc
+        sofa.refion = loc.region
+        loc.objects_present.append(sofa)
 
 #reference for above
 def seed_cafe_furniture(all_locations):

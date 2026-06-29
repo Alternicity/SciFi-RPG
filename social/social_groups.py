@@ -3,6 +3,7 @@
 class SocialGroup:
 
     def __init__(self):
+        self.label = "Conversation"
         self.members = []
 
     def contains(self, npc):

@@ -2,6 +2,8 @@
 from location.location_security import can_access_sublocation
 import tkinter as tk
 from tkinter import ttk
+from GUI.helpers.formatting import is_highlighted_percept
+
 from GUI.inspectors.npc.percepts.percept_columns import (
     PERCEPT_COLUMNS,
     COLUMN_HEADINGS,
@@ -21,6 +23,29 @@ def build_percepts_panel(gui, parent):
 
 
     for col in PERCEPT_COLUMNS:
+
+        """ tree.tag_configure(
+            "important",
+            font=("TkDefaultFont", 10, "bold")
+        ) """
+
+        tree.tag_configure(
+            "self",
+            font=("TkDefaultFont", 10, "bold")
+        )
+
+        tree.tag_configure(
+            "location",
+            font=("TkDefaultFont", 10, "bold")
+        )
+
+        tree.tag_configure(
+            "interaction",
+            font=("TkDefaultFont", 10)
+        )
+
+
+
         tree.heading(
             col,
             text=COLUMN_HEADINGS.get(col, col)
@@ -39,7 +64,6 @@ def build_percepts_panel(gui, parent):
         "end",
         text="Parent Location"
     )
-
 
     tree._sublocation_map = {}
 
@@ -96,6 +120,7 @@ def refresh_percepts_panel(gui):
 
     regular_rows = sections["regular"]
     sublocation_rows = sections["sublocations"]
+    parent_rows = sections["parent_location"]
 
     #Treeviews must be manually cleared.
     for item in tree.get_children():
@@ -111,6 +136,8 @@ def refresh_percepts_panel(gui):
             or data.get("type")
             or "UNKNOWN"
         )
+
+
 
         type_ = data.get("type", "—")
 
@@ -163,6 +190,27 @@ def refresh_percepts_panel(gui):
                 getattr(npc, "current_anchor", None)
             )
 
+        #attempted bold
+        highlight = is_highlighted_percept(
+            origin,
+            npc
+        )
+
+        if highlight:
+
+            print(
+                "ROW TAG:",
+                getattr(origin, "name", str(origin)),
+                "->",
+                highlight
+            )
+
+            tags = (highlight,)
+
+        else:
+
+            tags = ()
+
         tree.insert(
             "",
             "end",
@@ -171,8 +219,21 @@ def refresh_percepts_panel(gui):
                 type_,
                 appearance,
                 info
-            )
+            ),
+            tags=tags
         )
+
+        #pre bold attempt
+        """ tree.insert(
+            "",
+            "end",
+            values=(
+                desc,
+                type_,
+                appearance,
+                info
+            )
+        ) """
     
     #the original table handling code
     for table in buckets["occupied_tables"]:
@@ -211,7 +272,40 @@ def refresh_percepts_panel(gui):
             )
         )
 
-    #Sublocations
+    if parent_rows:
+
+        tree.insert(
+            "",
+            "end",
+            values=(
+                "──────── PARENT LOCATION ────────",
+                "",
+                "",
+                ""
+            )
+        )
+
+
+    for origin, data, v in parent_rows:
+
+        desc = (
+            data.get("description")
+            or data.get("type")
+            or "UNKNOWN"
+        )
+
+        type_ = data.get("type", "—")
+
+        tree.insert(
+            "",
+            "end",
+            values=(
+                desc,
+                type_,
+                "",
+                ""
+            )
+        )
 
     # Sublocations
     if sublocation_rows:
@@ -240,6 +334,8 @@ def refresh_percepts_panel(gui):
             or data.get("type")
             or "UNKNOWN"
         )
+        if origin is getattr(npc, "sublocation", None):
+            desc += " (I’m Currently Here)"#can we bold this?
 
         type_ = data.get("type", "—")
 
@@ -253,10 +349,16 @@ def refresh_percepts_panel(gui):
 
         info = " | ".join(parts)
 
+        tag = is_highlighted_percept(origin, npc)
+
+        if tag:
+            print("SUBLOCATION TAG:", desc, "->", tag)
+
         iid = tree.insert(
             "",
             "end",
-            values=(desc, type_, "", info)
+            values=(desc, type_, "", info),
+            tags=(tag,) if tag else ()
         )
 
         tree._sublocation_map[iid] = origin
