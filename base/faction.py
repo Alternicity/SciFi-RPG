@@ -14,6 +14,12 @@ class Faction(FactionBase):
         self.resources = {"money": 1000, "weapons": 10}  # unused
         self.region = None
         self.is_vengeful = False
+
+        if not isinstance(violence_disposition, (int, float)):
+            raise TypeError(
+                "violence_disposition must be numeric"
+            )
+
         self.violence_disposition = violence_disposition
         self.enemies = {}  # Key: Faction name or object, Value: hostility level 1-10
         self.owned_locations = []
@@ -74,11 +80,11 @@ class Faction(FactionBase):
         Display the current priority goal and its objectives.
         """
         if self.current_goal:
-            print(f"Faction: {self.name}, Current Goal: {self.current_goal.goal_type.capitalize()} Also debug me")
+            print(f"Faction: {self.name}, Current Goal: {self.current_goal.goal_type.capitalize()} Also build this")
             for i, obj in enumerate(self.current_goal.objectives, 1):
                 print(f" Objective {i}: {obj}")
         else:
-            print(f"Faction: {self.name} has no active goals. Also debug me")
+            print(f"Faction: {self.name} has no active goals.")
 
     def update_goals(self):
         """Update all faction goals."""
@@ -119,9 +125,9 @@ class Faction(FactionBase):
         return f"{self.name} {self.type.capitalize()}"
     
 class Factionless(Faction):#dummy faction
-    def __init__(self, name="Factionless", violence_disposition=1):
-        super().__init__(name=name, type="neutral")
-        self.violence_disposition = violence_disposition
+    def __init__(self, violence_disposition, name="Factionless"):
+        super().__init__(name=name, type="neutral", violence_disposition=violence_disposition)
+        #self.violence_disposition = violence_disposition
         self.HQ = None
         self.goals = []
         self.current_goal = None

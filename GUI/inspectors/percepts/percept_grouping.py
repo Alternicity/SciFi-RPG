@@ -19,8 +19,6 @@ def build_percept_sections(npc):
         None
     )
 
-    
-
     for key, v in npc.percepts.items():
 
         origin = v.get("origin")
@@ -30,9 +28,11 @@ def build_percept_sections(npc):
         if origin is None:
             continue
 
+
+        #Consider removing these two continue bits, they may be outdated.
+        #"If you're now aggregating percepts, these two continue statements may no longer be appropriate."
         if isinstance(origin, CafeChair):
             continue
-
         if isinstance(origin, CafeTable):
             continue
 
@@ -51,14 +51,13 @@ def build_percept_sections(npc):
                 (origin, data, v)
             )
 
-        #new
         elif origin is parent_location:
 
             parent_location_rows.append(
                 (origin, data, v)
             )
 
-        elif belongs_to_location(
+        elif belongs_to_location(#belongs_to_location is here marked not defined
             origin,
             parent_location
         ):
@@ -86,9 +85,6 @@ def build_percept_sections(npc):
         ]
     )
 
-
-
-
     return {
         "regular": regular_rows,
         "sublocations": sublocation_rows,
@@ -97,11 +93,18 @@ def build_percept_sections(npc):
 
 #utility functions
 def belongs_to_sublocation(obj, sublocation):
+    #Will be deprecated
+    #Once you've converted the remaining placement code to place_object(), I think these helpers become unnecessary.
+    """ Instead, build_percept_sections() can classify rows using only percept data, for example:
+    if data.get("sublocation") == current_sublocation.name:
+        ...
+
+    rather than asking the simulation. """
 
     if sublocation is None:
         return False
 
-    if obj in sublocation.objects_present:
+    if obj in sublocation.items.objects_present:
         return True
 
     if obj in getattr(
@@ -113,7 +116,11 @@ def belongs_to_sublocation(obj, sublocation):
 
     return False
 
-def belongs_to_location(obj, location):
+
+#Will be deprecated
+#Once you've converted the remaining placement code to place_object(), I think these helpers become unnecessary.
+
+""" def belongs_to_location(obj, location):
 
     if location is None:
         return False
@@ -128,4 +135,4 @@ def belongs_to_location(obj, location):
     ):
         return True
 
-    return False
+    return False """

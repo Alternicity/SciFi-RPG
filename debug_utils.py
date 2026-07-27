@@ -117,6 +117,11 @@ ROLE_FILTERS = {
     "civilian_liberty": True,
     "civilian_waitress": True,
     "civilian_passive": False,
+    "civilian_babe": True,
+    "civilian_vip": True,
+    "first_assassin": True,
+    "first_Boss": True,
+    "Second_Boss": True,
 }
 
 """ Why move ROLE_FILTERS into config (per test case)?

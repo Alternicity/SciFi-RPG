@@ -20,6 +20,12 @@ available at runtime (like when using TYPE_CHECKING or avoiding circular import 
 class MemoryEntry:
     subject: str #"subject does something to object_"
     object_: str #underscore to differentiate from reserved term object
+    
+    subject_ref: Optional[Any] = None
+    object_ref: Optional[Any] = None
+    
+    object_ref: None
+
     #Do memory entries need to capture bidirectional or dyadic info? BIDIRECTIONAL
     details: str = ""
     owner: Optional[Any] = None

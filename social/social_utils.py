@@ -1,7 +1,7 @@
 #social.social_utils.py
 
 from create.create_game_state import get_game_state
-game_state = get_game_state
+game_state = get_game_state()
 from debug_utils import debug_print
 from focus_utils import set_attention_focus
 from memory.social.social_memory import SocialMemory
@@ -195,7 +195,7 @@ def calculate_familiarity(rel):
     return rel.familiarity
 
 
-def create_social_group(*members, label=None, interaction_targets=True,):#positional arguments are all NPCs
+def create_social_group(*members, label=None, interaction_targets=True, purpose=None,):#positional arguments are all NPCs
     from social.social_groups import SocialGroup
 
     group = SocialGroup()
@@ -212,10 +212,14 @@ def create_social_group(*members, label=None, interaction_targets=True,):#positi
         members[0].current_interaction_target = members[1]
         members[1].current_interaction_target = members[0]
 
+    game_state.active_social_groups.append(group)
+    #when deleting:
+    #active_social_groups.remove(group)
+
     return group
 
 #create_social_group Dont let one call the other 
-def link_relationship(
+def link_relationship(#We can add to this if needed
     npc_a,
     npc_b,
     *,

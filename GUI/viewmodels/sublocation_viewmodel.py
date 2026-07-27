@@ -14,14 +14,93 @@ class SublocationViewModel:
 
 #utility functions
 def get_sublocation_percepts(observer, sublocation):
+        
+        print("\n========== SUBLOCATION FILTER ==========")
+        print("Target:", sublocation.name)
+        print("========================================")
 
-    rows = []
+        rows = []
 
-    for percept in observer.percepts.values():
+        for percept in observer.percepts.values():
 
-        if percept.get("origin") is not sublocation:
-            continue
+                data = percept["data"]
 
-        rows.append(percept)
+                print(
+                f"{data.get('type'):20}"
+                f"{data.get('name'):25}"
+                f" SUB={repr(data.get('sublocation'))}"
+                )
 
-    return rows
+                if data.get("sublocation") != sublocation.name:
+                        continue
+
+                rows.append(percept)
+
+        print("----------------------------------------")
+        print("MATCHED:", len(rows))
+        print("========================================\n")
+
+        return rows
+
+        #trying to be cleaner than belongs_to_sublocation()
+        # by using percept data alone—but if the object percepts don't yet include "sublocation", it will naturally find nothing.
+    
+    #The following temporarily replaced with the above code
+        """ rows = []
+
+        for percept in observer.percepts.values():
+
+                data = percept["data"]
+
+                if data.get("sublocation") != sublocation.name:
+                continue
+
+                rows.append(percept)
+                print("\nSUBLOCATION PERCEPTS")
+                print("--------------------")
+
+                for row in rows:
+                        data = row["data"]
+
+                        print(
+                                data.get("type"),
+                                data.get("name"),
+                                "SUB:",
+                                data.get("sublocation"),
+                        )
+        return rows """
+
+        """ 
+        Eventually the GUI should look like
+
+        Simulation
+                ↓
+        Observation
+                ↓
+        ViewModel
+                ↓
+        Inspector
+
+        not
+
+        Simulation
+                ↘
+        Observation
+                ↘
+        Inspector """
+
+
+
+        """Simulation
+                ↓
+                place_object()
+                ↓
+                Object metadata
+                ↓
+                ObservationComponent
+                ↓
+                observer.percepts
+                ↓
+                ViewModel
+                ↓
+                Sublocation Inspector"""

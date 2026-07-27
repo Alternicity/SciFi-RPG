@@ -493,16 +493,15 @@ def add_table_decorations(loc):
         rose
     )
 
-def add_classy_plants(loc):
-    count = random.randint(2, 5)
 
-    for _ in range(count):
-        pot = Pot()
-        tree = GoldenRatioTree()
-        pot.add(tree)
-        pot.location = loc
-        pot.region = loc.region
-        loc.items.objects_present.append(pot)
+
+def add_office_furniture(loc):
+    from objects.expensive_furniture import ExpensiveDesk
+    desk = ExpensiveDesk()
+    desk.location = loc
+    desk.region = loc.region
+    loc.objects_present.append(desk)
+
 
 
 def add_classy_furniture(loc):#currently only vip lounge
@@ -511,7 +510,7 @@ def add_classy_furniture(loc):#currently only vip lounge
     for _ in range(count):
         sofa = Sofa()
         sofa.location = loc
-        sofa.refion = loc.region
+        sofa.region = loc.region
         loc.objects_present.append(sofa)
 
 #reference for above

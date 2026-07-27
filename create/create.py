@@ -21,6 +21,7 @@ from display.display import display_sellers
 from character_creation_funcs import create_all_characters
 import random
 from debug_utils import debug_print
+from create.create_sublocations import setup_hq_sublocations
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES
 logging.basicConfig(
     level=logging.INFO,
@@ -191,7 +192,7 @@ def create_gang_factions(num_gangs, all_regions):
         region_name = assigned_region.name.replace(" ", "")
         attr_name = f"{region_name}_gangs"
         gang_name = f"{random.choice(first_part)} {random.choice(second_part)}"
-        gang = Gang(name=gang_name, violence_disposition="5", race=race)
+        gang = Gang(name=gang_name, violence_disposition=5, race=race)
         gang.region = assigned_region  # Assign region before adding to list
         gangs.append(gang)
         game_state.add_gang(gang)  # Add to global GameState
@@ -235,7 +236,7 @@ def create_corp_factions(num_corps, all_regions):
         first_parts, second_parts = ["Default"], ["Corporation"]#this will need to stay in some form - second parts
 
     hannival_region = random.choice(all_regions)
-    hannival_corp = Corporation(name="Hannival", violence_disposition="2")
+    hannival_corp = Corporation(name="Hannival", violence_disposition=2)
     hannival_corp.region = hannival_region
     assign_hq(hannival_corp, hannival_region)
     corporations.append(hannival_corp)
@@ -276,7 +277,7 @@ def create_corp_factions(num_corps, all_regions):
 
         assigned_region = random.choice(all_regions)
 
-        corporation = Corporation(name=corp_name, violence_disposition="2")
+        corporation = Corporation(name=corp_name, violence_disposition=2)
         corporation.region = assigned_region
 
         region_name = assigned_region.name.replace(" ", "")
@@ -337,7 +338,7 @@ def create_factions(all_regions, all_locations):
             faction.is_vengeful = False
 
     from base.faction import Faction, Factionless
-    factionless = Factionless(name="Factionless", violence_disposition="1")
+    factionless = Factionless(name="Factionless", violence_disposition=1)
     factionless.region = downtown_region
     factions.append(factionless)
 
@@ -366,12 +367,15 @@ def create_factions(all_regions, all_locations):
     return factions, all_characters
 
 def create_HQ(region, faction_type="gang"):
-    """Dynamically creates an HQ for a faction in a given region."""
+    
     hq_name = f"{region.name} {'Corporate' if faction_type == 'corporate' else 'Gang'} HQ"
     new_hq = HQ(name=hq_name, region=region)
-    
-    #print(f"Created new {faction_type} HQ: {hq_name} in {region.name}")
-    return new_hq #this var appears unused?
+
+    setup_hq_sublocations(
+        new_hq,
+        faction_type
+    )
+    return new_hq 
 
 def assign_hq(faction, region):
     from create.create_game_state import get_game_state
@@ -404,6 +408,12 @@ def assign_hq(faction, region):
 
     if available_hqs: 
         hq = random.choice(available_hqs)
+
+        setup_hq_sublocations(
+            hq,
+            faction.type#Will .type work here? It might be just a string
+        )
+        
         hq.faction = faction
         hq.controlling_faction = faction
 
@@ -414,7 +424,7 @@ def assign_hq(faction, region):
         hq.name = f"{faction.name} HQ"
         faction.HQ = hq
 
-        #so appending to lists/register should happen here?
+
     else:
         faction.is_street_gang = True
         

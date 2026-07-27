@@ -4,6 +4,10 @@ from create.create_game_state import get_game_state
 from simulation_utils import non_shop_or_cafe_locations
 from characters import GangMember
 from location.locations import Shop
+from world.scenarios.setup_tcX_helpers import available_for_scenario, register_scenario_npc
+from world.scenarios.scenario_helpers import select_unused_gang, reserve_test_faction
+
+
 game_state = get_game_state()
 from memory.injectors.initial_memory_injectors import (
     inject_initial_region_knowledge,
@@ -12,12 +16,42 @@ from memory.injectors.initial_memory_injectors import (
 )
 
 def setup_tc1_world(all_characters):
-    debug_gang_npc = next((c for c in all_characters if isinstance(c, GangMember)), None)#all_characters, the early flow
-    #variable. We might be able to pass it in to a function here, if not there should be a game_state
-    #equivalent
-    debug_gang_npc2 = next((c for c in all_characters if isinstance(c, GangMember) and c is not debug_gang_npc), None)
-    #The Gangmembers are currently unused and ignored in TC2
+    tc1_gang = select_tc1_gang()#function not yet defined
 
+    member = random.choice(tc1_gang.members)
+
+
+    """ debug_gang_npc = next(
+        (
+            c for c in all_characters
+            if (
+                isinstance(c, GangMember)
+                and available_for_scenario(c)
+            )
+        ),
+        None
+    ) """
+    
+    debug_gang_npc = random.choice(tc1_gang.members)
+    register_scenario_npc(
+        debug_gang_npc,
+        "tc1_primary_gang_member"
+    )
+    
+    #debug_gang_npc2 = next((c for c in all_characters if isinstance(c, GangMember) and c is not debug_gang_npc), None)
+    #What about this npc? Its a little different - it cannot be the same npc as debug_gang_npc
+
+    other_members = [
+        member
+        for member in tc1_gang.members
+        if member is not debug_gang_npc
+    ]
+
+    debug_gang_npc2 = random.choice(other_members)
+    register_scenario_npc(
+        debug_gang_npc2,
+        "tc1_secondary_gang_member"
+    )
 
     # tag them for other code that checks flags
     if debug_gang_npc:
@@ -78,3 +112,23 @@ def setup_tc1_world(all_characters):
         inject_initial_region_knowledge(debug_gang_npc2)
         inject_food_location_knowledge(debug_gang_npc2)
         inject_initial_shop_knowledge(debug_gang_npc2)
+
+def select_tc1_gang():
+
+    gs = get_game_state()
+
+    existing = gs.test_factions["gangs"].get("TC1")
+
+    if existing:
+        return existing
+
+
+    gang = select_unused_gang()
+
+    reserve_test_faction(
+        "gangs",
+        "TC1",
+        gang
+    )
+
+    return gang

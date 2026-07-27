@@ -10,9 +10,9 @@ from base.faction import Faction
 
 class Corporation(Faction):
     def __init__(self, name, violence_disposition):
-        super().__init__(name, type="corporation")
+        super().__init__(name, type="corporation", violence_disposition=violence_disposition)
         
-        self.violence_disposition = violence_disposition
+        #self.violence_disposition = violence_disposition
         self.HQ = None
 
         # New attributes
@@ -78,8 +78,9 @@ class Corporation(Faction):
 
 class Gang(Faction):
     def __init__(self, name, violence_disposition, race):
-        super().__init__(name, type="gang")
-        self.violence_disposition = violence_disposition
+        super().__init__(name, type="gang", )
+        #self.violence_disposition = violence_disposition
+        #remove
         self.HQ = None
         self.race = race
         self.tags = ["gang", "faction", "violent"]
@@ -113,8 +114,8 @@ class Gang(Faction):
         
 from config import STATE_RACE
 class State(Faction):
-    def __init__(self, name, resources, laws, region=None):
-        super().__init__(name, type="state")
+    def __init__(self, name, resources, laws, region=None, violence_disposition=3):
+        super().__init__(name, type="state", violence_disposition=violence_disposition)
         self.name = name
         self.resources = resources  # Dictionary of resources (e.g., money, food, etc.)
         self.laws = laws  # List of laws or policies (e.g., "no theft", "tax rates")

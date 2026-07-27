@@ -5,23 +5,8 @@ from perception.perceptibility import (
     extract_appearance_summary
 )
 
+#function quarantined due to its scanning of objects_present, not getting this data from npc.percepts.values()
 """ def get_sublocation_percepts(sublocation):
-
-    percepts = []
-
-    for obj in sublocation.objects_present:
-        
-        for percept_obj in gather_perceptible_objects(obj):
-
-            percepts.append(
-                extract_appearance_summary(
-                    percept_obj
-                )
-            )
-
-    return percepts """
-
-def get_sublocation_percepts(sublocation):
 
     percepts = []
 
@@ -34,35 +19,6 @@ def get_sublocation_percepts(sublocation):
                 "description",
                 obj.name
             )
-        )
+        ) 
 
-
-#old version
-    """ for obj in sublocation.objects_present:
-
-        print(
-            "ROOT OBJECT:",
-            type(obj).__name__,
-            getattr(obj, "name", "NO_NAME")
-        )
-
-        for percept_obj in gather_perceptible_objects(obj):
-
-            print(
-                "PERCEPT OBJECT:",
-                type(percept_obj).__name__,
-                getattr(percept_obj, "name", "NO_NAME")
-            )
-
-            text = extract_appearance_summary(
-                percept_obj
-            )
-
-            print(
-                "SUMMARY:",
-                text
-            )
-
-            percepts.append(text) """
-
-    return percepts
+    return percepts"""

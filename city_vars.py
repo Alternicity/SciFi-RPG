@@ -30,8 +30,7 @@ class GameState:
         self.civilian_liberty = None
         self.civilian_passive = None """
 
-        #in future use only:
-        self.debug_npcs = {}
+
 
 
         #Recommendation (later): Remove individual fields and rely on debug_npcs only
@@ -53,7 +52,15 @@ class GameState:
         self.gangs = []
         self.all_street_gangs = []
         self.corporations = []
+
+        self.debug_npcs = {}
+        self.test_factions = {
+            "gangs": {},
+            "corporations": {}
+        }
         
+        self.active_social_groups = []
+
         self.all_powerplants = []
         self.powered_locations = []
 

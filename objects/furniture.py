@@ -245,6 +245,24 @@ class CafeCounter(Furniture):
 
 # objects/furniture.py
 
+class Desk(Furniture):
+    is_concrete = True
+
+    def __init__(self, name="Desk", seating_capacity=1, size=Size.MEDIUM, toughness=Toughness.NORMAL):
+        super().__init__(
+            name=name,
+            size=size,
+            toughness=toughness,
+            seating_capacity=seating_capacity,
+        )
+        self.occupied_by = None
+        self.base_ambience = {"knowledge": 0.3, "organization": 0.4}
+
+        @property
+        def tags(self):
+            return ["furniture", "desk", "study", "work"]
+    
+
 class Bed(Furniture):
     is_concrete = True
 

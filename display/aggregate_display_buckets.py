@@ -46,3 +46,37 @@ def collect_display_buckets(npc):
         buckets["normal_rows"].append((origin, data, v))
 
     return buckets
+
+def aggregate_object_percepts(percepts):
+
+    buckets = {}
+
+    for percept in percepts:
+
+        data = percept["data"]
+        
+        print(
+            "AGGREGATE KEY:",
+            data.get("name"),
+            "|",
+            data.get("description"),
+            "|",
+            data.get("type"),
+        )
+
+
+        key = data.get(
+            "description",
+            data.get("name")
+        )
+
+        if key not in buckets:
+
+            buckets[key] = {
+                "percept": percept,
+                "count": 0
+            }
+
+        buckets[key]["count"] += 1
+
+    return buckets.values()

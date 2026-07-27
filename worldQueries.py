@@ -18,28 +18,25 @@ def get_viable_robbery_targets(region):
     #If an NPC lacks personal region knowledge, VisitToRobAnchor
     #  could call get_viable_robbery_targets(region) as a fallback list of possible targets.
 
-def get_nearby_objects(npc, location=None):
+""" def get_nearby_objects(npc, location=None):
     if location is None:
         print(f"[DEBUG] {npc.name} has no valid location. No objects to observe.")
         return []
 
     nearby = []
 
-    # Characters
+
     nearby.extend([c for c in location.characters_there if c is not npc])
 
-    # Objects
+
     if hasattr(location, "objects_present"):
         nearby.extend(location.objects_present)
 
-    # Fixtures
+
     if hasattr(location, "cash_register"):
         nearby.append(location.cash_register)
 
-    # causes duplicated location percepts
-    #nearby.append(location)
-
-    return nearby
+    return nearby """
 
 #remove
 """ def observe_location(self, loc):

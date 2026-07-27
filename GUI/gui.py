@@ -2,10 +2,18 @@
 import tkinter as tk
 from tkinter import ttk
 from collections import deque
-from base.location import Sublocation
+from base.location import Location, Sublocation
 from base.character import Character
+from region.region import Region
+from base.faction import Faction
+
+#Inspectors
 from GUI.inspectors.entity.npc_inspector import build_npc_inspector
 from GUI.inspectors.npc.sublocation_inspector import build_sublocation_inspector
+
+#Builders
+from GUI.inspectors.sublocations.sublocation_entity_page import build_sublocation_entity_page
+from GUI.inspectors.entity.npc_entity_page import build_npc_entity_page
 
 from GUI.helpers.gui_logging import gui_log
 from GUI.inspectors.npc.npc_overview_panel import build_overview_panel, refresh_overview_panel
@@ -14,7 +22,9 @@ from GUI.inspectors.npc.motivations.npc_motivations_panel import build_motivatio
 from GUI.inspectors.npc.percepts.npc_percepts_panel import build_percepts_panel, refresh_percepts_panel
 from GUI.inspectors.npc.thoughts.npc_thoughts_panel import build_thoughts_panel, refresh_thoughts_panel
 from GUI.inspectors.faction.faction_hq_panel import refresh_faction_hq_panel
-
+from GUI.inspectors.npc.social_group_inspector import build_social_group_inspector
+from GUI.inspectors.entity.social_group_entity_page import build_social_group_center_view
+from social.social_groups import SocialGroup
 from GUI.inspectors.city.city_region_panel import (
     refresh_region_panel,
 )
@@ -38,7 +48,7 @@ class TC2GUI:
             "mode": "npc",#im not sure if this is legit, ir used, it could be a legacy
             "faction": None,
             "npc": None,
-            "entity": None,
+            "entity": None,#here
             "region": None,
             "location": None,
             "sublocation": None
@@ -515,6 +525,77 @@ class TC2GUI:
 
         self.refresh_all()
 
+    def show_entity_page(self, observer, thing):
+
+        # ------------------------------------------------------------------
+        # Generic Entity Page Dispatcher
+        #
+        # This is the single entry point for opening detail pages for
+        # inspectable world objects.
+        #
+        # Each inspectable entity should eventually have:
+        #
+        #     Inspector (right panel)
+        #         build_xxx_inspector()
+        #
+        #     Entity Page (detail page)
+        #         build_xxx_entity_page()
+        #
+        # Supported types will gradually include:
+        #
+        #     Character
+        #     Sublocation
+        #     Location
+        #     Region
+        #     Faction
+        #     SocialGroup
+        #     Vehicle
+        #     Business
+        #     etc.
+        #
+        # Keep navigation generic here.
+        # Keep rendering logic inside the entity page builders.
+        # ------------------------------------------------------------------
+
+        self.current_page = "entity"
+
+        self.clear_main_panel()
+
+        self.show_detail_page()
+
+        """ clear
+        show_detail_page
+        dispatch """
+
+        if isinstance(thing, Sublocation):
+            build_sublocation_entity_page(self, self.detail_page_container,observer, thing)#line 571
+        
+        elif isinstance(thing, Character):
+            build_npc_entity_page(self, self.detail_page_container, observer, thing)
+
+        elif isinstance(thing, SocialGroup):
+            build_social_group_entity_page(self, self.detail_page_container, observer, thing)
+            #build_social_group_entity_page marked not defined
+
+        elif isinstance(thing, Location):
+            pass#ATTN
+
+        elif isinstance(thing, Region):
+            pass#ATTN
+
+        elif isinstance(thing, Faction):
+            pass#ATTN
+
+        else:
+
+            print("show_entity page(), unknown type passed in")
+
+
+
+
+        #Exactly like refresh_inspector()
+
+
     def refresh_npc_view(self):
         """
         Update existing NPC widgets.
@@ -827,8 +908,6 @@ class TC2GUI:
                 "HQ: None"
             )
 
-        
-
         # Gang-specific
 
         if isinstance(faction, Gang):
@@ -901,18 +980,18 @@ class TC2GUI:
             self.refresh_time_display()
 
         self.root.after(250, self.update_loop)
-        
-    def show_sublocation_center_view(self, sublocation):
-        self.current_page = "sublocation"
-        
-        from GUI.helpers.gui_helpers import clear_frame
-        from GUI.inspectors.npc.sublocation_inspector import (
-            build_sublocation_inspector
-        )
 
+    #marked for replacement with: show_entity_page
+    #npc was marked as not defined
+    #QUARANTINED
+    """ def show_sublocation_center_view(self, sublocation):
+        
         self.clear_main_panel()
         
         self.show_detail_page()
+        
+        self.active_context["npc"] = npc
+        from GUI.inspectors.npc.sublocation_inspector import build_sublocation_inspector
 
         build_sublocation_inspector(
             self,
@@ -920,9 +999,11 @@ class TC2GUI:
             sublocation
         )
 
-        self.clear_inspector()
-    
-    def show_sublocation_view(self, sublocation):
+        self.clear_inspector() """
+
+    #ATTN. Delete? Duplicate function
+    #QUARANTINED
+    """ def show_sublocation_view(self, sublocation):
 
         from GUI.inspectors.npc.sublocation_inspector import (
             build_sublocation_inspector
@@ -930,35 +1011,49 @@ class TC2GUI:
 
         self.clear_main_panel()
         self.show_detail_page()
-
+        self.active_context["npc"] = npc
         build_sublocation_inspector(
             self,
-            self.detail_page_container,#updated
+            self.detail_page_container,
+            npc,
             sublocation
-        )
-        #but there was no self.
-        #show_detail_page()
-        #here. Should there be?
+        ) """
 
     def refresh_inspector(self):
         
         parent = self.get_inspector_parent()
-
+        observer = self.active_context["npc"]#gets a reference to the observing pnc
         target = self.inspected_target
         print("INSPECTOR TARGET:", target)
         
         if target is None:
             return
-
+        
+        #Eventually, this may be worth replacing this with a registry
+        """ INSPECTORS = {
+            Character: build_npc_inspector,
+            Sublocation: build_sublocation_inspector,
+            SocialGroup: build_social_group_inspector,
+            
+        } """
         if isinstance(target, Sublocation):
-
-            build_sublocation_inspector(
+            #line 1040
+            build_sublocation_inspector(#there is no available observer or npc reference here
                 self,
                 parent,
+                observer,
                 target
             )
         elif isinstance(target, Character):
             build_npc_inspector(
+                self,
+                parent,
+                target
+            )
+
+        elif isinstance(target, SocialGroup):
+
+            build_social_group_inspector(
                 self,
                 parent,
                 target
@@ -972,6 +1067,24 @@ class TC2GUI:
         """ We are no longer clearing notebook widgets.
         Only temporary pages. """
         clear_frame(self.detail_page_container)
+
+    def show_social_group_center_view(self, observer, social_group):#marked for replacement with: show_entity_page
+        #should not be inventing a new "center_panel", nor resurrecting the old one
+
+        """ self.current_page = "social_group"
+        self.clear_main_panel()
+        self.show_detail_page() """
+        #deprecated i think
+
+        build_social_group_center_view(
+            self,
+            self.detail_page_container,
+            observer,
+            social_group
+        )
+
+        self.clear_inspector()
+
 
     def show_npc_page(self):
         #latest approach,official page switcher
@@ -991,23 +1104,28 @@ class TC2GUI:
             expand=True
         )
 
-    def show_npc_entity_view(self, observer, target):
-        #not switching observer, viewing another npc, from slected npcs perspective
+    def show_npc_entity_view(self, observer, target):#marked for replacement with: show_entity_page
+        # functions like show_npc_entity_view() are navigation.
+        #Files like npc_entity_page.py are rendering.
+        
+        #not switching observer, viewing another npc, from selected npcs perspective
         from GUI.inspectors.entity.npc_entity_page import build_npc_entity_page
         from GUI.helpers.gui_helpers import clear_frame
-        self.current_page = "entity"
+        """ self.current_page = "entity"
         self.clear_inspector()
-        self.clear_main_panel()
+        self.clear_main_panel() """
+        #deprecated I think
+
         #clear_frame(self.npc_main_panel)
 
-        print("SHOW NPC ENTITY VIEW")#the commetn already existed
+        print("SHOW NPC ENTITY VIEW")
         print("observer =", observer.name)
         print("target =", target.name)
 
         self.show_detail_page()#new approach
         build_npc_entity_page(
             self,
-            self.detail_page_container,#is this right?
+            self.detail_page_container,
             observer,
             target
         )

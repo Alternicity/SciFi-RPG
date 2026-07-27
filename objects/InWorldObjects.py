@@ -80,7 +80,11 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
         self.bloodstained = None  # Can be a character reference or ID string
         self.is_stolen =False
         self._tags = []
+        self.signals = []
         
+    def get_signals(self):
+        return list(self.signals)
+
     @property
     def tags(self):
         return []
@@ -110,7 +114,7 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
             "region": getattr(getattr(self, "region", None), "name", None),
             "location": getattr(getattr(self, "location", None), "name", None),
             "sublocation": getattr(getattr(self, "sublocation", None), "name", None),
-            "origin": self,
+            "origin": self,#"origin" is simply the object that generated the percept
             "salience": self.compute_salience(observer),  # Using anchor-based salience now
             "tags": getattr(self, "tags", []),
             "urgency": getattr(self, "urgency", 1),
@@ -668,12 +672,6 @@ class Pot(ObjectInWorld, Container):
             self.symbolism.append("rustic")
 
     def get_percept_data(self, observer=None):
-
-        #tmp
-        print(
-            "POT GET_PERCEPT_DATA",
-            self.name
-        )
         
         base = super().get_percept_data(observer)
         visible = self.visible_contents(observer)

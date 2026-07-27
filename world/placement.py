@@ -28,7 +28,7 @@ def place_character_in_sublocation(
         npc.name,
         npc.__class__.__name__,
         getattr(npc, "debug_role", None),
-        sublocation.accessible_roles
+        getattr(sublocation, "accessible_roles", None)
     )
 
     if npc not in sublocation.characters_there:

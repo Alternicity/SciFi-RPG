@@ -9,6 +9,7 @@ from economy.economy_queries.location_queries import (
 )
 from GUI.navigation.breadcrumbs import build_city_breadcrumbs
 
+#Not an npc perception view
 def build_location_view(gui, parent, location):
     from economy.economy_queries.location_queries import get_location_owner
     build_city_breadcrumbs(gui, parent)

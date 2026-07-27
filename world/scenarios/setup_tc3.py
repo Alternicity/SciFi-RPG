@@ -10,8 +10,8 @@ import random
 from world.placement import place_character, place_character_in_sublocation
 from social.social_utils import link_relationship, create_social_group
 from social.social_groups import SocialGroup
-
-from augment.augmentLocations import add_classy_plants, add_classy_furniture
+from augment.augmentWithPlants import add_classy_plants
+from augment.augmentLocations import add_classy_furniture
 from augment.augmentLocations import add_table_decorations
 game_state = get_game_state()
 
@@ -264,7 +264,7 @@ def setup_tc3_world(all_characters):
     boss_group = create_social_group(#establishes the current interaction
     boss1,
     boss2,
-    label="Planning"
+    purpose="Planning"
 )
 
 

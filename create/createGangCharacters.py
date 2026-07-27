@@ -150,7 +150,10 @@ def create_gang_characters(faction, all_regions):
         )
         
         faction.captains.append(captain)
-        faction.members.append(captain)
+
+        #wrong
+        #faction.members.append(captain)
+        
         captain.mind = Mind(owner=captain, capacity=captain.intelligence)
         augment_character(captain)
         captain.curiosity = Curiosity(base_score=captain.intelligence // 2)

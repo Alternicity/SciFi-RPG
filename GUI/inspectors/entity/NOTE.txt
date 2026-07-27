@@ -1,0 +1,8 @@
+I think eventually you'll have
+
+entity/
+
+    npc_entity_page.py
+    faction_entity_page.py
+    location_entity_page.py
+    social_group_entity_page.py

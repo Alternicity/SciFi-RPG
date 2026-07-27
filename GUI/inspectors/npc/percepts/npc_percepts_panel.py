@@ -24,11 +24,6 @@ def build_percepts_panel(gui, parent):
 
     for col in PERCEPT_COLUMNS:
 
-        """ tree.tag_configure(
-            "important",
-            font=("TkDefaultFont", 10, "bold")
-        ) """
-
         tree.tag_configure(
             "self",
             font=("TkDefaultFont", 10, "bold")
@@ -44,8 +39,6 @@ def build_percepts_panel(gui, parent):
             font=("TkDefaultFont", 10)
         )
 
-
-
         tree.heading(
             col,
             text=COLUMN_HEADINGS.get(col, col)
@@ -58,7 +51,7 @@ def build_percepts_panel(gui, parent):
 
     gui.percepts_tree = tree
 
-    #Just this so far
+
     parent = tree.insert(
         "",
         "end",
@@ -78,8 +71,6 @@ def build_percepts_panel(gui, parent):
         if sublocation:
             gui.inspect(sublocation)
 
-
-    
     def on_double_click(event):
 
         iid = tree.identify_row(event.y)
@@ -90,8 +81,11 @@ def build_percepts_panel(gui, parent):
         sublocation = tree._sublocation_map.get(iid)
 
         if sublocation:
-            gui.show_sublocation_center_view(
-                sublocation
+            observer = gui.active_context["npc"]
+
+            gui.show_entity_page(
+                observer,
+                sublocation,
             )
     tree.bind("<Button-1>", on_tree_click)
     tree.bind("<Double-1>", on_double_click)
@@ -137,8 +131,6 @@ def refresh_percepts_panel(gui):
             or "UNKNOWN"
         )
 
-
-
         type_ = data.get("type", "—")
 
         appearance = extract_appearance_summary(
@@ -162,7 +154,7 @@ def refresh_percepts_panel(gui):
 
             visibility_text = (
                 "Visible"
-                if can_perceive_sublocation(#line 154
+                if can_perceive_sublocation(
                     npc,
                     origin
                 )
@@ -222,18 +214,6 @@ def refresh_percepts_panel(gui):
             ),
             tags=tags
         )
-
-        #pre bold attempt
-        """ tree.insert(
-            "",
-            "end",
-            values=(
-                desc,
-                type_,
-                appearance,
-                info
-            )
-        ) """
     
     #the original table handling code
     for table in buckets["occupied_tables"]:
@@ -335,7 +315,7 @@ def refresh_percepts_panel(gui):
             or "UNKNOWN"
         )
         if origin is getattr(npc, "sublocation", None):
-            desc += " (I’m Currently Here)"#can we bold this?
+            desc += " (I’m Currently Here)"
 
         type_ = data.get("type", "—")
 

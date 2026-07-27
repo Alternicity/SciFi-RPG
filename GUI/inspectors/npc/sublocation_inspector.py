@@ -1,14 +1,18 @@
 #GUI.inspectors.npc.sublocation_inspector.py
+
 import tkinter as tk
 from tkinter import ttk
 from GUI.widgets.sublocation_widget import build_sublocation_view_model
 from GUI.widgets.social_group_widget import build_group_widget
+from display.aggregate_display_buckets import aggregate_object_percepts
+from base.character import Character
+from social.social_groups import SocialGroup
+#quarantined
+#from perception.sublocation_percepts import get_sublocation_percepts
+#replaced with the following import. Withi this the npc cannot perceive non-character objects
+from GUI.viewmodels.sublocation_viewmodel import get_sublocation_percepts
 
-from perception.sublocation_percepts import get_sublocation_percepts
-
-
-
-def build_sublocation_inspector(gui, parent, sublocation):
+def build_sublocation_inspector(gui, parent, observer, sublocation):
     # clear frame
     for child in parent.winfo_children():
         child.destroy()
@@ -45,18 +49,12 @@ def build_sublocation_inspector(gui, parent, sublocation):
         text="Social Groups"
     ).pack(anchor="w", padx=10, pady=(10, 0))
 
-    
-
-
-
     for npc in occupants:
 
         group = npc.current_social_group
 
         if group is None:
             ungrouped.append(npc)
-
-
 
         elif id(group) not in seen:
             seen.add(id(group))
@@ -114,10 +112,10 @@ def build_sublocation_inspector(gui, parent, sublocation):
     
         link.bind(
             "<Double-Button-1>",
-            lambda e, n=npc: gui.show_npc_entity_view(
-                gui.active_context["npc"],
-                n
-            )
+            lambda e, n=npc: gui.show_entity_page(
+            gui.active_context["npc"],
+            n
+        )
         )
 
     ttk.Label(
@@ -126,10 +124,12 @@ def build_sublocation_inspector(gui, parent, sublocation):
     ).pack(anchor="w", padx=10, pady=(10, 0))
 
 
-    percepts = get_sublocation_percepts(
-        sublocation
-    )
+    percepts = get_sublocation_percepts(observer, sublocation)#deprecated?
 
+    """ I think the ViewModel should own this
+    Personally I would probably move even this logic into
+    GUI/viewmodels/sublocation_viewmodel.py """
+    
     if not percepts:
 
         ttk.Label(
@@ -139,7 +139,46 @@ def build_sublocation_inspector(gui, parent, sublocation):
 
     else:
 
-        for text in percepts:
+        objects = []
+
+        characters = []
+
+        groups = []
+
+        for percept in percepts:
+
+            origin = percept["origin"]
+
+            if isinstance(origin, Character):
+                characters.append(percept)
+
+            elif isinstance(origin, SocialGroup):
+                groups.append(percept)
+
+            else:
+                objects.append(percept)#might catch conversation or event objects later and need another if above
+
+        #tmp
+        """ print(
+            "OBJECT PERCEPTS:",
+            len(objects),
+            [
+                p["data"]["name"]
+                for p in objects
+            ]
+        ) """
+
+        for bucket in aggregate_object_percepts(objects):
+
+            data = bucket["percept"]["data"]
+
+            text = data.get(
+                "description",
+                data["name"]
+            )
+
+            if bucket["count"] > 1:
+                text += f" (x{bucket['count']})"
 
             ttk.Label(
                 parent,
@@ -198,4 +237,8 @@ def build_sublocation_inspector(gui, parent, sublocation):
     Always do this
     convert → ViewModel
     render → shared renderer """
+
+
+
+
 

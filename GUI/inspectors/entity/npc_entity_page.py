@@ -20,7 +20,7 @@ def build_npc_entity_page(gui, parent, observer, target):
     psy_tab = ttk.Frame(notebook)
 
     notebook.add(overview_tab, text="Overview")
-    notebook.add(thoughts_tab, text="Thoughts")
+    notebook.add(thoughts_tab, text="Thoughts")#Clearly this block is set up for npcs
     notebook.add(memories_tab, text="Memories")
     notebook.add(motivations_tab, text="Motivations")
     notebook.add(psy_tab, text="Psy")

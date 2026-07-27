@@ -104,16 +104,18 @@ def refresh_motivations_panel(gui):
                 f"  urgency: {urgency:.1f}\n"
             )
 
-            if target:
+            if hasattr(target, "name"):
+                target_text = target.name
 
-                if hasattr(target, "name"):
-                    target_text = target.name
-                else:
-                    target_text = str(target)
+            elif hasattr(target, "label"):
+                target_text = target.label
+
+            else:
+                target_text = str(target)
 
                 text_widget.insert(
                     tk.END,
-                    f"  target: {target_text}\n"
+                    f"  target: {target_text}\n"#because "target::" is present here, and in gui output
                 )
 
             text_widget.insert(

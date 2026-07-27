@@ -113,20 +113,21 @@ def gather_perceptible_objects(obj, seen=None):
         seen.add(oid)
         found.append(obj)
 
-        """ print(
-            "GATHER:",
-            type(obj).__name__,
-            getattr(obj, "name", None)
-        ) """
-
     if hasattr(obj, "inventory"):
         for item in obj.inventory.items.values():
             found.extend(gather_perceptible_objects(item, seen))
 
     if hasattr(obj, "items") and hasattr(obj.items, "objects_present"):
-        for item in obj.items.objects_present:
+        for item in obj.items.objects_present:#Aha?
             found.extend(gather_perceptible_objects(item, seen))
 
+    if hasattr(obj, "sublocations"):
+
+        for sub in obj.sublocations:
+            found.extend(
+                gather_perceptible_objects(sub, seen)
+            )
+            
     return found
 
 

@@ -1,5 +1,5 @@
 #character_components.observation_component.py
-from worldQueries import get_nearby_objects
+#from worldQueries import get_nearby_objects
 from perception.perceptibility import PerceptibleMixin, gather_perceptible_objects
 
 class ObservationComponent:
@@ -116,12 +116,24 @@ class ObservationComponent:
         # Ask the object for its perceptual data
         if hasattr(obj, "get_percept_data"):
             percept_data = obj.get_percept_data(observer=self.owner)
+
+        #tmp block
+        if getattr(obj, "sublocation", None):
+            print(
+                "ADDING PERCEPT:",
+                type(obj).__name__,
+                obj.name,
+                "SUB:",
+                percept_data.get("sublocation")
+            )
+
+
         else:
             percept_data = {
                 "name": getattr(obj, "name", str(obj)),
                 "type": obj.__class__.__name__,
                 "description": f"{obj.__class__.__name__} (unclassified)",
-                "origin": obj,
+                "origin": obj,#"origin" is simply the object that generated the percept
                 "salience": 1.0,
                 "tags": [],
                 "urgency": 1,
@@ -147,7 +159,8 @@ class ObservationComponent:
         self._percepts[key] = {
             "data": percept_data,
             "origin": obj,
-            "source": source
+            "source": source,
+
         }
 
         self.percepts_updated = True
@@ -221,18 +234,8 @@ class ObservationComponent:
 
         observer = self.owner
 
-        # caller info for diagnostics
-        caller = inspect.stack()[1].function
-
-
-        # --- show before/after counts for easier debugging ---
-        try:
-            before_count = len(self.percepts)
-        except Exception:
-            before_count = 0
-
         # --- clear percepts for new observation cycle ---
-        self._percepts.clear()
+
         self.percepts_update = False
 
         # --- perceive self (always included) ---
@@ -247,9 +250,19 @@ class ObservationComponent:
             }
             self.percepts_updated = True
             
+        if self.owner.sublocation:
+            observation_root = self.owner.sublocation
+        else:
+            observation_root = location
+        for obj in gather_perceptible_objects(observation_root):
+                
+                #tmp
+                print(
+                    "OBSERVED:",
+                    type(obj).__name__,
+                    getattr(obj, "name", None)
+                )
 
-        if location:
-            for obj in gather_perceptible_objects(location):
                 if obj is self.owner:
                     continue
                 
@@ -293,11 +306,8 @@ class ObservationComponent:
                 ):
                     continue
 
-                #the above deprecates this, correct?
-                """ if not getattr(sub, "perceptible_from_parent", False):
-                    continue """
 
-                self.add_percept_from(#here
+                self.add_percept_from(
                     sub,
                     source="sublocation"
                 )
@@ -309,7 +319,7 @@ class ObservationComponent:
                     char
                 ):
                     continue
-
+                
                 self.add_percept_from(
                     char,
                     source="characters_there"
