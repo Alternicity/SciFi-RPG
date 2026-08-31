@@ -113,27 +113,17 @@ class ObservationComponent:
         if obj is self.owner:
             return
 
-        # Ask the object for its perceptual data
+
+        # Ask the object for its perceptual data, line 117
         if hasattr(obj, "get_percept_data"):
             percept_data = obj.get_percept_data(observer=self.owner)
-
-        #tmp block
-        if getattr(obj, "sublocation", None):
-            print(
-                "ADDING PERCEPT:",
-                type(obj).__name__,
-                obj.name,
-                "SUB:",
-                percept_data.get("sublocation")
-            )
-
 
         else:
             percept_data = {
                 "name": getattr(obj, "name", str(obj)),
                 "type": obj.__class__.__name__,
                 "description": f"{obj.__class__.__name__} (unclassified)",
-                "origin": obj,#"origin" is simply the object that generated the percept
+                "origin": obj,#object that generated the percept
                 "salience": 1.0,
                 "tags": [],
                 "urgency": 1,
@@ -152,7 +142,6 @@ class ObservationComponent:
         if key is None:
             key = id(obj)
 
-        # Ensure percept store exists
         if not hasattr(self, "_percepts"):
             self._percepts = {}
 
@@ -256,13 +245,6 @@ class ObservationComponent:
             observation_root = location
         for obj in gather_perceptible_objects(observation_root):
                 
-                #tmp
-                print(
-                    "OBSERVED:",
-                    type(obj).__name__,
-                    getattr(obj, "name", None)
-                )
-
                 if obj is self.owner:
                     continue
                 
@@ -306,11 +288,11 @@ class ObservationComponent:
                 ):
                     continue
 
-
-                self.add_percept_from(
+                #deprecate
+                """ self.add_percept_from(
                     sub,
                     source="sublocation"
-                )
+                ) """
             # --- perceive other characters in the same location ---
             for char in getattr(location, "characters_there", []):
 

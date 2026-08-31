@@ -20,25 +20,25 @@ from world.scenarios.economy.setup_normal_economy import register_employee
 
 def setup_tc2_world(all_characters):
     civilians = [c for c in all_characters if isinstance(c, Civilian)]
+
     debug_civilian_worker = pick_civilian(civilians)
-    debug_civilian_liberty = pick_civilian(
-        civilians,
-        exclude={debug_civilian_worker}
-    )
+    debug_civilian_liberty = pick_civilian(civilians, exclude={debug_civilian_worker})
 
-    debug_civilian_waitress = pick_civilian(
-        civilians,
-        sex="female",
-        exclude={debug_civilian_worker, debug_civilian_liberty}
-    )
+    debug_civilian_waitress = pick_civilian(civilians, sex="female", exclude={debug_civilian_worker, debug_civilian_liberty})
 
-    downtown_region = next(
+    """ debug_civilian_passive = pick_civilian(
+                civilians,
+                exclude={debug_civilian_worker, debug_civilian_liberty, debug_civilian_waitress}
+            ) """
+
+    """ downtown_region = next(
         (
             r for r in game_state.all_regions
             if r.name == "downtown"
         ),
         None
-    )
+    ) """
+
     if debug_civilian_worker:
         debug_civilian_worker.debug_role = "civilian_worker"
         debug_civilian_worker.is_scenario_npc = True
@@ -51,19 +51,7 @@ def setup_tc2_world(all_characters):
         debug_civilian_waitress.debug_role = "civilian_waitress"
         debug_civilian_waitress.is_scenario_npc = True
 
-    #tmp
-    """ print(
-        "[TC2 LIBERTY, from setup_tc2_world]",
-        debug_civilian_liberty.name,
-        debug_civilian_liberty.is_employee,
-        debug_civilian_liberty.is_scenario_npc
-    ) """
-
-    debug_civilian_passive = pick_civilian(
-            civilians,
-            exclude={debug_civilian_worker, debug_civilian_liberty, debug_civilian_waitress}
-        )
-    if debug_civilian_passive:
+    """ if debug_civilian_passive:
         game_state.debug_npcs["civilian_passive"] = debug_civilian_passive
         debug_civilian_passive.debug_role = "civilian_passive"
         debug_civilian_passive.is_scenario_npc = True
@@ -72,7 +60,12 @@ def setup_tc2_world(all_characters):
         debug_civilian_passive.mind.thoughts.append(
             build_colony_doubt_thought(debug_civilian_passive)
         )
-        place_tc2_passive_npc(debug_civilian_passive, downtown_region)
+        place_tc2_passive_npc(debug_civilian_passive, downtown_region) """
+
+        #place_coffee_drinker(npc, cafe,)
+
+
+
         
     if debug_civilian_worker:
         game_state.debug_npcs["civilian_worker"] = debug_civilian_worker
@@ -171,8 +164,8 @@ def setup_tc2_world(all_characters):
         if npc.location:
             npc.region = npc.location.region
 
-
-def get_tc2_cafe(region):#not used for civilian_liberty setup
+#not used for civilian_liberty setup
+def get_tc2_cafe(region):
     cafe = next(
         (loc for loc in region.locations if loc.__class__.__name__ == "Cafe"),
         None
@@ -253,7 +246,7 @@ def seed_tc2_presets(waitress, manager):
     rel.current_type = "co_worker"
     rel.trust = 2
 
-def place_tc2_passive_npc(npc, region):
+""" def place_tc2_passive_npc(npc, region):
     from location.locations import Nightclub
     
     region = random.choice(game_state.all_regions)
@@ -265,23 +258,23 @@ def place_tc2_passive_npc(npc, region):
 
     nightclub = random.choice(nightclubs)
     nightclub.is_tc2_nightclub = True
-    #print(f"[TC2] Selected nightclub: {nightclub.name}")
+
     
     if not nightclub:
         raise RuntimeError("No Nightclub found in region for passive NPC placement.")
 
-    # Assign region + location
+    
     npc.region = region
     npc.location = nightclub
     npc.seated_at = None
     
     nightclub.characters_there.append(npc)
 
-    # Lock down behaviour
+    
     npc.debug_role = "civilian_passive"
-    npc.placement_locked = True#starting to look deprecated
+    npc.placement_locked = True
 
-    # Find a table
+
     table = next(
         (o for o in nightclub.items.objects_present
         if isinstance(o, CafeTable) and not o.occupants),
@@ -289,7 +282,7 @@ def place_tc2_passive_npc(npc, region):
     )
 
     if table:
-        from actions.npc_bodily_actions import sit_auto #actions.npc_bodily_actions marked Import cannot be resolved
+        from actions.npc_bodily_actions import sit_auto 
         sit_auto(npc, table=table)
 
     # Create drink
@@ -297,13 +290,12 @@ def place_tc2_passive_npc(npc, region):
     coffee = Coffee()
     cup.add(coffee)
 
-    # Put cup on table if seated
     if table:
         nightclub.items.objects_present.append(cup)
     else:
         nightclub.items.objects_present.append(cup)
 
-    return npc
+    return npc """
 
 def place_tc2_npc(npc, region):
     npc.region = region

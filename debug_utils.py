@@ -116,7 +116,8 @@ ROLE_FILTERS = {
     "civilian_worker": False,#Manager. Edited to False
     "civilian_liberty": True,
     "civilian_waitress": True,
-    "civilian_passive": False,
+    "coffee_drinker": False,
+    "book_reader": False,
     "civilian_babe": True,
     "civilian_vip": True,
     "first_assassin": True,

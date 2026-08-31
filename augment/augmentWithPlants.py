@@ -2,8 +2,8 @@
 
 import random
 from objects.InWorldObjects import Pot
-from objects.trees_and_plants import GoldenRatioTree, Plant, Tree, OakTree, DustPalm, EchoWillow
-
+from objects.trees_and_plants import GoldenRatioTree, Plant, Tree, OakTree, DustPalm, EchoWillow, BonsaiTree #most are unused so far
+from location.locations import Cafe
 
 from world.place_objects import place_object
 
@@ -22,3 +22,21 @@ def add_classy_plants(destination):
             pot,
             destination
         )
+
+def seed_bonsai_trees(destination):#was seed_ambience_objects
+            pot = Pot()
+            pot.add(BonsaiTree())
+            place_object(pot, destination)
+
+
+
+
+
+""" add_simple_plants()
+
+add_desert_plants()
+
+add_corporate_plants()
+
+has_plants() """
+

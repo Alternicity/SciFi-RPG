@@ -16,7 +16,7 @@ def register_scenario_npc(npc, role,):
         key = f"{role} {counter}"
         counter += 1
 
-    gs.debug_npcs[key] = npc
+    gs.debug_npcs[key] = npc#coffee_drinker and book_reader should be preesnt in debug_npcs
 
 def available_for_scenario(npc):
 
@@ -25,3 +25,7 @@ def available_for_scenario(npc):
         "is_scenario_npc",
         False
     )
+
+def get_scenario_npc(role):
+    gs = get_game_state()
+    return gs.debug_npcs.get(role)

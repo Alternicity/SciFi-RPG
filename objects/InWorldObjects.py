@@ -67,6 +67,12 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
 
 
         self.name = name
+
+        self.region = None
+        self.location = None
+        self.sublocation = None
+        self.resting_on = None
+
         self.base_ambience = {}
         self.toughness = toughness
         self.item_type = item_type
@@ -82,6 +88,9 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
         self._tags = []
         self.signals = []
         
+    def change_ownership(self, new_owner):
+            self.owner = new_owner
+
     def get_signals(self):
         return list(self.signals)
 
@@ -105,17 +114,32 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
         new_item.__dict__.update(self.__dict__.copy())
         return new_item
 
+    
     def get_percept_data(self, observer=None):
-        return {
+        """
+        Base percept generation for all world objects.
+
+        Subclasses should normally use _postprocess_percept()
+        rather than overriding this method.
+        Base classes provide the common percept contract. Concrete objects modify it through _postprocess_percept().
+
+        If a subclass does override get_percept_data(), it should
+        normally call super().get_percept_data(observer).
+        """
+
+        data = {
             "name": self.name,
             "type": self.__class__.__name__,
             "item_type": self.item_type,
-            "description": f"{self.name}",
+            "description": self.name,
             "region": getattr(getattr(self, "region", None), "name", None),
             "location": getattr(getattr(self, "location", None), "name", None),
             "sublocation": getattr(getattr(self, "sublocation", None), "name", None),
-            "origin": self,#"origin" is simply the object that generated the percept
-            "salience": self.compute_salience(observer),  # Using anchor-based salience now
+
+            "resting_on": self.resting_on,
+
+            "origin": self,
+            "salience": self.compute_salience(observer),
             "tags": getattr(self, "tags", []),
             "urgency": getattr(self, "urgency", 1),
             "weight": self.percept_weight(observer),
@@ -127,10 +151,35 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
             "owner": self.owner,
             "price": self.price,
             "quantity": self.quantity,
-            "toughness": self.toughness.value if isinstance(self.toughness, Enum) else str(self.toughness),
-            "size": self.size.value if isinstance(self.size, Enum) else str(self.size),
-            "details": f"{self.name} ({self.item_type.value})"
+            "toughness": (
+                self.toughness.value
+                if isinstance(self.toughness, Enum)
+                else str(self.toughness)
+            ),
+            "size": (
+                self.size.value
+                if isinstance(self.size, Enum)
+                else str(self.size)
+            ),
+            "details": f"{self.name} ({self.item_type.value})",
         }
+        
+        print(
+            "PERCEPT GENERATION:",
+            self.__class__.__name__,
+            "object_resting_on=",
+            repr(self.resting_on),
+            "data_resting_on=",
+            repr(data.get("resting_on")),
+        )
+
+        if hasattr(self, "_postprocess_percept"):
+            data = self._postprocess_percept(
+                data,
+                observer
+            )
+
+        return data
 
 
     def modulated_ambience(self) -> Dict[str, float]:
@@ -274,10 +323,12 @@ class Medkit(ObjectInWorld):
     is_concrete = True  # An concrete class will create objects and have more attributes
     def __init__(self):
         super().__init__(
-            name=Medkit,
+            name="Medkit",
             toughness=Toughness.FRAGILE,
             value=50,
-            item_type=ItemType.GADGET  # This is correct for now
+            item_type=ItemType.GADGET,  # This is correct for now
+            size=Size.ONE_HANDED,#this
+            blackmarket_value=150#and this
         )
         self.legality = True  # Define legality here
         self.damage_points = 2  # Assign to the instance
@@ -285,14 +336,7 @@ class Medkit(ObjectInWorld):
         self.size=Size.POCKET_SIZED,
         
     def get_percept_data(self, observer=None):
-        return {
-            "type": self.__class__.__name__,
-            "name": self.name,
-            "origin": self,
-            "item_type": self.item_type,
-            "description": f"{self.name} ({self.item_type})"
-            
-        }
+        return super().get_percept_data(observer)
 
 class AdvancedMedkit(Medkit):
     def __init__(self):
@@ -300,9 +344,15 @@ class AdvancedMedkit(Medkit):
         self.contains_xyz = True
 
     def _postprocess_percept(self, data, observer):
+
         if self.contains_xyz:
+            data["name"] = "Advanced Medkit"
+
             data["tags"] = data.get("tags", []) + ["useful"]
-            data["description"] = "Good to have when youre injured."
+
+            data["description"] = (
+                "Good to have when youre injured."
+                )
         return data
 
 

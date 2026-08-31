@@ -15,10 +15,15 @@ def place_character(npc, location):
         location.region.characters_there.append(npc)
 
 def place_character_in_sublocation(
-    npc,
-    parent_location,
-    sublocation
-):
+        npc,
+        sublocation
+    ):
+    parent_location = sublocation.parent_location
+
+    if parent_location is None:
+        raise ValueError(
+            f"{sublocation.name} has no parent_location"
+        )
 
     npc.location = parent_location
     npc.sublocation = sublocation

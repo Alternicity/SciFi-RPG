@@ -1,4 +1,4 @@
-#GUI.inspectors.memories.npc_memories_panel.py
+#GUI.inspectors.npc.memories.npc_memories_panel.py
 import tkinter as tk
 from tkinter import ttk
 from GUI.helpers.gui_styles import TEXT_SELECTION

@@ -19,11 +19,21 @@ def can_access_sublocation(npc, sublocation):
         "accessible_roles",
         []
     )
+    if not isinstance(allowed, list):#can we add a print or something here o let us know if this happens?
+        print(
+            f"[BUG] {sublocation.name}.accessible_roles "
+            f"is {type(allowed).__name__}, expected list."
+        )
+        allowed = []
 
     if not allowed:
         return True
 
     npc_roles = get_access_roles(npc)
+
+    print("can_access_sublocation")
+    print(type(allowed))
+    print(allowed)
 
     return any(
         role in allowed

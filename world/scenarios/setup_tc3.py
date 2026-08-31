@@ -15,9 +15,9 @@ from augment.augmentLocations import add_classy_furniture
 from augment.augmentLocations import add_table_decorations
 game_state = get_game_state()
 
-def setup_tc3_world(all_characters):
+def setup_tc3_world():
 
-    nightclub = next(
+    """ nightclub = next(
         (
             loc for loc in game_state.all_locations
             if isinstance(loc, Nightclub)
@@ -25,14 +25,9 @@ def setup_tc3_world(all_characters):
         ),
         None
     )
+    """
+    nightclub = game_state.test_world["nightclub"]
     add_table_decorations(nightclub)
-    #is this block now deprecated? civilians is not accessed now
-    """ civilians = [
-        c for c in all_characters
-        if isinstance(c, Civilian)
-        and not getattr(c, "is_scenario_npc", False)
-    ] """
-
 
     vip_candidates = [
         b for b in game_state.all_VIPs
@@ -99,67 +94,42 @@ def setup_tc3_world(all_characters):
         debug_civilian_babe.is_scenario_npc = True
     pass
 
-    vip_lounge = next(
-        (
-            subloc
-            for subloc in nightclub.sublocations
-            if subloc.name == "VIP Lounge"
-        ),
-        None
-    )
+    vip_lounge = nightclub.get_sublocation("VIP Lounge")
 
     #tmp, once a nightclub might be tagged classy
-    if vip_lounge:
-        add_classy_plants(vip_lounge)#note also added in seed_nightclub_furniture
+    """ if vip_lounge:
+        add_classy_plants(vip_lounge) """
+        #note also added in seed_nightclub_furniture, so maybe stale code
 
     if vip_lounge:
         add_classy_furniture(vip_lounge)
 
-    print(
-    "VIP LOUNGE OBJECTS:",
-    [
-        type(obj).__name__
-        for obj in vip_lounge.objects_present
-    ]
-)
-    print(
-        vip_lounge.objects_present
-    )
-    print(
-        len(vip_lounge.objects_present)
-    )
-
     if debug_civilian_vip and vip_lounge:
         place_character_in_sublocation(
             debug_civilian_vip,
-            nightclub,
             vip_lounge
         )
 
     if debug_civilian_babe and vip_lounge:
         place_character_in_sublocation(
             debug_civilian_babe,
-            nightclub,
             vip_lounge
         )
     
     if debug_assassin and vip_lounge:
         place_character_in_sublocation(
             debug_assassin,
-            nightclub,
             vip_lounge
         )
 
     if debug_gang_boss1 and vip_lounge:
         place_character_in_sublocation(
             debug_gang_boss1,
-            nightclub,
             vip_lounge
         )
     if debug_gang_boss2 and vip_lounge:
         place_character_in_sublocation(
             debug_gang_boss2,
-            nightclub,
             vip_lounge
         )
 

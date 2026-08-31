@@ -94,6 +94,21 @@ class Location(LocationBase):
     def objects_present(self, value):
         self.items.objects_present = value
 
+    def get_sublocation(self, name):
+        """
+        Return the first sublocation with the given name,
+        or None if it doesn't exist.
+        """
+
+        return next(
+            (
+                sublocation
+                for sublocation in self.sublocations
+                if sublocation.name == name
+            ),
+            None,
+        )
+
     def has_security(self):
         return self.security and (
             self.security.level > 1 or
@@ -196,8 +211,9 @@ class CommercialLocation:
     register_initial_cash = 300
 
 class Sublocation(Location, PerceptibleMixin):
-    
-    accessible_roles: list[str] = field(default_factory=list)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.accessible_roles = []
     
     def get_percept_data(self, observer=None):
         accessible = True
@@ -207,7 +223,7 @@ class Sublocation(Location, PerceptibleMixin):
         if observer:
 
             accessible = can_access_sublocation(observer, self)
-            visible = can_perceive_sublocation(observer, self)#in spite of the import above, can_perceive_sublocation is marked as not defined.
+            visible = can_perceive_sublocation(observer, self)
 
         return {
             "name": self.name,

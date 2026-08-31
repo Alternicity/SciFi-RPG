@@ -1,21 +1,40 @@
 # world.place_objects.py
 
 from base.location import Sublocation
+from objects.furniture import Furniture
 
 def place_object(obj, destination):
-    """
-    Place any ObjectInWorld into either a Location or a Sublocation.
-    """
+    if obj is None:
+        raise ValueError("place_object(): obj is None")
+    if destination is None:
+        raise ValueError("place_object(): destination is None")
 
-    obj.region = destination.region
+    if isinstance(destination, Furniture):
 
-    if isinstance(destination, Sublocation):
+        obj.region = destination.region
+        obj.location = destination.location
+        obj.sublocation = destination.sublocation
+
+        destination.add_to_surface(obj)
+
+        return obj
+
+    elif isinstance(destination, Sublocation):
+
+        obj.region = destination.region
         obj.location = destination.parent_location
         obj.sublocation = destination
-    else:
+
+        destination.items.objects_present.append(obj)
+
+        return obj
+
+    else:   # Location
+
+        obj.region = destination.region
         obj.location = destination
         obj.sublocation = None
 
-    destination.items.objects_present.append(obj)
+        destination.items.objects_present.append(obj)
 
-    return obj
+        return obj

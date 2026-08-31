@@ -30,6 +30,8 @@ class GoldPlatedPistol(Pistol):
     def __init__(self):
         super().__init__()
         self.is_gold_plated = True
+        self.intimidation = 9
+        self.blackmarket_value=350,
         self.signals.extend([#here emits only once, no per percept cycle
             "wealth",
             "criminal",
@@ -37,14 +39,17 @@ class GoldPlatedPistol(Pistol):
         ])
 
     def _postprocess_percept(self, data, observer):
-        if self.is_gold_plated:
-            data["gold_plated"] = True
-            data["bling_level"] = "High"
-            data["signals"] = self.get_signals()
 
-        
-        
-        self.intimidation = 9
-        blackmarket_value=350,
-        #increase owner status if owner faction has semiotic bling
+        data["name"] = "Gold Plated Pistol"
+
+        data["description"] = (
+            "An ostentatious gold plated pistol."
+        )
+
+        data["gold_plated"] = True
+
+        data["bling_level"] = "High"#increase owner status if owner faction has semiotic bling
+
+        data["signals"] = self.get_signals()
+
         return data

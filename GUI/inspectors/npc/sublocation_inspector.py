@@ -5,12 +5,16 @@ from tkinter import ttk
 from GUI.widgets.sublocation_widget import build_sublocation_view_model
 from GUI.widgets.social_group_widget import build_group_widget
 from display.aggregate_display_buckets import aggregate_object_percepts
+#aggregate_object_percepts is not accessed here
+
 from base.character import Character
 from social.social_groups import SocialGroup
 #quarantined
 #from perception.sublocation_percepts import get_sublocation_percepts
-#replaced with the following import. Withi this the npc cannot perceive non-character objects
+#replaced with the following import. 
 from GUI.viewmodels.sublocation_viewmodel import get_sublocation_percepts
+from GUI.viewmodels.percept_tree import build_percept_tree
+
 
 def build_sublocation_inspector(gui, parent, observer, sublocation):
     # clear frame
@@ -67,7 +71,7 @@ def build_sublocation_inspector(gui, parent, observer, sublocation):
         pady=5
     )
 
-    for group in groups:
+    for group in groups:#refers to Social groups
         print("Groups found:", len(groups))
         build_group_widget(
             gui,
@@ -87,8 +91,6 @@ def build_sublocation_inspector(gui, parent, observer, sublocation):
         group = None
         )
     
-
-
     ttk.Label(#this is going to be deprecated
         parent,
         text="Occupants"
@@ -124,11 +126,50 @@ def build_sublocation_inspector(gui, parent, observer, sublocation):
     ).pack(anchor="w", padx=10, pady=(10, 0))
 
 
+    #tmp
+    print("\n=== ALL NPC PERCEPTS FOR SUBLOCATION DEBUG ===")
+
+    for percept in observer.percepts.values():
+
+        data = percept.get("data", {})
+        origin = percept.get("origin")
+
+        print(
+            origin.__class__.__name__ if origin else None,
+            "name=",
+            data.get("name"),
+            "sublocation=",
+            repr(data.get("sublocation")),
+            "location=",
+            repr(data.get("location")),
+        )
+    #end tmp
+
+
     percepts = get_sublocation_percepts(observer, sublocation)#deprecated?
 
+    #tmp
+    print("\n=== SUBLOCATION PERCEPTS ===")
+    for percept in percepts:
+
+        data = percept.get("data", {})
+        origin = percept.get("origin")
+
+        print(
+            origin.__class__.__name__ if origin else None,
+            "name=",
+            data.get("name"),
+            "sublocation=",
+            data.get("sublocation"),
+            "resting_on=",
+            data.get("resting_on"),
+        )
+
+    #ATTN ViewModel
     """ I think the ViewModel should own this
     Personally I would probably move even this logic into
     GUI/viewmodels/sublocation_viewmodel.py """
+    #Your comment
     
     if not percepts:
 
@@ -158,23 +199,15 @@ def build_sublocation_inspector(gui, parent, observer, sublocation):
             else:
                 objects.append(percept)#might catch conversation or event objects later and need another if above
 
-        #tmp
-        """ print(
-            "OBJECT PERCEPTS:",
-            len(objects),
-            [
-                p["data"]["name"]
-                for p in objects
-            ]
-        ) """
-
-        for bucket in aggregate_object_percepts(objects):
+        #tmp removal
+        """ for bucket in aggregate_object_percepts(objects):
 
             data = bucket["percept"]["data"]
 
-            text = data.get(
-                "description",
-                data["name"]
+            text = (
+                data.get("name")
+                or data.get("type")
+                or "UNKNOWN"
             )
 
             if bucket["count"] > 1:
@@ -183,7 +216,14 @@ def build_sublocation_inspector(gui, parent, observer, sublocation):
             ttk.Label(
                 parent,
                 text=f"- {text}"
-            ).pack(anchor="w", padx=20)
+            ).pack(anchor="w", padx=20) """
+
+        #tmp replacement:
+        object_nodes = build_percept_tree(objects)
+        render_sublocation_object_tree(
+            parent,
+            object_nodes
+        )
 
     ttk.Label(
         parent,
@@ -214,15 +254,13 @@ def build_sublocation_inspector(gui, parent, observer, sublocation):
 
 
 
-    print("SUBLOCATION TYPE:", type(sublocation))
-    print("HAS characters_there:", hasattr(sublocation, "characters_there"))
-    print("HAS list_characters:", hasattr(sublocation, "list_characters"))# a class Location method, only uesd here!
-    print("OBJECTS:", sublocation.objects_present)
+
 
     if hasattr(sublocation, "ambience"):
         print("AMBIENCE:", sublocation.ambience.vibes)
         
-    print(f"from build_sublocation_inspector {type(sublocation)}")
+    #print(f"from build_sublocation_inspector {type(sublocation)}")
+    
     #print(f"from build_sublocation_inspector {dir(sublocation)}")
     #verbose
 
@@ -239,6 +277,36 @@ def build_sublocation_inspector(gui, parent, observer, sublocation):
     render → shared renderer """
 
 
+
+""" Then the Sublocation Inspector needs a small recursive renderer that works with its existing parent frame.
+
+Conceptually: """
+def render_sublocation_object_tree(parent, nodes, indent=0):
+
+    for node in nodes:
+
+        data = node.data
+
+        text = (
+            data.get("name")
+            or data.get("description")
+            or data.get("type")
+            or "UNKNOWN"
+        )
+
+        ttk.Label(
+            parent,
+            text=f"- {text}"
+        ).pack(
+            anchor="w",
+            padx=20 + indent
+        )
+
+        render_sublocation_object_tree(
+            parent,
+            node.children,
+            indent + 20
+        )
 
 
 

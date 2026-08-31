@@ -2,7 +2,7 @@
 from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock, Powerplant, Nightclub
 from base.location import Location
 from perception.perceptibility import PerceptibleMixin
-
+from create.create_sublocations import setup_location_sublocations
 from base.character import Character
 from typing import List
 from create.create_game_state import get_game_state
@@ -15,7 +15,10 @@ from weapons import Pistol
 from shop_name_generator import generate_shop_name
 import traceback
 from debug_utils import debug_print
-from augment.augmentLocations import seed_food_locations, seed_ambience_objects, seed_commercial_equipment, seed_cafe_furniture, seed_sports_centre_equipment, seed_park_objects, seed_library_books, seed_library_furniture, seed_residential_furniture
+from augment.augmentLocations import seed_food_locations, seed_commercial_equipment, seed_cafe_furniture, seed_sports_centre_equipment, seed_residential_furniture
+from augment.augment_locations.augment_library import seed_library_books, seed_library_furniture
+from augment.augment_locations.augment_park import seed_park_objects
+
 game_state = get_game_state()
 
 
@@ -35,8 +38,11 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                 #old
 
                 loc = location_class(region=region)
+
+                
                 loc.wealth_tier = wealth
                 
+                setup_location_sublocations(loc)
 
                 if isinstance(loc, Powerplant):
 
@@ -44,8 +50,10 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
                         game_state.all_powerplants = []
 
                     game_state.all_powerplants.append(loc)
-    
+
+                
                 locations.append(loc)
+
             except Exception as e:
                 debug_print(
                     npc=None,
@@ -167,15 +175,22 @@ def create_locations(region: Region, wealth: str) -> List[Location]:
         if getattr(loc, "is_public_facing", False):
             game_state.public_places.append(loc)
 
-    seed_residential_furniture(game_state.all_locations)
+    seed_residential_furniture(game_state.all_locations)#ATTN use place_object()
     seed_cafe_furniture(game_state.all_locations)
     seed_food_locations(game_state.all_locations)
-    seed_ambience_objects(game_state.all_locations)
+    #seed_ambience_objects(game_state.all_locations)
     seed_commercial_equipment(game_state.all_locations)
     seed_sports_centre_equipment(game_state.all_locations)
+
+    #these imports need updating - but is using all_locatinos optimal?
     seed_park_objects(game_state.all_locations)
+    #gradually move toward
+    #seed_library_books(library)
+
     seed_library_books(game_state.all_locations)
     seed_library_furniture(game_state.all_locations)
+
+    #Eventually a new dispatcher could become data-driven, much like the new sublocation registry.
 
     return locations
 

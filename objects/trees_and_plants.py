@@ -10,7 +10,7 @@ VALID_FOLIAGE_COLORS = [
 ]
 
 @dataclass
-class Tree:
+class Tree(ObjectInWorld):
     name: str
     is_imaginary: bool = False
     is_deciduous: bool = True

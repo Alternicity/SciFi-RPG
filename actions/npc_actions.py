@@ -32,10 +32,10 @@ def have_fun_auto(npc, region=None):
     if cls == "Park" or "nature" in getattr(loc, "tags", []):
         return stroll_auto(npc, region)
 
-    if cls == "SportsCentre" or "sport" in getattr(loc, "tags", []):
+    if cls == "SportsCenter" or "sport" in getattr(loc, "tags", []):
         return exercise_auto(npc, region)
 
-    # Generic fallback for SportsCentre, Cafe, etc.
+    # Generic fallback for SportsCenter, Cafe, etc.
     debug_print(npc, f"[FUN] {npc.name} enjoys being at {loc.name}", category="fun")
 
     entry = MemoryEntry(
@@ -54,7 +54,7 @@ def have_fun_auto(npc, region=None):
 # actions/npc_actions.py
 
 def exercise_auto(npc, region=None):
-    """NPC uses sports equipment at a SportsCentre."""
+    """NPC uses sports equipment at a SportsCenter."""
     from objects.sports_objects import PoolTable, BowlingLane
     import random
 
@@ -331,17 +331,6 @@ def visit_location_auto(character, region=None, destination=None, destination_na
     assert npc.location in npc.region.locations, (
         f"{npc.name} is in {npc.location} which is not in region {npc.region.name}"
     )
-
-    #tmp
-    from location.locations import Cafe
-    if isinstance(destination, Cafe):
-        pass
-        """ print(
-            f"[VISIT CHECK] npc={npc.name} "
-            f"dest_id={id(destination)} "
-            f"chars={[ (c.name, id(c)) for c in destination.characters_there ]}"
-        ) """
-
 
     # --- Optional hour/day stamp ---
     hour = getattr(character, "current_hour", None)
@@ -750,7 +739,8 @@ def buy_auto(npc, region, *, item):
 
     # create owned item
     owned_food = item.__class__(quantity=1)
-    owned_food.owner = npc
+    #owned_food.owner = npc
+    owned_food.change_ownership(npc)
     owned_food.human_readable_id = f"{npc.name}'s {item.name}"
 
     npc.inventory.add_item(owned_food, quantity=1)

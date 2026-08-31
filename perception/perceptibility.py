@@ -113,7 +113,7 @@ def gather_perceptible_objects(obj, seen=None):
         seen.add(oid)
         found.append(obj)
 
-    if hasattr(obj, "inventory"):
+    if hasattr(obj, "inventory"):#for the future - should npc 1 be able to perceive all of npc2s inventory? No.
         for item in obj.inventory.items.values():
             found.extend(gather_perceptible_objects(item, seen))
 
@@ -123,14 +123,22 @@ def gather_perceptible_objects(obj, seen=None):
 
     if hasattr(obj, "sublocations"):
 
-        for sub in obj.sublocations:
+        for sub in obj.sublocations:#hmm is this allowing an npc to perceive the contents of all a locations sublocations?
+            #it looks like it. We have visibility gating now, this doesnt seem to care about that.
             found.extend(
                 gather_perceptible_objects(sub, seen)
+            )
+
+    if hasattr(obj, "surface_items"):
+        for item in obj.surface_items:
+
+            found.extend(
+                gather_perceptible_objects(item, seen)
             )
             
     return found
 
-
+ 
 #Optional: Enums or constants (like percept categories: VISUAL, AUDIO, ITEM, etc.)
 def extract_appearance_summary(obj, observer=None):
     from base.character import Character

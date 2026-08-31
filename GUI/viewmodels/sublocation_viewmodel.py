@@ -1,5 +1,6 @@
 #GUI.viewmodels.sublocation_viewmodel.py
 from dataclasses import dataclass
+
 @dataclass
 class SublocationViewModel:
     name: str
@@ -8,99 +9,77 @@ class SublocationViewModel:
     accessible_roles: list[str]
     raw: object  # optional reference to Sublocation
     """ This is the only thing UI consumes.
-    both panels render the same model
+    both panels render the same model (though this must change for therightpanel/inspector)
     no Tkinter logic leaks into game logic
     formatting rules live in one place """
 
 #utility functions
+
+
+#trying to be cleaner than belongs_to_sublocation()
+# by using percept data alone—but if the object percepts don't yet include "sublocation", it will naturally find nothing.
+
+""" SublocationViewModel
+"What is this sublocation and what does the observer perceive there?"
+
+Percept tree
+"How are these percepts related hierarchically?" """
+
 def get_sublocation_percepts(observer, sublocation):
-        
-        print("\n========== SUBLOCATION FILTER ==========")
-        print("Target:", sublocation.name)
-        print("========================================")
 
-        rows = []
+    rows = []
 
-        for percept in observer.percepts.values():
+    for percept in observer.percepts.values():
 
-                data = percept["data"]
+        data = percept["data"]
 
-                print(
-                f"{data.get('type'):20}"
-                f"{data.get('name'):25}"
-                f" SUB={repr(data.get('sublocation'))}"
-                )
+        if data.get("sublocation") != sublocation.name:
+            continue
 
-                if data.get("sublocation") != sublocation.name:
-                        continue
+        rows.append(percept)
 
-                rows.append(percept)
+    return rows
 
-        print("----------------------------------------")
-        print("MATCHED:", len(rows))
-        print("========================================\n")
+"""Eventually the GUI should look like
 
-        return rows
+Simulation
+↓
+Observation
+        ↓
+Percepts
+        ↓
+ViewModel
+        ↓
+GUI
 
-        #trying to be cleaner than belongs_to_sublocation()
-        # by using percept data alone—but if the object percepts don't yet include "sublocation", it will naturally find nothing.
-    
-    #The following temporarily replaced with the above code
-        """ rows = []
+not
 
-        for percept in observer.percepts.values():
+Simulation
+        ↘
+Observation
+        ↘
+Inspector """
 
-                data = percept["data"]
+"""Eventually:
+PlaceViewModel
+↑
+│
+LocationViewModel
 
-                if data.get("sublocation") != sublocation.name:
-                continue
+SublocationViewModel
+"""
 
-                rows.append(percept)
-                print("\nSUBLOCATION PERCEPTS")
-                print("--------------------")
 
-                for row in rows:
-                        data = row["data"]
-
-                        print(
-                                data.get("type"),
-                                data.get("name"),
-                                "SUB:",
-                                data.get("sublocation"),
-                        )
-        return rows """
-
-        """ 
-        Eventually the GUI should look like
-
-        Simulation
-                ↓
-        Observation
-                ↓
+"""Simulation
+        ↓
+        place_object()
+        ↓
+        Object metadata
+        ↓
+        ObservationComponent
+        ↓
+        observer.percepts
+        ↓
         ViewModel
-                ↓
-        Inspector
-
-        not
-
-        Simulation
-                ↘
-        Observation
-                ↘
-        Inspector """
-
-
-
-        """Simulation
-                ↓
-                place_object()
-                ↓
-                Object metadata
-                ↓
-                ObservationComponent
-                ↓
-                observer.percepts
-                ↓
-                ViewModel
-                ↓
-                Sublocation Inspector"""
+        ↓
+        Sublocation Inspector"""

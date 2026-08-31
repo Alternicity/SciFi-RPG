@@ -1,4 +1,4 @@
-#GUI.inspectors.npc_overview_panel.py
+#GUI.inspectors.npc.npc_overview_panel.py
 
 from tkinter import ttk
 

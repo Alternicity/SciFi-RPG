@@ -5,6 +5,7 @@ game_state = get_game_state()
 from debug_utils import debug_print
 from focus_utils import set_attention_focus
 from memory.social.social_memory import SocialMemory
+
 def get_socially_favoured(self):
     if self.partner:
         return self.partner

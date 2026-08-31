@@ -105,8 +105,11 @@ class Character(PerceptibleMixin, CharacterBase):
         # Individual character preferences (overrides base)
         self.preferred_actions = preferred_actions if preferred_actions else {}
         self.is_alert = False
+        
         self.posture = Posture.STANDING
         self.seated_at = None
+        self.current_furniture = None
+
         self.intelligence = intelligence
         self.mind = None
         self.max_thinks_per_tick = kwargs.get("max_thinks_per_tick", 1)#should be hour

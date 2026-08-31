@@ -28,10 +28,7 @@ class Weapon(ObjectInWorld):
         self.user = character
         logging.info(f"{character.name} is now using {self.name}")
 
-    def change_ownership(self, new_owner):#deprecated/unnecesary?
-        self.owner = new_owner
-        logging.info(f"{self.name} is now owned by {new_owner.name}")
-        #switch to prints at some point?
+    
 
 #RangedWeapon is also an abstract class, then attributes like damage_points and legality should indeed be defined 
 #at the level of the most specific concrete classes that directly need them
@@ -80,23 +77,38 @@ class Pistol(RangedWeapon):
             ammo=ammo,
             intimidation=7
         )
-        self.owner = None#We can remove owner from weapon classes, unless used in percept text.
-        self.human_readable_id = "Unowned Pistol"
+        self.owner = None#We can remove owner from weapon classes, unless used in percept text. Old comment
+        self.human_readable_id = "Unowned-Pistol"#this entry is showing up in the gui, but I couldnt find any reference
+        #to human_readable_id in gui code. 
 
-    def get_percept_data(self, observer=None):
-        data = {
-            "name": self.human_readable_id or self.name,
-            "description": self.human_readable_id or "Pistol",
+        #removed along with the change to OBjectInWorld.get_percept_data.data was introduced
+        """ def get_percept_data(self, observer=None):
+            return super().get_percept_data(observer) """
+
+
+        """ def get_percept_data(self, observer=None):
+
+            data = super().get_percept_data(observer)
+
+            return data """
+
+
+
+    """ def get_percept_data(self, observer=None):
+        data = super().get_percept_data(observer)
+        data.update ({#inherit the base data, then override or add a few fields
+            "name": self.name,
+            "description": self.name,
             "type": self.__class__.__name__,
             "origin": self,
             "urgency": 1,
             "source": None,
-            "salience": 8,#high
+            "salience": 8,
             "tags": self.tags,
             "size": getattr(self, "size", None),
-        }
+        })
 
-        return data
+        return data """
 
     @property
     def tags(self):

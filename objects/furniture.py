@@ -3,6 +3,7 @@ from objects.InWorldObjects import ObjectInWorld, Toughness, ItemType, Size
 from typing import Optional
 from base.character import Character
 from debug_utils import debug_print
+from base.posture import Posture
 #from social.social_utils import social_scan
 
 class Furniture(ObjectInWorld):
@@ -30,7 +31,7 @@ class Furniture(ObjectInWorld):
         )
 
         self.seating_capacity = seating_capacity
-        self.occupants = []          # list[Character]
+        self.occupants = []          # list[Character] CANONICAL SOURCE OF TRUTH
         self.surface_items = []      # for food, phones, etc.
 
     # ---------------------------
@@ -41,14 +42,42 @@ class Furniture(ObjectInWorld):
         return len(self.occupants) < self.seating_capacity
 
     def seat(self, character):
+
         if not self.has_free_seat():
             return False
+
+        if character in self.occupants:
+            return True
+
         self.occupants.append(character)
+
         return True
 
     def leave(self, character):
         if character in self.occupants:
             self.occupants.remove(character)
+
+    def add_to_surface(self, item):
+        self.surface_items.append(item)
+        item.resting_on = self
+        
+        print(
+            "SURFACE TEST:",
+            item.__class__.__name__,
+            "resting_on =",
+            item.resting_on,
+            "type =",
+            type(item.resting_on).__name__,
+            "same_as_self =",
+            item.resting_on is self,
+        )
+
+    def remove_from_surface(self, item):
+        if item in self.surface_items:
+
+            self.surface_items.remove(item)
+
+            item.resting_on = None
 
     # ---------------------------
     # Tags
@@ -89,7 +118,11 @@ class Table(Furniture):
         self.chairs.append(chair)
 
     def get_occupants(self):
-        return [c.occupied_by for c in self.chairs if c.occupied_by]
+        return [
+            c.occupants[0]
+            for c in self.chairs
+            if c.occupants
+        ]
 
     def has_free_seat(self):
         return any(c.is_free() for c in self.chairs)
@@ -109,35 +142,37 @@ class Chair(Furniture):
             seating_capacity=1,
             toughness=toughness,
         )
-        self.occupied_by: Optional["Character"] = None
+        #self.occupied_by: Optional["Character"] = None
+        #use Furniture.occupants
+
         self.table = None  # optional link (can be None)
 
     def is_free(self):
-        return self.occupied_by is None
+        return self.has_free_seat()
 
     def occupy(self, npc):
-        if self.occupied_by is None:
-            self.occupied_by = npc
-            npc.current_chair = self
 
-            # Only set if part of a table
-            if self.table:
-                npc.seated_at = self.table
+        if not self.seat(npc):
+            return False
 
-            return True
-        return False
+        npc.current_chair = self
+
+        if self.table:
+            npc.seated_at = self.table
+
+        return True
 
     def vacate(self):
-        npc = self.occupied_by
+        npc = self.occupants[0] if self.occupants else None
+
         if npc:
             npc.current_chair = None
             npc.seated_at = None
 
-            # FIX: avoid hard dependency
             if hasattr(npc, "social_scan"):
                 npc.social_scan()
 
-        self.occupied_by = None
+        self.leave(npc)
 
     @property
     def tags(self):
@@ -156,7 +191,7 @@ class CafeTable(Furniture):
         self.chairs = []
     
     def has_any_occupants(self, location):
-        return any(c.occupied_by for c in self.chairs)
+        return any(c.occupants for c in self.chairs)
 
     def has_free_seating(self, location):
 
@@ -179,6 +214,7 @@ class CafeTable(Furniture):
         return ["furniture", "table", "social", "surface"]
 
 
+
 class CafeChair(Chair):
     is_concrete = True
 
@@ -192,7 +228,7 @@ class CafeChair(Chair):
 class Bench(Chair):
     is_concrete = True
 
-    def __init__(self, name="Bench", capacity=2):
+    def __init__(self, name="Bench", capacity=4):
         super().__init__(name=name, size=Size.LARGE, toughness=Toughness.DURABLE)
         self.seating_capacity = capacity
 
@@ -217,7 +253,7 @@ class CafeCounter(Furniture):
         super().__init__(
             name=name,
             size=Size.LARGE,
-            seating_capacity=1,  # manager behind counter
+            seating_capacity=1,  # manager behind counter, though no chair is present yet
             toughness=Toughness.DURABLE,
         )
 
@@ -255,7 +291,7 @@ class Desk(Furniture):
             toughness=toughness,
             seating_capacity=seating_capacity,
         )
-        self.occupied_by = None
+        #self.occupied_by = None
         self.base_ambience = {"knowledge": 0.3, "organization": 0.4}
 
         @property
@@ -277,19 +313,27 @@ class Bed(Furniture):
         self.base_ambience = {"peace": 0.3, "rest": 0.4}
 
     def is_free(self):
-        return self.occupied_by is None
+        return self.has_free_seat()
 
     def occupy(self, npc):
-        if self.is_free():
-            self.occupied_by = npc
-            npc.current_bed = self
-            return True
-        return False
+
+        if not self.seat(npc):
+            return False
+
+        npc.current_bed = self
+        npc.posture = Posture.LYING
+
+        return True
 
     def vacate(self):
-        if self.occupied_by:
-            self.occupied_by.current_bed = None
-        self.occupied_by = None
+
+        if self.occupants:
+
+            npc = self.occupants[0]
+
+            npc.current_bed = None
+            npc.posture = Posture.STANDING
+            self.leave(npc)
 
     @property
     def tags(self):

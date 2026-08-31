@@ -9,15 +9,17 @@ TC1 is a GangMember centred development involving aquiring a ranged_weapon and r
 TC2, ie test case 2, is an npc normal life development - work, eat, have_fun and sleep. Rough draft is finished but needs polish
 #GUI development with tkinter was happening in a decoupled way but reecntly necessitated a refactor in world setup and early program flow.
 
+The project also emphasizes:
 
-
-The project prioritizes:
-
+* clear separation of simulation and presentation
+* observer-centric information flow
+* reusable generic world systems
+* avoiding scenario-specific logic in core simulation
 * emergent interactions
 * meaningful world simulation
 * inspectable/debuggable systems
 * gradual architectural evolution
-* LLM-assisted development
+
 
 The simulation is intended to support:
 
@@ -57,6 +59,15 @@ without requiring entirely separate AI paradigms.
 
 # Current Major Systems
 
+## World Systems
+
+* locations
+* sublocations
+* object placement
+* ambience
+* environmental props
+* containers
+
 ## NPC Systems
 
 * stats
@@ -81,16 +92,29 @@ without requiring entirely separate AI paradigms.
 
 Current GUI development focuses on:
 
-* NPC inspection
+* observer-driven inspection
+* entity navigation
 * simulation observability
 * debugging tools
+* reusable inspectors
 * future player interaction
 
 ---
 
 # Architectural Strategy
 
-The sim avoids large refactors unless necessary.
+Whenever practical, the project prefers a single canonical code path for common
+operations.
+
+Examples include:
+Sim layer:
+* ObservationComponent.observe()
+* place_object()
+
+GUI layer:
+* show_entity_page()
+
+This reduces duplicated logic and makes future systems easier to extend.
 
 Preferred approach:
 
@@ -109,6 +133,11 @@ The project values:
 ---
 
 # Scenario / World Setup Architecture
+
+create: What exists?
+augment: What permanently fills it?
+customize: How is it adapted for its owner or identity?
+scenario: What is happening right now?
 
 The simulation now supports modular world scenario setup.
 
@@ -130,6 +159,19 @@ These scenario modules:
 * configure relationships
 * augment regions
 * prepare test environments
+Scenario modules are responsible for configuring the world rather than extending
+simulation behaviour.
+
+Typical responsibilities include:
+
+* selecting test factions
+* selecting debug NPCs
+* placing characters
+* augmenting environments
+* placing objects
+* creating relationships
+* seeding memories
+* configuring test situations
 
 Scenarios are applied during early startup:
 
@@ -173,3 +215,27 @@ Long-term direction may include:
 * government systems
 * environmental modifiers
 * corporation/worldpack style additions
+
+# Information Flow
+
+The project is gradually moving toward a unified data flow.
+
+Simulation
+
+↓
+
+Observation
+
+↓
+
+ViewModels
+
+↓
+
+GUI
+
+Whenever possible, GUI code should consume ViewModels built from observer
+percepts rather than querying simulation objects directly.
+
+This keeps perception rules centralized and ensures the GUI represents what an
+observer actually knows.

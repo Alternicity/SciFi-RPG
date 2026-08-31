@@ -30,9 +30,6 @@ class GameState:
         self.civilian_liberty = None
         self.civilian_passive = None """
 
-
-
-
         #Recommendation (later): Remove individual fields and rely on debug_npcs only
         self.debug_vitals_displayed = set()
 
@@ -53,12 +50,26 @@ class GameState:
         self.all_street_gangs = []
         self.corporations = []
 
+        #test fixture state
+        self.test_world = {
+
+            "region": None,
+            "cafe": None,
+            "nightclub": None,
+            "gang": None,
+            "hq": None,
+        }
+
         self.debug_npcs = {}
         self.test_factions = {
             "gangs": {},
             "corporations": {}
         }
-        
+        self.test_locations = {}# I think it will need this
+        #Should it be a dictionary, for region/location pairs?
+
+
+
         self.active_social_groups = []
 
         self.all_powerplants = []
@@ -71,7 +82,8 @@ class GameState:
         self.all_regions = []
         self.all_locations = []
         self.factions = [] #is not used
-        self.all_characters = [] #oof...integrate characters = []
+        self.all_characters = [] #Honestly I am not sure if this is populated
+        self.all_civilians = []#added, not populated yet
         self.state_staff = []
         self.corp_hqs = []
         self.player_character = None

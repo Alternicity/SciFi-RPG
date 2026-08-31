@@ -73,4 +73,4 @@ Future:
 - remaining direct location.owner assignments
 - Family ownership still uses older code path
 - HQ ownership not yet migrated
-- SportsCentre ownership not yet migrated
+- SportsCenter ownership not yet migrated

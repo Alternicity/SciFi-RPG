@@ -23,6 +23,7 @@ import random
 from debug_utils import debug_print
 from create.create_sublocations import setup_hq_sublocations
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES
+from customize.customize_hq_for_owner import customize_hq_for_owner
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s:%(message)s"
@@ -371,10 +372,6 @@ def create_HQ(region, faction_type="gang"):
     hq_name = f"{region.name} {'Corporate' if faction_type == 'corporate' else 'Gang'} HQ"
     new_hq = HQ(name=hq_name, region=region)
 
-    setup_hq_sublocations(
-        new_hq,
-        faction_type
-    )
     return new_hq 
 
 def assign_hq(faction, region):
@@ -398,7 +395,9 @@ def assign_hq(faction, region):
     # If the faction is a corporation, ensure it gets an HQ
     if isinstance(faction, Corporation) and not available_hqs:
         #print(f"No available HQ for {faction.name}. Creating one.")
-        new_hq = create_HQ(region, faction_type="corporate")
+        new_hq = create_HQ(region, faction_type="corporate")#ATTN
+        #assign_hq() should not be creating HQ objects
+
         region.locations.append(new_hq)
         #the problem with adding it to these lists is they are not named yet
         #add it to all_locations, which is not yet present here
@@ -408,14 +407,10 @@ def assign_hq(faction, region):
 
     if available_hqs: 
         hq = random.choice(available_hqs)
-
-        setup_hq_sublocations(
-            hq,
-            faction.type#Will .type work here? It might be just a string
-        )
         
         hq.faction = faction
         hq.controlling_faction = faction
+        customize_hq_for_owner(hq)
 
         assign_location_owner(
             hq,
@@ -423,7 +418,6 @@ def assign_hq(faction, region):
         )
         hq.name = f"{faction.name} HQ"
         faction.HQ = hq
-
 
     else:
         faction.is_street_gang = True

@@ -9,10 +9,23 @@ from characters import (Boss, Captain, VIP, RiotCop,
                          CorporateAssasin, GangMember,
                            CEO, Manager, CorporateSecurity, Civilian)
 #🟢 ⚪🔴 🔵 🟡 🟠 🟣 ⚫  🟤
-from create.create_game_state import get_game_state  # Ensure we get the latest game state
+from create.create_game_state import get_game_state
 from typing import List, Optional, Type, Union
 from employment.employee import EmployeeProfile
 
+def get_characters_of_type(character_type):
+
+    gs = get_game_state()
+
+    return [
+        c
+        for c in gs.all_characters
+        if isinstance(c, character_type)
+    ]
+
+def get_all_civilians():
+
+    return get_characters_of_type(Civilian)
 
 def employ_npc(npc, workplace, role, *,shift="day", shift_start=1, shift_end=8):
     npc.is_employee = True

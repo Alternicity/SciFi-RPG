@@ -1,4 +1,4 @@
-#GUI.inspectors.npc_motivations_panel.py
+#GUI.inspectors.npc.motivations.npc_motivations_panel.py
 import tkinter as tk
 from tkinter import ttk
 from GUI.helpers.gui_styles import TEXT_SELECTION

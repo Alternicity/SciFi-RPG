@@ -19,27 +19,12 @@ def setup_tc1_world(all_characters):
     tc1_gang = select_tc1_gang()#function not yet defined
 
     member = random.choice(tc1_gang.members)
-
-
-    """ debug_gang_npc = next(
-        (
-            c for c in all_characters
-            if (
-                isinstance(c, GangMember)
-                and available_for_scenario(c)
-            )
-        ),
-        None
-    ) """
     
     debug_gang_npc = random.choice(tc1_gang.members)
     register_scenario_npc(
         debug_gang_npc,
         "tc1_primary_gang_member"
     )
-    
-    #debug_gang_npc2 = next((c for c in all_characters if isinstance(c, GangMember) and c is not debug_gang_npc), None)
-    #What about this npc? Its a little different - it cannot be the same npc as debug_gang_npc
 
     other_members = [
         member

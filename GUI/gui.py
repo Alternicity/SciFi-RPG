@@ -2,36 +2,28 @@
 import tkinter as tk
 from tkinter import ttk
 from collections import deque
-from base.location import Location, Sublocation
+
 from base.character import Character
-from region.region import Region
+from base.location import Location, Sublocation
 from base.faction import Faction
+from region.region import Region
+from social.social_groups import SocialGroup
+from faction import Gang, Corporation, State
 
 #Inspectors
 from GUI.inspectors.entity.npc_inspector import build_npc_inspector
 from GUI.inspectors.npc.sublocation_inspector import build_sublocation_inspector
+from GUI.inspectors.npc.social_group_inspector import build_social_group_inspector
 
-#Builders
+#Entity inspectors
 from GUI.inspectors.sublocations.sublocation_entity_page import build_sublocation_entity_page
 from GUI.inspectors.entity.npc_entity_page import build_npc_entity_page
 
-from GUI.helpers.gui_logging import gui_log
-from GUI.inspectors.npc.npc_overview_panel import build_overview_panel, refresh_overview_panel
-from GUI.inspectors.npc.memories.npc_memories_panel import build_memories_panel, refresh_memories_panel
-from GUI.inspectors.npc.motivations.npc_motivations_panel import build_motivations_panel, refresh_motivations_panel
-from GUI.inspectors.npc.percepts.npc_percepts_panel import build_percepts_panel, refresh_percepts_panel
-from GUI.inspectors.npc.thoughts.npc_thoughts_panel import build_thoughts_panel, refresh_thoughts_panel
-from GUI.inspectors.faction.faction_hq_panel import refresh_faction_hq_panel
-from GUI.inspectors.npc.social_group_inspector import build_social_group_inspector
-from GUI.inspectors.entity.social_group_entity_page import build_social_group_center_view
-from social.social_groups import SocialGroup
-from GUI.inspectors.city.city_region_panel import (
-    refresh_region_panel,
-)
-
-from faction import Gang
-from faction import Corporation
-from faction import State
+from GUI.inspectors.npc.npc_overview_panel import build_overview_panel
+from GUI.inspectors.npc.memories.npc_memories_panel import build_memories_panel
+from GUI.inspectors.npc.motivations.npc_motivations_panel import build_motivations_panel
+from GUI.inspectors.npc.percepts.npc_percepts_panel import build_percepts_panel
+from GUI.inspectors.npc.thoughts.npc_thoughts_panel import build_thoughts_panel
 
 """ NEW architecture:
 mode frame
@@ -44,29 +36,20 @@ class TC2GUI:
         self.game_state = game_state
 
         # --- single source of truth for UI state ---
-        self.active_context = {#Observer context
+        self.active_context = {#Mode the gui is in, at least, it was ,it may have drifted
             "mode": "npc",#im not sure if this is legit, ir used, it could be a legacy
             "faction": None,
             "npc": None,
-            "entity": None,#here
+            "entity": None,
             "region": None,
             "location": None,
             "sublocation": None
         }
         
-        #Current target of attention
-        self.inspected_target = None
+        #Current target of gui attention
+        self.inspected_target = None#What is highlighted in right sidebar
 
-        self.current_page = None#line 51
-
-        """active_context
-            Who or what am I following?
-
-        inspected_target
-            What is highlighted in right sidebar?
-
-        current_page
-            What is occupying the main panel? """
+        self.current_page = None#What is occupying the main, center panel
 
         self.mode_var = tk.StringVar(value=self.active_context["mode"])
         self.recent_npcs = deque(maxlen=20)
@@ -77,33 +60,28 @@ class TC2GUI:
         self.sim_running = False
 
         self.build_top_bar()
-        
-        #refactor
         self.mode_container = ttk.Frame(self.root)#parent for all modes.
         self.mode_container.pack(fill="both", expand=True)
         
         self.mode_frames = {}
 
-        self.update_loop()
+        self.update_loop()#activates the sim layer, it is sepearate from the gui layer
 
-        #refactor
         """ mode switching = switching outer frames
         notebooks STILL EXIST INSIDE MODES """
         self.build_npc_mode()
         self.build_city_mode()
         self.build_faction_mode()
 
-        self.switch_mode(#note there are other self.switch_mode( entries in this file
+        self.switch_mode(
             self.active_context["mode"]
         )
-
 
         self.mode_var.set(#attempt to populate intial mode selector with text
             self.active_context["mode"]
         )
 
-    #refactor
-    def build_npc_mode(self):
+    def build_npc_mode(self):#most recent dev has been npc mode, ie using npc.percepts rather than world / location queries
         """
         Build NPC mode widgets once.
 
@@ -111,7 +89,7 @@ class TC2GUI:
 
         Refresh functions update these widgets but never recreate them.
         Page navigation should hide/show containers rather than destroy
-        notebook infrastructure.
+        notebook infrastructure. An effort to speed gui responses
         """
 
         frame = ttk.Frame(self.mode_container)
@@ -119,7 +97,7 @@ class TC2GUI:
         left_panel = ttk.Frame(frame)
         self.npc_main_panel = ttk.Frame(frame)
 
-        self.npc_inspector_panel = ttk.Frame(
+        self.npc_inspector_panel = ttk.Frame(#the right panel
             frame,
             width=250
         )
@@ -145,9 +123,9 @@ class TC2GUI:
             expand=True
         )
 
-        self.detail_page_container = ttk.Frame(
+        self.detail_page_container = ttk.Frame(#I am no longer sure what detail_page_container is or why it exists, or if needed
             self.npc_main_panel
-        )#Notice: Do NOT pack it yet. Initially only the notebook page is visible.
+        )#Notice: Do NOT pack it yet. Initially only the notebook page is visible. Old comment
 
         self.mode_frames["npc"] = frame
 
@@ -493,12 +471,12 @@ class TC2GUI:
 
         self.open_npc(npc)
 
-    def on_mode_change(self, event):
+    def on_mode_change(self, event):#Does this and switch_mode functionally overlap?
 
         mode = self.mode_var.get()
 
         if mode == "npc":
-            self.active_context["faction"] = None
+            self.active_context["faction"] = None#this
 
         elif mode == "faction":
             self.active_context["npc"] = None
@@ -507,7 +485,9 @@ class TC2GUI:
         
     def switch_mode(self, mode_name):
         self.clear_inspector()
-        current_mode = self.active_context["mode"]
+
+        #with this:
+        current_mode = self.active_context["mode"]#current_mode not accessed
 
         # Re-selecting city mode resets navigation
         if mode_name == "city":
@@ -528,17 +508,17 @@ class TC2GUI:
     def show_entity_page(self, observer, thing):
 
         # ------------------------------------------------------------------
-        # Generic Entity Page Dispatcher
+        # Generic Entity Page Dispatcher, for npc mode
         #
         # This is the single entry point for opening detail pages for
         # inspectable world objects.
         #
-        # Each inspectable entity should eventually have:
+        # Each entity should eventually have:
         #
         #     Inspector (right panel)
         #         build_xxx_inspector()
         #
-        #     Entity Page (detail page)
+        #     Entity Page (detail page/ center panel)
         #         build_xxx_entity_page()
         #
         # Supported types will gradually include:
@@ -549,8 +529,6 @@ class TC2GUI:
         #     Region
         #     Faction
         #     SocialGroup
-        #     Vehicle
-        #     Business
         #     etc.
         #
         # Keep navigation generic here.
@@ -630,6 +608,13 @@ class TC2GUI:
         print(f"SELECTED NPC", {npc.name})
         
         #self.refresh_time_display()
+
+        from GUI.inspectors.npc.npc_overview_panel import refresh_overview_panel
+        from GUI.inspectors.npc.thoughts.npc_thoughts_panel import refresh_thoughts_panel
+        from GUI.inspectors.npc.motivations.npc_motivations_panel import refresh_motivations_panel
+        from GUI.inspectors.npc.memories.npc_memories_panel import refresh_memories_panel
+        from GUI.inspectors.npc.percepts.npc_percepts_panel import refresh_percepts_panel
+        from GUI.inspectors.city.city_region_panel import refresh_region_panel
 
         try:
             refresh_overview_panel(self)
@@ -721,7 +706,7 @@ class TC2GUI:
         refresh_city_overview(self)
 
     def on_region_select(self, region):
-
+        from GUI.inspectors.city.city_region_panel import refresh_region_panel
         self.selected_region = region
 
         for rect_id in self.region_rectangles.values():
@@ -757,8 +742,8 @@ class TC2GUI:
 
         self.show_region_locations(region)
 
-    def refresh_region_view(self):
-
+    def refresh_region_view(self):#why does this function even exist?
+        from GUI.inspectors.city.city_region_panel import refresh_region_panel
         refresh_region_panel(self)
 
     def show_region_locations(self, region):
@@ -866,6 +851,7 @@ class TC2GUI:
         ) """
 
     def refresh_faction_view(self):
+        from GUI.inspectors.faction.faction_hq_panel import refresh_faction_hq_panel
         from GUI.inspectors.faction.faction_characters_panel import (
             refresh_faction_characters
         )
@@ -971,7 +957,7 @@ class TC2GUI:
         from simulate_day import simulate_hours
         if self.sim_running:
 
-            simulate_hours(#not yet defined here
+            simulate_hours(
                 self.game_state.all_characters,
                 num_ticks=1
             )
@@ -980,44 +966,6 @@ class TC2GUI:
             self.refresh_time_display()
 
         self.root.after(250, self.update_loop)
-
-    #marked for replacement with: show_entity_page
-    #npc was marked as not defined
-    #QUARANTINED
-    """ def show_sublocation_center_view(self, sublocation):
-        
-        self.clear_main_panel()
-        
-        self.show_detail_page()
-        
-        self.active_context["npc"] = npc
-        from GUI.inspectors.npc.sublocation_inspector import build_sublocation_inspector
-
-        build_sublocation_inspector(
-            self,
-            self.detail_page_container,
-            sublocation
-        )
-
-        self.clear_inspector() """
-
-    #ATTN. Delete? Duplicate function
-    #QUARANTINED
-    """ def show_sublocation_view(self, sublocation):
-
-        from GUI.inspectors.npc.sublocation_inspector import (
-            build_sublocation_inspector
-        )
-
-        self.clear_main_panel()
-        self.show_detail_page()
-        self.active_context["npc"] = npc
-        build_sublocation_inspector(
-            self,
-            self.detail_page_container,
-            npc,
-            sublocation
-        ) """
 
     def refresh_inspector(self):
         
@@ -1076,7 +1024,7 @@ class TC2GUI:
         self.show_detail_page() """
         #deprecated i think
 
-        build_social_group_center_view(
+        build_social_group_center_view(#This function currently does nothing
             self,
             self.detail_page_container,
             observer,
@@ -1087,7 +1035,7 @@ class TC2GUI:
 
 
     def show_npc_page(self):
-        #latest approach,official page switcher
+
         self.detail_page_container.pack_forget()
 
         self.npc_page_container.pack(

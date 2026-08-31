@@ -4,11 +4,6 @@ from world.place_objects import place_object
 
 def add_office_furniture(sublocation):
 
-    desk = ExpensiveDesk()
+    pass
 
-    place_object(
-        desk,
-        sublocation
-    )
-
-    return desk
+    return

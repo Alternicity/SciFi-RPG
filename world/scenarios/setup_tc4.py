@@ -8,7 +8,10 @@ from world.placement import place_character_in_sublocation
 from social.social_utils import link_relationship
 
 from objects.unique_objects import GoldPlatedPistol
+
 from objects.furniture import CafeChair
+from objects.furniture import Chair
+
 from objects.expensive_furniture import ExpensiveDesk
 from augment.augmentLocations import add_office_furniture
 from social.social_utils import link_relationship, create_social_group
@@ -17,27 +20,31 @@ from world.scenarios.setup_tcX_helpers import register_scenario_npc
 from world.scenarios.tc4_memory_setup import seed_tc4_boss_memory
 from augment.augmentSublocations.augmentGangSublocations import augment_gang_hq_sublocations
 from world.place_objects import place_object
+from actions.npc_bodily_actions import sit_on
+from objects.expensive_furniture import OrnateChair
+
 #setup gang meeting
 
 #the boss has summoned his Captains:
 def setup_tc4_world(all_characters):
     #I must exclude reserve GangMembers who are used in tc2 via gamestate.is_scenario_npc or debug_npcs
-    gang = select_tc4_gang()
+    #gang = select_tc4_gang()
 
     #the reservation is this
-    gs.test_factions["gangs"]["TC4"] = gang#so this just goes here?
-
+    gang = gs.test_world["gang"]
 
     #get the gang details in compact form
     hq = gang.HQ
+    #alternatively:
+    #hq = gs.test_world["hq"]
     race = gang.race
 
-    boss = gang.boss#we could use gang.get_leader
+    boss = gang.boss#we could use gang.get_leader. Does this duplicate earlier selection code? 
     captains = gang.captains #list, we could use gang.get_mid_tier()
     members = gang.members #list, we could use gang.get_workers()
     #or maybe we could use gang.iter_hierarchy() or these 3
 
-    is_street_gang = gang.is_street_gang #bool
+    is_street_gang = gang.is_street_gang #bool ATTN
     #if True, we need to discard this gang and choose another. The gang for this file needs to have a HQ
 
     goal = None
@@ -50,7 +57,21 @@ def setup_tc4_world(all_characters):
     #I will need to learn how to set this up here vs rival gangs, corporations, the State faction etc
     #It might need to become an object rather than a dict
 
+    #maybe move to augment_hq.py when tc4 and general gang hq diverge
+    bosses_office = next(
+            (
+                subloc
+                for subloc in hq.sublocations
+                if subloc.name == "Boss Office"
+            ),
+            None
+        )
     
+    if bosses_office:
+        augment_gang_hq_sublocations(bosses_office)
+        #this will eventuall draw on faction semiotics using somehitng more like:
+        #decorate_hq_for_faction(hq)
+
     if boss:
 
         register_scenario_npc(boss, "TC4 Boss")
@@ -60,22 +81,60 @@ def setup_tc4_world(all_characters):
             gang
         )
 
-        boss.inventory_component.inventory.add_item(GoldPlatedPistol())#some race appropriate status object
+        #boss.inventory_component.inventory.add_item(GoldPlatedPistol())
+        #some race appropriate status object
+
+
         
+
+        boss_chair = next(
+            (
+                obj
+                for obj in bosses_office.items.objects_present
+                if isinstance(obj, OrnateChair)
+            ),
+            None,
+        )
+
+        boss_desk = next(#boss_desk currently greyed out, not accessed
+                    (
+                        obj
+                        for obj in bosses_office.items.objects_present
+                        if isinstance(obj, ExpensiveDesk)
+                    ),
+                    None,
+                )
+        pistol = GoldPlatedPistol()
+        pistol.change_ownership(boss)
+        place_object(pistol, bosses_office)
+        boss_desk.add_to_surface(pistol)
+
+        if boss_chair:
+            sit_on(boss, boss_chair)
+
+    office_chairs = [
+        obj
+        for obj in bosses_office.items.objects_present
+        if isinstance(obj, Chair)
+        and not isinstance(obj, OrnateChair)
+    ]
+
+    for captain, chair in zip(captains, office_chairs):
+
+        sit_on(captain, chair)
+        """ zip() is nice here because if you have three captains and six chairs, only three are used. 
+        If you later have eight captains and six chairs, the remaining captains simply won't be seated. """
+
+    remaining_chairs = office_chairs[len(captains):]
+
+    for member, chair in zip(members, remaining_chairs):
+
+        sit_on(member, chair)
+    
+
+
     #All Captains and GangMembers will need to be added to game state and become scenario_npc = True like this
     #Probably in a loop here
-
-    bosses_office = next(
-        (
-            subloc
-            for subloc in hq.sublocations
-            if subloc.name == "Boss Office"
-        ),
-        None
-    )
-
-    if bosses_office:
-        augment_gang_hq_sublocations(bosses_office)
 
     for captain in captains:
         
@@ -133,12 +192,6 @@ def setup_tc4_world(all_characters):
         fear=8,
     )
 
-
-
-
-
-
-
     meeting_attendees = [
         boss,
         *captains,#*creates a list
@@ -153,7 +206,6 @@ def setup_tc4_world(all_characters):
 
         place_character_in_sublocation(
             npc,
-            hq,
             bosses_office,
         )
     #This

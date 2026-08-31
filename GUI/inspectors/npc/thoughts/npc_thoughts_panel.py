@@ -1,4 +1,4 @@
-#GUI.inspectors.npc_thoughts_panel.py
+#GUI.inspectors.npc.thoughts.npc_thoughts_panel.py
 
 import tkinter as tk
 from tkinter import ttk

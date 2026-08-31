@@ -5,7 +5,7 @@ from objects.furniture import CafeTable, CafeChair
 def collect_display_buckets(npc):
     """
     Collects and aggregates percept objects into
-    structured display buckets. About to be used for the tkinter GUI as well
+    structured display buckets. 
 
     Returns:
         {
@@ -55,14 +55,14 @@ def aggregate_object_percepts(percepts):
 
         data = percept["data"]
         
-        print(
+        """ print(
             "AGGREGATE KEY:",
             data.get("name"),
             "|",
             data.get("description"),
             "|",
             data.get("type"),
-        )
+        ) """
 
 
         key = data.get(

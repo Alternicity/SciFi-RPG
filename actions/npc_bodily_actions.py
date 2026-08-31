@@ -129,3 +129,14 @@ def sleep_auto(npc, region=None):
     ))
 
     return True
+
+def sit_on(npc, furniture):#Originally to seat GangBoss - single npc use, no chair discovery
+
+    if not furniture.seat(npc):
+        return False
+
+    npc.posture = Posture.SITTING
+    npc.current_furniture = furniture
+    npc.seated_at = furniture
+    
+    return True

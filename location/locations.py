@@ -8,7 +8,7 @@ from typing import List, Dict, Optional, Any, Union
 import logging
 
 from base.character import Character
-from base.location import Location, CommercialLocation
+from base.location import Location, CommercialLocation, Sublocation
 from base.faction import Faction
 from location.location_security import Security
 from objects.InWorldObjects import Toughness, Size
@@ -89,6 +89,11 @@ class HQ(PerceptibleLocation):
     is_open: bool = True
     name: str = "Base"
     faction: Optional[Faction] = field(default=None)
+    
+
+    boss_office: Optional[Sublocation] = None#Sublocation marked ont defined
+    armoury: Optional[Sublocation] = None
+    meeting_room: Optional[Sublocation] = None
 
     items_available: List[str] = field(default_factory=list)
     inventory: Inventory = field(default_factory=Inventory)
@@ -670,7 +675,8 @@ class Nightclub(WorkplaceMixin, PerceptibleLocation):
     
     def __repr__(self):
         return f"{self.__class__.__name__}(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
-
+        #note perceptibole mixin returns __name__.lower()
+        
 @dataclass
 class Mine(WorkplaceMixin, PerceptibleLocation):
     name: str = "Typical Mine"
@@ -1786,7 +1792,7 @@ class House(WorkplaceMixin, PerceptibleLocation):
     
 
 @dataclass
-class SportsCentre(WorkplaceMixin, PerceptibleLocation):
+class SportsCenter(WorkplaceMixin, PerceptibleLocation):
     name: str = "The Stadium"
     tags: list[str] = field(default_factory=lambda: ["fun", "social"])
     description: str = "A Stadium"
@@ -1822,7 +1828,7 @@ class SportsCentre(WorkplaceMixin, PerceptibleLocation):
         "security": "FIXME",
         "is_open": "FIXME",
         "has_security": "FIXME",
-            "description": f"SportsCentre: {self.name}",
+            "description": f"SportsCenter: {self.name}",
             "region": self.region.name if self.region else None,
             "robbable": True,
             "origin": self,

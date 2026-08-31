@@ -24,7 +24,7 @@ class FunAnchor(Anchor):
 
         PREF_MAP = {
             "Park": "nature",
-            "SportsCentre": "sport",
+            "SportsCenter": "sport",
             "Library": "learning",
             "Cafe": "social",
         }

@@ -8,10 +8,6 @@ from create.create_game_state import get_game_state
 game_state = get_game_state()
 """ from employment.roles import CAFE_MANAGER, WAITRESS """
 
-#from world.TC2_presets import setup_tc2_worker, get_tc2_cafe, place_tc2_npc, setup_tc2_civilian_liberty, assign_tc2_staging_location, place_tc2_passive_npc
-
-
-
 from Family import assign_initial_location_from_family
 from augment.augmentLocations import reassign_shop_names_after_character_creation
 from world.placement import place_character#not accessed
@@ -50,13 +46,3 @@ def pick_random_npc(characters, cls, exclude=None):
                  if isinstance(c, cls) and c is not exclude),
                 None)
 
-def ensure_initial_placement(npc, *, fallback_region):#perhaps we dont call this for the civilian_passive
-    #You do NOT need to call ensure_initial_placement() for background civilians anymore.
-    #They are already placed in assign_families_and_homes().
-    if getattr(npc, "placement_locked", False):
-        return  # 🔥 DO NOTHING
-
-    if assign_initial_location_from_family(npc):
-        return
-
-    assign_fallback_location(npc, fallback_region)

@@ -1,5 +1,5 @@
 #objects.expensive_furniture.py
-from objects.furniture import Desk
+from objects.furniture import Desk, Chair
 from objects.InWorldObjects import Size, Toughness
 
 class ExpensiveDesk(Desk):
@@ -13,9 +13,19 @@ class ExpensiveDesk(Desk):
             toughness=Toughness.DURABLE,
 
         )
-        self.occupied_by = None
+        #self.occupied_by = None
         self.base_ambience = {"knowledge": 0.3, "organization": 0.4, "power": 0.5}
 
         @property
         def tags(self):
             return ["furniture", "authority",]
+
+class OrnateChair(Chair):
+    is_concrete = True
+
+    def __init__(self, name="Ornate Chair"):
+        super().__init__(
+            name=name,
+            size=Size.MEDIUM,
+            toughness=Toughness.NORMAL,
+        )

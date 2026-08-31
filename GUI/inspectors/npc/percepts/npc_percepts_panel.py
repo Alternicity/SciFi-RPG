@@ -1,28 +1,44 @@
-#GUI.inspectors.percepts.npc_percepts_panel.py
+#GUI.inspectors.npc.percepts.npc_percepts_panel.py
+from objects.InWorldObjects import ObjectInWorld
+from GUI.viewmodels.percept_tree import render_percept_tree
+from base.location import Location, Sublocation
 from location.location_security import can_access_sublocation
 import tkinter as tk
 from tkinter import ttk
 from GUI.helpers.formatting import is_highlighted_percept
-
+from GUI.viewmodels.percept_tree import debug_percept_tree
 from GUI.inspectors.npc.percepts.percept_columns import (
     PERCEPT_COLUMNS,
     COLUMN_HEADINGS,
     COLUMN_WIDTHS
 )
+from GUI.viewmodels.percept_tree import DisplayNode
 from character_components.observation_component import can_perceive_sublocation
 from GUI.inspectors.percepts.percept_grouping import (
     build_percept_sections
 )
+from GUI.inspectors.npc.location_inspector import (
+    build_location_view_model,
+)
+from objects.furniture import CafeTable, CafeChair
 
 def build_percepts_panel(gui, parent):
 
     frame = ttk.LabelFrame(parent, text="Percepts")
     frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-    tree = ttk.Treeview(frame, columns=PERCEPT_COLUMNS, show="headings")
+    tree = ttk.Treeview(frame, columns=PERCEPT_COLUMNS, show="tree headings")
 
+    #new
+    tree.heading("#0", text="Percept")
+    tree.column(
+        "#0",
+        width=COLUMN_WIDTHS.get("#0", 220)
+    )
+    #We could eventually also put the heading into a special configuration dictionary a la PERCEPT_COLUMNS
 
-    for col in PERCEPT_COLUMNS:
+    for col in PERCEPT_COLUMNS:#Is PERCEPT_COLUMNS badly named? The following seems to 
+        #configure more than just the percept column
 
         tree.tag_configure(
             "self",
@@ -50,7 +66,6 @@ def build_percepts_panel(gui, parent):
         )
 
     gui.percepts_tree = tree
-
 
     parent = tree.insert(
         "",
@@ -92,6 +107,9 @@ def build_percepts_panel(gui, parent):
 
 def refresh_percepts_panel(gui):
     
+    """ Introduce the tree structure alongside the existing machinery, prove it works for the Boss Office,
+    and only then gradually move formatting into the ViewModel layer. """
+
     #tmp
     print("REFRESH PERCEPTS PANEL")
 
@@ -102,19 +120,63 @@ def refresh_percepts_panel(gui):
 
     tree = gui.percepts_tree
 
-    from display.aggregate_display_buckets import (
-        collect_display_buckets
-    )
+    from display.aggregate_display_buckets import (collect_display_buckets)
     from display.display import build_info_column
-    from perception.perceptibility import (
-        extract_appearance_summary
-    )
-    
+    from perception.perceptibility import (extract_appearance_summary)
+    from GUI.viewmodels.percept_tree import build_percept_tree
     sections = build_percept_sections(npc)
 
     regular_rows = sections["regular"]
+    
+    print("\n=== REGULAR ROW ORDER ===")
+
+    for i, (origin, data, v) in enumerate(regular_rows):
+
+        print(
+            i,
+            type(origin).__name__,
+            "name=", getattr(origin, "name", None),
+            "SELF" if origin is npc else ""
+        )
+
+    print("=========================\n")
+
+    #new
+    for origin, data, v in regular_rows:
+
+        if isinstance(origin, Location) and not isinstance(origin, Sublocation):
+            print("\n=== LOCATION PERCEPT ===")
+            print("origin:", origin)
+            print("origin type:", type(origin))
+            print("data:", data)
+            print("percept:", v)
+            print("========================\n")
+
+
+    location_rows = sections["location"]
+
     sublocation_rows = sections["sublocations"]
-    parent_rows = sections["parent_location"]
+    parent_rows = sections["parent_location"]#as in ExpensiveDesk is parent of GoldPlatedPistol
+
+    location_row = location_rows[0] if location_rows else None
+    object_percepts = []
+    other_regular_rows = []
+    self_percept_row = None
+
+    
+
+    regular_percepts = [
+        v
+        for origin, data, v in regular_rows
+    ]
+
+    tree_nodes = build_percept_tree(regular_percepts)
+
+    #see what the ViewModel produced before Tkinter does anything with it
+    print("\n=== PERCEPT TREE ===")
+    debug_percept_tree(tree_nodes)
+    print("====================\n")
+
 
     #Treeviews must be manually cleared.
     for item in tree.get_children():
@@ -123,10 +185,56 @@ def refresh_percepts_panel(gui):
     buckets = collect_display_buckets(npc)
 
     for origin, data, v in regular_rows:
-        access_text = ""
+        #First loop: collect..
+        if origin is npc:
+            self_percept_row = (origin, data, v)
+        
+        elif isinstance(origin, ObjectInWorld):
+            object_percepts.append(v)
+
+        else:
+            other_regular_rows.append((origin, data, v))
+
+
+    #tmp
+    print("\n=== OBJECT PERCEPTS ===")
+
+    for p in object_percepts:
+        data = p.get("data", {})
+        origin = p.get("origin")
+
+        print(
+            type(origin).__name__,
+            getattr(origin, "name", None),
+            "resting_on=",
+            data.get("resting_on")
+        )
+    print("=======================\n")
+
+    object_nodes = build_percept_tree(object_percepts)
+    object_nodes = aggregate_display_nodes(object_nodes)#added
+
+    #Outside loop: render:
+    render_self_percept(gui, self_percept_row, npc)
+
+    if location_row:
+        render_location_percept(
+            gui,
+            location_row,
+            npc
+        )
+
+    render_percept_tree(
+        gui,
+        object_nodes,
+        npc=npc
+    )
+
+    for origin, data, v in other_regular_rows:
 
         desc = (
-            data.get("description")
+            data.get("name")
+            or data.get("description")
             or data.get("type")
             or "UNKNOWN"
         )
@@ -142,7 +250,7 @@ def refresh_percepts_panel(gui):
         visibility_text = ""
 
         if hasattr(origin, "accessible_roles"):
-            
+
             access_text = (
                 "Accessible"
                 if can_access_sublocation(
@@ -182,26 +290,12 @@ def refresh_percepts_panel(gui):
                 getattr(npc, "current_anchor", None)
             )
 
-        #attempted bold
         highlight = is_highlighted_percept(
             origin,
             npc
         )
 
-        if highlight:
-
-            print(
-                "ROW TAG:",
-                getattr(origin, "name", str(origin)),
-                "->",
-                highlight
-            )
-
-            tags = (highlight,)
-
-        else:
-
-            tags = ()
+        tags = (highlight,) if highlight else ()
 
         tree.insert(
             "",
@@ -216,7 +310,7 @@ def refresh_percepts_panel(gui):
         )
     
     #the original table handling code
-    for table in buckets["occupied_tables"]:
+    """ for table in buckets["occupied_tables"]:
 
         seated = table.get_occupants(npc.location)
 
@@ -250,7 +344,7 @@ def refresh_percepts_panel(gui):
                 f"{count} empty tables",
                 "Empty"
             )
-        )
+        ) """
 
     if parent_rows:
 
@@ -342,3 +436,119 @@ def refresh_percepts_panel(gui):
         )
 
         tree._sublocation_map[iid] = origin
+
+
+def render_location_percept(gui, location_row, npc):
+    origin, data, percept = location_row
+
+    vm = build_location_view_model(percept)
+
+    tree = gui.percepts_tree
+
+    tree.insert(
+        "",
+        "end",
+        text=vm.name,
+        values=(
+            vm.description,
+            vm.info or "—",
+        ),
+        tags=("location",)
+    )
+
+from perception.perceptibility import extract_appearance_summary
+from display.display import build_info_column
+def render_self_percept(gui, row, npc):
+    origin, data, v = row
+
+    tree = gui.percepts_tree
+
+    appearance = extract_appearance_summary(
+        origin,
+        observer=npc
+    )
+
+    info = build_info_column(
+        origin,
+        npc,
+        v,
+        getattr(npc, "current_anchor", None)
+    )
+
+    tree.insert(
+        "",
+        "end",
+        text="Self Percept",
+        values=(
+            appearance,
+            info
+        ),
+        tags=("self",)
+    )
+
+def aggregate_display_nodes(nodes):
+
+    result = []
+    aggregatable = []
+
+    for node in nodes:
+
+        if node.children:
+            result.append(node)
+            continue
+
+        if is_aggregatable(node):
+            aggregatable.append(node)
+            continue
+
+        result.append(node)
+
+    groups = {}
+
+    for node in aggregatable:
+        key = node.data.get("type")
+        groups.setdefault(key, []).append(node)
+
+    # temporary: construct aggregate percepts
+    aggregate_nodes = []
+
+    for type_, members in groups.items():
+
+        count = len(members)
+
+        if type_ == "CafeTable":
+            name = f"Tables (x{count})"
+            description = f"{count} empty tables"
+            display_type = "CafeTables"
+
+        elif type_ == "CafeChair":
+            name = f"Chairs (x{count})"
+            description = f"{count} empty chairs"
+            display_type = "CafeChairs"
+
+        else:
+            continue
+
+        percept = {
+            "data": {
+                "name": name,
+                "description": description,
+                "type": display_type,
+                "display_aggregate": True,
+                "appearance": display_type,
+                "info": description,
+            },
+            "origin": None,
+            "source": "display_aggregation",
+        }
+
+        aggregate_nodes.append(
+            DisplayNode(percept=percept)
+        )
+
+    return result + aggregate_nodes
+
+def is_aggregatable(node):
+    origin = node.origin
+
+    return isinstance(origin, (CafeTable, CafeChair))

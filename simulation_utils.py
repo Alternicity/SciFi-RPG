@@ -4,8 +4,6 @@ from create.create_game_state import get_game_state
 gamestate = get_game_state()
 from debug_utils import debug_print
 
-
-
 def non_shop_or_cafe_locations(region):
     from location.locations import Shop, Cafe, CorporateStore, Restaurant
 
@@ -15,7 +13,6 @@ def non_shop_or_cafe_locations(region):
         loc for loc in region.locations 
         if not isinstance(loc, excluded_types)
     ]
-
 
 def pick_civilian(civilians, *, sex=None, exclude=None):
     candidates = []

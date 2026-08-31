@@ -7,14 +7,13 @@ from debug_utils import debug_print
 game_state = get_game_state()
 from base.location import CommercialLocation
 from region.region_flavor import REGION_CULTURAL_ADJECTIVES as REGIONAL_FLAVOR
-from location.locations import Cafe, Restaurant, Library, Park, LunaSanctum, SportsCentre, Factory, Powerplant, Nightclub
+from location.locations import Cafe, Restaurant, Library, Park, LunaSanctum, SportsCenter, Factory, Powerplant, Nightclub
 from objects.food.prepared_food import Sandwich, Burger
-from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair, Sofa
+from objects.furniture import CafeChair, CafeTable, CafeCounter, Table, Chair, Sofa, Bench
 from objects.InWorldObjects import Pot, CashRegister, Toughness, ItemType, Size
-from objects.trees_and_plants import GoldenRatioTree, Plant, Tree, OakTree, DustPalm, EchoWillow
 from objects.trees_and_plants import BonsaiTree
 from base.location import Location, Sublocation
-
+from world.place_objects import place_object
 DEFAULT_SPECIALIZATION = "general"
 
 SUPPORTED_SPECIALIZATIONS = [
@@ -51,6 +50,18 @@ spec_suffixes = ["Armory", "Emporium", "Outlet", "Depot", "Mart", "Bazaar", "Vau
 family_surnames = game_state.extant_family_names
 # augment/augment_locations.py
 
+#As yet unused. tag based policy decider
+""" def decorate_location(location):
+
+    if location.has_tag("classy"):
+        add_classy_plants(location)
+
+    if location.has_tag("corporate"):
+        add_corporate_art(location)
+
+    if location.has_tag("wealthy"):
+        add_expensive_furniture(location) """
+
 def assign_location_names(all_locations):
     from world.location_names import LIBRARY_NAMES, PARK_NAMES, generate_cafe_name
     
@@ -72,7 +83,7 @@ def assign_location_ownership(all_locations, all_corporations):
     from economy.economy_queries.location_queries import get_location_owner
     from economy.economy_helpers import assign_location_owner
     
-    sports_centres = [loc for loc in all_locations if isinstance(loc, SportsCentre)]
+    sports_centres = [loc for loc in all_locations if isinstance(loc, SportsCenter)]
     
     if not all_corporations:
         return
@@ -91,83 +102,8 @@ def assign_location_ownership(all_locations, all_corporations):
             
 
 
-def seed_park_objects(all_locations):
-    
-    for loc in all_locations:
-        if not isinstance(loc, Park):
-            continue
-        if isinstance(loc, LunaSanctum):
-            continue  # Luna's park gets seeded separately. Unique sublocation to be later incorprated
-
-        if any(isinstance(o, Tree) for o in loc.items.objects_present):#added
-            continue  # already seeded
-            #But will this mean that the park ends up with exactly 1 tree?
-        # Trees
-       # 2-3 mundane trees
-        mundane = [OakTree, DustPalm]
-        for i, cls in enumerate(random.choices(mundane, k=3)):
-            tree = cls()
-            tree.name = f"{tree.name} {i+1}"
-            tree.location = loc
-            loc.items.objects_present.append(tree)
-
-        # One special tree — sometimes GoldenRatio, sometimes EchoWillow
-        special_cls = random.choice([GoldenRatioTree, EchoWillow])
-        special = special_cls()
-        special.location = loc
-        loc.items.objects_present.append(special)
-
-        # Benches
-        for i in range(4):
-            bench = Chair(name=f"Park Bench {i+1}")
-            bench.location = loc
-            loc.items.objects_present.append(bench)
-
-        loc.fun = min(8, 1 + sum(
-            getattr(t, "resonance_factor", 1.0)
-            for t in loc.items.objects_present
-            if isinstance(t, Tree)
-        ))
-
-        # One special tree
-        """ spiral = GoldenRatioTree()
-        loc.items.objects_present.append(spiral) """
-
-        # Ambient boost from trees
 
 
-def seed_library_furniture(all_locations):
-    for loc in all_locations:
-        if not isinstance(loc, Library):
-            continue
-        if any(isinstance(o, Table) for o in loc.items.objects_present):
-            continue  # already seeded
-
-        for t in range(4):  # 4 reading tables
-            table = Table(
-                name=f"Reading Table {t+1}",
-                size=Size.LARGE,
-                seating_capacity=2,  # intimate, focused
-                toughness=Toughness.DURABLE,
-            )
-            table.location = loc
-            table.region = loc.region
-            loc.items.objects_present.append(table)
-
-            for c in range(2):
-                chair = Chair(name=f"Reading Chair {t+1}-{c+1}")
-                chair.table = table
-                chair.location = loc
-                table.chairs.append(chair)
-                loc.items.objects_present.append(chair)
-
-def seed_library_books(all_locations):
-    from world.books_catalogue import LIBRARY_COLLECTION
-    for loc in all_locations:
-        if not isinstance(loc, Library):
-            continue
-        for book in LIBRARY_COLLECTION:
-            loc.items.objects_present.append(book)
 
 def rename_powerplants():
 
@@ -328,28 +264,13 @@ def seed_commercial_equipment(all_locations):
             initial_cash=getattr(loc, "register_initial_cash", 300),
         )
 
-        loc.items.objects_present.append(register)
-        loc.cash_register = register  # optional convenience pointer
+        place_object(register, loc)
 
-
-
-
-def seed_ambience_objects(all_locations):
-    for loc in all_locations:
-        if isinstance(loc, Cafe):
-            # Prevent duplicate ambience
-            if any(isinstance(o, Pot) for o in loc.items.objects_present):
-                continue
-
-            pot = Pot(quantity=1)
-            bonsai = BonsaiTree()
-            pot.add(bonsai)
-            loc.items.objects_present.append(pot)
-
+        loc.cash_register = register  
+        # optional convenience pointer
 
 from objects.furniture import CafeTable, CafeChair
 from location.locations import Cafe
-
 
 def augment_nightclubs():
     pass
@@ -370,48 +291,34 @@ def augment_nightclubs():
 def seed_nightclub_furniture(all_locations):
     from objects.sports_objects import PoolBall, PoolCue, PoolTable
 
-    #tmp
-    from perception.perceptibility import PerceptibleMixin
-
-
     for loc in all_locations:
         if not isinstance(loc, Nightclub):
             continue
-            #see some  LargeTable, Sofa, Barstool, CafeChair objects, ClubBar, PoolTable
-            #if club has tag "classy" then also some plants in vases
-            #if it has tag: pool, add PoolTable
-
-        
-
+            #seed some  LargeTable, Sofa, Barstool, CafeChair objects, ClubBar, PoolTable
+            #if club has tag: pool, add PoolTable
+            
         tables = []
 
         for t in range(8):
             table = CafeTable(name=f"Table {t+1}")
-            table.location = loc
-            table.region = loc.region
-
-            loc.items.objects_present.append(table)
+            place_object(table, loc)
             tables.append(table)
 
             # Add 8 chairs per table. Later incorporate sofas on one side instead
             for c in range(8):
                 chair = CafeChair(name=f"Chair {t+1}-{c+1}")
-                chair.location = loc
-                chair.region = loc.region
+                place_object(chair, loc)
+
+                #semantic relationships
                 chair.table = table
                 table.chairs.append(chair)#Club tables will have 8 places, 4 chairs along one side, and 2 small, or one
-                #long sofa on the other side
-                loc.items.objects_present.append(chair)
+
 
         loc.tables = tables
 
-
         if loc.has_tag("pool"):
             pool_table = PoolTable()
-            pool_table.location = loc
-            pool_table.region = loc.region
-
-            loc.items.objects_present.append(pool_table)
+            place_object(pool_table, loc)
 
         dancefloor = Sublocation(
             name="Dancefloor",
@@ -434,21 +341,7 @@ def seed_nightclub_furniture(all_locations):
         dj_booth.accessible_roles = ["DJ"]
         loc.sublocations.append(dj_booth)
 
-        vip_lounge = Sublocation(
-            name="VIP Lounge",
-            perceptible_from_parent=False
-        )
-        vip_lounge.parent_location = loc
-        vip_lounge.can_see_parent_location = True
-        vip_lounge.region = loc.region
-        vip_lounge.visible_roles = ["VIP", "Babe"]#added, but this should not be role based. A vip outside the lounge would also not be able to see into it.
-        vip_lounge.accessible_roles = ["VIP", "Babe"]#need to ensure the test npcs have this, and gui accurately shows their ability to access
         
-        #here
-        loc.sublocations.append(vip_lounge)
-
-        if loc.has_tag("classy"):#tag doesnt exist yet
-                add_classy_plants(vip_lounge)
 
         entry_booth = Sublocation(
             name="Entry Booth",
@@ -468,7 +361,7 @@ def seed_nightclub_furniture(all_locations):
                     getattr(sub, "is_perceptible", None)
                 ) """
 
-def add_table_decorations(loc):
+def add_table_decorations(loc):#Used in Nightclub Location
     from objects.InWorldObjects import Vase
     from objects.trees_and_plants import SingleRose
 
@@ -476,42 +369,33 @@ def add_table_decorations(loc):
         return
 
     table = random.choice(loc.tables)
+    #This randomization makes it different from the other plant adding functions
 
     vase = Vase()
-    rose = SingleRose()
-
-    vase.add(rose)
-
-    vase.location = loc
+    vase.add(SingleRose())
+    place_object(vase, table)
     vase.region = loc.region
-
-    loc.items.objects_present.append(vase)
-
-    print(
-        "Added vase decoration:",
-        vase,
-        rose
-    )
-
-
-
+    
 def add_office_furniture(loc):
     from objects.expensive_furniture import ExpensiveDesk
     desk = ExpensiveDesk()
-    desk.location = loc
+    boss_office = loc.boss_office
+    place_object(desk, loc)
+    boss_office.desk = desk
+
+    """ desk.location = loc
     desk.region = loc.region
-    loc.objects_present.append(desk)
-
-
+    loc.objects_present.append(desk) """
 
 def add_classy_furniture(loc):#currently only vip lounge
     count = random.randint(2, 5)
 
     for _ in range(count):
         sofa = Sofa()
-        sofa.location = loc
+        place_object(sofa, loc)
+        """ sofa.location = loc
         sofa.region = loc.region
-        loc.objects_present.append(sofa)
+        loc.objects_present.append(sofa) """
 
 #reference for above
 def seed_cafe_furniture(all_locations):
@@ -528,30 +412,28 @@ def seed_cafe_furniture(all_locations):
         for t in range(8):
             table = CafeTable(name=f"Table {t+1}")
             table.location = loc
-            table.region = loc.region
-
-            loc.items.objects_present.append(table)
+            place_object(table, loc)
             tables.append(table)
 
             # Add 4 chairs per table
             for c in range(4):
                 chair = CafeChair(name=f"Chair {t+1}-{c+1}")
-                chair.location = loc
-                chair.region = loc.region
-                chair.table = table
+                place_object(chair, loc)
+
+                chair.table = table#semantic relationships
                 table.chairs.append(chair)
-                loc.items.objects_present.append(chair)
 
         loc.tables = tables  # optional reference for later AI logic
 
         # Add counter if not present
         if not any(isinstance(o, CafeCounter) for o in loc.items.objects_present):
             counter = CafeCounter()
-            counter.location = loc
-            counter.region = loc.region
-
-            loc.items.objects_present.append(counter)
+            place_object(counter, loc)
             loc.counter = counter
+            """ counter.location = loc
+            counter.region = loc.region
+            loc.items.objects_present.append(counter) """
+            
 
 
 """ park_sublocs = [Playground(), Storeroom()]
@@ -560,10 +442,10 @@ nightclub_sublocs = [DanceFloor(), Storeroom(), Office()] """
 
 def seed_sports_centre_equipment(all_locations):
     from objects.sports_objects import PoolTable, BowlingLane, PoolCue
-    from location.locations import SportsCentre
+    from location.locations import SportsCenter
 
     for loc in all_locations:
-        if not isinstance(loc, SportsCentre):
+        if not isinstance(loc, SportsCenter):
             continue
         if any(isinstance(o, PoolTable) for o in loc.items.objects_present):
             continue  # already seeded
@@ -571,20 +453,15 @@ def seed_sports_centre_equipment(all_locations):
         # 2 pool tables
         for i in range(1, 3):
             table = PoolTable(name=f"Pool Table {i}")
-            table.location = loc
-            table.region = loc.region
-            loc.items.objects_present.append(table)
+            place_object(table, loc)#later:place_object(table, pool_room)
             # Add cues to location inventory too
             for cue in table.cues:
-                cue.location = loc
-                loc.items.objects_present.append(cue)
+                place_object(cue, table)
 
         # 3 bowling lanes
         for i in range(1, 4):
             lane = BowlingLane(lane_number=i)
-            lane.location = loc
-            lane.region = loc.region
-            loc.items.objects_present.append(lane)
+            place_object(lane, loc)
 
         # Boost fun value from equipment
         loc.fun = 4
@@ -606,9 +483,7 @@ def seed_residential_furniture(all_locations):
 
         for i in range(beds):
             bed = Bed(name=f"Bed {i+1}")
-            bed.location = loc
-            bed.region = loc.region
-            loc.items.objects_present.append(bed)
+            place_object(bed, loc)
 
 def seed_residential_food(all_locations):
     from location.locations import House, ApartmentBlock

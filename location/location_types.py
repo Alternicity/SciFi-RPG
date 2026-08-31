@@ -20,7 +20,7 @@ from location.locations import (
     ResearchLab,
     Museum,
     Library,
-    SportsCentre,
+    SportsCenter,
     Holotheatre,
     Park,
     VacantLot,
@@ -31,7 +31,7 @@ from location.locations import (
 
 WORKPLACES = (Shop, CorporateStore, MechanicalRepairWorkshop, ElectricalWorkshop,
               Factory, Nightclub, Mine, Powerplant, Airport, Port, Cafe, Restaurant, Farm, 
-              Warehouse, ResearchLab, Museum, Library, SportsCentre, Holotheatre)
+              Warehouse, ResearchLab, Museum, Library, SportsCenter, Holotheatre)
 
-PUBLIC_PLACES = (Museum, Library, SportsCentre, Holotheatre, Park, VacantLot)
+PUBLIC_PLACES = (Museum, Library, SportsCenter, Holotheatre, Park, VacantLot)
 RESIDENTIAL = (ApartmentBlock, House)

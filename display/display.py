@@ -1,4 +1,4 @@
-#display.py
+#display.display.py
 from tabulate import tabulate
 import logging
 from textwrap import wrap
@@ -640,7 +640,10 @@ def build_info_column(origin_obj, npc, v, anchor):
     elif hasattr(origin_obj, "seating_capacity"):
 
         if hasattr(origin_obj, "chairs"):
-            occupied = sum(1 for c in origin_obj.chairs if c.occupied_by)
+            occupied = sum(
+            len(c.occupants)
+            for c in origin_obj.chairs
+        )
 
             if occupied:
                 info = f"{occupied}/{origin_obj.seating_capacity} seated"
