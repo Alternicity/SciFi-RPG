@@ -576,12 +576,12 @@ def format_origin(origin):#not called
         return str(origin)[:40]  # truncate long fallback
 
 
-def build_info_column(origin_obj, npc, v, anchor):
+def build_info_column(origin_obj, npc, v, anchor):#v, anchor not used
     info = "—"
 
     # Characters
 
-    if isinstance(origin_obj, Character):
+    if isinstance(origin_obj, Character):#a GangBoss is presumably a Character subclass, so it already enters the first branch
         if origin_obj is npc:
             info = "Me"
 
@@ -620,6 +620,9 @@ def build_info_column(origin_obj, npc, v, anchor):
 
 
     elif isinstance(origin_obj, GangMember):
+        """ The GangMember branch also looks suspicious architecturally because it means the Info 
+        column's meaning depends partly on the concrete Python class rather than purely on the percept data. """
+
         fac = getattr(origin_obj, "faction", None)
 
         if fac:

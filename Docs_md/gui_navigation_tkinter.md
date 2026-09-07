@@ -70,7 +70,7 @@ The inspector displays a summary of the currently selected entity.
 
 Entity pages provide a full-page view.
 
-Selection should not directly inspect simulation objects when percept data is
+In NPC mode, selection should not directly inspect simulation objects when percept data is
 available.
 
 ---

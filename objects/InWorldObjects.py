@@ -164,15 +164,6 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
             "details": f"{self.name} ({self.item_type.value})",
         }
         
-        print(
-            "PERCEPT GENERATION:",
-            self.__class__.__name__,
-            "object_resting_on=",
-            repr(self.resting_on),
-            "data_resting_on=",
-            repr(data.get("resting_on")),
-        )
-
         if hasattr(self, "_postprocess_percept"):
             data = self._postprocess_percept(
                 data,
@@ -343,7 +334,7 @@ class AdvancedMedkit(Medkit):
         super().__init__()
         self.contains_xyz = True
 
-    def _postprocess_percept(self, data, observer):
+    def _postprocess_percept(self, data, observer):#updated
 
         if self.contains_xyz:
             data["name"] = "Advanced Medkit"
@@ -643,7 +634,7 @@ class MarbleBag(Container):
 class Vase(ObjectInWorld, Container):
     is_concrete = True
 
-    def __init__(self, material="ceramic", placement_quality="perfect", quantity=1):
+    def __init__(self, material="china", placement_quality="perfect", quantity=1):
         ObjectInWorld.__init__(
             self,
             name=f"{material.title()} Vase",
@@ -657,7 +648,7 @@ class Vase(ObjectInWorld, Container):
         )
         Container.__init__(self)
         #In npc percepts tab needs better description
-        self.material = "china"
+        self.material = material
         self.placement_quality = placement_quality
         self.base_ambience = {
             "peace": 0.2,

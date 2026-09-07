@@ -1,12 +1,11 @@
 #GUI.inspectors.percepts.percept_grouping.py
 from base.location import Sublocation
-from objects.furniture import CafeTable, CafeChair
 from base.location import Location
 #utility functions
 def build_percept_sections(npc):
     regular_rows = []
     sublocation_rows = []
-    parent_location_rows = []
+    parent_location_rows = []#ie Nightclub is the parent location of VIP Lounge, Gang HQ is the parent location of Boss Office
     location_rows = []
 
     current_sublocation = getattr(

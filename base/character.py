@@ -379,6 +379,7 @@ class Character(PerceptibleMixin, CharacterBase):
             if getattr(self, "seated_at", None):
                 tags.append("seated")
             
+
             urgency = hunger.urgency if hunger else 1
 
             return {
@@ -388,6 +389,10 @@ class Character(PerceptibleMixin, CharacterBase):
                 "region": self.region.name if getattr(self, "region", None) else "Unknown",
                 "location": self.location.name if getattr(self, "location", None) else "Unknown",
                 "sublocation": self.sublocation.name if getattr(self, "sublocation", None) else "Unknown",
+
+                "posture": self.posture,
+                "seated_at": self.seated_at,
+
                 "origin": self,
                 "tags": tags,
                 "urgency": urgency,

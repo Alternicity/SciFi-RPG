@@ -1,5 +1,7 @@
 #GUI.inspectors.percepts.percept_columns.py
 
+
+#0 is pronounced "zeroth column”. In casual programming conversation, though, “hash-zero column” is also very common"
 PERCEPT_COLUMNS = (#0 is now the hierarchical Percept column.
     "description",
     "info"

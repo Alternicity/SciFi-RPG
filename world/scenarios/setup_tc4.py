@@ -81,12 +81,6 @@ def setup_tc4_world(all_characters):
             gang
         )
 
-        #boss.inventory_component.inventory.add_item(GoldPlatedPistol())
-        #some race appropriate status object
-
-
-        
-
         boss_chair = next(
             (
                 obj
@@ -96,7 +90,7 @@ def setup_tc4_world(all_characters):
             None,
         )
 
-        boss_desk = next(#boss_desk currently greyed out, not accessed
+        boss_desk = next(
                     (
                         obj
                         for obj in bosses_office.items.objects_present
@@ -111,6 +105,8 @@ def setup_tc4_world(all_characters):
 
         if boss_chair:
             sit_on(boss, boss_chair)
+            #Add relationship with Desk
+            #associate_furniture(boss_chair, boss_desk) for example
 
     office_chairs = [
         obj

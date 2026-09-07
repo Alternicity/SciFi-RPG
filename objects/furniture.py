@@ -60,17 +60,6 @@ class Furniture(ObjectInWorld):
     def add_to_surface(self, item):
         self.surface_items.append(item)
         item.resting_on = self
-        
-        print(
-            "SURFACE TEST:",
-            item.__class__.__name__,
-            "resting_on =",
-            item.resting_on,
-            "type =",
-            type(item.resting_on).__name__,
-            "same_as_self =",
-            item.resting_on is self,
-        )
 
     def remove_from_surface(self, item):
         if item in self.surface_items:
@@ -93,6 +82,13 @@ class Furniture(ObjectInWorld):
     # ---------------------------
     # Percepts
     # ---------------------------
+
+    #I would modernize Furniture.get_percept_data() eventually in the same way we modernized the pistol:
+    """     ObjectInWorld.get_percept_data()
+                ↓
+        Furniture._postprocess_percept()
+
+        rather than having Furniture reconstruct the percept contract. """
 
     def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)

@@ -12,5 +12,5 @@ def is_highlighted_percept(origin, npc):
     if getattr(npc, "current_interaction_target", None) is origin:
         return "interaction"
 
-    #return False
+
     return None

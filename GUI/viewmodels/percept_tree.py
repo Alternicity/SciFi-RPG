@@ -176,7 +176,7 @@ def debug_percept_tree(nodes, indent=0):
 #Eventually remove the Tkinter-specific tree.insert() from render_percept_tree()
 #Eventually put this somewhere like GUI.inspectors.percepts
 def render_percept_tree(#Tkinter rendering
-
+    #
 
     #render_percept_tree() is currently designed for the NPC Percepts tab, not the Sublocation Inspector.
     gui,
@@ -185,23 +185,13 @@ def render_percept_tree(#Tkinter rendering
     npc=None
 ):
     #This renderer expects:
-    tree = gui.percepts_tree
+    tree = gui.percepts_tree#Percepts tab.
 
     for node in nodes:
 
         origin = node.origin
         data = node.data
         v = node.percept
-
-        #tmp print
-        print(
-            "TREE RENDER:",
-            type(origin).__name__,
-            "name=", data.get("name"),
-            "description=", data.get("description"),
-            "type=", data.get("type"),
-            "parent=", parent
-        )
 
         desc = (
             data.get("name")
@@ -212,24 +202,33 @@ def render_percept_tree(#Tkinter rendering
 
         type_ = data.get("type", "—")
 
-        appearance = extract_appearance_summary(
-            origin,
-            observer=npc
-        )
+        if data.get("display_aggregate"):
 
-        info = build_info_column(
-            origin,
-            npc,
-            v,
-            getattr(npc, "current_anchor", None)
-        )
+            appearance = data.get("appearance", "—")
+            info = data.get("info", "—")
 
-        highlight = is_highlighted_percept(
-            origin,
-            npc
-        )
+            tags = ("aggregate",)
 
-        tags = (highlight,) if highlight else ()
+        else:
+
+            appearance = extract_appearance_summary(
+                origin,
+                observer=npc
+            )
+
+            info = build_info_column(
+                origin,
+                npc,
+                v,
+                getattr(npc, "current_anchor", None)
+            )
+
+            highlight = is_highlighted_percept(
+                origin,
+                npc
+            )
+
+            tags = (highlight,) if highlight else ()
 
         iid = tree.insert(
             parent,

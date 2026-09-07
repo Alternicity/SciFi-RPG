@@ -20,9 +20,11 @@ from GUI.inspectors.percepts.percept_grouping import (
 from GUI.inspectors.npc.location_inspector import (
     build_location_view_model,
 )
-from objects.furniture import CafeTable, CafeChair
+from objects.furniture import CafeTable, CafeChair, Sofa, Chair
+from objects.expensive_furniture import OrnateChair
 
-def build_percepts_panel(gui, parent):
+
+def build_percepts_panel(gui, parent):#creates the basic percepts tab, not the subsequent Location or Sublocation panels
 
     frame = ttk.LabelFrame(parent, text="Percepts")
     frame.pack(fill="both", expand=True, padx=10, pady=10)
@@ -128,18 +130,7 @@ def refresh_percepts_panel(gui):
 
     regular_rows = sections["regular"]
     
-    print("\n=== REGULAR ROW ORDER ===")
 
-    for i, (origin, data, v) in enumerate(regular_rows):
-
-        print(
-            i,
-            type(origin).__name__,
-            "name=", getattr(origin, "name", None),
-            "SELF" if origin is npc else ""
-        )
-
-    print("=========================\n")
 
     #new
     for origin, data, v in regular_rows:
@@ -172,17 +163,11 @@ def refresh_percepts_panel(gui):
 
     tree_nodes = build_percept_tree(regular_percepts)
 
-    #see what the ViewModel produced before Tkinter does anything with it
-    print("\n=== PERCEPT TREE ===")
-    debug_percept_tree(tree_nodes)
-    print("====================\n")
-
-
     #Treeviews must be manually cleared.
     for item in tree.get_children():
         tree.delete(item)
     
-    buckets = collect_display_buckets(npc)
+    buckets = collect_display_buckets(npc)#buckets not accessed ATTN, maybe stale aggregation code
 
     for origin, data, v in regular_rows:
         #First loop: collect..
@@ -195,24 +180,8 @@ def refresh_percepts_panel(gui):
         else:
             other_regular_rows.append((origin, data, v))
 
-
-    #tmp
-    print("\n=== OBJECT PERCEPTS ===")
-
-    for p in object_percepts:
-        data = p.get("data", {})
-        origin = p.get("origin")
-
-        print(
-            type(origin).__name__,
-            getattr(origin, "name", None),
-            "resting_on=",
-            data.get("resting_on")
-        )
-    print("=======================\n")
-
     object_nodes = build_percept_tree(object_percepts)
-    object_nodes = aggregate_display_nodes(object_nodes)#added
+    object_nodes = aggregate_display_nodes(object_nodes)
 
     #Outside loop: render:
     render_self_percept(gui, self_percept_row, npc)
@@ -308,43 +277,6 @@ def refresh_percepts_panel(gui):
             ),
             tags=tags
         )
-    
-    #the original table handling code
-    """ for table in buckets["occupied_tables"]:
-
-        seated = table.get_occupants(npc.location)
-
-        occupant_descriptions = [
-            f"{o.race}, {o.sex}"
-            for o in seated
-        ]
-
-        tree.insert(
-            "",
-            "end",
-            values=(
-                table.name,
-                "CafeTable",
-                f"Occupied ({len(seated)})",
-                ", ".join(occupant_descriptions)
-            )
-        )
-    empty_tables = buckets["empty_tables"]
-
-    if empty_tables:
-
-        count = len(empty_tables)
-
-        tree.insert(
-            "",
-            "end",
-            values=(
-                f"Tables (x{count})",
-                "CafeTables",
-                f"{count} empty tables",
-                "Empty"
-            )
-        ) """
 
     if parent_rows:
 
@@ -397,9 +329,7 @@ def refresh_percepts_panel(gui):
 
         tree._sublocation_map[divider_iid] = None
 
-
     for origin, data, v in sublocation_rows:
-        print("RENDERING SUBLOCATION:", origin)
 
         data = v.get("data", {})
 
@@ -493,6 +423,14 @@ def aggregate_display_nodes(nodes):
 
     for node in nodes:
 
+        origin = node.origin
+
+        # Occupied furniture is represented by the Character row.
+        if isinstance(origin, (CafeChair, Chair, Sofa)):
+            if getattr(origin, "occupants", None):
+                if not isinstance(origin, OrnateChair):
+                    continue
+
         if node.children:
             result.append(node)
             continue
@@ -526,6 +464,11 @@ def aggregate_display_nodes(nodes):
             description = f"{count} empty chairs"
             display_type = "CafeChairs"
 
+        elif type_ == "Sofa":
+            name = f"Sofas (x{count})"
+            description = f"{count} empty sofas"
+            display_type = "Sofas"
+
         else:
             continue
 
@@ -548,7 +491,17 @@ def aggregate_display_nodes(nodes):
 
     return result + aggregate_nodes
 
+
 def is_aggregatable(node):
     origin = node.origin
 
-    return isinstance(origin, (CafeTable, CafeChair))
+    if not isinstance(origin, (CafeTable, CafeChair, Sofa)):
+        return False
+
+    if node.children:
+        return False
+
+    if getattr(origin, "occupants", None):
+        return False
+
+    return True

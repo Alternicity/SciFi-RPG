@@ -123,7 +123,9 @@ class TC2GUI:
             expand=True
         )
 
-        self.detail_page_container = ttk.Frame(#I am no longer sure what detail_page_container is or why it exists, or if needed
+        self.detail_page_container = ttk.Frame(#creates the container, not the Sublocation inspector. 
+                                            #It is simply an empty Tkinter frame intended to hold the center 
+                                            # entity/detail page.
             self.npc_main_panel
         )#Notice: Do NOT pack it yet. Initially only the notebook page is visible. Old comment
 
@@ -546,7 +548,7 @@ class TC2GUI:
         dispatch """
 
         if isinstance(thing, Sublocation):
-            build_sublocation_entity_page(self, self.detail_page_container,observer, thing)#line 571
+            build_sublocation_entity_page(self, self.detail_page_container,observer, thing)
         
         elif isinstance(thing, Character):
             build_npc_entity_page(self, self.detail_page_container, observer, thing)
@@ -986,7 +988,7 @@ class TC2GUI:
         } """
         if isinstance(target, Sublocation):
             #line 1040
-            build_sublocation_inspector(#there is no available observer or npc reference here
+            build_sublocation_inspector(
                 self,
                 parent,
                 observer,

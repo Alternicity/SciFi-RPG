@@ -6,7 +6,7 @@ class SocialGroup:
 
     day_created = 1
     hour_created = 1
-    conversation = None#current topic will likely here in here
+    conversation = None#current topic will likely be in here
 
     members: list[Character] = field(default_factory=list)
 

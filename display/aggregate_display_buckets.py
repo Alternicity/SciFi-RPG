@@ -2,7 +2,7 @@
 
 from objects.furniture import CafeTable, CafeChair
 
-def collect_display_buckets(npc):
+def collect_display_buckets(npc):#on its way to deprecation, esp for gui code
     """
     Collects and aggregates percept objects into
     structured display buckets. 

@@ -9,7 +9,7 @@ class SublocationViewModel:
     accessible_roles: list[str]
     raw: object  # optional reference to Sublocation
     """ This is the only thing UI consumes.
-    both panels render the same model (though this must change for therightpanel/inspector)
+    both panels render the same model (though this must change for the right panel/inspector)
     no Tkinter logic leaks into game logic
     formatting rules live in one place """
 

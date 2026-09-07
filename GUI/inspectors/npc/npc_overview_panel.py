@@ -96,7 +96,7 @@ def refresh_overview_panel(gui):
             print("SETTING NAME")
 
     #tmp
-    print(gui.overview_labels.keys())
+    #print(gui.overview_labels.keys())
     
     gui.overview_labels["Interacting with"]["label"].config(
         text=interaction_text
