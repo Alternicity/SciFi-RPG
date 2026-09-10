@@ -98,6 +98,36 @@ class CaffeineEffect(TimedEffect):
 class AlcoholEffect(TimedEffect):
     pass
 
+class Inebriated(TimedEffect):
+
+    def __init__(self, source=None):
+        super().__init__("inebriated", duration=2)
+        self.source = source
+        self.effort_bonus = 1
+        self.focus_bonus = -1
+
+    def visible_symptoms(self):
+        return ["inebriated"]
+    
+    def on_start(self, npc):
+        npc.effort += self.effort_bonus
+        npc.concentration += self.focus_bonus
+
+    def on_tick(self, npc):
+        source_name = self.source.name if self.source else "unknown"
+        debug_print(
+            npc,
+            f"[EFFECT] {npc.name} is inebriated from {source_name}",
+            category="effect"
+        )
+
+    def on_end(self, npc):
+        npc.effort -= self.effort_bonus
+        npc.concentration -= self.focus_bonus
+
+
+
+
 class HydrationEffect(TimedEffect):
     pass
 

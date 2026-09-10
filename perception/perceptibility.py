@@ -118,7 +118,7 @@ def gather_perceptible_objects(obj, seen=None):
             found.extend(gather_perceptible_objects(item, seen))
 
     if hasattr(obj, "items") and hasattr(obj.items, "objects_present"):
-        for item in obj.items.objects_present:#Aha?
+        for item in obj.items.objects_present:
             found.extend(gather_perceptible_objects(item, seen))
 
     if hasattr(obj, "sublocations"):

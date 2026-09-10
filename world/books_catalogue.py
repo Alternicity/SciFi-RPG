@@ -11,6 +11,7 @@ COLONY_FOUNDING_RECORD = Book(
     is_redacted=True,  # certain pages missing
     psy_resonance=0.1,
     reading_difficulty=3,
+    colour="red",
 )
 
 # Hints at precursors
@@ -21,6 +22,7 @@ ARCHITECTURAL_ANOMALIES = Book(
     knowledge_type="science",
     psy_resonance=0.4,
     reading_difficulty=6,
+    colour="blue",
 )
 
 # Something that resonates with psy-sensitive NPCs strongly
@@ -32,6 +34,7 @@ RESONANCE_CODEX = Book(
     is_redacted=False,
     psy_resonance=1.8,
     reading_difficulty=9,
+    colour="grey",
 )
 
 # Mundane practical knowledge
@@ -41,6 +44,7 @@ CIVIC_MANUAL = Book(
     subject_tags=["civic", "practical", "colony"],
     knowledge_type="general",
     reading_difficulty=1,
+    colour="Yellow",
 )
 
 LIBRARY_COLLECTION = [

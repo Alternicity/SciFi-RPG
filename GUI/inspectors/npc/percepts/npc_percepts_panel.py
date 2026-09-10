@@ -22,6 +22,7 @@ from GUI.inspectors.npc.location_inspector import (
 )
 from objects.furniture import CafeTable, CafeChair, Sofa, Chair
 from objects.expensive_furniture import OrnateChair
+from base.character import Character
 
 
 def build_percepts_panel(gui, parent):#creates the basic percepts tab, not the subsequent Location or Sublocation panels
@@ -39,23 +40,23 @@ def build_percepts_panel(gui, parent):#creates the basic percepts tab, not the s
     )
     #We could eventually also put the heading into a special configuration dictionary a la PERCEPT_COLUMNS
 
-    for col in PERCEPT_COLUMNS:#Is PERCEPT_COLUMNS badly named? The following seems to 
-        #configure more than just the percept column
+    tree.tag_configure(
+        "self",
+        font=("TkDefaultFont", 10, "bold")
+    )
 
-        tree.tag_configure(
-            "self",
-            font=("TkDefaultFont", 10, "bold")
-        )
+    tree.tag_configure(
+        "location",
+        font=("TkDefaultFont", 10, "bold")
+    )
 
-        tree.tag_configure(
-            "location",
-            font=("TkDefaultFont", 10, "bold")
-        )
+    tree.tag_configure(
+        "interaction",
+        font=("TkDefaultFont", 10)
+    )
 
-        tree.tag_configure(
-            "interaction",
-            font=("TkDefaultFont", 10)
-        )
+    for col in PERCEPT_COLUMNS:
+        #Is PERCEPT_COLUMNS badly named?
 
         tree.heading(
             col,
@@ -126,59 +127,49 @@ def refresh_percepts_panel(gui):
     from display.display import build_info_column
     from perception.perceptibility import (extract_appearance_summary)
     from GUI.viewmodels.percept_tree import build_percept_tree
+    from world.books import Book
+
     sections = build_percept_sections(npc)
-
     regular_rows = sections["regular"]
-    
-
-
-    #new
-    for origin, data, v in regular_rows:
-
-        if isinstance(origin, Location) and not isinstance(origin, Sublocation):
-            print("\n=== LOCATION PERCEPT ===")
-            print("origin:", origin)
-            print("origin type:", type(origin))
-            print("data:", data)
-            print("percept:", v)
-            print("========================\n")
-
-
     location_rows = sections["location"]
-
     sublocation_rows = sections["sublocations"]
     parent_rows = sections["parent_location"]#as in ExpensiveDesk is parent of GoldPlatedPistol
-
     location_row = location_rows[0] if location_rows else None
     object_percepts = []
     other_regular_rows = []
     self_percept_row = None
 
-    
-
     regular_percepts = [
         v
-        for origin, data, v in regular_rows
+        for origin, data, v in regular_rows#origin, data, not accessed
     ]
 
-    tree_nodes = build_percept_tree(regular_percepts)
+    tree_nodes = build_percept_tree(regular_percepts)# tree_nodes not accessed
+    #Maybe this block is on its way to deletion.
 
     #Treeviews must be manually cleared.
     for item in tree.get_children():
         tree.delete(item)
-    
-    buckets = collect_display_buckets(npc)#buckets not accessed ATTN, maybe stale aggregation code
+
 
     for origin, data, v in regular_rows:
         #First loop: collect..
+
         if origin is npc:
-            self_percept_row = (origin, data, v)
+            self_percept_row = v
+
         
         elif isinstance(origin, ObjectInWorld):
             object_percepts.append(v)
 
         else:
             other_regular_rows.append((origin, data, v))
+
+
+    for percept in object_percepts:
+        origin = percept.get("origin")
+        data = percept.get("data", {})
+
 
     object_nodes = build_percept_tree(object_percepts)
     object_nodes = aggregate_display_nodes(object_nodes)
@@ -199,7 +190,34 @@ def refresh_percepts_panel(gui):
         npc=npc
     )
 
-    for origin, data, v in other_regular_rows:
+    for origin, data, v in other_regular_rows:#Character branch
+
+        if isinstance(origin, Character):
+
+            name, description, info, highlight = get_character_display_data(
+                v,
+                npc
+            )
+
+            tags = (highlight,) if highlight else ()
+
+            #The fact that Self is rendered by render_self_percept() while other Characters are rendered directly
+            #  here is a layout/rendering distinction, not a semantic distinction.
+
+            tree.insert(
+                "",
+                "end",
+                text=name,
+                values=(
+                    description,
+                    info
+                ),
+                tags=tags
+            )
+
+            continue
+
+    # existing generic object path
 
         desc = (
             data.get("name")
@@ -329,43 +347,41 @@ def refresh_percepts_panel(gui):
 
         tree._sublocation_map[divider_iid] = None
 
-    for origin, data, v in sublocation_rows:
+        for origin, data, v in sublocation_rows:
 
-        data = v.get("data", {})
+            data = v.get("data", {})
 
-        desc = (
-            data.get("description")
-            or data.get("type")
-            or "UNKNOWN"
-        )
-        if origin is getattr(npc, "sublocation", None):
-            desc += " (I’m Currently Here)"
+            name = (
+                data.get("name")
+                or data.get("description")
+                or data.get("type")
+                or "UNKNOWN"
+            )
 
-        type_ = data.get("type", "—")
+            if origin is getattr(npc, "sublocation", None):
+                name += " (I’m Currently Here)"
 
-        visible = data.get("visible", True)
-        accessible = data.get("accessible", True)
+            description = data.get("description") or data.get("type") or "UNKNOWN"
+            visible = data.get("visible", True)
+            accessible = data.get("accessible", True)
 
-        parts = [
-            "Visible" if visible else "Private",
-            "Accessible" if accessible else "Restricted"
-        ]
+            parts = [
+                "Visible" if visible else "Private",
+                "Accessible" if accessible else "Restricted"
+            ]
 
-        info = " | ".join(parts)
+            info = " | ".join(parts)
+            tag = is_highlighted_percept(origin, npc)
 
-        tag = is_highlighted_percept(origin, npc)
+            iid = tree.insert(
+                "",
+                "end",
+                text=name,
+                values=(description, info),
+                tags=(tag,) if tag else ()
+            )
 
-        if tag:
-            print("SUBLOCATION TAG:", desc, "->", tag)
-
-        iid = tree.insert(
-            "",
-            "end",
-            values=(desc, type_, "", info),
-            tags=(tag,) if tag else ()
-        )
-
-        tree._sublocation_map[iid] = origin
+            tree._sublocation_map[iid] = origin
 
 
 def render_location_percept(gui, location_row, npc):
@@ -388,32 +404,27 @@ def render_location_percept(gui, location_row, npc):
 
 from perception.perceptibility import extract_appearance_summary
 from display.display import build_info_column
-def render_self_percept(gui, row, npc):
-    origin, data, v = row
+from GUI.viewmodels.character_display import get_character_display_data
 
+def render_self_percept(gui, percept, npc):
     tree = gui.percepts_tree
 
-    appearance = extract_appearance_summary(
-        origin,
-        observer=npc
+    name, description, info, highlight = get_character_display_data(
+        percept,
+        npc
     )
 
-    info = build_info_column(
-        origin,
-        npc,
-        v,
-        getattr(npc, "current_anchor", None)
-    )
+    tags = (highlight,) if highlight else ()
 
     tree.insert(
         "",
         "end",
-        text="Self Percept",
+        text=name,
         values=(
-            appearance,
+            description,
             info
         ),
-        tags=("self",)
+        tags=tags
     )
 
 def aggregate_display_nodes(nodes):

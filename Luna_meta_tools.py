@@ -1,6 +1,6 @@
 #Luna_meta_tools.py
 from character_memory import Memory
-from memory_entry import MemoryEntry
+from memory.memory_entry import MemoryEntry
 from incompressible import Incompressible
 
 def integrate_incompressible(memory: Memory, incompressible: Incompressible):

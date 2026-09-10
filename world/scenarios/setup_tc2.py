@@ -42,48 +42,7 @@ def setup_tc2_world(all_characters):
     if debug_civilian_worker:
         debug_civilian_worker.debug_role = "civilian_worker"
         debug_civilian_worker.is_scenario_npc = True
-
-    if debug_civilian_liberty:
-        debug_civilian_liberty.debug_role = "civilian_liberty"
-        debug_civilian_liberty.is_scenario_npc = True
-
-    if debug_civilian_waitress:
-        debug_civilian_waitress.debug_role = "civilian_waitress"
-        debug_civilian_waitress.is_scenario_npc = True
-
-    """ if debug_civilian_passive:
-        game_state.debug_npcs["civilian_passive"] = debug_civilian_passive
-        debug_civilian_passive.debug_role = "civilian_passive"
-        debug_civilian_passive.is_scenario_npc = True
-
-        from character_think_utils import build_colony_doubt_thought
-        debug_civilian_passive.mind.thoughts.append(
-            build_colony_doubt_thought(debug_civilian_passive)
-        )
-        place_tc2_passive_npc(debug_civilian_passive, downtown_region) """
-
-        #place_coffee_drinker(npc, cafe,)
-
-
-
-        
-    if debug_civilian_worker:
         game_state.debug_npcs["civilian_worker"] = debug_civilian_worker
-    if debug_civilian_liberty:
-        game_state.debug_npcs["civilian_liberty"] = debug_civilian_liberty
-    if debug_civilian_waitress:
-        game_state.debug_npcs["civilian_waitress"] = debug_civilian_waitress
-
-
-    downtown_region = next((r for r in game_state.all_regions if r.name == "downtown"), None)
-    debug_civilian_worker.region = downtown_region
-    debug_civilian_liberty.region = downtown_region
-
-    downtown_region.add_character(debug_civilian_worker)
-    downtown_region.add_character(debug_civilian_liberty)
-    downtown_region.add_character(debug_civilian_waitress)
-
-    if debug_civilian_worker:
         setup_tc2_worker(debug_civilian_worker, downtown_region, role=CAFE_MANAGER)
         ## setup_tc2_worker now handles home and location
         debug_civilian_worker.motivation_manager.update_motivations("work", urgency=8)
@@ -96,9 +55,35 @@ def setup_tc2_world(all_characters):
         inject_food_location_knowledge(debug_civilian_worker)
         inject_initial_shop_knowledge(debug_civilian_worker)
 
+    if debug_civilian_liberty:
+        debug_civilian_liberty.debug_role = "civilian_liberty"
+        debug_civilian_liberty.is_scenario_npc = True
+        game_state.debug_npcs["civilian_liberty"] = debug_civilian_liberty
+        
+        debug_civilian_liberty.is_employee = False
+        
+        if debug_civilian_liberty.employment is None:
+            debug_civilian_liberty.employment = EmployeeProfile()
+
+        debug_civilian_liberty.employment.workplace = None
+        debug_civilian_liberty.employment.role = None
+        debug_civilian_liberty.motivation_manager.update_motivations("eat", urgency=8)
+        debug_civilian_liberty.motivation_manager.update_motivations("find_partner", urgency=3)#but npc might automatically already have one
+        debug_civilian_liberty.motivation_manager.update_motivations("have_fun", urgency=5)
+        setup_tc2_civilian_liberty(debug_civilian_liberty, region=downtown_region)
+        debug_civilian_liberty.placement_locked = True
+        inject_initial_region_knowledge(debug_civilian_liberty)
+        inject_food_location_knowledge(debug_civilian_liberty)
+        inject_initial_shop_knowledge(debug_civilian_liberty)
+        inject_fun_prefs(debug_civilian_liberty)
+
     if debug_civilian_waitress:
+        debug_civilian_waitress.debug_role = "civilian_waitress"
+        debug_civilian_waitress.is_scenario_npc = True
+        game_state.debug_npcs["civilian_waitress"] = debug_civilian_waitress
         if debug_civilian_waitress is debug_civilian_worker:
             raise RuntimeError("Waitress and worker resolved to the same NPC")
+
         setup_tc2_worker(debug_civilian_waitress, downtown_region, role=WAITRESS)
         ## setup_tc2_worker now handles home and location
 
@@ -112,40 +97,20 @@ def setup_tc2_world(all_characters):
         inject_initial_shop_knowledge(debug_civilian_waitress)
         inject_initial_region_knowledge(debug_civilian_waitress)
 
-    else:
+    """ else:
         print(
             f"[PLACEMENT ERROR] Waitress {debug_civilian_waitress.name} "
             f"is NOT in region.characters_there"
-        )
-
-    if debug_civilian_liberty:
-        debug_civilian_liberty.is_employee = False
-
-        #tmp
-        #print(debug_civilian_liberty)
-        print(debug_civilian_liberty.employment)
-        print(type(debug_civilian_liberty.employment))
-        print(debug_civilian_liberty.__class__.__name__)
+                    ) """
 
 
-        if debug_civilian_liberty.employment is None:
-            debug_civilian_liberty.employment = EmployeeProfile()
+    downtown_region = next((r for r in game_state.all_regions if r.name == "downtown"), None)
+    debug_civilian_worker.region = downtown_region
+    debug_civilian_liberty.region = downtown_region
 
-        debug_civilian_liberty.employment.workplace = None
-        debug_civilian_liberty.employment.role = None
-
-
-        debug_civilian_liberty.motivation_manager.update_motivations("eat", urgency=8)
-        debug_civilian_liberty.motivation_manager.update_motivations("find_partner", urgency=3)#but npc might automatically already have one
-        debug_civilian_liberty.motivation_manager.update_motivations("have_fun", urgency=5)
-
-        setup_tc2_civilian_liberty(debug_civilian_liberty, region=downtown_region)
-        debug_civilian_liberty.placement_locked = True
-
-        inject_initial_region_knowledge(debug_civilian_liberty)
-        inject_food_location_knowledge(debug_civilian_liberty)
-        inject_initial_shop_knowledge(debug_civilian_liberty)
-        inject_fun_prefs(debug_civilian_liberty)
+    downtown_region.add_character(debug_civilian_worker)
+    downtown_region.add_character(debug_civilian_liberty)
+    downtown_region.add_character(debug_civilian_waitress)
 
     #handle homeless NOTE this might affect the TC1 GangMember npcs also
     for npc in all_characters:
@@ -246,56 +211,6 @@ def seed_tc2_presets(waitress, manager):
     rel.current_type = "co_worker"
     rel.trust = 2
 
-""" def place_tc2_passive_npc(npc, region):
-    from location.locations import Nightclub
-    
-    region = random.choice(game_state.all_regions)
-
-    nightclubs = [
-        loc for loc in region.locations
-        if isinstance(loc, Nightclub)
-    ]
-
-    nightclub = random.choice(nightclubs)
-    nightclub.is_tc2_nightclub = True
-
-    
-    if not nightclub:
-        raise RuntimeError("No Nightclub found in region for passive NPC placement.")
-
-    
-    npc.region = region
-    npc.location = nightclub
-    npc.seated_at = None
-    
-    nightclub.characters_there.append(npc)
-
-    
-    npc.debug_role = "civilian_passive"
-    npc.placement_locked = True
-
-
-    table = next(
-        (o for o in nightclub.items.objects_present
-        if isinstance(o, CafeTable) and not o.occupants),
-        None
-    )
-
-    if table:
-        from actions.npc_bodily_actions import sit_auto 
-        sit_auto(npc, table=table)
-
-    # Create drink
-    cup = Cup()
-    coffee = Coffee()
-    cup.add(coffee)
-
-    if table:
-        nightclub.items.objects_present.append(cup)
-    else:
-        nightclub.items.objects_present.append(cup)
-
-    return npc """
 
 def place_tc2_npc(npc, region):
     npc.region = region

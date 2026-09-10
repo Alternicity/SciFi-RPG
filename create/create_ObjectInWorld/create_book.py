@@ -14,4 +14,5 @@ def spawn_book(template):
         is_redacted=template.is_redacted,
         psy_resonance=template.psy_resonance,
         reading_difficulty=template.reading_difficulty,
+        colour=template.colour,
     )

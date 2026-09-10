@@ -63,12 +63,18 @@ class Boss(Character):
         self.family_name = family_name
         self.directives = []  # High-level orders issued to Captains/Managers
         self.primary_status_domain = "criminal"
-  # List to store items in the character's inventory
         
-    def get_percept_data(self, observer=None):
-        data = super().get_percept_data(observer)#does this imly that every perecpt data block must ha an observe entry?
-        data["description"] = f"{self.name}, the Gang Leader of {self.faction.name}"
-        data["tags"].extend(["gang", "leader"])
+    def _postprocess_percept(self, data, observer):
+
+        data["description"] = (
+            f"{self.name}, the Gang Leader of {self.faction.name}"
+        )
+
+        data["tags"] = data.get("tags", []) + [
+            "gang",
+            "leader",
+        ]
+
         return data
 
     def handle_observation(self, region):
@@ -155,15 +161,9 @@ class CEO(Character):
     def whereabouts(self):
         
         return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
-    
+
 class Captain(Character):
     is_concrete = True
-    """ default_motivations = [
-        ("follow_orders", 2),
-        ("patrol", 3),
-        ("gain_mid", 4),
-        ("find_safety", 3)
-    ] """
 
     def __init__(self, name, first_name, family_name, race, sex, region, location, faction, position="Captain", loyalties=None, status=None, motivations=None, **kwargs):
         
@@ -206,10 +206,23 @@ class Captain(Character):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
 
-    def get_percept_data(self, observer=None):
+    """ def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)
         data["description"] = f"{self.name}, Gang Captain of {self.faction.name}"
         data["tags"].extend(["gang", "captain", "midtier"])
+        return data """
+
+    def _postprocess_percept(self, data, observer):
+
+        data["description"] = (
+            f"{self.name}, the Gang Captain of {self.faction.name}"
+        )
+
+        data["tags"] = data.get("tags", []) + [
+            "gang",
+            "captain",
+        ]
+
         return data
 
     @property
@@ -535,7 +548,7 @@ class CorporateAssasin(CorporateSecurity):
     def whereabouts(self):
         
         return f"{self.region}, {self.location}" if not hasattr(self, "sublocation") else f"{self.region}, {self.location}, {self.sublocation}"
-    
+
 class GangMember(Subordinate):
     is_concrete = True
     #default_motivations = [("idle", 1)]
@@ -623,12 +636,25 @@ class GangMember(Subordinate):
     def __repr__(self):
         base = super().__repr__()  # Will call Character.__repr__
         return f"{base}, Faction: {self.faction or 'None'}"
-    
-    def get_percept_data(self, observer=None):
+
+    """ def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)
         #print(f"[DEBUG] get_percept_data in {self.__class__.__name__}, origin: {self}")
         data["description"] = f"{self.name}, a GangMember of {self.faction.name}"
         data["tags"].extend(["gang", "lowtier"])
+        return data """
+
+    def _postprocess_percept(self, data, observer):
+
+        data["description"] = (
+            f"{self.name}, the GangMember of {self.faction.name}"
+        )
+
+        data["tags"] = data.get("tags", []) + [
+            "gang",
+            "member",
+        ]
+
         return data
 
     @property
@@ -778,10 +804,24 @@ class Civilian(Character):
         return f"{base}, Faction: {self.faction or 'None'}"
 
 
-    def get_percept_data(self, observer=None):
+    """ def get_percept_data(self, observer=None):
         data = super().get_percept_data(observer)
         data["description"] = f"{self.name}, a regular person, {self.faction.name}"
         data["tags"].extend(["civilian", "normie"])
+        return data """
+
+
+    def _postprocess_percept(self, data, observer):
+
+        data["description"] = (
+            f"{self.name}, a regular person {self.faction.name}"
+        )
+
+        data["tags"] = data.get("tags", []) + [
+            "civilian",
+            "normie",
+        ]
+
         return data
 
     @property

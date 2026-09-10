@@ -22,12 +22,13 @@ from augment.augmentSublocations.augmentGangSublocations import augment_gang_hq_
 from world.place_objects import place_object
 from actions.npc_bodily_actions import sit_on
 from objects.expensive_furniture import OrnateChair
+from character_components.npc_effects import Inebriated
 
 #setup gang meeting
 
-#the boss has summoned his Captains:
+#the boss has summoned his Captains, someone is inebriated:
 def setup_tc4_world(all_characters):
-    #I must exclude reserve GangMembers who are used in tc2 via gamestate.is_scenario_npc or debug_npcs
+    #I must exclude reserved GangMembers who are used in tc2 via gamestate.is_scenario_npc or debug_npcs
     #gang = select_tc4_gang()
 
     #the reservation is this
@@ -43,6 +44,13 @@ def setup_tc4_world(all_characters):
     captains = gang.captains #list, we could use gang.get_mid_tier()
     members = gang.members #list, we could use gang.get_workers()
     #or maybe we could use gang.iter_hierarchy() or these 3
+
+    inebriated_npc = captains[0]
+
+    inebriated = Inebriated()
+    inebriated_npc.effects.append(inebriated)
+    inebriated.on_start(inebriated_npc)
+
 
     is_street_gang = gang.is_street_gang #bool ATTN
     #if True, we need to discard this gang and choose another. The gang for this file needs to have a HQ

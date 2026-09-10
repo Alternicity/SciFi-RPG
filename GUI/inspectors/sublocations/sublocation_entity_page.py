@@ -46,8 +46,6 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
     ungrouped = []
     seen = set()
 
-
-
     ttk.Label(
         parent,
         text="Social Groups"
@@ -151,7 +149,7 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
                 groups.append(percept)
 
             else:
-                objects.append(percept)
+                objects.append(percept)#i assume books pass through here
 
         ttk.Label(
             parent,
@@ -172,6 +170,12 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
         character_tree.column("#0", width=180)
         character_tree.column("description", width=250)
         character_tree.column("info", width=150)
+
+        # Treeview styling: define how the "self" display tag is rendered.
+        character_tree.tag_configure(
+            "self",
+            font=("Arial", 10, "bold")
+        )
 
         character_tree.pack(
             fill="x",
@@ -194,6 +198,11 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
             object_nodes
         )
 
+
+
+
+
+    #Ambience section
     ttk.Label(
         parent,
         text="Ambience"
@@ -256,31 +265,11 @@ def render_sublocation_object_tree(tree, nodes, parent=""):
             parent=item_id
         )
 
-def get_character_display_data(percept):
-    #is the semantic → display-row transformation.
-    data = percept["data"]
 
-    name = data.get("name", "Unknown")
-    posture = data.get("posture")
-    seated_at = data.get("seated_at")
+from display.display import build_info_column#no longer accessed
+from GUI.helpers.formatting import is_highlighted_percept#no longer accessed
 
-    if posture is not None:
-        posture_text = posture.name.title()
-    else:
-        posture_text = "Unknown"
-
-    if seated_at is not None:
-        description = f"{posture_text} on {seated_at.name}"
-    else:
-        description = posture_text
-
-    info = data.get("type", "")
-
-    return name, description, info
-
-from display.display import build_info_column
-from GUI.helpers.formatting import is_highlighted_percept
-
+from GUI.viewmodels.character_display import get_character_display_data
 def render_sublocation_character_rows(tree, percepts, observer):
     #is the display-row → Tkinter Treeview rendering.
 
@@ -289,45 +278,10 @@ def render_sublocation_character_rows(tree, percepts, observer):
 
     for percept in percepts:
 
-        data = percept["data"]
-        origin = percept["origin"]
-        name = data.get("name", "Unknown")
-        posture = data.get("posture")
-
-        build_info_column(
-            origin,#the thing being perceived
-            observer,
-            data,
-            getattr(observer, "current_anchor", None)
+        name, description, info, highlight = get_character_display_data(#new
+            percept,
+            observer
         )
-
-        
-
-        
-        if posture is not None:
-            posture_text = posture.name.title()
-        else:
-            posture_text = "Unknown"
-
-        seated_at = data.get("seated_at")
-
-        if seated_at is not None:
-            description = f"{posture_text} on {seated_at.name}"
-        else:
-            description = posture_text
-
-        info = build_info_column(
-            origin,
-            observer,
-            data,
-            getattr(observer, "current_anchor", None)
-        )
-
-        highlight = is_highlighted_percept(
-                    origin,
-                    observer
-                )
-
         tags = (highlight,) if highlight else ()
 
         tree.insert(

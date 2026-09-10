@@ -69,14 +69,16 @@ def setup_book_reader(book_npc, cafe_lounge):
 
     book = spawn_book(
         random.choice(LIBRARY_COLLECTION))
+
     book.change_ownership(book_npc)
 
     place_object(
         book,
         cafe_lounge,
     )
+
     table.add_to_surface(book)
-    
+
     place_character_in_sublocation(book_npc, cafe_lounge)
     
     sit_auto(

@@ -16,7 +16,7 @@ from memory.injectors.initial_memory_injectors import (
 )
 
 def setup_tc1_world(all_characters):
-    tc1_gang = select_tc1_gang()#function not yet defined
+    tc1_gang = select_tc1_gang()
 
     member = random.choice(tc1_gang.members)
     

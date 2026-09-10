@@ -67,7 +67,7 @@ def build_percept_tree(percepts):
 
     #build_percept_tree() should not call get_sublocation_percepts()
 
-    #function doesn't know what a Desk, Pistol or Medkit is
+    #function doesn't know what a Table, Book or Medkit is
 
     # First create one DisplayNode for every percept.
 
@@ -80,17 +80,15 @@ def build_percept_tree(percepts):
 
         origin = percept.get("origin")
 
-        if origin is None:#this might now be a problem
+        if origin is None:
             continue
 
         nodes[id(origin)] = DisplayNode(
             percept=percept
         )
 
-    # ---------------------------------------------------------
     # Pass 2:
     # Establish parent/child relationships.
-    # ---------------------------------------------------------
 
     for percept in percepts:
 

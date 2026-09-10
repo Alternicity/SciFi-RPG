@@ -24,3 +24,15 @@ percepts ───────────┤
         Tkinter
         ↓
 Sublocation entity page
+
+
+
+
+
+is_highlighted_percept()
+    → decides WHICH tag a row gets
+
+tag_configure()
+    → decides HOW that tag looks
+
+    

@@ -1,7 +1,7 @@
 #character_components.observation_component.py
 #from worldQueries import get_nearby_objects
 from perception.perceptibility import PerceptibleMixin, gather_perceptible_objects
-
+from world.books import Book
 class ObservationComponent:
     def __init__(self, owner):
         self.owner = owner
@@ -117,7 +117,7 @@ class ObservationComponent:
         # Ask the object for its perceptual data, line 117
         if hasattr(obj, "get_percept_data"):
             percept_data = obj.get_percept_data(observer=self.owner)
-
+            
         else:
             percept_data = {
                 "name": getattr(obj, "name", str(obj)),
@@ -153,7 +153,6 @@ class ObservationComponent:
         }
 
         self.percepts_updated = True
-
 
     def get_percepts(self, sort_by_salience=True) -> list[dict]:
         #likely legacy salience sorting from pre anchor centric salience refactor
@@ -243,6 +242,9 @@ class ObservationComponent:
             observation_root = self.owner.sublocation
         else:
             observation_root = location
+
+
+        #TMP remove
         for obj in gather_perceptible_objects(observation_root):
                 
                 if obj is self.owner:
@@ -252,11 +254,11 @@ class ObservationComponent:
 
                 self.percepts_updated = True
 
+
         assert isinstance(self._percepts, dict), "Percepts store corrupted"
 
         gs = get_game_state()
         debug_allowed = gs is not None and gs.should_display_npc(self.owner)
-
 
         # --- determine current location if not passed ---
         if location is None:
@@ -288,11 +290,6 @@ class ObservationComponent:
                 ):
                     continue
 
-                #deprecate
-                """ self.add_percept_from(
-                    sub,
-                    source="sublocation"
-                ) """
             # --- perceive other characters in the same location ---
             for char in getattr(location, "characters_there", []):
 
@@ -328,6 +325,7 @@ class ObservationComponent:
         # --- mark update complete ---
         self.percepts_updated = True
         final_count = len(self._percepts)
+
         
 #utility functions
 def can_perceive_entity(observer, target):

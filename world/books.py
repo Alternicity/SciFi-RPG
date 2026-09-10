@@ -13,6 +13,7 @@ class Book(ObjectInWorld):
     is_redacted: bool = False         # some books have pages torn out
     psy_resonance: float = 0.0        # books that affect psy-sensitive npcs
     reading_difficulty: int = 1       # 1-10, affects time_to_read
+    colour: str = "black"
 
     def __post_init__(self):
         ObjectInWorld.__init__(
@@ -39,4 +40,8 @@ class Book(ObjectInWorld):
             "psy_resonance": self.psy_resonance,
         }
 
-        
+    def _postprocess_percept(self, data, observer):
+
+        data["colour"] = self.colour
+
+        return data#essential

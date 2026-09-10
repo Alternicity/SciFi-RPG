@@ -177,7 +177,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.observation_component = None
 
 
-    def get_observable_traits(npc):#ATTN
+    def get_observable_traits(npc):
 
         traits = []
 
@@ -369,6 +369,8 @@ class Character(PerceptibleMixin, CharacterBase):
             #Return perceptual information for this character. Self perception.
             tags = ["human"]
 
+            observable_traits = self.get_observable_traits()#observable_traits not accessed
+
             hunger = self.motivation_manager.get_motivation("eat")
             if hunger and hunger.urgency >= 5:
                 tags.append("hungry")
@@ -390,6 +392,7 @@ class Character(PerceptibleMixin, CharacterBase):
                 "location": self.location.name if getattr(self, "location", None) else "Unknown",
                 "sublocation": self.sublocation.name if getattr(self, "sublocation", None) else "Unknown",
 
+                "observable_traits": observable_traits,
                 "posture": self.posture,
                 "seated_at": self.seated_at,
 

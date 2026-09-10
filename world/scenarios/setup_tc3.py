@@ -189,8 +189,6 @@ def setup_tc3_world():
     label="Courting"
 )
 
-
-
     boss1_social = (
         boss1
         .mind.memory.semantic["social"]

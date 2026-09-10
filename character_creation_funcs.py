@@ -204,7 +204,7 @@ def player_character_options(all_regions, factions):
         "race": "Irish",
         "faction_name": "Factionless",
         "region_name": "northville",
-        "location_name": "Park",        #ATTN npcs are placed with add_character() now
+        "location_name": "Park",        #ATTN npcs are placed with add_character() now, actually place_character_X
 
         #"wallet": Wallet(bankCardCash=500),
         "wallet": {"bankCardCash": 50, "cash": 0},

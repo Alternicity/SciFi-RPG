@@ -20,7 +20,7 @@ def build_percept_sections(npc):
         None
     )
 
-    for key, v in npc.percepts.items():#key is not accessed
+    for key, v in npc.percepts.items():#key is not accessed. v remains the canonical percept dictionary
 
         origin = v.get("origin")
         data = v.get("data", {})

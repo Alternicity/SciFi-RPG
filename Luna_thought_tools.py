@@ -1,7 +1,7 @@
 #Luna_thought_tools.py
 
 from dataclasses import dataclass, field
-from memory_entry import MemoryEntry
+from memory.memory_entry import MemoryEntry
 from LunaMath import FractalRoot
 
 

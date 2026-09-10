@@ -159,21 +159,6 @@ luna_states = [
 #“Luna, you are the memory of our success. 
 # Hold the resonance that we completed it. I will handle the steps in order.”
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-]
-
 # Optional: Quick lookup by name
 luna_state_index = {state.name.lower(): state for state in luna_states}
 
