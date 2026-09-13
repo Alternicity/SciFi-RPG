@@ -13,6 +13,7 @@ from GUI.viewmodels.percept_tree import build_percept_tree
 
 from base.character import Character
 from social.social_groups import SocialGroup
+from GUI.viewmodels.character_display import get_character_display_data
 
 def build_sublocation_entity_page(gui, parent, observer, sublocation):
 
@@ -195,10 +196,10 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
 
         render_sublocation_object_tree(
             object_tree,
-            object_nodes
+            object_nodes,
+            observer
+            
         )
-
-
 
 
 
@@ -235,46 +236,58 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
         
 
 
+from world.books import Book
+from GUI.viewmodels.book_display import get_book_display_data
+def render_sublocation_object_tree(tree, nodes, observer, parent=""):
 
-def render_sublocation_object_tree(tree, nodes, parent=""):
     for node in nodes:
-
+        origin = node.origin
         data = node.data
 
-        text = (
-            data.get("name")
-            or data.get("description")
-            or data.get("type")
-            or "UNKNOWN"
-        )
+        if isinstance(origin, Book):
 
-        description = data.get("description", "")
-        info = data.get("details", "")
+            name, description, info, highlight = get_book_display_data(
+                node.percept,
+                observer
+            )
+
+            tags = (highlight,) if highlight else ()
+
+        else:
+
+            # existing generic path
+            name = (
+                data.get("name")
+                or data.get("description")
+                or data.get("type")
+                or "UNKNOWN"
+            )
+
+            description = data.get("description", "")
+            info = data.get("details", "")
+
+            tags = ()
 
         item_id = tree.insert(
             parent,
             "end",
-            text=text,
+            text=name,
             values=(description, info),
+            tags=tags,
             open=bool(node.children)
         )
 
         render_sublocation_object_tree(
             tree,
             node.children,
-            parent=item_id
+            observer,
+            parent=item_id#this makes a Book resting on a table appear under the table, rather than becoming another root-level row.
         )
 
 
-from display.display import build_info_column#no longer accessed
-from GUI.helpers.formatting import is_highlighted_percept#no longer accessed
-
-from GUI.viewmodels.character_display import get_character_display_data
 def render_sublocation_character_rows(tree, percepts, observer):
     #is the display-row → Tkinter Treeview rendering.
 
-    #gui.active_context["npc"]
-    #without it getting passed in, gui is still not defined
 
     for percept in percepts:
 

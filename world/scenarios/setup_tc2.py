@@ -8,7 +8,7 @@ from simulation_utils import pick_civilian, assign_fallback_location
 import random
 from employment.employee import EmployeeProfile
 from debug_utils import debug_print
-from world.placement import place_character
+from world.character_placement import place_character
 from base.posture import Posture
 from objects.food.drinks import Coffee
 from objects.food.cutlery_crockery import Cup
@@ -43,7 +43,7 @@ def setup_tc2_world(all_characters):
         debug_civilian_worker.debug_role = "civilian_worker"
         debug_civilian_worker.is_scenario_npc = True
         game_state.debug_npcs["civilian_worker"] = debug_civilian_worker
-        setup_tc2_worker(debug_civilian_worker, downtown_region, role=CAFE_MANAGER)
+        
         ## setup_tc2_worker now handles home and location
         debug_civilian_worker.motivation_manager.update_motivations("work", urgency=8)
         debug_civilian_worker.motivation_manager.update_motivations("eat", urgency=6)
@@ -70,7 +70,7 @@ def setup_tc2_world(all_characters):
         debug_civilian_liberty.motivation_manager.update_motivations("eat", urgency=8)
         debug_civilian_liberty.motivation_manager.update_motivations("find_partner", urgency=3)#but npc might automatically already have one
         debug_civilian_liberty.motivation_manager.update_motivations("have_fun", urgency=5)
-        setup_tc2_civilian_liberty(debug_civilian_liberty, region=downtown_region)
+        
         debug_civilian_liberty.placement_locked = True
         inject_initial_region_knowledge(debug_civilian_liberty)
         inject_food_location_knowledge(debug_civilian_liberty)
@@ -84,7 +84,6 @@ def setup_tc2_world(all_characters):
         if debug_civilian_waitress is debug_civilian_worker:
             raise RuntimeError("Waitress and worker resolved to the same NPC")
 
-        setup_tc2_worker(debug_civilian_waitress, downtown_region, role=WAITRESS)
         ## setup_tc2_worker now handles home and location
 
         debug_civilian_waitress.motivation_manager.update_motivations("work", urgency=8)
@@ -111,6 +110,14 @@ def setup_tc2_world(all_characters):
     downtown_region.add_character(debug_civilian_worker)
     downtown_region.add_character(debug_civilian_liberty)
     downtown_region.add_character(debug_civilian_waitress)
+
+    if debug_civilian_worker:
+        setup_tc2_worker(debug_civilian_worker, downtown_region, role=CAFE_MANAGER)
+    if debug_civilian_waitress:
+        setup_tc2_worker(debug_civilian_waitress, downtown_region, role=WAITRESS)
+    if debug_civilian_liberty:
+        setup_tc2_civilian_liberty(debug_civilian_liberty, region=downtown_region)
+    
 
     #handle homeless NOTE this might affect the TC1 GangMember npcs also
     for npc in all_characters:

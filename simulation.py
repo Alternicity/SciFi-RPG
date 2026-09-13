@@ -10,7 +10,7 @@ game_state = get_game_state()
 
 from Family import assign_initial_location_from_family
 from augment.augmentLocations import reassign_shop_names_after_character_creation
-from world.placement import place_character#not accessed
+from world.character_placement import place_character#not accessed
 
 """ from memory.memory_builders.food_sources_builder import build_food_sources
 from memory.memory_builders.shop_knowledge_builder import build_shop_knowledge

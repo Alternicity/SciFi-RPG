@@ -581,7 +581,7 @@ def build_info_column(origin_obj, npc, v, anchor):#v, anchor not used
 
     # Characters
 
-    if isinstance(origin_obj, Character):#a GangBoss is presumably a Character subclass, so it already enters the first branch
+    if isinstance(origin_obj, Character):
         if origin_obj is npc:
             info = "Me"
 
@@ -636,9 +636,9 @@ def build_info_column(origin_obj, npc, v, anchor):#v, anchor not used
         else:
             info = "GangMember (unaffiliated)"
 
-    # -------------------------
+
     # Furniture (fallback)
-    # -------------------------
+
 
     elif hasattr(origin_obj, "seating_capacity"):
 
@@ -653,9 +653,9 @@ def build_info_column(origin_obj, npc, v, anchor):#v, anchor not used
             else:
                 info = f"{origin_obj.seating_capacity} seats"
 
-    # -------------------------
+
     # Ambience Emitters
-    # -------------------------
+
 
     if hasattr(origin_obj, "modulated_ambience"):
         ambience = origin_obj.modulated_ambience()

@@ -7,14 +7,14 @@ from objects.InWorldObjects import SmartPhone
 from weapons import Pistol
 from location.locations import Nightclub
 import random
-from world.placement import place_character, place_character_in_sublocation
+from world.character_placement import place_character, place_character_in_sublocation
 from social.social_utils import link_relationship, create_social_group
 from social.social_groups import SocialGroup
 from augment.augmentWithPlants import add_classy_plants
 from augment.augmentLocations import add_classy_furniture
 from augment.augmentLocations import add_table_decorations
 game_state = get_game_state()
-
+from augment.augmentWithPlants import seed_bonsai_trees
 def setup_tc3_world():
 
     """ nightclub = next(
@@ -28,6 +28,10 @@ def setup_tc3_world():
     """
     nightclub = game_state.test_world["nightclub"]
     add_table_decorations(nightclub)
+
+    #added
+    seed_bonsai_trees(nightclub)#nightclub is a location, not a sublocation
+
 
     vip_candidates = [
         b for b in game_state.all_VIPs

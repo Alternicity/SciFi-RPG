@@ -23,10 +23,11 @@ def add_classy_plants(destination):
             destination
         )
 
-def seed_bonsai_trees(destination):#was seed_ambience_objects
-            pot = Pot()
-            pot.add(BonsaiTree())
-            place_object(pot, destination)
+def seed_bonsai_trees(destination):
+    for _ in range(4):
+        pot = Pot()
+        pot.add(BonsaiTree())
+        place_object(pot, destination)
 
 
 

@@ -1,5 +1,6 @@
 #GUI.helpers.formatting.py
 
+
 def is_highlighted_percept(origin, npc):
     # Return a display tag for percepts with special relevance to the observer.
     if origin is npc:

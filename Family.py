@@ -11,7 +11,7 @@ from base.character import Character
 from economy.economy import Ownership
 from city_vars import HOMELESS_RATE
 from create.create_game_state import get_game_state
-from world.placement import place_character
+from world.character_placement import place_character
 game_state = get_game_state()
 
 @dataclass

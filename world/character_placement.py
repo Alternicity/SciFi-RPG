@@ -1,4 +1,4 @@
-#world.placement.py
+#world.character_placement.py
 #no imports currently
 def place_character(npc, location):
     # Set location

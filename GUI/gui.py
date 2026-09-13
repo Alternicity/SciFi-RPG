@@ -641,7 +641,9 @@ class TC2GUI:
         try:
             refresh_percepts_panel(self)
         except Exception as e:
-            print(f"Percepts refresh failed: {e}")
+            print(f"=== PERCEPTS REFRESH FAILED === {e}")
+            import traceback
+            traceback.print_exc()
 
     def clear_tabs(self):
         pass

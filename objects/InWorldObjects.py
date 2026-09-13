@@ -712,7 +712,7 @@ class Pot(ObjectInWorld, Container):
         if material == "ceramic":
             self.symbolism.append("rustic")
 
-    def get_percept_data(self, observer=None):
+    def get_percept_data(self, observer=None):#deprecated approach
         
         base = super().get_percept_data(observer)
         visible = self.visible_contents(observer)

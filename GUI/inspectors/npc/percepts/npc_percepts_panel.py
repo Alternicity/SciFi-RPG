@@ -12,6 +12,7 @@ from GUI.inspectors.npc.percepts.percept_columns import (
     COLUMN_HEADINGS,
     COLUMN_WIDTHS
 )
+from GUI.viewmodels.character_display import get_character_display_data
 from GUI.viewmodels.percept_tree import DisplayNode
 from character_components.observation_component import can_perceive_sublocation
 from GUI.inspectors.percepts.percept_grouping import (
@@ -20,9 +21,11 @@ from GUI.inspectors.percepts.percept_grouping import (
 from GUI.inspectors.npc.location_inspector import (
     build_location_view_model,
 )
+from GUI.viewmodels.book_display import get_book_display_data
 from objects.furniture import CafeTable, CafeChair, Sofa, Chair
 from objects.expensive_furniture import OrnateChair
 from base.character import Character
+from objects.InWorldObjects import Pot
 
 
 def build_percepts_panel(gui, parent):#creates the basic percepts tab, not the subsequent Location or Sublocation panels
@@ -172,7 +175,22 @@ def refresh_percepts_panel(gui):
 
 
     object_nodes = build_percept_tree(object_percepts)
+
+    print(
+        "=== OBJECT NODES BEFORE AGGREGATION ===",
+        type(object_nodes).__name__,
+        len(object_nodes) if object_nodes is not None else None,
+    )
+
     object_nodes = aggregate_display_nodes(object_nodes)
+
+    print(
+        "=== OBJECT NODES AFTER AGGREGATION ===",
+        type(object_nodes).__name__,
+        len(object_nodes) if object_nodes is not None else None,
+    )
+
+
 
     #Outside loop: render:
     render_self_percept(gui, self_percept_row, npc)
@@ -183,6 +201,12 @@ def refresh_percepts_panel(gui):
             location_row,
             npc
         )
+
+    print(
+        "=== RENDER PERCEPT TREE INPUT ===",
+        type(regular_rows).__name__,
+        len(regular_rows) if regular_rows is not None else None,
+    )
 
     render_percept_tree(
         gui,
@@ -204,7 +228,7 @@ def refresh_percepts_panel(gui):
             #The fact that Self is rendered by render_self_percept() while other Characters are rendered directly
             #  here is a layout/rendering distinction, not a semantic distinction.
 
-            tree.insert(
+            tree.insert(#should this be moved down?
                 "",
                 "end",
                 text=name,
@@ -217,84 +241,90 @@ def refresh_percepts_panel(gui):
 
             continue
 
-    # existing generic object path
-
-        desc = (
-            data.get("name")
-            or data.get("description")
-            or data.get("type")
-            or "UNKNOWN"
-        )
-
-        type_ = data.get("type", "—")
-
-        appearance = extract_appearance_summary(
-            origin,
-            observer=npc
-        )
-
-        access_text = ""
-        visibility_text = ""
-
-        if hasattr(origin, "accessible_roles"):
-
-            access_text = (
-                "Accessible"
-                if can_access_sublocation(
-                    npc,
-                    origin
-                )
-                else "Restricted"
-            )
-
-            visibility_text = (
-                "Visible"
-                if can_perceive_sublocation(
-                    npc,
-                    origin
-                )
-                else "Private"
-            )
-
-        parts = []
-
-        if visibility_text:
-            parts.append(visibility_text)
-
-        if access_text:
-            parts.append(access_text)
-
-        if hasattr(origin, "accessible_roles"):
-
-            info = " | ".join(parts)
-
         else:
 
-            info = build_info_column(
-                origin,
-                npc,
-                v,
-                getattr(npc, "current_anchor", None)
+            # existing generic object path
+
+            tags = (highlight,) if highlight else ()
+
+            name = (
+                data.get("name")
+                or data.get("description")
+                or data.get("type")
+                or "UNKNOWN"
             )
 
-        highlight = is_highlighted_percept(
-            origin,
-            npc
-        )
+            description = data.get("description", "")
 
-        tags = (highlight,) if highlight else ()
+            type_ = data.get("type", "—")
 
-        tree.insert(
-            "",
-            "end",
-            values=(
-                desc,
-                type_,
-                appearance,
-                info
-            ),
-            tags=tags
-        )
+            appearance = extract_appearance_summary(
+                origin,
+                observer=npc
+            )
+
+            access_text = ""
+            visibility_text = ""
+
+            if hasattr(origin, "accessible_roles"):
+
+                access_text = (
+                    "Accessible"
+                    if can_access_sublocation(
+                        npc,
+                        origin
+                    )
+                    else "Restricted"
+                )
+
+                visibility_text = (
+                    "Visible"
+                    if can_perceive_sublocation(
+                        npc,
+                        origin
+                    )
+                    else "Private"
+                )
+
+            parts = []
+
+            if visibility_text:
+                parts.append(visibility_text)
+
+            if access_text:
+                parts.append(access_text)
+
+            if hasattr(origin, "accessible_roles"):
+
+                info = " | ".join(parts)
+
+            else:
+
+                info = build_info_column(
+                    origin,
+                    npc,
+                    v,
+                    getattr(npc, "current_anchor", None)
+                )
+
+            highlight = is_highlighted_percept(
+                origin,
+                npc
+            )
+
+            tags = (highlight,) if highlight else ()
+
+            tree.insert(
+                "",
+                "end",
+                values=(
+                    desc,
+                    type_,
+                    appearance,
+                    info
+                ),
+                tags=tags
+            )
 
     if parent_rows:
 
@@ -381,6 +411,7 @@ def refresh_percepts_panel(gui):
                 tags=(tag,) if tag else ()
             )
 
+
             tree._sublocation_map[iid] = origin
 
 
@@ -402,11 +433,8 @@ def render_location_percept(gui, location_row, npc):
         tags=("location",)
     )
 
-from perception.perceptibility import extract_appearance_summary
-from display.display import build_info_column
-from GUI.viewmodels.character_display import get_character_display_data
 
-def render_self_percept(gui, percept, npc):
+def render_self_percept(gui, percept, npc):#The observing npcs row
     tree = gui.percepts_tree
 
     name, description, info, highlight = get_character_display_data(
@@ -442,30 +470,63 @@ def aggregate_display_nodes(nodes):
                 if not isinstance(origin, OrnateChair):
                     continue
 
-        if node.children:
+        if node.children:#here
             result.append(node)
             continue
 
         if is_aggregatable(node):
             aggregatable.append(node)
+
+            #TMP
+            print(
+                "=== AGGREGATABLE NODE ===",
+                node.data.get("name"),
+                "| type:", node.data.get("type"),
+                "| origin:", type(node.origin).__name__,
+            )
             continue
 
         result.append(node)
 
     groups = {}
 
+
     for node in aggregatable:
+        
+        origin = node.origin
+        
         key = node.data.get("type")
+
+        if isinstance(origin, Pot):
+            contents = getattr(origin, "contents", [])
+
+            if len(contents) == 1:
+                key = ("Pot", type(contents[0]).__name__)
+            else:
+                key = ("Pot", "multiple_contents")
+
         groups.setdefault(key, []).append(node)
 
     # temporary: construct aggregate percepts
     aggregate_nodes = []
 
     for type_, members in groups.items():
-
         count = len(members)
 
-        if type_ == "CafeTable":
+        if isinstance(type_, tuple) and type_[0] == "Pot":
+            _, content_type = type_
+
+            name = f"Pots (x{count})"
+
+            # For now, use the first member's existing percept description.
+            description = members[0].data.get(
+                "description",
+                "Pot"
+            )
+            display_type = "Pots"
+
+        #if
+        elif type_ == "CafeTable":
             name = f"Tables (x{count})"
             description = f"{count} empty tables"
             display_type = "CafeTables"
@@ -480,6 +541,12 @@ def aggregate_display_nodes(nodes):
             description = f"{count} empty sofas"
             display_type = "Sofas"
 
+            """ elif type_ == "Pot":
+                name = f"Pots (x{count})"
+                description = f"{count} pots"
+                display_type = "Pots" """
+            
+            
         else:
             continue
 
@@ -500,13 +567,22 @@ def aggregate_display_nodes(nodes):
             DisplayNode(percept=percept)
         )
 
+    print("\n=== AGGREGATE NODES ===")
+    for node in aggregate_nodes:
+        print(
+            node.data.get("name"),
+            "|",
+            node.data.get("description"),
+            "|",
+            node.data.get("type"),
+        )
     return result + aggregate_nodes
 
 
 def is_aggregatable(node):
     origin = node.origin
 
-    if not isinstance(origin, (CafeTable, CafeChair, Sofa)):
+    if not isinstance(origin, (CafeTable, CafeChair, Sofa, Pot)):
         return False
 
     if node.children:

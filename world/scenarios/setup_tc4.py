@@ -4,7 +4,7 @@ from create.create_game_state import get_game_state
 gs = get_game_state()
 from faction import Gang
 from characters import GangMember, Captain, Boss
-from world.placement import place_character_in_sublocation
+from world.character_placement import place_character_in_sublocation
 from social.social_utils import link_relationship
 
 from objects.unique_objects import GoldPlatedPistol

@@ -9,7 +9,7 @@ from simulation_utils import pick_civilian
 from objects.furniture import CafeTable
 from actions.npc_bodily_actions import sit_auto
 from world.scenarios.setup_tcX_helpers import register_scenario_npc, get_scenario_npc
-from world.placement import place_character, place_character_in_sublocation
+from world.character_placement import place_character, place_character_in_sublocation
 from create.create_ObjectInWorld.create_book import spawn_book
 from world.books_catalogue import LIBRARY_COLLECTION
 gs = get_game_state()

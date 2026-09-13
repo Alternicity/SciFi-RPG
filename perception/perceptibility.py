@@ -144,6 +144,10 @@ def extract_appearance_summary(obj, observer=None):
     from base.character import Character
     from objects.InWorldObjects import Container
     """Given an object (Character, Location, ObjectInWorld), return a simple appearance string."""
+
+    """ this function is generating percept data itself from the simulation object rather than 
+    consuming the percept data already generated for the GUI row. """
+
     if hasattr(obj, "get_percept_data"):
         data = obj.get_percept_data()
 
