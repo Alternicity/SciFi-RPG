@@ -1,4 +1,5 @@
 #GUI.inspectors.npc.percepts.npc_percepts_panel.py
+#from GUI.helpers.gui_helpers import register_display_node
 from objects.InWorldObjects import ObjectInWorld
 from GUI.viewmodels.percept_tree import render_percept_tree
 from base.location import Location, Sublocation
@@ -79,18 +80,63 @@ def build_percepts_panel(gui, parent):#creates the basic percepts tab, not the s
         text="Parent Location"
     )
 
-    tree._sublocation_map = {}
+    tree._sublocation_map = {}#state attached to the Treeview that allows a Treeview iid
+    # to be translated back into a simulation object.
+
+
+    """ That gives us two mechanisms temporarily:
+
+    _sublocation_map
+        iid → Sublocation
+
+    _display_node_map
+        iid → display node
+
+    That isn't a problem.
+
+    We can later decide whether sublocations should migrate into the same mechanism.
+
+    There is no architectural prize for making that consolidation today. """
+
+
+    tree._inspect_target_map = {}
 
     tree.pack(fill="both", expand=True)
-
+    
     def on_tree_click(event):
+        
+        print("=== TREE CLICK ===")
+        
         iid = tree.identify_row(event.y)
+
+
+        print(
+            "=== CLICK IID ===",
+            iid,
+            "MAP SIZE =",
+            len(tree._inspect_target_map),
+            "TARGET =",
+            tree._inspect_target_map.get(iid)
+        )
+
         if not iid:
             return
 
         sublocation = tree._sublocation_map.get(iid)
+
         if sublocation:
             gui.inspect(sublocation)
+            return
+
+        target = tree._inspect_target_map.get(iid)
+
+        if target is not None:
+            print(
+                "=== TREE CLICK TARGET ===",
+                type(target).__name__,
+                getattr(target, "name", target)
+            )
+            gui.inspect(target)
 
     def on_double_click(event):
 
@@ -193,7 +239,7 @@ def refresh_percepts_panel(gui):
 
 
     #Outside loop: render:
-    render_self_percept(gui, self_percept_row, npc)
+    render_self_percept(gui, self_percept_row, npc)#when i click coffee_drinker npc it is a self percept row
 
     if location_row:
         render_location_percept(
@@ -228,7 +274,7 @@ def refresh_percepts_panel(gui):
             #The fact that Self is rendered by render_self_percept() while other Characters are rendered directly
             #  here is a layout/rendering distinction, not a semantic distinction.
 
-            tree.insert(#should this be moved down?
+            item_id = tree.insert(
                 "",
                 "end",
                 text=name,
@@ -238,6 +284,8 @@ def refresh_percepts_panel(gui):
                 ),
                 tags=tags
             )
+
+            tree._inspect_target_map[item_id] = origin
 
             continue
 
@@ -444,7 +492,7 @@ def render_self_percept(gui, percept, npc):#The observing npcs row
 
     tags = (highlight,) if highlight else ()
 
-    tree.insert(
+    item_id = tree.insert(
         "",
         "end",
         text=name,
@@ -454,6 +502,10 @@ def render_self_percept(gui, percept, npc):#The observing npcs row
         ),
         tags=tags
     )
+
+    if percept["origin"] is not None:
+        tree._inspect_target_map[item_id] = percept["origin"]
+
 
 def aggregate_display_nodes(nodes):
 

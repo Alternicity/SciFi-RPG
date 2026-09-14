@@ -22,3 +22,7 @@ def setup_debug_npcs(all_characters):
 
     book_npc = pick_civilian(civilians, exclude={coffee_npc})
     register_scenario_npc(book_npc, "book_reader")
+
+
+    sandwich_eater = pick_civilian(civilians, exclude={coffee_npc, book_npc})
+    register_scenario_npc(sandwich_eater, "sandwich_eater")

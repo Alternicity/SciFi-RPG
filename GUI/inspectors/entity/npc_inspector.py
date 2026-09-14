@@ -26,7 +26,7 @@ def build_npc_inspector(gui, parent, npc):
     ).pack(anchor="w", padx=10)
     """ Later this probably becomes:
     npc.access_component """
-
+    
     appearance = npc.appearance
 
     ttk.Label(

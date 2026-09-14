@@ -117,6 +117,7 @@ ROLE_FILTERS = {
     "civilian_liberty": True,
     "civilian_waitress": True,
     "coffee_drinker": False,
+    "sandwich_eater": False,
     "book_reader": False,
     "civilian_babe": True,
     "civilian_vip": True,

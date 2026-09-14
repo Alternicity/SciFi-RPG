@@ -24,7 +24,8 @@ from GUI.inspectors.npc.memories.npc_memories_panel import build_memories_panel
 from GUI.inspectors.npc.motivations.npc_motivations_panel import build_motivations_panel
 from GUI.inspectors.npc.percepts.npc_percepts_panel import build_percepts_panel
 from GUI.inspectors.npc.thoughts.npc_thoughts_panel import build_thoughts_panel
-
+from objects.InWorldObjects import ObjectInWorld
+from GUI.inspectors.entity.object__inspector import build_object_inspector
 """ NEW architecture:
 mode frame
     -> internal notebook """
@@ -989,7 +990,7 @@ class TC2GUI:
             
         } """
         if isinstance(target, Sublocation):
-            #line 1040
+
             build_sublocation_inspector(
                 self,
                 parent,
@@ -1010,6 +1011,16 @@ class TC2GUI:
                 parent,
                 target
             )
+
+
+        elif isinstance(target, ObjectInWorld):
+
+            build_object_inspector(
+                self,
+                parent,
+                target
+            )
+        
 
         print("INSPECTOR PANEL =", self.npc_inspector_panel)
         print("MODE =", self.active_context["mode"])

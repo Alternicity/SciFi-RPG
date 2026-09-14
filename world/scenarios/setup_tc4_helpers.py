@@ -23,3 +23,10 @@ def select_tc4_gang():
         gang
     )
     return gang
+
+def setup_tc4_minds():
+    #choose one of several thought/ memories for the gang npcs.
+    #import them
+    #inject them
+    pass
+

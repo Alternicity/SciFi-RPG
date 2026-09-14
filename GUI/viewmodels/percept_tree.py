@@ -223,7 +223,7 @@ def render_percept_tree(
 
             tags = (highlight,) if highlight else ()
 
-        iid = tree.insert(
+        iid = tree.insert(#So do we change this next to the new insertion logic?
             parent,
             "end",
             text=desc,
@@ -234,7 +234,15 @@ def render_percept_tree(
             tags=tags,
             open=bool(node.children)
         )
+        if origin is not None:
+            tree._inspect_target_map[iid] = origin
 
+            print(
+                "=== REGISTER INSPECT TARGET ===",
+                iid,
+                type(origin).__name__,
+                getattr(origin, "name", origin)
+            )
 
         #TMP
 

@@ -91,7 +91,7 @@ class Mind:
             return t
         
         #Also adds a thought!
-        new_thought = Thought(#so should we remove tihs, and have this function do only what its name says? (old comment)
+        new_thought = Thought(
             subject=subject or self.owner,
             content=content or tag,
             origin = "reinforce_or_create_thought",

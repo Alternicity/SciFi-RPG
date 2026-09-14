@@ -163,6 +163,7 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
             show="tree headings",
             height=max(1, len(characters))
         )
+        character_tree._inspect_target_map = {}#added
 
         character_tree.heading("#0", text="Percept")
         character_tree.heading("description", text="Description")
@@ -185,7 +186,7 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
         )
 
         render_sublocation_character_rows(
-            character_tree,
+            character_tree,#this?
             characters,
             observer
         )
@@ -277,6 +278,16 @@ def render_sublocation_object_tree(tree, nodes, observer, parent=""):
             open=bool(node.children)
         )
 
+        if origin is not None:
+            tree._inspect_target_map[item_id] = origin
+
+            print(
+                "=== REGISTER INSPECT TARGET ===",
+                item_id,
+                type(origin).__name__,
+                getattr(origin, "name", origin)
+            )
+
         render_sublocation_object_tree(
             tree,
             node.children,
@@ -295,12 +306,16 @@ def render_sublocation_character_rows(tree, percepts, observer):
             percept,
             observer
         )
+
         tags = (highlight,) if highlight else ()
 
-        tree.insert(
+        origin = percept["origin"]
+        item_id = tree.insert(
             "",
             "end",
             text=name,
             values=(description, info),
             tags=tags
         )
+        if origin is not None:
+            tree._inspect_target_map[item_id] = origin

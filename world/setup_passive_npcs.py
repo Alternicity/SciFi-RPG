@@ -12,6 +12,7 @@ from world.scenarios.setup_tcX_helpers import register_scenario_npc, get_scenari
 from world.character_placement import place_character, place_character_in_sublocation
 from create.create_ObjectInWorld.create_book import spawn_book
 from world.books_catalogue import LIBRARY_COLLECTION
+from objects.food.prepared_food import Sandwich
 gs = get_game_state()
 
 
@@ -21,22 +22,18 @@ def setup_passive_npcs():
 
     #coffee_npc = gs.debug_npcs["coffee_drinker"]
 
-    #I am not sure this will work this early in flow
-    #coffee_npc = get_scenario_npc("coffee_drinker")
-
     coffee_npc = get_scenario_npc("coffee_drinker")
 
     #book_npc = gs.debug_npcs["book_reader"]
     book_npc = get_scenario_npc("book_reader")
+
+    sandwich_eater = get_scenario_npc("sandwich_eater")#added
 
     from character_think_utils import build_colony_doubt_thought
     book_npc.mind.thoughts.append(
         build_colony_doubt_thought(book_npc))
 
     cafe = gs.test_world["cafe"]
-
-    
-
     nightclub = gs.test_world["nightclub"]
 
     setup_coffee_drinker(coffee_npc, nightclub)
@@ -44,7 +41,26 @@ def setup_passive_npcs():
     cafe_lounge = cafe.get_sublocation("Lounge")
     setup_book_reader(book_npc, cafe_lounge)
 
+    setup_sandwich_eater(sandwich_eater, nightclub)
+
+
+def setup_sandwich_eater(sandwich_npc, nightclub):
+    table = find_free_table(nightclub)
+    gs.test_world["sandwich_eater_table"] = table
+    sandwich = Sandwich()
+    sandwich.change_ownership(sandwich_npc)
+
+    place_object(sandwich, nightclub)
+    table.add_to_surface(sandwich)
+
+    place_character(sandwich_npc, nightclub)
+    sit_auto(
+            sandwich_npc,
+            table=table,
+        )
+
 def setup_coffee_drinker(coffee_npc, nightclub):
+
 
     table = find_free_table(nightclub)
     gs.test_world["coffee_drinker_table"] = table
