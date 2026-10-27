@@ -75,8 +75,6 @@ def setup_tc1_world(all_characters):
         debug_gang_npc.motivation_manager.update_motivations("obtain_ranged_weapon", urgency=6)
         debug_gang_npc.motivation_manager.update_motivations("earn_money", urgency=5)
 
-        
-
         inject_initial_region_knowledge(debug_gang_npc)
         inject_food_location_knowledge(debug_gang_npc)
         inject_initial_shop_knowledge(debug_gang_npc)

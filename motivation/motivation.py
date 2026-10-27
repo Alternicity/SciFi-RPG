@@ -5,8 +5,8 @@ CORE_MOTIVES = {"eat", "sleep", "work", "have_fun"}
 class Motivation:
     def __init__(self, type, urgency=1, target=None, status_type=None, source=None, persistent=False):
         self.type = type  #  "join_gang"
-        self.urgency = float(urgency)  # is this optimal, or should it just be self.urgency = urgency?
-        self.target = target  #  "e.g. Red Fangs"
+        self.urgency = float(urgency)
+        self.target = target
         self.status_type = status_type  #  "criminal"
         self.source = source  #  memory, event, etc.
         self.persistent = persistent
@@ -94,7 +94,7 @@ VALID_MOTIVATIONS = {
     }
     
 
-class MotivationManager:
+class MotivationManager:#object added to npcs after instantiation
     def __init__(self, character):
 
         self.owner = character

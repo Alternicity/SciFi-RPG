@@ -100,7 +100,9 @@ def debug_recent_thoughts(npc, mind, n=5):
     if corollary_map:
         debug_print(npc, f"[THOUGHTS] Corollary structure: {corollary_map}", category="think")
 
-def build_colony_doubt_thought(npc):
+#For book_reader npc:
+def build_colony_doubt_thought(npc):#temporary placeholder injection
+    #will be replaced a dynamic system that draws on the existing book classes (there are currently 4)
 
     return Thought(
         subject=npc.name,

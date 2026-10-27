@@ -743,9 +743,9 @@ def display_percepts_table(npc):
                 else:
                     desc = origin.name
 
-            appearance = extract_appearance_summary(origin) if origin else "[MISSING]"
+            appearance = extract_appearance_summary(origin) if origin else "[MISSING]"#older, terminal, not gui output
 
-            info = build_info_column(origin, npc, v, anchor)
+            info = build_info_column(origin, npc, v, anchor)#for npc percepts panel, and sublocation view
 
             table_data.append([
                 desc, # Percept

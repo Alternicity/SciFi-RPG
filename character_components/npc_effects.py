@@ -227,10 +227,15 @@ class SleepEffect(TimedEffect):
         motives = [(m.type, m.urgency, m.suppressed) for m in npc.motivation_manager.motivations]
         debug_print(npc, f"[MOTIVES POST-SLEEP] {motives}", category="motive")
 
-    class DrunkEffect(TimedEffect):
+class Wounded(TimedEffect):
+    def __init__(self, source=None, severity=1):
+        super().__init__("wounded", duration=None)
+        self.source = source
+        self.severity = severity
 
-        def visible_symptoms(self):
-            return [
-                "smells of alcohol",
-                "unsteady posture"
-            ]
+    def visible_symptoms(self):
+        return ["wounded"]
+
+    def on_start(self, npc):
+        npc.is_visibly_wounded = True
+

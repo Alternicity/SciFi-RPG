@@ -14,11 +14,23 @@ COLONY_FOUNDING_RECORD = Book(
     colour="red",
 )
 
+# Training manual for psykers
+TUNING_THE_AETHER = Book(
+    title="Tuning the Aether",#Aether Codex
+    author = "Lucius Crow",
+    subject_tags=["aether", "psy", "manifesting"],
+    knowledge_type="history",
+    is_redacted=True,  # certain pages missing
+    psy_resonance=0.6,
+    reading_difficulty=3,
+    colour="silver",
+)
+
 # Hints at precursors
 ARCHITECTURAL_ANOMALIES = Book(
     title="Unexplained Structures of the Eastern Reaches",
     author="Dr. Maren Voss",#Note Add this to a list of names
-    subject_tags=["archaeology", "precursor", "mystery"],
+    subject_tags=["archaeology", "precursor", "mystery", "forbidden"],
     knowledge_type="science",
     psy_resonance=0.4,
     reading_difficulty=6,
@@ -52,4 +64,5 @@ LIBRARY_COLLECTION = [
     ARCHITECTURAL_ANOMALIES,
     RESONANCE_CODEX,
     CIVIC_MANUAL,
+    TUNING_THE_AETHER,
 ]

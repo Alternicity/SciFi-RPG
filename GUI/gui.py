@@ -25,7 +25,7 @@ from GUI.inspectors.npc.motivations.npc_motivations_panel import build_motivatio
 from GUI.inspectors.npc.percepts.npc_percepts_panel import build_percepts_panel
 from GUI.inspectors.npc.thoughts.npc_thoughts_panel import build_thoughts_panel
 from objects.InWorldObjects import ObjectInWorld
-from GUI.inspectors.entity.object__inspector import build_object_inspector
+from GUI.inspectors.entity.object_inspector import build_object_inspector
 """ NEW architecture:
 mode frame
     -> internal notebook """
@@ -665,7 +665,7 @@ class TC2GUI:
     def load_npc_mode(self):
         pass
 
-    def refresh_recent_npcs(self):#line 411
+    def refresh_recent_npcs(self):
 
         for w in self.recent_npcs_frame.winfo_children():
             w.destroy()
@@ -978,7 +978,13 @@ class TC2GUI:
         observer = self.active_context["npc"]#gets a reference to the observing pnc
         target = self.inspected_target
         print("INSPECTOR TARGET:", target)
-        
+        print("=== REFRESH INSPECTOR ===")
+        print("  parent path:", parent)
+        print("  parent is npc_inspector_panel:", parent is self.npc_inspector_panel)
+        print("  parent children:", [type(c).__name__ for c in parent.winfo_children()])
+        print("  inspected_target:", self.inspected_target)
+        print("  active_context mode:", self.active_context.get("mode"))
+
         if target is None:
             return
         
@@ -989,6 +995,9 @@ class TC2GUI:
             SocialGroup: build_social_group_inspector,
             
         } """
+
+        self.clear_inspector()
+
         if isinstance(target, Sublocation):
 
             build_sublocation_inspector(
@@ -1001,7 +1010,8 @@ class TC2GUI:
             build_npc_inspector(
                 self,
                 parent,
-                target
+                target,
+                observer=observer
             )
 
         elif isinstance(target, SocialGroup):
@@ -1016,11 +1026,11 @@ class TC2GUI:
         elif isinstance(target, ObjectInWorld):
 
             build_object_inspector(
-                self,
-                parent,
-                target
-            )
-        
+            self,
+            parent,
+            observer,
+            target
+        )
 
         print("INSPECTOR PANEL =", self.npc_inspector_panel)
         print("MODE =", self.active_context["mode"])
@@ -1039,7 +1049,7 @@ class TC2GUI:
         self.show_detail_page() """
         #deprecated i think
 
-        build_social_group_center_view(#This function currently does nothing
+        build_social_group_center_view(#This function currently does nothing, and is marked not defined here
             self,
             self.detail_page_container,
             observer,
@@ -1109,12 +1119,12 @@ class TC2GUI:
             self.get_inspector_parent()
         )
 
-    def get_inspector_parent(self):
+    def get_inspector_parent(self):#rename to get_right_panel_parent once the panel is confirmed working. Not now.
 
         #maybe
-        mode = self.active_context["mode"]
+        mode = self.active_context["mode"]#mode not accesed
 
-        if self.active_context["mode"] == "faction":
+        if self.active_context["mode"] == "faction":#we are not develpoing faction mode at all
             return self.faction_inspector_panel
 
         return self.npc_inspector_panel

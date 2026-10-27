@@ -18,7 +18,7 @@ def augment_character(npc):
     """
 
     # 1. Core semantic systems
-    inject_initial_social_memory(npc)
+    #inject_initial_social_memory(npc)
 
     # 2. Optional early seeding (safe no-ops if nothing applies)
     seed_social_relations(npc)

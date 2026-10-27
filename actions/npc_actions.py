@@ -12,6 +12,7 @@ import random
 from employment.employment import update_employee_presence
 from character_components.npc_effects import RecentMealEffect
 from employment.workplace_mixin import WorkplaceMixin
+from thoughts.readers_thoughts.book_thought_injector import inject_book_thought
 from create.create_game_state import get_game_state
 game_state = get_game_state()
 
@@ -157,6 +158,9 @@ def stroll_auto(npc, region=None):
 def read_auto(npc, region=None, *, item):
     """NPC reads a book."""
 
+    # TODO: read_auto should call inject_book_thought(npc, item) instead of
+    # building thoughts inline. Deferred until book thoughts are visible in GUI.
+    
     if item is None:
         debug_print(npc, "[READ] No book provided", category="fun")
         return False
@@ -194,14 +198,16 @@ def read_auto(npc, region=None, *, item):
     )
     npc.mind.memory.add_episodic(entry)
 
+    inject_book_thought(npc, item)
+
     # Redacted books create a specific thought
-    if item.is_redacted and not npc.mind.has_thought_with_tag("redacted_content"):
+    """ if item.is_redacted and not npc.mind.has_thought_with_tag("redacted_content"):
         npc.mind.add_thought(Thought(
             subject="knowledge",
             content=f"Pages are missing from '{item.title}'. Why?",
             urgency=3,
             tags=["redacted_content", "curiosity", "mystery"]
-        ))
+        )) """
 
     debug_print(npc, f"[READ] {npc.name} read '{item.title}' fun={npc.fun}", category="fun")
     return True

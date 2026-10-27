@@ -2,7 +2,7 @@
 from world.books import Book
 from world.books_catalogue import LIBRARY_COLLECTION
 
-def random_book():#needs work, unless a random book is better picked from setup_book_reader
+def random_book():
     pass
 
 def spawn_book(template):

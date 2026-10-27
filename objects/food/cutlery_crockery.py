@@ -20,7 +20,9 @@ class Cup(ObjectInWorld, Container):
         )
         Container.__init__(self)
 
-    def get_percept_data(self, observer=None):
+    def get_percept_data(self, observer=None):#the class abandons the chain and owns the whole list. 
+        #This is the intended pattern for objects whose tags are idiosyncratic.
+        
         base = super().get_percept_data(observer)
         visible = self.visible_contents(observer)
 

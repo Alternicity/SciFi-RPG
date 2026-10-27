@@ -33,6 +33,7 @@ class ItemType(Enum):
     DRINK = "Drink"
     PLANT = "Plant"
     JEWELLERY = "Jewellery"
+    INFO_OBJECT = "Info_object"
 
 # NOTE: The `item_type` attribute is only defined in concrete classes 
 # that directly instantiate objects (e.g., Pistol, Knife). 
@@ -67,6 +68,7 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
 
 
         self.name = name
+        #status_tier attribute (e.g., "common", "rare", "heirloom", "legendary")
 
         self.region = None
         self.location = None
@@ -165,10 +167,11 @@ class ObjectInWorld(PerceptibleMixin):#Ultimate non character, non location base
         }
         
         if hasattr(self, "_postprocess_percept"):
-            data = self._postprocess_percept(
-                data,
-                observer
-            )
+            data = self._postprocess_percept(data, observer)
+            data["_postprocessed"] = True
+
+            if hasattr(self, "name"):
+                print("=== DUP-TEST-OBJ ===", self.name, "tags:", data.get("tags"))#remove when pistol tag chain is fixed
 
         return data
 
@@ -329,7 +332,7 @@ class Medkit(ObjectInWorld):
     def get_percept_data(self, observer=None):
         return super().get_percept_data(observer)
 
-class AdvancedMedkit(Medkit):
+class AdvancedMedkit(Medkit):#line 335
     def __init__(self):
         super().__init__()
         self.contains_xyz = True
@@ -485,7 +488,7 @@ class WaterPurifier(ObjectInWorld):
         }
     
 class SmartPhone(ObjectInWorld):
-    is_concrete = True  # An concrete class will create objects and have more attributes
+    is_concrete = True
     def __init__(self, price=200, quantity=1,):
         super().__init__(
             name="SmartPhone",
@@ -501,16 +504,13 @@ class SmartPhone(ObjectInWorld):
         self.owner = None
         self.human_readable_id = "Unowned SmartPhone"
 
-    def get_percept_data(self, observer=None):
-        return {
-            "type": self.__class__.__name__,
-            "name": self.name,
-            "origin": self,
-            "tags": self.tags,
-            "item_type": self.item_type,
-            "description": f"{self.name} ({self.item_type})"
-            
-        }
+    def _postprocess_percept(self, data, observer):
+        data["name"] = "Smartphone"
+        data["description"] = (
+            "A slim modern mobile phone."
+        )
+        data["signals"] = self.get_signals()#SmartPhone doesnt currently have any
+        return data
     
     @property
     def tags(self):

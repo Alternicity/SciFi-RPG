@@ -1,8 +1,11 @@
 #create.create_sublocations.py
 from base.location import Sublocation
 from augment.augmentWithPlants import add_classy_plants
-from location.locations import Cafe, Nightclub, HQ, SportsCenter
+from location.locations import Cafe, Nightclub, HQ, SportsCenter, Library
 from augment.augmentSublocations.augmentCafeSublocations import augment_cafe_sublocations
+from objects.furniture import CafeChair
+from world.place_objects import place_object
+
 def setup_location_sublocations(location):
 
     builder = SUBLOCATION_BUILDERS.get(type(location))
@@ -35,6 +38,28 @@ def create_hq_sublocations(hq):
     elif hq.faction.type == "corporation":
         ... """
 
+def create_library_sublocations(location):
+    library = location
+    reading_room = add_sublocation(
+            library,
+            Sublocation(
+                name="Reading Room",
+                perceptible_from_parent=True
+            )
+        )
+
+    #augment_library_sublocations(reading_room)
+    #doesnt yet exist, but could, and follows established pattern
+    reading_room.can_see_parent_location = True
+    _seed_reading_room_chairs(reading_room)
+
+def _seed_reading_room_chairs(reading_room, count=8):
+    for i in range(count):
+        chair = CafeChair(name=f"Chair {i+1}")
+        place_object(chair, reading_room)
+
+
+#based on:
 def create_cafe_sublocations(location):
     cafe = location
     lounge = add_sublocation(
@@ -53,7 +78,7 @@ def create_cafe_sublocations(location):
     lounge.accessible_roles = ["VIP", "Babe"] """
     #needs to be everyone here, if used at all
 
-def create_gang_hq_sublocations():
+def create_gang_hq_sublocations():#ATTN
     pass
 
 def setup_hq_sublocations(hq, faction_type):
@@ -130,5 +155,8 @@ SUBLOCATION_BUILDERS = {
 
     HQ: create_hq_sublocations,
 
-    SportsCenter: create_sports_center_sublocations,#SportsCenter marked as not defined for some reason
+    SportsCenter: create_sports_center_sublocations,
+
+    Library: create_library_sublocations,
+
 }

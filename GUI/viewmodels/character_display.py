@@ -11,7 +11,7 @@ def get_character_display_data(percept, observer):# Semantic percept → charact
     name = data.get("name", "Unknown")
     posture = data.get("posture")
     seated_at = data.get("seated_at")
-    traits = data.get("observable_traits", [])
+    traits = data.get("observable_traits", [])#Is this working?
 
     if posture is not None:
         posture_text = posture.name.title()

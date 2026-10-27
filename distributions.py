@@ -1,7 +1,7 @@
 #distributions.py
 import random
 
-def generate_normal(mean, std_dev):
+def generate_normal(mean, std_dev):#not used yet, so could change without breaking anything
     """
     Generate a value from a normal (Gaussian) distribution.
 

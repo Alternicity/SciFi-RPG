@@ -23,18 +23,31 @@ emergent chain-of-thought behavior
 context cascades ("If I know X, I recall Y") """
 
 
-
+# Each semantic category holds a homogeneous list of objects.
+# Map category -> expected type, when ambiguous.
 MEMORY_CATEGORIES = [
     "events", "region_knowledge", "people", "awakening", "social", "employment", "gangs", "services", "stressors",
     "memory_entries", "enemies", "Objects", "procedures", "internal_architecture", "authority",
-    "shop_knowledge", "food_locations", "work"
+    "shop_knowledge", "food_locations", "work", "knowledge", "book_knowledge", "place"
 ]
+
+#this looks giid but leaves: KnowledgeMemory ,SocialMemory marked not defined
+""" SEMANTIC_CATEGORY_TYPES = {
+    "book_knowledge": KnowledgeMemory,
+    "region_knowledge": RegionKnowledge,
+    "social": SocialMemory,  # though social may be singular, not a list
+
+} """
 
 class Memory:
     def __init__(self):
         self.episodic = []   # List of MemoryEntry
         self.semantic = {cat: [] for cat in MEMORY_CATEGORIES}
         self.forgotten = {cat: [] for cat in MEMORY_CATEGORIES}
+
+        """ npc.social_memory = current structured relationship state
+        mind.memory.episodic = events involving other NPCs
+        mind.memory.semantic["social"] = knowledge the NPC has retained about another NPC """
 
     """ Suggestion: Semantic Memory API Addition
     If you want to store different memory types cleanly, you could eventually split the list: """

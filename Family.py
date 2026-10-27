@@ -22,22 +22,24 @@ class Family:
     home: Optional['Location'] = None
 
     @property
-    def adults(self) -> List['Civilian']:
+    def adults(self) -> List['Character']:
         return [c for c in self.members if getattr(c, "age", 20) >= 18]
 
     @property
-    def children(self) -> List['Civilian']:
+    def children(self) -> List['Character']:
         return [c for c in self.members if getattr(c, "age", 20) < 18]
 
     def add_member(self, character):
-        social = character.mind.memory.semantic.get("social")
+
+        social = character.social_memory#more up to date, ie not addressing a 
+
         if not social:
             raise RuntimeError(f"{character.name} has no SocialMemory")
 
         gs = get_game_state()
 
         for other in self.members:
-            other_social = other.mind.memory.semantic.get("social")
+            other_social = other.social_memory
 
             rel_a = social.get_relation(other)
             rel_a.record_interaction(
@@ -55,11 +57,18 @@ class Family:
                 new_type="family"
             )
 
+            rel_a.familiarity = max(rel_a.familiarity, 20)
+            rel_a.trust = max(rel_a.trust, 10)
+            rel_b.familiarity = max(rel_b.familiarity, 20)
+            rel_b.trust = max(rel_b.trust, 10)
+
         self.members.append(character)
 
     #add update npc.loyalties code here
 #utility functions
-def assign_families_and_homes(game_state):
+def assign_families_and_homes(game_state):#only call once
+    all_regions = game_state.all_regions
+    print(type(all_regions[0]), dir(all_regions[0]))
     """
     Groups civilians into families based on family name,
     assigns each family a residential location,
@@ -95,43 +104,85 @@ def assign_families_and_homes(game_state):
     candidates = [loc for loc in candidates if loc not in reserved] """
 
     # 1. Group by family name
-    families_by_name: Dict[str, Family] = {}
+
+    #new block, is this the righ place for this?
+    families_by_key: Dict[tuple, Family] = {}
+
+    """ for idx, char in enumerate(all_characters):
+        family_name = getattr(char, "family_name", None)
+        ...
+        if char.race is None or char.region is None:
+            family_key = (
+                family_name.strip().lower(),
+                "__no_race",
+                f"__idx_{idx}",
+            ) """
 
     #enforce homelessness
 
-    for c in all_characters:
+    """ for c in all_characters:
         if not getattr(c, "family_name", None):
-            print(f"[FAMILY-DEBUG] Missing family_name → {c.name} ({type(c)})")
+            print(f"[FAMILY-DEBUG] Missing family_name → {c.name} ({type(c)})") """#seems unlikely to fire
 
-
-    for char in all_characters:
+    for char in all_characters:#3rd loop over all_characters
         family_name = getattr(char, "family_name", None)
 
         # Skip characters with missing or blank family_name
         if not family_name or not family_name.strip():
             continue
 
-        family_key = family_name.strip().lower()
+        race = getattr(char, "race", None)
 
-        family = families_by_name.setdefault(
+        region_obj = getattr(char, "region", None)
+        # Region is unhashable; use a stable string key instead.
+        region = getattr(region_obj, "name", None) if region_obj is not None else None
+
+        # Family identity is (name, race, region).
+        # A missing race/region falls back to a unique key so the character
+        # still gets a singleton Family rather than colliding with others.
+
+        for idx, char in enumerate(all_characters):
+            if race is None or region is None:
+                #If char.id is not consistently set on all NPCs, this branch will AttributeError for any character with a missing race or region.
+                family_key = (
+                    family_name.strip().lower(),
+                    f"__no_race_{char.id}",
+                    f"__no_region_{char.id}",
+                )
+            else:
+                family_key = (family_name.strip().lower(), race, region)
+
+        family = families_by_key.setdefault(
             family_key,
             Family(family_name=family_name)
         )
-
         family.add_member(char)
         char.family = family
 
-    debug_print(None, f"[FAMILY] Grouped {len(families_by_name)} family family_names.", "family")
+    debug_print(None, f"[FAMILY] Grouped {len(families_by_key)} family family_names.", "family")
 
-    families_list = list(families_by_name.values())
+    families_list = list(families_by_key.values())
+
+    # TEMP diagnostic — remove after verifying family scalar seeding
+    """ multi = [f for f in families_list if len(f.members) >= 2]
+    print(f"[FAMILY-VERIFY] {len(multi)} families have ≥2 members (of {len(families_list)} total)")
+    if multi:
+        fam = multi[0]
+        m0, m1 = fam.members[0], fam.members[1]
+        r = m0.social_memory.peek_relation(m1)
+        if r is not None:
+            print(f"[FAMILY-VERIFY] {m0.name} -> {m1.name} | type: {r.current_type} | familiarity: {r.familiarity} | trust: {r.trust}") """
+
+
     random.shuffle(families_list)
+
 
     
     # 2. Enforce homelessness
 
     num_forced_homeless = max(#edited
         1 if HOMELESS_RATE > 0 else 0,
-        int(len(families_list) * HOMELESS_RATE)
+        int(len(families_list) * HOMELESS_RATE)#this code uses families_list
     )
 
     forced_homeless_families = families_list[:num_forced_homeless]
@@ -190,45 +241,39 @@ def assign_families_and_homes(game_state):
 
             place_character(civ, home)
 
-    # 3. Link partners (rough pass)
+        # 3. Link partners (rough pass)
+        for family in families_by_key.values():
+            adults = family.adults
+            random.shuffle(adults)
 
-    for family in families_by_name.values():
-        adults = family.adults
-        random.shuffle(adults)
+            gs = get_game_state()
 
-        gs = get_game_state()
+            for i in range(0, len(adults) - 1, 2):
+                a, b = adults[i], adults[i + 1]
 
-        for i in range(0, len(adults) - 1, 2):
-            a, b = adults[i], adults[i + 1]
+                rel_ab = a.social_memory.get_relation(b)
+                rel_ab.record_interaction(
+                    hour=gs.hour,
+                    day=gs.day,
+                    valence=0,
+                    new_type="partner"
+                )
+                rel_ab.familiarity = max(rel_ab.familiarity, 15)
+                rel_ab.trust = max(rel_ab.trust, 8)
 
-            social_a = a.mind.memory.semantic.get("social")
-            social_b = b.mind.memory.semantic.get("social")
-
-            if not social_a or not social_b:
-                continue
-
-            rel_ab = social_a.get_relation(b)
-            rel_ab.record_interaction(
-                hour=gs.hour,
-                day=gs.day,
-                valence=0,
-                new_type="partner"
-            )
-
-            rel_ba = social_b.get_relation(a)
-            rel_ba.record_interaction(
-                hour=gs.hour,
-                day=gs.day,
-                valence=0,
-                new_type="partner"
-            )
-
-            #debug_print(None, f"[FAMILY] Partnered {a.name} ↔ {b.name}",category=["family", "population"])
-
+                rel_ba = b.social_memory.get_relation(a)
+                rel_ba.record_interaction(
+                    hour=gs.hour,
+                    day=gs.day,
+                    valence=0,
+                    new_type="partner"
+                )
+                rel_ba.familiarity = max(rel_ba.familiarity, 15)
+                rel_ba.trust = max(rel_ba.trust, 8)
 
     # 4. Store and return
 
-    families = list(families_by_name.values())
+    families = list(families_by_key.values())
     game_state.families = families
     debug_print(None, f"[FAMILY] Assigned {len(families)} families.", "family")
 

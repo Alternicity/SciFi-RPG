@@ -27,7 +27,7 @@ from character_components.observation_component import ObservationComponent
 from augment.augment_character import augment_character
 from create.create_fun_prefs import create_fun_prefs
 from create.create_personality import create_personality
-
+from memory.social.social_memory import SocialMemory
 
 
 
@@ -94,6 +94,7 @@ def create_civilian_population(all_locations, all_regions, factionless, num_civi
             civilian.region = region_for_home
 
             civilian.personality = create_personality(civilian)
+            civilian.social_memory = SocialMemory(civilian)
             civilian.fun_prefs = create_fun_prefs(civilian)
             
             civilian.is_employee = random.random() < 0.8

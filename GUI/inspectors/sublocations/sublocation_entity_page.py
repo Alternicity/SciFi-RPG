@@ -2,7 +2,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-from GUI.inspectors.npc.sublocation_inspector import build_sublocation_inspector
 from GUI.widgets.sublocation_widget import build_sublocation_view_model
 
 from GUI.inspectors.npc.percepts.npc_percepts_panel import aggregate_display_nodes
@@ -96,12 +95,39 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
         text="Objects"
     ).pack(anchor="w", padx=10, pady=(10, 0))
 
-
-    object_tree = ttk.Treeview(
+    
+    object_tree = ttk.Treeview(#works
         parent,
         columns=("description", "info"),
         show="tree headings"
     )
+    object_tree._inspect_target_map = {}
+
+    def on_object_tree_click(event):
+        print("=== SUBLOCATION OBJECT CLICK ===")
+
+        iid = object_tree.identify_row(event.y)
+
+        if not iid:
+            return
+
+        target = object_tree._inspect_target_map.get(iid)
+
+        print(
+            "=== SUBLOCATION OBJECT TARGET ===",
+            type(target).__name__ if target else None,
+            getattr(target, "name", target)
+        )
+
+        if target is not None:
+            character_tree.selection_remove(character_tree.selection())
+            gui.inspect(target)
+
+            """ There is no problem with the fact that character_tree is defined later in the function. 
+            The handler isn't executed while build_sublocation_entity_page() is constructing the widgets;
+            it runs later in response to a click, by which time character_tree exists. """
+    
+    object_tree.bind("<Button-1>", on_object_tree_click)
 
     object_tree.heading("#0", text="Percept")
     object_tree.heading("description", text="Description")
@@ -125,7 +151,7 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
     Personally I would probably move even this logic into
     GUI/viewmodels/sublocation_viewmodel.py """
     #Your comment
-    
+
     if not percepts:
 
         ttk.Label(
@@ -163,7 +189,30 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
             show="tree headings",
             height=max(1, len(characters))
         )
-        character_tree._inspect_target_map = {}#added
+        character_tree._inspect_target_map = {}
+
+        def on_character_tree_click(event):#nested in build_sublocation_entity_page
+            print("=== SUBLOCATION CHARACTER CLICK ===")
+
+            iid = character_tree.identify_row(event.y)
+
+            if not iid:
+                return
+
+            target = character_tree._inspect_target_map.get(iid)
+
+            print(
+                "=== SUBLOCATION CHARACTER TARGET ===",
+                type(target).__name__ if target else None,
+                getattr(target, "name", target)
+            )
+
+            # Clear the other Treeview's selection.
+            object_tree.selection_remove(object_tree.selection())
+
+            if target is not None:
+                gui.inspect(target)
+
 
         character_tree.heading("#0", text="Percept")
         character_tree.heading("description", text="Description")
@@ -184,23 +233,25 @@ def build_sublocation_entity_page(gui, parent, observer, sublocation):
             padx=20,
             pady=5
         )
+        character_tree.bind("<Button-1>", on_character_tree_click)
 
-        render_sublocation_character_rows(
-            character_tree,#this?
-            characters,
-            observer
-        )
 
-        object_nodes = build_percept_tree(objects)
+    render_sublocation_character_rows(
+        character_tree,
+        characters,
+        observer
+    )
 
-        object_nodes = aggregate_display_nodes(object_nodes)
+    object_nodes = build_percept_tree(objects)
 
-        render_sublocation_object_tree(
-            object_tree,
-            object_nodes,
-            observer
-            
-        )
+    object_nodes = aggregate_display_nodes(object_nodes)
+
+    render_sublocation_object_tree(
+        object_tree,
+        object_nodes,
+        observer
+        
+    )
 
 
 
@@ -299,10 +350,9 @@ def render_sublocation_object_tree(tree, nodes, observer, parent=""):
 def render_sublocation_character_rows(tree, percepts, observer):
     #is the display-row → Tkinter Treeview rendering.
 
-
     for percept in percepts:
 
-        name, description, info, highlight = get_character_display_data(#new
+        name, description, info, highlight = get_character_display_data(
             percept,
             observer
         )
@@ -319,3 +369,4 @@ def render_sublocation_character_rows(tree, percepts, observer):
         )
         if origin is not None:
             tree._inspect_target_map[item_id] = origin
+

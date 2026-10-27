@@ -170,7 +170,7 @@ def player_character_options(all_regions, factions):
         "faction_name": "Factionless",
         "region_name": "easternhole",
         "location_name": "None",
-        "inventory": Inventory([Knife(owner="Swiz")]),
+        #"inventory": Inventory([Knife(owner="Swiz")]),
         #"wallet": Wallet(bankCardCash=50),
         "wallet": {"bankCardCash": 50, "cash": 0},
         "preferred_actions": {"Rob": 1, "Steal": 2},

@@ -1,17 +1,13 @@
 # memory.social.social_memory.py
-from base.character import Character
-from dataclasses import dataclass, field
 
 from memory.social.social_relation import SocialRelation
-
-#for social relations, but could be subclassed
 
 class SocialMemory:
     def __init__(self, owner):
         self.owner = owner
         self.relations = {}  # key: other.id → SocialRelation
 
-    def get_relation(self, other):
+    def get_relation(self, other):#For writing (creating partner relations)(write-intent, creates if absent)
 
         if other is None:
             return None
@@ -30,6 +26,12 @@ class SocialMemory:
 
         return rel
 
+    def peek_relation(self, other):#For reading (checking if a relation exists)
+        if other is None:
+            return None
+        return self.relations.get(other.id)
+
+
     def had_recent_interaction(self, other, *, hour, day, window_hours=2, window_days=0):
         rel = self.relations.get(other.id)
         
@@ -46,16 +48,15 @@ class SocialMemory:
         current_type: str | None = None,
         min_interactions: int | None = None
     ):
-        for rel in self.relations.values():  # however you're storing them
+        for rel in self.relations.values():  # possibly placeholder line
             if current_type and rel.current_type != current_type:
                 continue
             if min_interactions and rel.interaction_count < min_interactions:
                 continue
             yield rel
 
-    def is_known(npc, other):
-        social = npc.mind.memory.semantic.get("social")
-        return social and social.has_relation_with(other)
+    def is_known(self, other):
+        return other is not None and other.id in self.relations
 
 class TableGraph(SocialMemory):
     

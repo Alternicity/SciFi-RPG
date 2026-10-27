@@ -84,8 +84,7 @@ class PerceptibleMixin:
                 print(f"[WARNING] Percept for key '{key}' is missing an origin.")
             if "type" not in data:
                 print(f"[WARNING] Percept data for key '{key}' is missing 'type'.")
-            #usage
-            #validate_percepts(npc)
+
 
     @property
     def tags(self):
@@ -95,8 +94,6 @@ class PerceptibleMixin:
     def tags(self, value):
         self._tags = value
 
-    #print("Bonsai tags:", bonsai.tags)
-    #bonsai marked as not defined
 
 #utility functions
 def gather_perceptible_objects(obj, seen=None):
@@ -149,11 +146,17 @@ def extract_appearance_summary(obj, observer=None):
     consuming the percept data already generated for the GUI row. """
 
     if hasattr(obj, "get_percept_data"):
-        data = obj.get_percept_data()
+        data = obj.get_percept_data()# (A) runs _postprocess_percept internally
 
-        # Apply any _postprocess_percept functions
-        if hasattr(obj, "_postprocess_percept") and callable(obj._postprocess_percept):
-            data = obj._postprocess_percept(data, observer=None)
+        # Removed to prevent duplicate calls
+        """ if hasattr(obj, "_postprocess_percept") and callable(obj._postprocess_percept):
+            data = obj._postprocess_percept(data, observer=None) """
+
+        #tmp
+
+        print("=== TAGS-ID ===", id(data.get("tags")), data.get("tags"))
+
+
 
         if isinstance(obj, Character):
             # Basic visual traits
@@ -163,12 +166,12 @@ def extract_appearance_summary(obj, observer=None):
             visual = [race, sex] + features
             return ", ".join(filter(None, visual))
 
-        elif hasattr(obj, "condition") and hasattr(obj, "security"):
+        elif hasattr(obj, "condition") and hasattr(obj, "security"):#for a location object
             # Likely a Location
             guarded = "guarded" if getattr(obj.security, "guards", []) else "unguarded"
             return f"{obj.condition}, {guarded}"
 
-        elif isinstance(obj, Container):
+        elif isinstance(obj, Container):#like a vase or pot
             visible = obj.visible_contents(observer)
 
             if len(visible) == 1:

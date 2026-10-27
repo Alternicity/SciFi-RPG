@@ -183,8 +183,7 @@ def render_percept_tree(
 
         type_ = data.get("type", "—")
 
-        if data.get("display_aggregate"):#there is also this
-
+        if data.get("display_aggregate"):
             appearance = data.get("appearance", "—")
             info = data.get("info", "—")
 

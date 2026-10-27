@@ -15,9 +15,10 @@ from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
 from character_components.observation_component import ObservationComponent
+from create.create_personality import create_personality
 from augment.augment_character import augment_character
 from world.scenarios.economy.setup_normal_economy import register_employee
-
+from memory.social.social_memory import SocialMemory
 def create_TheState_characters(faction):
     from faction import State
 
@@ -71,8 +72,8 @@ def create_TheState_characters(faction):
         state_staff.append(vip)
         faction.region.characters_there.append(vip)
         vip.mind = Mind(owner=vip, capacity=vip.intelligence)
-
-
+        vip.personality = create_personality(vip)
+        vip.social_memory = SocialMemory(vip)
         passed_motivations = [
             ("gain_status", 3),
             ("have_fun", 3),
@@ -147,6 +148,9 @@ def create_TheState_characters(faction):
             faction.members.append(person)
             faction.region.characters_there.append(person)
             person.mind = Mind(owner=person, capacity=person.intelligence)
+            person.personality = create_personality(person)
+            person.social_memory = SocialMemory(person)
+
             augment_character(person)
             person.curiosity = Curiosity(base_score=person.intelligence // 2)
             person.task_manager = TaskManager(person)
@@ -221,6 +225,8 @@ def create_TheState_characters(faction):
             state_staff.append(cop)
             faction.region.characters_there.append(cop)
             cop.mind = Mind(owner=cop, capacity=cop.intelligence)
+            cop.personality = create_personality(cop)
+            cop.social_memory = SocialMemory(cop)
             augment_character(cop)
             cop.curiosity = Curiosity(base_score=cop.intelligence // 2)
             cop.task_manager = TaskManager(cop)

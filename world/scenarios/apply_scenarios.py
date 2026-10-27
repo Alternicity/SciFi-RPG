@@ -4,6 +4,8 @@ from world.scenarios.setup_tc1 import setup_tc1_world
 from world.scenarios.setup_tc2 import setup_tc2_world
 from world.scenarios.setup_tc3 import setup_tc3_world
 from world.scenarios.setup_tc4 import setup_tc4_world
+from world.scenarios.setup_tc5 import setup_tc5_world
+
 from world.scenarios.setup_tc4_helpers import select_tc4_gang
 
 from world.scenarios.setup_normal_stuff import setup_normal_stuff
@@ -30,3 +32,5 @@ def apply_scenarios(all_characters):#consider removing all_characters from these
     select_tc4_gang()
     setup_tc4_world(all_characters)
     setup_equipment()
+
+    setup_tc5_world(all_characters)

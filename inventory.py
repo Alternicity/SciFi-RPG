@@ -71,7 +71,7 @@ class Inventory:
         self.owner = owner
         self.primary_weapon = None
         self.weapons = []
-        self.recently_acquired = [] 
+        self.recently_acquired = []
         #You can let the AI treat new items with a kind of “spotlight” attention ie make it their attention_focus
         #Perhaps recently_acquired could be a dictionary of Object/Time entries, and the clear_recently_acquired can work on how many
         #  (sim) days the object has been in inventory

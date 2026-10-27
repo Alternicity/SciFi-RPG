@@ -1,5 +1,5 @@
 #create.createLocations.py
-from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock, Powerplant, Nightclub
+from location.locations import MunicipalBuilding, Shop, Region, Location, House, ApartmentBlock, Powerplant, Nightclub, Library
 from base.location import Location
 from perception.perceptibility import PerceptibleMixin
 from create.create_sublocations import setup_location_sublocations

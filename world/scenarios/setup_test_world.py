@@ -1,7 +1,7 @@
 #world.scenarios.setup_test_world.py
 from create.create_game_state import get_game_state
 gs = get_game_state()
-from world.scenarios.setup_tc4_helpers import select_tc4_gang, select_unused_gang
+from world.scenarios.setup_tc4_helpers import select_tc4_gang
 def select_test_world():
     #pick region - its hard coded to downtown for now
     test_region = next(

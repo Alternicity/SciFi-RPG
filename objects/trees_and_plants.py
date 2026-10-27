@@ -130,6 +130,7 @@ class Xanphil(ObjectInWorld):
         return base
 
 # Normal Trees
+#AttributeError: 'OakTree' object has no attribute 'base_ambience' Expensive_furniture does
 @dataclass
 class OakTree(Tree):
     name: str = "Oak Tree"

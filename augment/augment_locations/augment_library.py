@@ -31,11 +31,11 @@ def seed_library_furniture(all_locations):
 from create.create_ObjectInWorld.create_book import spawn_book
 
 def seed_library_books(all_locations):
+
     from world.books_catalogue import LIBRARY_COLLECTION
     for loc in all_locations:
         if not isinstance(loc, Library):
             continue
         for template in LIBRARY_COLLECTION:
-            place_object(spawn_book(template), loc)#So a function parameter can itself be a function call with its own paramter?
-
+            place_object(spawn_book(template), loc)
 

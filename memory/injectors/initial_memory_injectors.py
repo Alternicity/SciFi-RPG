@@ -44,8 +44,20 @@ def inject_initial_food_preferences(npc):
         fs.considers_nutrition = True
 
 #eventually call this from all character instantiation blocks
-def inject_initial_social_memory(npc):
+def inject_initial_social_memory(npc):#currently not called
+    #After the migration, this should no longer construct SocialMemory at all.
     if npc.mind.memory.semantic["social"]:
         return
 
     npc.mind.memory.semantic["social"] = SocialMemory(owner=npc)
+
+    """ its future purpose can become something like:
+    inject_initial_social_memory(npc)
+        ↓
+    create semantic MemoryEntry objects
+            ↓
+    "I know Anna"
+    "I know Amir"
+    ...
+            ↓
+    npc.mind.memory.semantic["social"] """

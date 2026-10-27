@@ -1,10 +1,11 @@
 # base.character.py
 from base.core_types import CharacterBase
 from base.posture import Posture
-from base.self_awareness_levels import SelfAwarenessLevel
+
 from perception.perceptibility import PerceptibleMixin
 from typing import Callable, Any
 from debug_utils import debug_print
+
 class Character(PerceptibleMixin, CharacterBase):
     
     VALID_SEXES = ("male", "female")  # Class-level constant
@@ -55,6 +56,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.id = Character._next_id#put this after the super() call?
         Character._next_id += 1
 
+        self.alive = True
         self.region = region
         self.location = location
         self.sublocation = None
@@ -78,7 +80,7 @@ class Character(PerceptibleMixin, CharacterBase):
         self.name = name
         self.first_name = None
         self.family_name = None
-        self.family = None # Will hold a Family component later
+        self.family = None # Will hold a Family component added after instantiation
         self.debug_role = None
         self.is_scenario_npc = False
         self.is_player = False
@@ -148,7 +150,15 @@ class Character(PerceptibleMixin, CharacterBase):
 
         self.partner = partner
         self.partner_presumed_location = None
+
         self.social_memory = None
+
+        """ SocialMemory is a single object, not a list. self.semantic = {cat: [] for cat in MEMORY_CATEGORIES} 
+        initializes every category to a list, but SocialMemory is a class with owner, relations. 
+        So semantic["social"] probably holds a single SocialMemory, not a list. If so, query_memory_by_tags iterating
+        over it will misbehave. Worth checking. RegionKnowledge.add_region_knowledge appends to a list, but 
+        SocialMemory.get_relation mutates a dict. Two different access patterns in the same dict. """
+
         self.faction = faction
         self.fun = kwargs.get("fun", fun)
         self.fun_prefs = None
@@ -369,12 +379,12 @@ class Character(PerceptibleMixin, CharacterBase):
             #Return perceptual information for this character. Self perception.
             tags = ["human"]
 
-            observable_traits = self.get_observable_traits()#observable_traits not accessed
+            observable_traits = self.get_observable_traits()
 
             hunger = self.motivation_manager.get_motivation("eat")
             if hunger and hunger.urgency >= 5:
                 tags.append("hungry")
-            if self.bloodstained:
+            if self.bloodstained:#this stuff below could maybe be sent throught percepts
                 tags.append("bloodstained")
             if self.is_visibly_wounded:
                 tags.append("wounded")
@@ -384,9 +394,11 @@ class Character(PerceptibleMixin, CharacterBase):
 
             urgency = hunger.urgency if hunger else 1
 
-            return {
+            data = {
                 "name": self.name,
                 "type": self.__class__.__name__,
+                "sex": self.sex,
+                "race": self.race,
                 "description": f"{self.name}, a {self.__class__.__name__}",
                 "region": self.region.name if getattr(self, "region", None) else "Unknown",
                 "location": self.location.name if getattr(self, "location", None) else "Unknown",
@@ -396,6 +408,7 @@ class Character(PerceptibleMixin, CharacterBase):
                 "posture": self.posture,
                 "seated_at": self.seated_at,
 
+
                 "origin": self,
                 "tags": tags,
                 "urgency": urgency,
@@ -403,7 +416,15 @@ class Character(PerceptibleMixin, CharacterBase):
                 "menu_options": [],
                 "has_security": getattr(self, "has_security", lambda: False)()
             }
+            if hasattr(self, "_postprocess_percept"):
+                data = self._postprocess_percept(data, observer)
+                data["_postprocessed"] = True
 
+            return data
+
+    def _postprocess_percept(self, data, observer):#new
+        return data
+    
     def perceive_event(self, percept: dict):
         """
         Called when some external event (like a robbery) forces a perception.

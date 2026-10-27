@@ -21,7 +21,11 @@ class Mind:
         self.thoughts = deque(maxlen=capacity)
         self.corollaries = deque(maxlen=capacity)
         self.memory = Memory()
-        self.memory.semantic["social"] = SocialMemory(owner)
+
+        #we are trying to deprecate this:
+        #self.memory.semantic["social"] = SocialMemory(owner)
+        
+        #new memory object types should expose some tags
 
         self.recurrent_thought_traces = {}  # thought_type -> count (passive, unused for now)
         self.obsessions: List[Obsession] = []
@@ -107,7 +111,7 @@ class Mind:
             return None
         return thought.tags[0] if thought.tags else thought.content
 
-    def get_most_urgent_thought(self):
+    def get_most_urgent_thought(self):#add a separated top row in gui for this in thoughts tab
         if not self.thoughts:
             return None
         return max(self.thoughts, key=lambda t: t.urgency)

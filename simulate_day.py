@@ -107,7 +107,7 @@ def simulate_hours(all_characters, num_ticks=1, debug_character=None):#current t
 
                         # 3. Capture social snapshot
                         #This logic also encapsulated as a func in social_utils
-                        social = char.mind.memory.semantic.get("social")
+                        social = char.mind.memory.semantic.get("social")#not a SocialMemory, update to address this
                         assert isinstance(social, SocialMemory), f"{npc.name} has invalid social memory, from simulate_hours"
 
                         if not social:

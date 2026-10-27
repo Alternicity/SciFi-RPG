@@ -13,25 +13,16 @@ from world.character_placement import place_character, place_character_in_subloc
 from create.create_ObjectInWorld.create_book import spawn_book
 from world.books_catalogue import LIBRARY_COLLECTION
 from objects.food.prepared_food import Sandwich
+from thoughts.readers_thoughts.book_thought_injector import inject_book_thought
 gs = get_game_state()
 
 
-def setup_passive_npcs():
+def setup_passive_npcs():#rename to TC5, maybe
 
     gs = get_game_state()
-
-    #coffee_npc = gs.debug_npcs["coffee_drinker"]
-
     coffee_npc = get_scenario_npc("coffee_drinker")
-
-    #book_npc = gs.debug_npcs["book_reader"]
     book_npc = get_scenario_npc("book_reader")
-
-    sandwich_eater = get_scenario_npc("sandwich_eater")#added
-
-    from character_think_utils import build_colony_doubt_thought
-    book_npc.mind.thoughts.append(
-        build_colony_doubt_thought(book_npc))
+    sandwich_eater = get_scenario_npc("sandwich_eater")
 
     cafe = gs.test_world["cafe"]
     nightclub = gs.test_world["nightclub"]
@@ -39,7 +30,19 @@ def setup_passive_npcs():
     setup_coffee_drinker(coffee_npc, nightclub)
 
     cafe_lounge = cafe.get_sublocation("Lounge")
-    setup_book_reader(book_npc, cafe_lounge)
+    book = setup_book_reader(book_npc, cafe_lounge)
+    inject_book_thought(book_npc, book)
+
+
+    from world.scenarios.setup_tc3_helpers import setup_tc3_minds
+    setup_tc3_minds(book_npc, book)
+
+    #replaces:
+    from character_think_utils import build_colony_doubt_thought
+
+    # use add_thought()
+    """ book_npc.mind.thoughts.append(
+        build_colony_doubt_thought(book_npc)) """
 
     setup_sandwich_eater(sandwich_eater, nightclub)
 
@@ -84,7 +87,9 @@ def setup_book_reader(book_npc, cafe_lounge):
     gs.test_world["book_reader_table"] = table
 
     book = spawn_book(
-        random.choice(LIBRARY_COLLECTION))
+        random.choice(LIBRARY_COLLECTION))#get the book reference
+    #book_thought seeded here
+    #perhaps add it to npc.inventory as well
 
     book.change_ownership(book_npc)
 
@@ -105,8 +110,9 @@ def setup_book_reader(book_npc, cafe_lounge):
     npc.personality traits, maybe eventually their memory or other thought objects. """
     #we can work on that later
     #book_npc.mind.add_thought(xyz_book_thought)
+    return book
     
-def find_free_table(container):
+def find_free_table(container):#should move to a more generic helper module
     return next(
         (
             obj

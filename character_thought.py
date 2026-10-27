@@ -10,7 +10,7 @@ from debug_utils import debug_print  # optional, if you want to log failures
 
 
 class Thought:
-    def __init__(self, subject, content, predicate=None, origin=None, urgency=1, tags=None, source=None, anchored=False, weight=0, timestamp=None, resolved=False, corollary=None, payload=None):
+    def __init__(self, subject, content, predicate=None, origin=None, urgency=1, tags=None, source=None, anchored=False, weight=0, timestamp=None, resolved=False, corollary=None, payload=None, corollary_of=None):
         self.subject = subject              #The object the thought is about. Character, faction, event, ObjectInWorld etc
         self.content = content              # Description of the thought (str or object)
         self.predicate = predicate
@@ -39,8 +39,8 @@ class Thought:
             )
 
         self.resolved = resolved
-        self.corollary_of = None
-        self.corollary = corollary or []  # a corollary will probably be another thought object
+        self.corollary_of = None#currently dead information.
+        self.corollary = corollary or []  #used
 
         self.function_reference = {}
         self.associated_function = None
@@ -55,23 +55,7 @@ class Thought:
     def mark_resolved(self):
         self.resolved = True
 
-    def spawn_corollary_thoughts(self, character):
-        results = []
-        if not self.corollary:
-            return results
 
-        for i, cor_thought in enumerate(self.corollary):
-            if character.intelligence >= (13 + i * 2):
-                new = Thought(
-                    content=f"Corollary derived: {cor_thought.content}",
-                    origin="CorollaryMemory",
-                    urgency=self.urgency - 1,
-                    tags=["corollary"] + cor_thought.tags,
-                    source=cor_thought
-                )
-                results.append(new)
-        return results
-    
     def salience_for(self, observer, anchor=None):
         """
         Computes how salient this thought is to the observer.

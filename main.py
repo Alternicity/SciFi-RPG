@@ -19,8 +19,7 @@ def setup_game():
 
     game_state = get_game_state()  # Singleton pattern
     from create.create import create_regions, create_factions
-    from create.createLocations import create_locations
-    from base.location import Location
+
     from display.display import compare_locations, debug_display_all_shops
     from augment.augment_state import augment_municipal_buildings
     

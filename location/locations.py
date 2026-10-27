@@ -2136,3 +2136,65 @@ class Farm(WorkplaceMixin, PerceptibleLocation):
 
     def __repr__(self):
         return f"Farm(name='{self.name}', region={self.region.name if self.region else 'Unknown'})"
+
+# base/hospital.py
+
+from dataclasses import dataclass, field
+from typing import Optional, List, Any
+
+from base.location import Location, Sublocation
+from employment.workplace_mixin import WorkplaceMixin
+from location.perceptible_location import PerceptibleLocation
+from character_components.observation_component import can_perceive_sublocation
+from location.location_security import can_access_sublocation
+
+
+@dataclass
+class Hospital(WorkplaceMixin, PerceptibleLocation):#needs attention, does it conform?
+    name: str = "General Hospital"
+    tags: list[str] = field(default_factory=lambda: ["medical", "public", "workplace"])
+    description: str = "A place of healing and, sometimes, last resort."
+    fun: int = 0
+    items_available: List[Any] = field(default_factory=list)
+    categories: List[str] = field(default_factory=lambda: ["workplace", "public", "medical"])
+
+    # Hospital-specific state
+    is_open: bool = True
+    emergency_room_open: bool = True
+    has_pharmacy: bool = True
+    has_morgue: bool = True
+    staff_on_duty: int = 0
+    beds_available: int = 20
+    security_level: int = 2  # Moderate security
+
+    def get_percept_data(self, observer=None):
+        return {
+            "name": self.name,
+            "type": self.__class__.__name__,
+            "description": f"Hospital: {self.name}",
+            "region": self.region.name if self.region else None,
+            "robbable": True,
+            "origin": self,
+            "tags": ["location", "medical", "public"],
+            "source": None,
+            "security": self.security_level,
+            "is_open": self.is_open,
+            "has_security": self.security_level > 0,
+            "emergency_room_open": self.emergency_room_open,
+            "beds_available": self.beds_available,
+            "has_pharmacy": self.has_pharmacy,
+            "has_morgue": self.has_morgue,
+        }
+
+    def __post_init__(self):
+        WorkplaceMixin.__init__(self)
+        # Security object setup (if using the older Security dataclass)
+        if not hasattr(self, "security") or self.security is None:
+            self.security = Security(
+                level=self.security_level,
+                guards=[],
+                difficulty_to_break_in=3,
+                surveillance=True,
+                alarm_system=True,
+            )
+

@@ -1,4 +1,4 @@
-#weapons.py split from InWorldObject to shorten file sizes
+#weapons.py
 
 from objects.InWorldObjects import ObjectInWorld, Size, Toughness, ItemType
 import logging
@@ -112,7 +112,7 @@ class Pistol(RangedWeapon):
 
     @property
     def tags(self):
-        return super().tags + ["pistol", "weapon", "ranged", "ranged_weapon"]
+        return super().tags + ["pistol"]
         #does this need to be called for pistol instances to have tags?
     
         
@@ -212,7 +212,7 @@ class Shotgun(RangedWeapon):
             "origin": self,
             "item_type": self.item_type,
             "value": self.price,
-            tags: tags,
+            "tags": tags,
             "danger": self.intimidation,
             "size": self.size.value if hasattr(self, "size") else None
         }
@@ -234,7 +234,7 @@ class Sword(MeleeWeapon):
         self.legality = legality
         self.item_type = "weapon"
 
-    def get_percept_data(self, observer=None):
+    def get_percept_data(self, observer=None):#this will get removed in favour of the newer _postprocess_percept
         tags = ["weapon", "sword"]
         return {
             "description": f"{self.name}",

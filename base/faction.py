@@ -25,7 +25,8 @@ class Faction(FactionBase):
         self.owned_locations = []
         self.active_workers = []
         self.available_workers = []
-
+        self.defunct = False
+        
     def get_leader(self):
         return None
 
@@ -124,7 +125,7 @@ class Faction(FactionBase):
     def __repr__(self):
         return f"{self.name} {self.type.capitalize()}"
     
-class Factionless(Faction):#dummy faction
+class Factionless(Faction):#dummy faction, for Civilians
     def __init__(self, violence_disposition, name="Factionless"):
         super().__init__(name=name, type="neutral", violence_disposition=violence_disposition)
         #self.violence_disposition = violence_disposition

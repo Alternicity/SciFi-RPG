@@ -37,7 +37,7 @@ class GameState:
         #or make civilian_background just be a background npc, just placed in the cafe
 
         self.reserved_homes = {}
-        self.scenarios = []
+        self.scenarios = []#tcx
         self.state = None
         self.civilians = []
         self.families = []
@@ -83,7 +83,7 @@ class GameState:
         self.all_locations = []
         self.factions = [] #is not used
         self.all_characters = [] #Honestly I am not sure if this is populated
-        self.all_civilians = []#added, not populated yet
+        self.all_civilians = []
         self.state_staff = []
         self.corp_hqs = []
         self.player_character = None
@@ -93,6 +93,10 @@ class GameState:
         self.all_VIPs = []#needs populating
         self.all_assassins = []
         self.all_gang_bosses = []
+
+        self.all_readers = []
+
+        self.factionless = None
 
         self.downtown_gangs = []
         self.northville_gangs = []

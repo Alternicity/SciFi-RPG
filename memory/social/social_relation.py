@@ -1,5 +1,8 @@
 #memory.social.social_relation.py
-from base.character import Character
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from base.character import Character
 from dataclasses import dataclass, field
 
 @dataclass
@@ -32,7 +35,7 @@ class SocialRelation:
     interest: int = 0
     #Valence = positive vs negative emotional impact
     
-    # Network awareness (lightweight, optional)
+    # Network awareness (lightweight, optional) Not yet active
     mutual_friends: list["Character"] = field(default_factory=list)
     mutual_enemies: list["Character"] = field(default_factory=list)
 

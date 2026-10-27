@@ -63,3 +63,9 @@ class SocialGroup:
     @property
     def member_names(self):
         return [m.name for m in self.members]
+
+    def __iter__(self):
+        return iter(self.members)
+
+    def __len__(self):
+        return len(self.members)

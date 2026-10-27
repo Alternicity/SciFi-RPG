@@ -2,13 +2,49 @@
 
 import tkinter as tk
 from tkinter import ttk
-from GUI.helpers.gui_styles import TEXT_SELECTION
+
+
+""" mind.thoughts = flat collection of all thoughts
+thought.corollary = hierarchical relationship for display/navigation
+Treeview = visual representation of that relationship """
 
 def build_thoughts_panel(gui, parent):
 
     frame = ttk.LabelFrame(
         parent,
         text="Thoughts"
+    )
+
+    gui.thoughts_tree = ttk.Treeview(
+        frame,
+        columns=("urgency", "thought"),
+        show="tree headings"
+    )
+
+    gui.thoughts_tree.heading(
+        "#0",
+        text="Thought"
+    )
+
+    gui.thoughts_tree.heading(
+        "urgency",
+        text="Urgency"
+    )
+
+    gui.thoughts_tree.column(
+        "#0",
+        width=500
+    )
+
+    gui.thoughts_tree.column(
+        "urgency",
+        width=70,
+        anchor="center"
+    )
+
+    gui.thoughts_tree.pack(
+        fill="both",
+        expand=True
     )
 
     frame.pack(
@@ -18,93 +54,88 @@ def build_thoughts_panel(gui, parent):
         pady=10
     )
 
-    gui.thoughts_text = tk.Text(
-        frame,
-        wrap="word"
-    )
-    
-    gui.thoughts_text.config(**TEXT_SELECTION)#Selection background
-
-    gui.thoughts_text.pack(
-        fill="both",
-        expand=True
-    )
-
-
 def refresh_thoughts_panel(gui):
+
+    
 
     npc = gui.active_context["npc"]
 
     if not npc:
         return
 
-    text_widget = gui.thoughts_text
-
-    text_widget.config(state="normal")
-
-    text_widget.delete("1.0", tk.END)
-
     mind = getattr(npc, "mind", None)
 
     if not mind:
-
-        text_widget.insert(
-            tk.END,
-            "No mind.\n"
-        )
-
-        text_widget.config(state="disabled")
-
         return
 
-    thoughts = list(getattr(mind, "thoughts", []))
+    thoughts = list(
+        getattr(mind, "thoughts", [])
+    )
 
-    if not thoughts:
+    tree = gui.thoughts_tree
 
-        text_widget.insert(
-            tk.END,
-            "No thoughts.\n"
+    for item in tree.get_children():
+        tree.delete(item)
+
+    corollaries = {
+        id(corollary)
+        for thought in thoughts
+        for corollary in getattr(
+            thought,
+            "corollary",
+            []
+        )
+    }
+
+    root_thoughts = [#A root thought is a thought that does not appear as a child of another thought
+        thought
+        for thought in thoughts
+        if id(thought) not in corollaries
+    ]
+
+    if not root_thoughts:
+        return
+
+    sorted_thoughts = sorted(
+        root_thoughts,
+        key=lambda t: getattr(t, "urgency", 0),
+        reverse=True
+    )
+
+    for thought in sorted_thoughts:
+        insert_thought(
+            tree,
+            thought
         )
 
-    else:
+def insert_thought(tree, thought, parent=""):
 
-        sorted_thoughts = sorted(
-            thoughts,
-            key=lambda t: getattr(t, "urgency", 0),
-            reverse=True
+    urgency = getattr(
+        thought,
+        "urgency",
+        "?"
+    )
+
+    content = getattr(
+        thought,
+        "content",
+        str(thought)
+    )
+
+    item_id = tree.insert(
+        parent,
+        "end",
+        text=content,
+        values=(urgency,)
+    )
+
+    for corollary in getattr(
+        thought,
+        "corollary",
+        []
+    ):
+        insert_thought(
+            tree,
+            corollary,
+            parent=item_id
         )
-
-        for thought in sorted_thoughts:
-
-            urgency = getattr(thought, "urgency", "?")
-
-            content = getattr(
-                thought,
-                "content",
-                str(thought)
-            )
-
-            tags = getattr(
-                thought,
-                "tags",
-                []
-            )
-
-            text_widget.insert(
-                tk.END,
-                f"[{urgency}] {content}\n"
-            )
-
-            if tags:
-
-                text_widget.insert(
-                    tk.END,
-                    f"tags: {', '.join(tags)}\n"
-                )
-
-            text_widget.insert(
-                tk.END,
-                "\n"
-            )
-
-    text_widget.config(state="disabled")

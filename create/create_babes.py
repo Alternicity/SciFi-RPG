@@ -19,6 +19,8 @@ from objects.InWorldObjects import Wallet
 from motivation.motivation import MotivationManager
 from motivation.motivation_init import initialize_motivations
 from character_components.inventory_component import InventoryComponent
+from memory.social.social_memory import SocialMemory
+
 
 def create_babes(all_regions, factionless, babes_per_region=2):
     all_locations = game_state.all_locations
@@ -65,8 +67,10 @@ def create_babes(all_regions, factionless, babes_per_region=2):
         babe.status.set_status("general_population", FactionStatus(StatusLevel.LOW, "Normie"))
         babe.region = region_for_home
         babe.personality = create_personality(babe)
+        babe.social_memory = SocialMemory(babe)
         babe.fun_prefs = create_fun_prefs(babe)
         babe.mind = Mind(owner=babe, capacity=babe.intelligence)
+
 
         augment_character(babe)
 

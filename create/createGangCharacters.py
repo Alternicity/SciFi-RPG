@@ -6,7 +6,7 @@ from objects.InWorldObjects import Wallet
 from motivation.motivation import MotivationManager
 from motivation.motivation_presets import MotivationPresets
 from motivation.motivation_init import initialize_motivations
-
+from create.create_personality import create_personality
 from status import StatusLevel, CharacterStatus, FactionStatus
 from base.character import Character
 from weapons import Knife
@@ -19,7 +19,7 @@ from debug_utils import debug_print, add_character
 from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
 from employment.employee import EmployeeProfile
-
+from memory.social.social_memory import SocialMemory
 from config import ENABLE_FACTION_CHARACTERS
 
 #marked for deletion apparently
@@ -27,7 +27,7 @@ from create.create_game_state import get_game_state
 game_state = get_game_state()
 
 #no ai import here
-def create_gang_characters(faction, all_regions):
+def create_gang_characters(faction, all_regions):#potentially rename faction to gang
 
     from create.create_game_state import get_game_state
     game_state = get_game_state()
@@ -37,7 +37,7 @@ def create_gang_characters(faction, all_regions):
 
     characters = []
 
-    if faction.is_street_gang:
+    if faction.is_street_gang:##potentially rename faction to gang throughout
         region = faction.region
         region_locations = region.get_all_locations()
         preferred_types = ["Park", "VacantLot", "ApartmentBlock", "PoliceStation"]
@@ -86,7 +86,8 @@ def create_gang_characters(faction, all_regions):
         characters.append(boss)
         faction.region.characters_there.append(boss)
         boss.mind = Mind(owner=boss, capacity=boss.intelligence)
-
+        boss.personality = create_personality(boss)
+        boss.social_memory = SocialMemory(boss)
         game_state.all_gang_bosses.append(boss)
 
         augment_character(boss)
@@ -127,7 +128,7 @@ def create_gang_characters(faction, all_regions):
             break
 
     # Captains
-    #for _ in range(random.randint(0, 0)):#not instantiating
+
     from config import GANG_CAPTAIN_RANGE
     for _ in range(random.randint(*GANG_CAPTAIN_RANGE)):
         status = CharacterStatus()
@@ -155,6 +156,9 @@ def create_gang_characters(faction, all_regions):
         #faction.members.append(captain)
         
         captain.mind = Mind(owner=captain, capacity=captain.intelligence)
+        captain.personality = create_personality(captain)
+        captain.social_memory = SocialMemory(captain)
+
         augment_character(captain)
         captain.curiosity = Curiosity(base_score=captain.intelligence // 2)
         captain.task_manager = TaskManager(captain)
@@ -205,6 +209,8 @@ def create_gang_characters(faction, all_regions):
         #Wallets are a perfect candidate for a later ECS cleanup — but not during AI debugging
         faction.members.append(member)
         member.mind = Mind(owner=member, capacity=member.intelligence)
+        member.personality = create_personality(member)
+        member.social_memory = SocialMemory(member)
         augment_character(member)
         member.curiosity = Curiosity(base_score=member.intelligence // 2)
         member.task_manager = TaskManager(member)

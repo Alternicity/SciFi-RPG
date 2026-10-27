@@ -5,7 +5,7 @@ game_state = get_game_state()
 from debug_utils import debug_print
 from focus_utils import set_attention_focus
 from memory.social.social_memory import SocialMemory
-
+from social.social_data import RELATION_TYPES
 def get_socially_favoured(self):
     if self.partner:
         return self.partner
@@ -30,7 +30,7 @@ def has_recent_interaction(a, b, *, window_hours=2):
             category="interaction"
         )
 
-    social = a.mind.memory.semantic.get("social")#I think this should be episodic rather tahn semantic memory
+    social = a.mind.memory.semantic.get("social")#I think this should be episodic rather than semantic memory
     if not social:
         return False
 
@@ -42,16 +42,19 @@ def has_recent_interaction(a, b, *, window_hours=2):
         window_hours=window_hours
     )
 
-def seed_social_relations(npc):#this is called in augment.augment_character.py in augment_character()
-    social = npc.mind.memory.semantic.get("social")
+def seed_social_relations(npc):
+    social = npc.social_memory
     if not social:
         return
 
     # Partner
     if getattr(npc, "partner", None):
-        rel = social.get_relation(npc.partner)
-        rel.current_type = "partner"
-        rel.trust = 5
+        existing = social.peek_relation(npc.partner)
+        if existing is None or existing.current_type != "partner":
+            rel = social.get_relation(npc.partner)
+            rel.current_type = "partner"
+            rel.familiarity = max(rel.familiarity, 15)
+            rel.trust = max(rel.trust, 8)
 
     # Faction placeholder
     if getattr(npc, "faction", None):
@@ -86,7 +89,7 @@ def seed_social_relations(npc):#this is called in augment.augment_character.py i
 
 def finalize_social_seeding(all_characters):#not yet called
 
-    link_partners(all_characters)#see existing family code
+    link_partners(all_characters)#not defined here (see existing family code)
 
     #These three functions dont yet exist:
     link_coworkers(all_characters)
@@ -106,7 +109,7 @@ def capture_social_snapshot(char, location):#not yet called
     snapshot = {"friends": [], "enemies": [], "allies": []}
 
     for other in location.characters_there:
-        if other is char:
+        if other is char:#char is the NPC whose social memory you are examining
             continue
 
         rel = social.get_relation(other)
@@ -220,7 +223,7 @@ def create_social_group(*members, label=None, interaction_targets=True, purpose=
     return group
 
 #create_social_group Dont let one call the other 
-def link_relationship(#We can add to this if needed
+def link_relationship(
     npc_a,
     npc_b,
     *,
@@ -234,6 +237,7 @@ def link_relationship(#We can add to this if needed
     fear=0,
     envy=0,
     pity=0,
+    mutual=True,
 ):
     values = {
         "current_type": relation_type,
@@ -248,18 +252,13 @@ def link_relationship(#We can add to this if needed
         "pity": pity,
     }
 
-    for owner, subject in ((npc_a, npc_b), (npc_b, npc_a)):
-        social = owner.mind.memory.semantic["social"]
-        rel = social.get_relation(subject)
+    pairs = ((npc_a, npc_b),) if not mutual else ((npc_a, npc_b), (npc_b, npc_a))
 
+    for owner, subject in pairs:
+        social = owner.social_memory
+        rel = social.get_relation(subject)
         for field, value in values.items():
             setattr(rel, field, value)
-
-        seed_social_relations(owner)
-
-
-
-
     
 class Interaction:
     def __init__(self, a, b, context=None):

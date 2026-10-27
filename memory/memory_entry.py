@@ -276,7 +276,7 @@ class CityKnowledge:
     anomalies: List[str]  # For psy-sensitive insights
 
 @dataclass
-class FactionKnowledge:
+class FactionKnowledge:#unused
     faction_name: str
     shared_beliefs: List[str] = field(default_factory=list)
     known_detectives: Dict[str, str] = field(default_factory=dict)  # {name: "corrupt" or "loyal"}

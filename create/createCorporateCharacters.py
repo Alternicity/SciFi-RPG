@@ -14,7 +14,7 @@ from base.character import Character
 from character_components.inventory_component import InventoryComponent
 from character_mind import Mind, Curiosity
 from tasks.tasks import TaskManager
-
+from memory.social.social_memory import SocialMemory
 from employment.employee import EmployeeProfile
 from world.scenarios.economy.setup_normal_economy import register_employee
 
@@ -22,6 +22,7 @@ from character_components.observation_component import ObservationComponent
 from augment.augment_character import augment_character
 from create.create_game_state import get_game_state
 game_state = get_game_state()
+from create.create_personality import create_personality
 
 def create_corporation_characters(faction, factions):
     from location.locations import HQ
@@ -83,6 +84,9 @@ def create_corporation_characters(faction, factions):
     ceo.task_manager = TaskManager(ceo)
     ceo.employment = EmployeeProfile()
 
+    ceo.personality = create_personality(ceo)
+    ceo.social_memory = SocialMemory(ceo)
+
     #initialize_motivations(ceo, ceo.motivations)
     initialize_motivations(ceo, passed_motivations=[("idle", 1)])
 
@@ -121,6 +125,10 @@ def create_corporation_characters(faction, factions):
         manager.curiosity = Curiosity(base_score=manager.intelligence // 2)
         manager.task_manager = TaskManager(manager)
         manager.employment = EmployeeProfile()
+
+        manager.personality = create_personality(manager)
+        manager.social_memory = SocialMemory(manager)
+
         initialize_motivations(manager, passed_motivations=[("idle", 1)])
         manager.inventory_component = InventoryComponent(manager)
         manager.observation_component = ObservationComponent(owner=manager)
@@ -157,6 +165,10 @@ def create_corporation_characters(faction, factions):
         register_employee(employee)
 
         employee.mind = Mind(owner=employee, capacity=employee.intelligence)
+
+        employee.personality = create_personality(employee)
+        employee.social_memory = SocialMemory(employee)
+
         augment_character(employee)
         employee.curiosity = Curiosity(base_score=employee.intelligence // 2)
         employee.task_manager = TaskManager(employee)
@@ -193,6 +205,10 @@ def create_corporation_characters(faction, factions):
         characters.append(guard)
         faction.region.characters_there.append(guard)
         guard.mind = Mind(owner=guard, capacity=guard.intelligence)
+
+        guard.personality = create_personality(guard)
+        guard.social_memory = SocialMemory(guard)
+
         augment_character(guard)
         guard.curiosity = Curiosity(base_score=guard.intelligence // 2)
         guard.task_manager = TaskManager(guard)
@@ -230,6 +246,10 @@ def create_corporation_characters(faction, factions):
         characters.append(accountant)
         faction.region.characters_there.append(accountant)
         accountant.mind = Mind(owner=accountant, capacity=accountant.intelligence)
+
+        accountant.personality = create_personality(accountant)
+        accountant.social_memory = SocialMemory(accountant)
+
         augment_character(accountant)
         accountant.curiosity = Curiosity(base_score=accountant.intelligence // 2)
         accountant.task_manager = TaskManager(accountant)
@@ -269,6 +289,10 @@ def create_corporation_characters(faction, factions):
         game_state.all_assassins.append(assassin)
 
         assassin.mind = Mind(owner=assassin, capacity=assassin.intelligence)
+
+        assassin.personality = create_personality(assassin)
+        assassin.social_memory = SocialMemory(assassin)
+
         augment_character(assassin)
         assassin.curiosity = Curiosity(base_score=assassin.intelligence // 2)
         assassin.task_manager = TaskManager(assassin)

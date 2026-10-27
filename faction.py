@@ -91,6 +91,8 @@ class Gang(Faction):
         self.is_street_gang = False
         self.street_gang_start_location = None
 
+        self.prized_possession = None
+
     def get_leader(self):
         return self.boss
 
@@ -111,6 +113,24 @@ class Gang(Faction):
             boss.faction = self  # Assign faction to the boss
         else:
             raise ValueError(f"Boss race '{boss.race}' does not match gang race '{self.race}'.")
+    
+    def __iter__(self):
+        seen = set()
+        if self.boss is not None and id(self.boss) not in seen:
+            seen.add(id(self.boss))
+            yield self.boss
+        for c in self.captains:
+            if id(c) not in seen:
+                seen.add(id(c))
+                yield c
+        for m in self.members:
+            if id(m) not in seen:
+                seen.add(id(m))
+                yield m
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
         
 from config import STATE_RACE
 class State(Faction):

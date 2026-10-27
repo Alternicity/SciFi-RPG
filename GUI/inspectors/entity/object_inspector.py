@@ -4,9 +4,14 @@ from tkinter import ttk
 from objects.InWorldObjects import ObjectInWorld
 
 
-def build_object_inspector(gui, parent, obj):
+def build_object_inspector(gui, parent, observer, obj):
 
-    data = obj.get_percept_data()
+    #data = obj.get_percept_data()
+    data = obj.get_percept_data(observer=observer)
+
+    print("=== OBJECT INSPECTOR DATA ===")
+    print("OBJECT:", type(obj).__name__, getattr(obj, "name", obj))
+    print("DATA:", data)
 
     ttk.Label(
         parent,

@@ -15,23 +15,17 @@ from augment.augmentLocations import add_classy_furniture
 from augment.augmentLocations import add_table_decorations
 game_state = get_game_state()
 from augment.augmentWithPlants import seed_bonsai_trees
+
+from world.scenarios.tc3_memory_setup import setup_tc3_boss_pair_minds, setup_tc3_assassin_vip_minds
+
+from social.setup_social import print_social_network
+
+
 def setup_tc3_world():
 
-    """ nightclub = next(
-        (
-            loc for loc in game_state.all_locations
-            if isinstance(loc, Nightclub)
-            and getattr(loc, "is_tc2_nightclub", False)
-        ),
-        None
-    )
-    """
     nightclub = game_state.test_world["nightclub"]
     add_table_decorations(nightclub)
-
-    #added
-    seed_bonsai_trees(nightclub)#nightclub is a location, not a sublocation
-
+    seed_bonsai_trees(nightclub)
 
     vip_candidates = [
         b for b in game_state.all_VIPs
@@ -44,10 +38,18 @@ def setup_tc3_world():
         b for b in game_state.all_gang_bosses
         if not getattr(b, "is_scenario_npc", False)
     ]
-
     debug_gang_boss1 = random.choice(boss_candidates) if boss_candidates else None
-    debug_gang_boss2 = random.choice(boss_candidates) if boss_candidates else None#we must ensure that boss1 is not selected here
 
+    boss2_candidates = [
+        b for b in boss_candidates
+        if b is not debug_gang_boss1
+        and (
+            debug_gang_boss1 is None
+            or b.faction is not debug_gang_boss1.faction
+        )
+    ]
+
+    debug_gang_boss2 = random.choice(boss2_candidates) if boss2_candidates else None
 
     assassin_candidates = [
         b for b in game_state.all_assassins
@@ -83,8 +85,8 @@ def setup_tc3_world():
         game_state.debug_npcs["first_Boss"] = debug_gang_boss1
 
     if debug_gang_boss2:
-        debug_gang_boss1.debug_role = "Second_Boss"
-        debug_gang_boss1.is_scenario_npc = True
+        debug_gang_boss2.debug_role = "Second_Boss"
+        debug_gang_boss2.is_scenario_npc = True
         game_state.debug_npcs["Second_Boss"] = debug_gang_boss2
 
 
@@ -145,47 +147,28 @@ def setup_tc3_world():
     boss2 = debug_gang_boss2
 
     #VIP
-    vip_social = (
-        debug_civilian_vip
-        .mind.memory.semantic["social"]
-    )
-
-    rel = vip_social.get_relation(
-        debug_civilian_babe
-    )
-
-    rel.current_type = "acquaintance"
-
     link_relationship(
-        debug_civilian_vip,
-        debug_civilian_babe,
-        familiarity=8,
-        attraction=15,
-        interest=12,
-        trust=6,
-    )
+            vip,
+            babe,
+            relation_type="crush",
+            familiarity=8,
+            attraction=15,
+            interest=12,
+            trust=6,
+            mutual=False,
+        )
 
     #Babe
-    babe_social = (
-        debug_civilian_babe
-        .mind.memory.semantic["social"]
-    )
-
-    rel = babe_social.get_relation(
-        debug_civilian_vip
-    )
-
-    rel.current_type = "acquaintance"
-
     link_relationship(
-        debug_civilian_babe,
-        debug_civilian_vip,
-        
-        familiarity=8,
-        attraction=4,
-        interest=6,
-        trust=5,
-    )
+            babe,
+            vip,
+            relation_type="mark",#target is taken by motivation
+            familiarity=8,
+            attraction=4,
+            interest=6,
+            trust=5,
+            mutual=False,
+        )   
 
     vip_group = create_social_group(#vip_group not accessed here,
     vip,
@@ -193,53 +176,53 @@ def setup_tc3_world():
     label="Courting"
 )
 
-    boss1_social = (
-        boss1
-        .mind.memory.semantic["social"]
-    )
+    boss1_social = boss1.social_memory
 
     rel = boss1_social.get_relation(
         boss2
     )
 
-    rel.current_type = "acquaintance"
-
-    link_relationship(
-        boss1,
-        boss2,
-        familiarity=8,
-        attraction=15,
-        interest=12,
-        trust=6,
-    )
-
-    boss2_social = (
-        boss2
-        .mind.memory.semantic["social"]
-    )
-
-    rel = boss2_social.get_relation(
-        boss1
-    )
-
-    rel.current_type = "frenemy"
-
-    link_relationship(#persistent social knowledge.
-        boss2,
-        boss1,
-        familiarity=8,
-        attraction=15,
-        interest=12,
-        trust=6,
-    )
-
-    boss_group = create_social_group(#establishes the current interaction
-    boss1,
-    boss2,
-    purpose="Planning"
-)
 
 
+    #rel.current_type = "acquaintance"
+    if boss1 is not None and boss2 is not None:
+        link_relationship(
+            boss1,
+            boss2,
+            relation_type="enemy",
+            familiarity=8,
+            attraction=0,
+            interest=12,
+            trust=0,
+            mutual=False,
+        )
+
+        link_relationship(
+            boss2,
+            boss1,
+            relation_type="enemy",
+            familiarity=8,
+            attraction=0,
+            interest=12,
+            trust=0,
+            mutual=False,
+        )
+
+        #If you want captains to have an explicit relation to each other, 
+        # that's a fourth topology decision (peer-co-leadership)
+        #Maybe that can have a twist
+
+        """ A captain and their co-captain being "acquaintance" in the star-plus-subordinates graph is honest —
+        they're peers who haven't been seeded as friends or rivals yet. If later gameplay wants them as 
+        rivals for the boss's favor, seed that explicitly in a TC-specific block, not in the generic hierarchy. """
+
+        boss_group = create_social_group(
+            boss1,
+            boss2,
+            purpose="Planning",#Planning might or might not still be optimal - they are talking, not fighting
+        )
+        setup_tc3_boss_pair_minds(boss1, boss2)
+        
     #TMP
     print(vip.current_social_group)
     print(babe.current_social_group)
@@ -290,6 +273,38 @@ def setup_tc3_world():
         target=vip
     )
 
+    if assassin is not None and vip is not None:
+        link_relationship(
+            assassin,
+            vip,
+            relation_type="enemy",
+            familiarity=4,
+            trust=0,
+            fear=6,
+            interest=7,
+            mutual=False,
+        )
+        link_relationship(
+            vip,
+            assassin,
+            relation_type="enemy",
+            familiarity=4,
+            trust=0,
+            fear=8,
+            interest=5,
+            mutual=False,
+        )
+
+        setup_tc3_assassin_vip_minds(assassin, vip)
+
+
+
+
+
+        print_social_network(
+            [n for n in (vip, babe, assassin, boss1, boss2) if n is not None],
+            label="TC3",
+        )
 
     first_meeting = random.choice(
         [True, False]
